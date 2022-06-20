@@ -8,8 +8,12 @@ import os
 from os.path import join as oj
 from spacy.lang.en import English
 
-def generate_decomposed_ngrams(sentence, ngrams=1):
+def generate_decomposed_ngrams(sentence):
     """seq of sequences to input (can do this better - stemming, etc.)
+    
+    Params
+    ------
+    ngrams: int
     """
     unigrams_list = [str(x) for x in simple_tokenizer(sentence)]
     # unigrams_list = sentence.split(' ')
@@ -20,10 +24,15 @@ def generate_decomposed_ngrams(sentence, ngrams=1):
         for idx_starting_word in range(0, len(unigrams_list) + 1 - ngram_length):
                 seqs.append(' '.join(
                     unigrams_list[idx_starting_word: idx_starting_word + ngram_length]))
-    print('seqs', seqs)
+    # print('seqs', seqs)
     return seqs
 
 def embed_and_sum_function(example):
+    """
+    Params
+    ------
+    padding: True, "max_length"
+    """
     sentence = example['sentence']
     # seqs = sentence
 
@@ -36,7 +45,7 @@ def embed_and_sum_function(example):
     
                             
     # maybe a smarter way to deal with pooling here?
-    tokens = tokenizer(seqs, padding=True, truncation=True, return_tensors="pt")
+    tokens = tokenizer(seqs, padding=padding, truncation=True, return_tensors="pt")
     # print('tokens', tokens['input_ids'].shape, tokens['input_ids'])
     output = model(**tokens) # has two keys, 'last_hidden_state', 'pooler_output'
     embs = output['pooler_output'].cpu().detach().numpy()
@@ -50,8 +59,13 @@ def embed_and_sum_function(example):
 
 if __name__ == '__main__':
     
-    # set up model
+    # hyperparams
+    padding = 'max_length' # True
     checkpoint = "bert-base-uncased"
+    ngrams = 1
+    
+    
+    # set up model
     nlp = English()
     simple_tokenizer = nlp.tokenizer # for our word-finding
     tokenizer = AutoTokenizer.from_pretrained(checkpoint) # for actually passing things to the model
@@ -65,7 +79,7 @@ if __name__ == '__main__':
     embedded_dataset = dataset.map(embed_and_sum_function) #, batched=True)
     
     # save
-    save_dir = "data/processed/ngram=1_" + checkpoint
+    save_dir = f"data/processed/ngram={ngrams}_" + checkpoint + "_" + padding
     os.makedirs(save_dir, exist_ok=True)
     embedded_dataset.save_to_disk(save_dir)
     for k in ['train', 'validation', 'test']:
