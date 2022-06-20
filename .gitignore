@@ -1,0 +1,43 @@
+**.ipynb_checkpoints
+**cache*
+**.pdf
+**.zip
+**.npy
+.coverage
+**slurm*
+**logs*
+env
+**.pyc
+**.gif
+**.DS_Store
+**.idea
+*.pth
+**Icon*
+venv
+imodels_env
+.vscode/**
+# Compiled python modules.
+*.pyc
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
+
+build
+.gitmodules
+build
+dist
+
+**AutogluonModels*
+**.gslides
+**.xml
+
+experiments/data/
+!experiments/data/00_get_datasets.ipynb
+.hypothesis
+experiments/results
+experiments/*.txt
+**_site*
+.nfs*
