@@ -6,19 +6,21 @@ import numpy as np
 import pickle as pkl
 import os
 from os.path import join as oj
+from spacy.lang.en import English
 
 def generate_decomposed_ngrams(sentence, ngrams=1):
     """seq of sequences to input (can do this better - stemming, etc.)
     """
-    seqs = []
-    unigrams_list = sentence.split(' ')
-    for ngram_length in range(1, ngrams + 1):
+    unigrams_list = [str(x) for x in simple_tokenizer(sentence)]
+    # unigrams_list = sentence.split(' ')
+    if ngrams == 1:
+        return unigrams_list
+    seqs = unigrams_list.copy()
+    for ngram_length in range(2, ngrams + 1):
         for idx_starting_word in range(0, len(unigrams_list) + 1 - ngram_length):
-            if ngram_length == 1:
-                seqs.append(unigrams_list[idx_starting_word])
-            else:
                 seqs.append(' '.join(
                     unigrams_list[idx_starting_word: idx_starting_word + ngram_length]))
+    print('seqs', seqs)
     return seqs
 
 def embed_and_sum_function(example):
@@ -48,11 +50,11 @@ def embed_and_sum_function(example):
 
 if __name__ == '__main__':
     
-    
-    
     # set up model
     checkpoint = "bert-base-uncased"
-    tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+    nlp = English()
+    simple_tokenizer = nlp.tokenizer # for our word-finding
+    tokenizer = AutoTokenizer.from_pretrained(checkpoint) # for actually passing things to the model
     model = BertModel.from_pretrained(checkpoint)
     
     
