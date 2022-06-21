@@ -42,3 +42,4 @@ experiments/*.txt
 **_site*
 .nfs*
 data
+results
