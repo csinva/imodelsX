@@ -58,10 +58,15 @@ def embed_and_sum_function(example):
     elif isinstance(sentence, list):
         raise Exception('batched mode not supported')
         # seqs = list(map(generate_decomposed_ngrams, sentence))
-    # print('seqs', type(seqs), seqs)
+    # print('sentence:', sentence)
+    # print('seqs:', type(seqs), seqs)
     
                             
     # maybe a smarter way to deal with pooling here?
+    seq_len = len(seqs)
+    if seq_len == 0:
+        seqs = ["dummy"]
+        
     tokens = tokenizer(seqs, padding=args.padding, truncation=True, return_tensors="pt")
     # print('tokens', tokens['input_ids'].shape, tokens['input_ids'])
     output = model(**tokens) # has two keys, 'last_hidden_state', 'pooler_output'
@@ -70,9 +75,11 @@ def embed_and_sum_function(example):
     
     # sum over the embeddings
     embs = embs.sum(axis=0).reshape(1, -1)
+    if seq_len == 0:
+        embs *= 0
     # print('embs', embs.shape)    
     
-    return {'embs': embs}
+    return {'embs': embs, 'seq_len': len(seqs)}
 
 if __name__ == '__main__':
     
@@ -86,8 +93,14 @@ if __name__ == '__main__':
     parser.add_argument('--subsample', type=int, help='whether to only keep only this many training samples', default=-1)
     args = parser.parse_args()
     args.padding = True # 'max_length' # True
-    print('\n\nhyperparams', 'sub', args.subsample, args.checkpoint, 'ngrams', args.ngrams, 'padding', args.padding, '\n\n')
+    print('\n\nembed_dset hyperparams', vars(args), '\n\n')
     
+    # check if cached
+    dir_name = f"ngram={args.ngrams}_" + 'sub=' + str(args.subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
+    save_dir = oj(path_to_current_file, 'data/processed', dir_name)
+    if os.path.exists(save_dir):
+        print('aready ran', save_dir)
+        exit(0)
     
     # set up model
     nlp = English()
@@ -109,8 +122,6 @@ if __name__ == '__main__':
     embedded_dataset = dataset.map(embed_and_sum_function) #, batched=True)
     
     # save
-    dir_name = f"ngram={args.ngrams}_" + 'sub=' + str(args.subsample) + '_' + args.checkpoint # + "_" + padding
-    save_dir = oj(path_to_current_file, 'data/processed', dir_name)
     os.makedirs(save_dir, exist_ok=True)
     embedded_dataset.save_to_disk(save_dir)
     """

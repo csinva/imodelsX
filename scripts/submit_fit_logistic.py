@@ -1,0 +1,34 @@
+import itertools
+from slurmpy import Slurm
+
+# slurm params
+partition = 'high'
+s = Slurm("fit_logistic", {"partition": partition, "time": "1-0"})
+
+
+# set param combos
+# PARAMS = {
+#     'subsample': [100, 1000, -1],
+#     'ngrams': [1, 2, 3, 4, 5, 7, 10],    
+#     'checkpoint': ['countvectorizer', 'tfidfvectorizer', 'bert-base-uncased'],
+# }
+PARAMS = {
+    'subsample': [100, 1000, -1],
+    'ngrams': [2, 3, 4, 5],    
+    'checkpoint': ['bert-base-uncased'],
+    'all': ['all'],
+    'norm': ['norm'],
+}
+
+
+ks = PARAMS.keys()
+vals = [PARAMS[k] for k in ks]
+param_combinations = list(itertools.product(*vals)) # list of tuples
+
+
+for i in range(len(param_combinations)):
+    param_str = '/usr/local/linux/anaconda3.8/bin/python3 ../03_fit_logistic.py '    
+    for j, key in enumerate(ks):
+        param_str += '--' + key + ' ' + str(param_combinations[i][j]) + ' '
+    s.run(param_str)
+#     print(param_str)
