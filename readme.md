@@ -1,6 +1,7 @@
 # baselines
 
 - [fasttext](https://adityaroc.medium.com/understanding-fasttext-an-embedding-to-look-forward-to-3ee9aa08787#:~:text=Fasttext%20can%20generate%20embedding%20for,representation%20in%20the%20training%20set.) - sums partial embeddings of a word to make up the whole word
+- similar to [dirtycat](https://www.linkedin.com/feed/update/urn:li:activity:6944476456701820928?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A6944476456701820928%29)
 
 # follow-up experiments
 
