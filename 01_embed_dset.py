@@ -11,8 +11,8 @@ import argparse
 path_to_current_file = os.path.dirname(os.path.abspath(__file__))
 
 
-def generate_decomposed_ngrams(sentence, all_ngrams=False):
-    """seq of sequences to input (can do this better - stemming, etc.)
+def generate_ngrams_list(sentence, all_ngrams=False):
+    """get list of grams
     
     Params
     ------
@@ -54,10 +54,10 @@ def embed_and_sum_function(example):
     # seqs = sentence
 
     if isinstance(sentence, str):
-        seqs = generate_decomposed_ngrams(sentence)
+        seqs = generate_ngrams_list(sentence)
     elif isinstance(sentence, list):
         raise Exception('batched mode not supported')
-        # seqs = list(map(generate_decomposed_ngrams, sentence))
+        # seqs = list(map(generate_ngrams_list, sentence))
     # print('sentence:', sentence)
     # print('seqs:', type(seqs), seqs)
     

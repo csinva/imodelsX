@@ -2,15 +2,20 @@ import itertools
 from slurmpy import Slurm
 
 # slurm params
-partition = 'yugroup'
+partition = 'jsteinhardt' # yugroup
 num_gpus = 1
 s = Slurm("embed_dset", {"partition": partition, "time": "4-0", "gres": f"gpu:{num_gpus}"})
 
 # set param combos
+# PARAMS = {
+#     'subsample': [100, 1000, -1],
+#     'ngrams': [1, 2, 3, 4, 5, 6, 7, 10],    
+#     'checkpoint': ['textattack/bert-base-uncased-SST-2'], #'bert-base-uncased'],
+# }
 PARAMS = {
     'subsample': [100, 1000, -1],
-    'ngrams': [1, 2, 3, 4, 5, 6, 7, 10],    
-    'checkpoint': ['textattack/bert-base-uncased-SST-2'], #'bert-base-uncased'],
+    'ngrams': [6, 8],    
+    'checkpoint': ['textattack/bert-base-uncased-SST-2', 'bert-base-uncased'], #'bert-base-uncased'],
 }
 
 ks = PARAMS.keys()
