@@ -75,10 +75,11 @@ if __name__ == '__main__':
     dir_name = f"ngram={args.ngrams}_" + 'sub=' + str(args.subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
     if args.all == 'all':
         dir_name += '-all'
-    processed_dir = oj(path_to_current_file, 'data/processed', dir_name)
+    processed_dir = oj('/scratch/users/vision/chandan/embedded-ngrams/data/processed', dir_name)
+#     processed_dir = oj(path_to_current_file, 'data/processed', dir_name)
     if args.norm:
         dir_name += '-norm' # note, this is not in the processed_dir only in the save
-    results_dir = '/scratch/users/vision/chandan/embedded-ngrams'
+    results_dir = '/scratch/users/vision/chandan/embedded-ngrams/results'
     save_dir = oj(results_dir, dir_name)
     if os.path.exists(save_dir):
         print('aready ran', save_dir)

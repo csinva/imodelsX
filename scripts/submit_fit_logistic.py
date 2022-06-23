@@ -10,7 +10,7 @@ s = Slurm("fit_logistic", {"partition": partition, "time": "1-0"})
 PARAMS = {
     'subsample': [100, 1000, -1],
     'ngrams': [1, 2, 3, 4, 5, 6, 7, 10],    
-    'checkpoint': ['textattack/bert-base-uncased-SST-2'] , #['countvectorizer', 'tfidfvectorizer', 'bert-base-uncased'],
+    'checkpoint': ['textattack/bert-base-uncased-SST-2', 'bert-base-uncased'] , #['countvectorizer', 'tfidfvectorizer', 'bert-base-uncased'],
     'all': ['all'],
 }
 # PARAMS = {

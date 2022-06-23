@@ -97,7 +97,8 @@ if __name__ == '__main__':
     
     # check if cached
     dir_name = f"ngram={args.ngrams}_" + 'sub=' + str(args.subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
-    save_dir = oj(path_to_current_file, 'data/processed', dir_name)
+    data_dir = '/scratch/users/vision/chandan/embedded-ngrams/data'
+    save_dir = oj(data_dir, 'processed', dir_name)
     if os.path.exists(save_dir):
         print('aready ran', save_dir)
         exit(0)
