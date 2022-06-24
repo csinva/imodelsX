@@ -5,9 +5,11 @@ import datasets
 import numpy as np
 import pickle as pkl
 import os
+import os.path
 from os.path import join as oj
 from spacy.lang.en import English
 import argparse
+import config
 path_to_current_file = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -49,8 +51,9 @@ def embed_and_sum_function(example):
     Params
     ------
     args.padding: True, "max_length"
+    args.dataset_key_text: str, e.g. "sentence" for sst2
     """
-    sentence = example['sentence']
+    sentence = example[args.dataset_key_text]
     # seqs = sentence
 
     if isinstance(sentence, str):
@@ -81,6 +84,11 @@ def embed_and_sum_function(example):
     
     return {'embs': embs, 'seq_len': len(seqs)}
 
+def get_dir_name(args, ngrams=None):
+    if not ngrams:
+        ngrams = args.ngrams
+    return f"ngram={ngrams}_" + 'sub=' + str(args.subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
+
 if __name__ == '__main__':
     
     # hyperparams
@@ -91,14 +99,14 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint', type=str, help='name of model checkpoint', default='bert-base-uncased')
     parser.add_argument('--ngrams', type=int, help='dimensionality of ngrams', default=1)
     parser.add_argument('--subsample', type=int, help='whether to only keep only this many training samples', default=-1)
+    parser.add_argument('--dataset', type=str, help='which dataset to fit', default='sst2') # sst2, imdb
     args = parser.parse_args()
     args.padding = True # 'max_length' # True
     print('\n\nembed_dset hyperparams', vars(args), '\n\n')
     
     # check if cached
-    dir_name = f"ngram={args.ngrams}_" + 'sub=' + str(args.subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
-    data_dir = '/scratch/users/vision/chandan/embedded-ngrams/data'
-    save_dir = oj(data_dir, 'processed', dir_name)
+    dir_name = get_dir_name(args)
+    save_dir = oj(config.data_dir, args.dataset, dir_name)
     if os.path.exists(save_dir):
         print('aready ran', save_dir)
         exit(0)
@@ -114,11 +122,18 @@ if __name__ == '__main__':
     
     
     # set up data
-    dataset = datasets.load_dataset('sst2')
-    del dataset['test'] # speed things up for now
+    dataset = datasets.load_dataset(args.dataset)
+    if args.dataset == 'sst2':
+        del dataset['test'] # speed things up for now
+        args.dataset_key_text = 'sentence'
+    elif args.dataset == 'imdb':
+        del dataset['unsupervised'] # speed things up for now
+        dataset['validation'] = dataset['test']
+        del dataset['test']
+        args.dataset_key_text = 'text'
     if args.subsample > 0:
         dataset['train'] = dataset['train'].select(range(args.subsample))
-
+        
     # run 
     embedded_dataset = dataset.map(embed_and_sum_function) #, batched=True)
     

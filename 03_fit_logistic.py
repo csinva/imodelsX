@@ -12,16 +12,26 @@ from collections import defaultdict
 from copy import deepcopy
 import pandas as pd
 from datasets import load_from_disk
+import config
 import sklearn
 import warnings
 
 
 def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
-                dataset, processed_dir, simple_tokenizer):
+                dataset, data_dir, simple_tokenizer):
+    """
+    args.dataset_key_text: str, e.g. "sentence" for sst2
+    """
+    
     # load embeddings
     if 'bert-base' in checkpoint or 'distilbert' in checkpoint:
         if all_ngrams:
-            data = pkl.load(open(oj(processed_dir, 'data.pkl'), 'rb'))
+            try:
+                data = pkl.load(open(oj(data_dir, 'data.pkl'), 'rb'))
+            except Exception as e:
+                data_dir_full = get_dir_name(args, full_dset=True)
+                print("\tcouldn't find", data_dir, 'trying', data_dir_full)
+                data = pkl.load(open(oj(data_dir_full, 'data.pkl'), 'rb'))
 #             if norm:
             X_train = data['X_train']
             X_val = data['X_val']
@@ -29,7 +39,7 @@ def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
                 X_train = (X_train - data['mean']) / data['sigma']
                 X_val = (X_val - data['mean']) / data['sigma']
         else:
-            reloaded_dataset = load_from_disk(processed_dir)
+            reloaded_dataset = load_from_disk(data_dir)
             X_train = np.array(reloaded_dataset['train']['embs']).squeeze()
             X_val = np.array(reloaded_dataset['validation']['embs']).squeeze()
         return X_train, X_val
@@ -39,8 +49,8 @@ def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
         elif checkpoint == 'tfidfvectorizer':
             vectorizer = TfidfVectorizer(tokenizer=simple_tokenizer, ngram_range=(1, ngrams))
         # vectorizer.fit(dataset['train']['sentence'])
-        X_train = vectorizer.fit_transform(dataset['train']['sentence'])
-        X_val = vectorizer.transform(dataset['validation']['sentence'])
+        X_train = vectorizer.fit_transform(dataset['train'][args.dataset_key_text])
+        X_val = vectorizer.transform(dataset['validation'][args.dataset_key_text])
         return X_train, X_val
     
 def fit_and_score(X_train, X_val, dataset, r):
@@ -53,6 +63,15 @@ def fit_and_score(X_train, X_val, dataset, r):
     r['acc_train'] = m.score(X_train, dataset['train']['label'])
     r['acc_val'] = m.score(X_val, dataset['validation']['label'])
     return r
+
+def get_dir_name(args, full_dset=False):
+    subsample = args.subsample
+    if full_dset:
+        subsample = -1
+    dir_name = f"ngram={args.ngrams}_" + 'sub=' + str(subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
+    if args.all == 'all':
+        dir_name += '-all'
+    return dir_fname
 
 if __name__ == '__main__':
     
@@ -67,20 +86,21 @@ if __name__ == '__main__':
     parser.add_argument('--subsample', type=int, help='whether to only keep only this many training samples', default=-1)
     parser.add_argument('--all', type=str, default='', help='whether to use all-ngrams')
     parser.add_argument('--norm', type=str, default='', help='whether to normalize before fitting')
+    parser.add_argument('--dataset', type=str, help='which dataset to fit', default='sst2') # sst2, imdb
     args = parser.parse_args()
     args.padding = True # 'max_length' # True
     print('\n\nfit_logistic hyperparams', vars(args), '\n\n')
     
     # check if cached
-    dir_name = f"ngram={args.ngrams}_" + 'sub=' + str(args.subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
+    dir_name = get_dir_name(args)
     if args.all == 'all':
         dir_name += '-all'
-    processed_dir = oj('/scratch/users/vision/chandan/embedded-ngrams/data/processed', dir_name)
-#     processed_dir = oj(path_to_current_file, 'data/processed', dir_name)
-    if args.norm:
-        dir_name += '-norm' # note, this is not in the processed_dir only in the save
-    results_dir = '/scratch/users/vision/chandan/embedded-ngrams/results'
-    save_dir = oj(results_dir, dir_name)
+    # note, this is not in the data_dir only in the save
+    # must come before adding -norm to the name!
+    data_dir = oj(config.data_dir, args.dataset, dir_name)
+#     if args.norm:
+#         dir_name += '-norm' 
+    save_dir = oj(config.results_dir, args.dataset, dir_name)
     if os.path.exists(save_dir):
         print('aready ran', save_dir)
         exit(0)
@@ -93,15 +113,22 @@ if __name__ == '__main__':
     
     
     # set up data
-    dataset = datasets.load_dataset('sst2')
-    del dataset['test'] # speed things up for now
+    dataset = datasets.load_dataset(args.dataset)
+    if args.dataset == 'sst2':
+        del dataset['test'] # speed things up for now
+        args.dataset_key_text = 'sentence'
+    elif args.dataset == 'imdb':
+        del dataset['unsupervised'] # speed things up for now
+        dataset['validation'] = dataset['test']
+        del dataset['test']
+        args.dataset_key_text = 'text'
     if args.subsample > 0:
         dataset['train'] = dataset['train'].select(range(args.subsample))
         
     # get data
     r = vars(args)
     X_train, X_val = get_dataset(args.checkpoint, args.ngrams, args.all, args.norm,
-                                 dataset, processed_dir, simple_tokenizer)
+                                 dataset, data_dir, simple_tokenizer)
     r['num_features'] = X_train.shape[1]
     
     # fit and return model

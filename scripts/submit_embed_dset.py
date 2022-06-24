@@ -10,12 +10,14 @@ s = Slurm("embed_dset", {"partition": partition, "time": "4-0", "gres": f"gpu:{n
 # PARAMS = {
 #     'subsample': [100, 1000, -1],
 #     'ngrams': [1, 2, 3, 4, 5, 6, 7, 10],    
-#     'checkpoint': ['textattack/bert-base-uncased-SST-2'], #'bert-base-uncased'],
+#     'checkpoint': ['textattack/bert-base-uncased-SST-2'], #'bert-base-uncased', 'textattack/bert-base-uncased-imdb'
+#     'dataset': ['sst2', 'imdb'],
 # }
 PARAMS = {
-    'subsample': [-1],
-    'ngrams': [7, 9],    
-    'checkpoint': ['textattack/bert-base-uncased-SST-2'], #'bert-base-uncased'],
+    'subsample': [-1], #, 1000, 100],
+    'ngrams': [1, 2, 3, 4],    
+    'checkpoint': ['bert-base-uncased'], #'textattack/bert-base-uncased-SST-2'], #'bert-base-uncased'],
+    'dataset': ['imdb'],
 }
 
 ks = PARAMS.keys()
