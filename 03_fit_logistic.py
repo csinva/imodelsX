@@ -18,7 +18,7 @@ import warnings
 
 
 def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
-                dataset, data_dir, simple_tokenizer):
+                dataset, data_dir, data_dir_full, simple_tokenizer):
     """
     args.dataset_key_text: str, e.g. "sentence" for sst2
     """
@@ -29,19 +29,27 @@ def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
             try:
                 data = pkl.load(open(oj(data_dir, 'data.pkl'), 'rb'))
             except Exception as e:
-                data_dir_full = get_dir_name(args, full_dset=True)
                 print("\tcouldn't find", data_dir, 'trying', data_dir_full)
                 data = pkl.load(open(oj(data_dir_full, 'data.pkl'), 'rb'))
-#             if norm:
+
             X_train = data['X_train']
             X_val = data['X_val']
-            if norm:
-                X_train = (X_train - data['mean']) / data['sigma']
-                X_val = (X_val - data['mean']) / data['sigma']
         else:
-            reloaded_dataset = load_from_disk(data_dir)
+            try:
+                reloaded_dataset = load_from_disk(data_dir)
+            except Exception as e:
+                print("\tcouldn't find", data_dir, 'trying', data_dir_full)
+                reloaded_dataset = load_from_disk(data_dir_full)
             X_train = np.array(reloaded_dataset['train']['embs']).squeeze()
             X_val = np.array(reloaded_dataset['validation']['embs']).squeeze()
+            
+        if args.subsample > 0:
+            X_train = X_train[:args.subsample]
+
+        if norm:
+            X_train = (X_train - data['mean']) / data['sigma']
+            X_val = (X_val - data['mean']) / data['sigma']
+            
         return X_train, X_val
     elif 'vectorizer' in checkpoint:
         if checkpoint == 'countvectorizer':
@@ -98,6 +106,7 @@ if __name__ == '__main__':
     # note, this is not in the data_dir only in the save
     # must come before adding -norm to the name!
     data_dir = oj(config.data_dir, args.dataset, dir_name)
+    data_dir_full = get_dir_name(args, full_dset=True) # no subsampling
 #     if args.norm:
 #         dir_name += '-norm' 
     save_dir = oj(config.results_dir, args.dataset, dir_name)
@@ -128,7 +137,7 @@ if __name__ == '__main__':
     # get data
     r = vars(args)
     X_train, X_val = get_dataset(args.checkpoint, args.ngrams, args.all, args.norm,
-                                 dataset, data_dir, simple_tokenizer)
+                                 dataset, data_dir, data_dir_full, simple_tokenizer)
     r['num_features'] = X_train.shape[1]
     
     # fit and return model
