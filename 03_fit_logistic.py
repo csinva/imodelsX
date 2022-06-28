@@ -23,13 +23,16 @@ def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
     args.dataset_key_text: str, e.g. "sentence" for sst2
     """
     
+    y_train = dataset['train']['label']
+    y_val = dataset['validation']['label']
+    
     # load embeddings
     if 'bert-base' in checkpoint or 'distilbert' in checkpoint:
         if all_ngrams:
             try:
                 data = pkl.load(open(oj(data_dir, 'data.pkl'), 'rb'))
             except Exception as e:
-                print("\tcouldn't find", data_dir, 'trying', data_dir_full)
+                # print("\tcouldn't find", , 'trying', data_dir_full)
                 data = pkl.load(open(oj(data_dir_full, 'data.pkl'), 'rb'))
 
             X_train = data['X_train']
@@ -38,25 +41,28 @@ def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
             try:
                 reloaded_dataset = load_from_disk(data_dir)
             except Exception as e:
-                print("\tcouldn't find", data_dir, 'trying', data_dir_full)
+                # print("\tcouldn't find", data_dir, 'trying', data_dir_full)
                 try:
                     reloaded_dataset = load_from_disk(data_dir_full)
                 except Exception as e:
-                    print("\tcouldn't find", data_dir_full)
+                    print("\tcouldn't find", data_dir, 'OR', data_dir_full)
                     print(e)
                     exit(1)
                 
             X_train = np.array(reloaded_dataset['train']['embs']).squeeze()
             X_val = np.array(reloaded_dataset['validation']['embs']).squeeze()
+        
             
         if args.subsample > 0:
-            X_train = X_train[:args.subsample]
-
+            rng = np.random.default_rng(args.seed)
+            idxs_subsample = rng.choice(X_train.shape[0], size=args.subsample, replace=False)
+            X_train = X_train[idxs_subsample]
+            y_train = np.array(y_train)[idxs_subsample]
         if norm:
             X_train = (X_train - data['mean']) / data['sigma']
             X_val = (X_val - data['mean']) / data['sigma']
             
-        return X_train, X_val
+        return X_train, X_val, y_train, y_val
     elif 'vectorizer' in checkpoint:
         if checkpoint == 'countvectorizer':
             vectorizer = CountVectorizer(tokenizer=simple_tokenizer, ngram_range=(1, ngrams))
@@ -65,17 +71,17 @@ def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
         # vectorizer.fit(dataset['train']['sentence'])
         X_train = vectorizer.fit_transform(dataset['train'][args.dataset_key_text])
         X_val = vectorizer.transform(dataset['validation'][args.dataset_key_text])
-        return X_train, X_val
+        return X_train, X_val, y_train, y_val
     
-def fit_and_score(X_train, X_val, dataset, r):
+def fit_and_score(X_train, X_val, y_train, y_val, r):
     # model
     m = LogisticRegressionCV()
-    m.fit(X_train, dataset['train']['label'])
+    m.fit(X_train, y_train)
     r['model'] = deepcopy(m)
     
     # performance
-    r['acc_train'] = m.score(X_train, dataset['train']['label'])
-    r['acc_val'] = m.score(X_val, dataset['validation']['label'])
+    r['acc_train'] = m.score(X_train, y_train)
+    r['acc_val'] = m.score(X_val, y_val)
     return r
 
 def get_dir_name(args, full_dset=False):
@@ -98,6 +104,7 @@ if __name__ == '__main__':
     parser.add_argument('--all', type=str, default='', help='whether to use all-ngrams')
     parser.add_argument('--norm', type=str, default='', help='whether to normalize before fitting')
     parser.add_argument('--dataset', type=str, help='which dataset to fit', default='sst2') # sst2, imdb
+    parser.add_argument('--seed', type=int, help='random seed', default=1)
     args = parser.parse_args()
     args.padding = True # 'max_length' # True
     print('\n-------------------------------------\nfit_logistic hyperparams', vars(args))
@@ -118,6 +125,7 @@ if __name__ == '__main__':
         exit(0)
     
     # set up model
+    np.random.seed(args.seed)
     nlp = English()
     simple_tokenizer = nlp.tokenizer # for our word-finding
     if 'vectorizer' in args.checkpoint:
@@ -129,19 +137,19 @@ if __name__ == '__main__':
         
     # get data
     r = vars(args)
-    X_train, X_val = get_dataset(args.checkpoint, args.ngrams, args.all, args.norm,
-                                 dataset, data_dir, data_dir_full, simple_tokenizer)
+    X_train, X_val, y_train, y_val = get_dataset(args.checkpoint, args.ngrams, args.all, args.norm,
+                                                 dataset, data_dir, data_dir_full, simple_tokenizer)
     r['num_features'] = X_train.shape[1]
     
     # fit and return model
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        fit_and_score(X_train, X_val, dataset, r)
+        fit_and_score(X_train, X_val, y_train, y_val, r)
     print('r', r)
     
     
     # save
     os.makedirs(save_dir, exist_ok=True)
     pkl.dump(r, open(oj(save_dir, 'results.pkl'), 'wb'))
-    print('success', r, '\n-------------------------------------\n\n')
+    print('success', save_dir, '\n', r, '\n-------------------------------------\n\n')
     

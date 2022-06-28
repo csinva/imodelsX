@@ -10,6 +10,7 @@ from os.path import join as oj
 from spacy.lang.en import English
 import argparse
 import config
+import torch
 path_to_current_file = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -101,7 +102,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--checkpoint', type=str, help='name of model checkpoint', default='bert-base-uncased')
     parser.add_argument('--ngrams', type=int, help='dimensionality of ngrams', default=1)
-    parser.add_argument('--subsample', type=int, help='whether to only keep only this many training samples', default=-1)
+    parser.add_argument('--subsample', type=int, help='must be -1! subsampling no longer supported', default=-1)
     parser.add_argument('--dataset', type=str, help='which dataset to fit', default='sst2') # sst2, imdb, emotion, rotten_tomatoes
     args = parser.parse_args()
     args.padding = True # 'max_length' # True
@@ -128,7 +129,8 @@ if __name__ == '__main__':
     dataset, args = data.process_data_and_args(args)
         
     # run 
-    embedded_dataset = dataset.map(embed_and_sum_function) #, batched=True)
+    with torch.no_grad():
+        embedded_dataset = dataset.map(embed_and_sum_function) #, batched=True)
     
     # save
     os.makedirs(save_dir, exist_ok=True)

@@ -4,11 +4,10 @@ from slurmpy import Slurm
 # slurm params
 partition = 'jsteinhardt' # yugroup, jsteinhardt
 num_gpus = 1
-s = Slurm("embed_dset", {"partition": partition, "time": "5-0", "gres": f"gpu:{num_gpus}"})
+s = Slurm("embed_dset", {"partition": partition, "time": "6-0", "gres": f"gpu:{num_gpus}"})
 
 # sst 
 # PARAMS = {
-#     'subsample': [-1],
 #     'ngrams': [1, 2, 3, 4, 5, 6, 7, 10],    
 #     'checkpoint': ['textattack/bert-base-uncased-SST-2'], #'bert-base-uncased'
 #     'dataset': ['sst2'],
@@ -16,15 +15,13 @@ s = Slurm("embed_dset", {"partition": partition, "time": "5-0", "gres": f"gpu:{n
 
 # imdb
 PARAMS = {
-    'subsample': [-1], #, 1000, 100],
     'ngrams': [1, 2, 3, 4, 5, 6, 7],
-    'checkpoint': ['textattack/bert-base-uncased-imdb'], #'textattack/bert-base-uncased-SST-2']
+    'checkpoint': ['bert-base-uncased', 'textattack/bert-base-uncased-imdb'],
     'dataset': ['imdb'],
 }
 
 # emotion
 # PARAMS = {
-#     'subsample': [-1], #, 1000, 100],
 #     'ngrams': [1, 2, 3, 4, 5, 6, 7],    
 #     # 'checkpoint': ['textattack/bert-base-uncased-imdb'], #'textattack/bert-base-uncased-SST-2'], #'bert-base-uncased'],
 #     'checkpoint': ["bert-base-uncased", 'nateraw/bert-base-uncased-emotion'],
@@ -33,7 +30,6 @@ PARAMS = {
 
 # rotten_tomatoes
 # PARAMS = {
-#    'subsample': [-1], #, 1000, 100],
 #    'ngrams': [1, 2, 3, 4, 5, 6, 7],    
 #    'checkpoint': ["bert-base-uncased", 'textattack/bert-base-uncased-rotten_tomatoes'],
 #    'dataset': ['rotten_tomatoes'],

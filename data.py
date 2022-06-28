@@ -16,6 +16,6 @@ def process_data_and_args(args):
     elif args.dataset == 'rotten_tomatoes':
         del dataset['test'] # speed things up for now
         args.dataset_key_text = 'text'        
-    if args.subsample > 0:
-        dataset['train'] = dataset['train'].select(range(args.subsample))
+    #if args.subsample > 0:
+    #    dataset['train'] = dataset['train'].select(range(args.subsample))
     return dataset, args
