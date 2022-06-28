@@ -1,7 +1,7 @@
 from transformers import BertModel, DistilBertModel
 from transformers import pipeline
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import datasets
+import data
 import numpy as np
 import pickle as pkl
 import os
@@ -125,23 +125,7 @@ if __name__ == '__main__':
     
     
     # set up data
-    dataset = datasets.load_dataset(args.dataset)
-    if args.dataset == 'sst2':
-        del dataset['test'] # speed things up for now
-        args.dataset_key_text = 'sentence'
-    elif args.dataset == 'imdb':
-        del dataset['unsupervised'] # speed things up for now
-        dataset['validation'] = dataset['test']
-        del dataset['test']
-        args.dataset_key_text = 'text'
-    elif args.dataset == 'emotion':
-        del dataset['test'] # speed things up for now
-        args.dataset_key_text = 'text'
-    elif args.dataset == 'rotten_tomatoes':
-        del dataset['test'] # speed things up for now
-        args.dataset_key_text = 'text'        
-    if args.subsample > 0:
-        dataset['train'] = dataset['train'].select(range(args.subsample))
+    dataset, args = data.process_data_and_args(args)
         
     # run 
     embedded_dataset = dataset.map(embed_and_sum_function) #, batched=True)

@@ -1,4 +1,3 @@
-import datasets
 import numpy as np
 import pickle as pkl
 import os
@@ -11,6 +10,7 @@ from sklearn.linear_model import LogisticRegressionCV
 from collections import defaultdict
 from copy import deepcopy
 import pandas as pd
+import data
 from datasets import load_from_disk
 import config
 import sklearn
@@ -79,14 +79,11 @@ def get_dir_name(args, full_dset=False):
     dir_name = f"ngram={args.ngrams}_" + 'sub=' + str(subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
     if args.all == 'all':
         dir_name += '-all'
-    return dir_fname
+    return dir_name
 
 if __name__ == '__main__':
     
     # hyperparams
-    # models
-    # "bert-base-uncased", 'textattack/bert-base-uncased-SST-2'
-    # distilbert-base-uncased, , "distilbert-base-uncased-finetuned-sst-2-english"
     parser = argparse.ArgumentParser(description='Process some integers.')
     # checkpoint values: countvectorizer, tfidfvectorizer
     parser.add_argument('--checkpoint', type=str, help='name of model checkpoint', default='bert-base-uncased')
@@ -122,17 +119,7 @@ if __name__ == '__main__':
     
     
     # set up data
-    dataset = datasets.load_dataset(args.dataset)
-    if args.dataset == 'sst2':
-        del dataset['test'] # speed things up for now
-        args.dataset_key_text = 'sentence'
-    elif args.dataset == 'imdb':
-        del dataset['unsupervised'] # speed things up for now
-        dataset['validation'] = dataset['test']
-        del dataset['test']
-        args.dataset_key_text = 'text'
-    if args.subsample > 0:
-        dataset['train'] = dataset['train'].select(range(args.subsample))
+    dataset, args = data.process_data_and_args(args)
         
     # get data
     r = vars(args)
