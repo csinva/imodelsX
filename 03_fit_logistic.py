@@ -39,7 +39,13 @@ def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
                 reloaded_dataset = load_from_disk(data_dir)
             except Exception as e:
                 print("\tcouldn't find", data_dir, 'trying', data_dir_full)
-                reloaded_dataset = load_from_disk(data_dir_full)
+                try:
+                    reloaded_dataset = load_from_disk(data_dir_full)
+                except Exception as e:
+                    print("\tcouldn't find", data_dir_full)
+                    print(e)
+                    exit(1)
+                
             X_train = np.array(reloaded_dataset['train']['embs']).squeeze()
             X_val = np.array(reloaded_dataset['validation']['embs']).squeeze()
             
@@ -94,7 +100,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str, help='which dataset to fit', default='sst2') # sst2, imdb
     args = parser.parse_args()
     args.padding = True # 'max_length' # True
-    print('\n\nfit_logistic hyperparams', vars(args), '\n\n')
+    print('\n-------------------------------------\nfit_logistic hyperparams', vars(args))
     
     # check if cached
     dir_name = get_dir_name(args)
@@ -103,7 +109,7 @@ if __name__ == '__main__':
     # note, this is not in the data_dir only in the save
     # must come before adding -norm to the name!
     data_dir = oj(config.data_dir, args.dataset, dir_name)
-    data_dir_full = get_dir_name(args, full_dset=True) # no subsampling
+    data_dir_full = oj(config.data_dir, args.dataset, get_dir_name(args, full_dset=True)) # no subsampling
 #     if args.norm:
 #         dir_name += '-norm' 
     save_dir = oj(config.results_dir, args.dataset, dir_name)
@@ -137,5 +143,5 @@ if __name__ == '__main__':
     # save
     os.makedirs(save_dir, exist_ok=True)
     pkl.dump(r, open(oj(save_dir, 'results.pkl'), 'wb'))
-    print('success', r, '\n-------------------------------------', '\n\n')
+    print('success', r, '\n-------------------------------------\n\n')
     
