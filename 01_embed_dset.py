@@ -93,13 +93,16 @@ if __name__ == '__main__':
     
     # hyperparams
     # models
-    # "bert-base-uncased", 'textattack/bert-base-uncased-SST-2'
+    # 'bert-base-uncased'
     # distilbert-base-uncased, , "distilbert-base-uncased-finetuned-sst-2-english"
+    # sst: 'textattack/bert-base-uncased-SST-2'
+    # imdb: 'textattack/bert-base-uncased-imdb'
+    # emotion: 'nateraw/bert-base-uncased-emotion'
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--checkpoint', type=str, help='name of model checkpoint', default='bert-base-uncased')
     parser.add_argument('--ngrams', type=int, help='dimensionality of ngrams', default=1)
     parser.add_argument('--subsample', type=int, help='whether to only keep only this many training samples', default=-1)
-    parser.add_argument('--dataset', type=str, help='which dataset to fit', default='sst2') # sst2, imdb
+    parser.add_argument('--dataset', type=str, help='which dataset to fit', default='sst2') # sst2, imdb, emotion
     args = parser.parse_args()
     args.padding = True # 'max_length' # True
     print('\n\nembed_dset hyperparams', vars(args), '\n\n')
@@ -130,6 +133,9 @@ if __name__ == '__main__':
         del dataset['unsupervised'] # speed things up for now
         dataset['validation'] = dataset['test']
         del dataset['test']
+        args.dataset_key_text = 'text'
+    elif args.dataset == 'emotion':
+        del dataset['test'] # speed things up for now
         args.dataset_key_text = 'text'
     if args.subsample > 0:
         dataset['train'] = dataset['train'].select(range(args.subsample))
