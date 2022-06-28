@@ -102,7 +102,7 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint', type=str, help='name of model checkpoint', default='bert-base-uncased')
     parser.add_argument('--ngrams', type=int, help='dimensionality of ngrams', default=1)
     parser.add_argument('--subsample', type=int, help='whether to only keep only this many training samples', default=-1)
-    parser.add_argument('--dataset', type=str, help='which dataset to fit', default='sst2') # sst2, imdb, emotion
+    parser.add_argument('--dataset', type=str, help='which dataset to fit', default='sst2') # sst2, imdb, emotion, rotten_tomatoes
     args = parser.parse_args()
     args.padding = True # 'max_length' # True
     print('\n\nembed_dset hyperparams', vars(args), '\n\n')
@@ -137,6 +137,9 @@ if __name__ == '__main__':
     elif args.dataset == 'emotion':
         del dataset['test'] # speed things up for now
         args.dataset_key_text = 'text'
+    elif args.dataset == 'rotten_tomatoes':
+        del dataset['test'] # speed things up for now
+        args.dataset_key_text = 'text'        
     if args.subsample > 0:
         dataset['train'] = dataset['train'].select(range(args.subsample))
         

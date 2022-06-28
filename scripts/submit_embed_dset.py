@@ -24,12 +24,20 @@ s = Slurm("embed_dset", {"partition": partition, "time": "4-0", "gres": f"gpu:{n
 # }
 
 # emotion
+# PARAMS = {
+#     'subsample': [-1], #, 1000, 100],
+#     'ngrams': [1, 2, 3, 4, 5, 6, 7],    
+#     # 'checkpoint': ['textattack/bert-base-uncased-imdb'], #'textattack/bert-base-uncased-SST-2'], #'bert-base-uncased'],
+#     'checkpoint': ["bert-base-uncased", 'nateraw/bert-base-uncased-emotion'],
+#     'dataset': ['emotion'],
+# }
+
+# rotten_tomatoes
 PARAMS = {
     'subsample': [-1], #, 1000, 100],
     'ngrams': [1, 2, 3, 4, 5, 6, 7],    
-    # 'checkpoint': ['textattack/bert-base-uncased-imdb'], #'textattack/bert-base-uncased-SST-2'], #'bert-base-uncased'],
-    'checkpoint': ["bert-base-uncased", 'nateraw/bert-base-uncased-emotion'],
-    'dataset': ['emotion'],
+    'checkpoint': ["bert-base-uncased", 'textattack/bert-base-uncased-rotten_tomatoes'],
+    'dataset': ['rotten_tomatoes'],
 }
 
 ks = PARAMS.keys()
