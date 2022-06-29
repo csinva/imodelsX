@@ -117,8 +117,8 @@ if __name__ == '__main__':
     # must come before adding -norm to the name!
     data_dir = oj(config.data_dir, args.dataset, dir_name)
     data_dir_full = oj(config.data_dir, args.dataset, get_dir_name(args, full_dset=True)) # no subsampling
-#     if args.norm:
-#         dir_name += '-norm' 
+    if args.norm:
+        dir_name += '-norm' 
     save_dir = oj(config.results_dir, args.dataset, dir_name)
     if os.path.exists(save_dir):
         print('aready ran', save_dir)
