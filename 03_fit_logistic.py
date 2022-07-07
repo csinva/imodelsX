@@ -27,7 +27,7 @@ def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
     y_val = dataset['validation']['label']
     
     # load embeddings
-    if 'bert-base' in checkpoint or 'distilbert' in checkpoint:
+    if 'bert-base' in checkpoint or 'distilbert' in checkpoint or 'BERT' in checkpoint:
         if all_ngrams:
             try:
                 data = pkl.load(open(oj(data_dir, 'data.pkl'), 'rb'))
@@ -64,10 +64,14 @@ def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
             
         return X_train, X_val, y_train, y_val
     elif 'vectorizer' in checkpoint:
+        if all_ngrams:
+            lower_ngram = 1
+        else:
+            lower_ngram = ngrams
         if checkpoint == 'countvectorizer':
-            vectorizer = CountVectorizer(tokenizer=simple_tokenizer, ngram_range=(1, ngrams))
+            vectorizer = CountVectorizer(tokenizer=simple_tokenizer, ngram_range=(lower_ngram, ngrams))
         elif checkpoint == 'tfidfvectorizer':
-            vectorizer = TfidfVectorizer(tokenizer=simple_tokenizer, ngram_range=(1, ngrams))
+            vectorizer = TfidfVectorizer(tokenizer=simple_tokenizer, ngram_range=(lower_ngram, ngrams))
         # vectorizer.fit(dataset['train']['sentence'])
         X_train = vectorizer.fit_transform(dataset['train'][args.dataset_key_text])
         X_val = vectorizer.transform(dataset['validation'][args.dataset_key_text])

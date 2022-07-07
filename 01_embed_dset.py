@@ -121,7 +121,7 @@ if __name__ == '__main__':
     tokenizer = AutoTokenizer.from_pretrained(args.checkpoint) # for actually passing things to the model
     if 'distilbert' in args.checkpoint:
         model = DistilBertModel.from_pretrained(args.checkpoint)
-    elif 'bert-base' in args.checkpoint:
+    elif 'bert-base' in args.checkpoint or 'BERT' in args.checkpoint:
         model = BertModel.from_pretrained(args.checkpoint)
     
     

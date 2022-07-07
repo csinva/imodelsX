@@ -13,14 +13,16 @@ PARAMS = {
     'dataset': [
 #         'sst2',
 #         'emotion',
-        'rotten_tomatoes',
-#         'imdb',
+#         'imdb', # really big        
+        'tweet_eval',
+#         'rotten_tomatoes',
     ],    
     'checkpoint': ['countvectorizer', 'tfidfvectorizer', 'bert-base-uncased',
 #         'textattack/bert-base-uncased-SST-2',
 #         'nateraw/bert-base-uncased-emotion',
-        'textattack/bert-base-uncased-rotten_tomatoes',
 #         'textattack/bert-base-uncased-imdb',
+           'philschmid/BERT-tweet-eval-emotion'
+#         'textattack/bert-base-uncased-rotten_tomatoes',         
     ],
     'all': ['all'],
 }
