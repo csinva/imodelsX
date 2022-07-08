@@ -2,9 +2,9 @@ import itertools
 from slurmpy import Slurm
 
 # slurm params
-partition = 'yugroup' # yugroup, jsteinhardt
+partition = 'jsteinhardt' # yugroup, jsteinhardt
 num_gpus = 1
-s = Slurm("embed_dset", {"partition": partition, "time": "3-0", "gres": f"gpu:{num_gpus}"})
+s = Slurm("embed_dset", {"partition": partition, "time": "6-0", "gres": f"gpu:{num_gpus}"})
 
 # sst 2
 # PARAMS = {
@@ -29,19 +29,19 @@ s = Slurm("embed_dset", {"partition": partition, "time": "3-0", "gres": f"gpu:{n
 #}
 
 # tweet_eval
-PARAMS = {
-    'ngrams': [1, 2, 3, 4, 5, 6, 7],
-    'checkpoint': ['philschmid/BERT-tweet-eval-emotion', 'bert-base-uncased'],
-    'dataset': ['tweet_eval'],
-}
+# PARAMS = {
+#     'ngrams': [1, 2, 3, 4, 5, 6, 7],
+#     'checkpoint': ['philschmid/BERT-tweet-eval-emotion', 'bert-base-uncased'],
+#     'dataset': ['tweet_eval'],
+# }
 
 
 # # imdb
-# PARAMS = {
-#     'ngrams': [1, 2, 3, 4, 5, 6, 7],
-#     'checkpoint': ['bert-base-uncased', 'textattack/bert-base-uncased-imdb'],
-#     'dataset': ['imdb'],
-# }
+PARAMS = {
+    'ngrams': [1, 2, 3, 4, 5, 6, 7],
+    'checkpoint': ['textattack/bert-base-uncased-imdb'], # 'bert-base-uncased', 
+    'dataset': ['imdb'],
+}
 
 ks = PARAMS.keys()
 vals = [PARAMS[k] for k in ks]

@@ -9,20 +9,20 @@ s = Slurm("fit_logistic", {"partition": partition, "time": "1-0"})
 # set param combos
 PARAMS = {
     'subsample': [100, 1000, -1],
-    'ngrams': [2, 3, 4, 5, 6, 7],    
+    'ngrams': [1, 2, 3, 4, 5, 6, 7],    
     'dataset': [
 #         'sst2',
 #         'emotion',
-#         'imdb', # really big        
-        'tweet_eval',
-#         'rotten_tomatoes',
+#         'tweet_eval',
+        'rotten_tomatoes',
+#         'imdb', # really big                
     ],    
     'checkpoint': ['countvectorizer', 'tfidfvectorizer', 'bert-base-uncased',
 #         'textattack/bert-base-uncased-SST-2',
 #         'nateraw/bert-base-uncased-emotion',
-#         'textattack/bert-base-uncased-imdb',
-           'philschmid/BERT-tweet-eval-emotion'
-#         'textattack/bert-base-uncased-rotten_tomatoes',         
+#            'philschmid/BERT-tweet-eval-emotion'
+        'textattack/bert-base-uncased-rotten_tomatoes',         
+#         'textattack/bert-base-uncased-imdb',                   
     ],
     'all': ['all'],
 }

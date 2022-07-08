@@ -72,3 +72,27 @@ def load_fitted_results(fname_filters=['all'], dset_filters=[], drop_model=True)
         rs.append(r)
     rs = pd.concat(rs)
     return rs
+
+
+DSETS_RENAME_DICT = {
+    'emotion': 'Emotion',
+    'sst2': 'SST2',
+    'tweet_eval': 'Tweet (Hate)',
+    'rotten_tomatoes': 'Rotten tomatoes'
+}
+
+COLUMNS_RENAME_DICT = {
+    'n_train': 'Samples (train)',
+    'n_val': 'Samples (val)',
+    'n_tokens': 'Unigrams',
+    'n_bigrams': 'Bigrams',
+    'n_trigrams': 'Trigrams',            
+    'num_classes': 'Classes',
+    'imbalance': 'Majority class fraction',
+    
+    # models
+    'bert-base-uncased': 'BERT',
+    'countvectorizer': 'Bag of ngrams',
+    'bert-finetuned': 'BERT finetuned',
+    'tfidfvectorizer': 'TF-IDF',
+}
