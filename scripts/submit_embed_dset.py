@@ -2,9 +2,9 @@ import itertools
 from slurmpy import Slurm
 
 # slurm params
-partition = 'jsteinhardt' # yugroup, jsteinhardt
+partition = 'yugroup' # yugroup, jsteinhardt
 num_gpus = 1
-s = Slurm("embed_dset", {"partition": partition, "time": "6-0", "gres": f"gpu:{num_gpus}"})
+s = Slurm("embed_dset", {"partition": partition, "time": "4-0", "gres": f"gpu:{num_gpus}"})
 
 # sst 2
 # PARAMS = {
@@ -35,13 +35,19 @@ s = Slurm("embed_dset", {"partition": partition, "time": "6-0", "gres": f"gpu:{n
 #     'dataset': ['tweet_eval'],
 # }
 
-
-# # imdb
+# financial_phrasebank
 PARAMS = {
     'ngrams': [1, 2, 3, 4, 5, 6, 7],
-    'checkpoint': ['textattack/bert-base-uncased-imdb'], # 'bert-base-uncased', 
-    'dataset': ['imdb'],
+    'checkpoint': ['ahmedrachid/FinancialBERT-Sentiment-Analysis', 'bert-base-uncased'],
+    'dataset': ['financial_phrasebank'],
 }
+
+# # imdb
+# PARAMS = {
+#     'ngrams': [1, 2, 3, 4, 5, 6, 7],
+#     'checkpoint': ['textattack/bert-base-uncased-imdb'], # 'bert-base-uncased', 
+#     'dataset': ['imdb'],
+# }
 
 ks = PARAMS.keys()
 vals = [PARAMS[k] for k in ks]
