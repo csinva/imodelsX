@@ -14,15 +14,17 @@ PARAMS = {
 #         'sst2',
 #         'emotion',
 #         'tweet_eval',
-        'rotten_tomatoes',
-#         'imdb', # really big                
+        # 'rotten_tomatoes',             
+        'financial_phrasebank',
+        # 'imdb', # too big           
     ],    
     'checkpoint': ['countvectorizer', 'tfidfvectorizer', 'bert-base-uncased',
 #         'textattack/bert-base-uncased-SST-2',
 #         'nateraw/bert-base-uncased-emotion',
 #            'philschmid/BERT-tweet-eval-emotion'
-        'textattack/bert-base-uncased-rotten_tomatoes',         
-#         'textattack/bert-base-uncased-imdb',                   
+        # 'textattack/bert-base-uncased-rotten_tomatoes',         
+        'ahmedrachid/FinancialBERT-Sentiment-Analysis',
+        # 'textattack/bert-base-uncased-imdb',                                      
     ],
     'all': ['all'],
 }

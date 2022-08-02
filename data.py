@@ -51,10 +51,12 @@ def load_fitted_results(fname_filters=['all'], dset_filters=[], drop_model=True)
     """filters must be included in fname to be included.
     Empty list of filters will return everything
     """
-    dsets = os.listdir(config.results_dir)
+    dsets = [d for d in sorted(os.listdir(config.results_dir))
+             if not d.endswith('.pkl')]
     for dset_filter in dset_filters:
         dsets = [d for d in dsets if dset_filter in d]
     rs = []
+    print('dsets', dsets)
     for dset in dsets:
         # depending on how much is saved, this may take a while
         results_dir = oj(config.results_dir, dset)
@@ -89,7 +91,8 @@ DSETS_RENAME_DICT = {
     'emotion': 'Emotion',
     'sst2': 'SST2',
     'tweet_eval': 'Tweet (Hate)',
-    'rotten_tomatoes': 'Rotten tomatoes'
+    'rotten_tomatoes': 'Rotten tomatoes',
+    'financial_phrasebank': 'Financial phrasebank',
 }
 
 COLUMNS_RENAME_DICT = {
