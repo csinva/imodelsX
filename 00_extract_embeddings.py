@@ -74,7 +74,11 @@ def embed_and_sum_function(example):
     tokens = tokenizer(seqs, padding=args.padding, truncation=True, return_tensors="pt")
     # print('tokens', tokens['input_ids'].shape, tokens['input_ids'])
     output = model(**tokens) # has two keys, 'last_hidden_state', 'pooler_output'
-    embs = output['pooler_output'].cpu().detach().numpy()
+    if args.layer == 'pooler_output':
+        embs = output['pooler_output'].cpu().detach().numpy()
+    elif args.layer == 'last_hidden_state_mean':
+        embs = output['last_hidden_state'].cpu().detach().numpy()
+        embs = embs.mean(axis=1)
     # print('embs', embs.shape)
     
     # sum over the embeddings
@@ -88,20 +92,29 @@ def embed_and_sum_function(example):
 def get_dir_name(args, ngrams=None):
     if not ngrams:
         ngrams = args.ngrams
-    return f"ngram={ngrams}_" + 'sub=' + str(args.subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
+    dir_name = f"ngram={ngrams}_" + 'sub=' + str(args.subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
+    if not args.layer == 'pooler_output':
+        dir_name += '__' + args.layer
+    return dir_name
 
 if __name__ == '__main__':
     
     # hyperparams
-    # python 00_extract_embeddings -- dataset sst2 --checkpoint textattack/bert-base-uncased-SST-2
+    # python 00_extract_embeddings.py --dataset sst2 --checkpoint textattack/bert-base-uncased-SST-2
+    # python 00_extract_embeddings.py --dataset sst2 --checkpoint distilbert-base-uncased --layer last_hidden_state_mean
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--checkpoint', type=str, help='name of model checkpoint', default='bert-base-uncased')
     parser.add_argument('--ngrams', type=int, help='dimensionality of ngrams', default=1)
     parser.add_argument('--subsample', type=int, help='must be -1! subsampling no longer supported', default=-1)
     parser.add_argument('--dataset', type=str, help='which dataset to fit', default='sst2') # sst2, imdb, emotion, rotten_tomatoes
+    parser.add_argument('--layer', type=str, help='which layer of the model to extract', default='pooler_output') # last_hidden_state_mean
     args = parser.parse_args()
     args.padding = True # 'max_length' # True
-    print('\n\nembed_dset hyperparams', vars(args), '\n\n')
+    print('\n\nextract_embeddings hyperparams', vars(args), '\n\n')
+    
+    # checking
+    if 'distilbert' in args.checkpoint.lower() and not args.layer.startswith('last_hidden'):
+        raise ValueError('distilbert only has last_hidden output!!!')
     
     # check if cached
     dir_name = get_dir_name(args)
@@ -113,10 +126,10 @@ if __name__ == '__main__':
     # set up model
     nlp = English()
     simple_tokenizer = nlp.tokenizer # for our word-finding
-    tokenizer = AutoTokenizer.from_pretrained(args.checkpoint) # for actually passing things to the model
-    if 'distilbert' in args.checkpoint:
+    tokenizer = AutoTokenizer.from_pretrained(args.checkpoint) # tokenizing for the transformer
+    if 'distilbert' in args.checkpoint.lower():
         model = DistilBertModel.from_pretrained(args.checkpoint)
-    elif 'bert-base' in args.checkpoint or 'BERT' in args.checkpoint:
+    elif 'bert-base' in args.checkpoint.lower() or 'BERT' in args.checkpoint:
         model = BertModel.from_pretrained(args.checkpoint)
     
     
