@@ -140,11 +140,11 @@ if __name__ == '__main__':
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         fit_and_score(X_train, X_val, y_train, y_val, r)
-    print('r', r)
+    # print('r', r)
     
     
     # save
     os.makedirs(save_dir, exist_ok=True)
     pkl.dump(r, open(oj(save_dir, 'results.pkl'), 'wb'))
-    print('success', save_dir, '\n', r, '\n-------------------------------------\n\n')
+    print(save_dir, '\n', r, '\n-------------------SUCCESS------------------------\n\n')
     

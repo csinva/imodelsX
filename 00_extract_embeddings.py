@@ -142,3 +142,5 @@ if __name__ == '__main__':
         embs = np.array(dataset[k]['embs']).squeeze()
         pkl.dump(embs, open(oj(save_dir, 'embs_' + k + '.pkl'), 'wb'))
     """
+    
+    print(save_dir, '\n', '\n-------------------SUCCESS------------------------\n\n')

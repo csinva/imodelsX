@@ -80,6 +80,7 @@ def load_fitted_results(fname_filters=['all'], dset_filters=[], drop_model=True)
         r = pd.concat(results_list, axis=1).T.infer_objects() #.drop(columns='model')
         r['all'] = r['all'].replace('True', 'all')
         r['seed'] = r['seed'].fillna(1)    
+        r['layer'] = r['layer'].fillna('pooler_output')
         r = r.fillna('')
         r['dataset'] = dset
         rs.append(r)
@@ -122,8 +123,13 @@ COLUMNS_RENAME_DICT = {
     'imbalance': 'Majority class fraction',
     
     # models
-    'bert-base-uncased': 'BERT',
     'countvectorizer': 'Bag of ngrams',
-    'bert-finetuned': 'BERT finetuned',
-    'tfidfvectorizer': 'TF-IDF',
+    'tfidfvectorizer': 'TF-IDF',    
+    'bert-finetuned': 'Emb-grams (BERT finetuned)',
+    'bert-base-uncased': 'Emb-grams (BERT)',
+    'distilbert-finetuned': 'Emb-grams (DistilBERT finetuned)',  
+    'distilbert-base-uncased': 'Emb-grams (DistilBERT)',
+    'bert-base-uncased___last_hidden_state_mean': 'Emb-grams (BERT final layer)',
+    'bert-finetuned___last_hidden_state_mean': 'Emb-grams (BERT finetuned final layer)',
+
 }
