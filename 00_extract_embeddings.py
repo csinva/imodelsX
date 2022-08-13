@@ -89,13 +89,7 @@ def embed_and_sum_function(example):
     
     return {'embs': embs, 'seq_len': len(seqs)}
 
-def get_dir_name(args, ngrams=None):
-    if not ngrams:
-        ngrams = args.ngrams
-    dir_name = f"ngram={ngrams}_" + 'sub=' + str(args.subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
-    if not args.layer == 'pooler_output':
-        dir_name += '__' + args.layer
-    return dir_name
+
 
 if __name__ == '__main__':
     
@@ -117,7 +111,7 @@ if __name__ == '__main__':
         raise ValueError('distilbert only has last_hidden output!!!')
     
     # check if cached
-    dir_name = get_dir_name(args)
+    dir_name = data.get_dir_name(args)
     save_dir = oj(config.data_dir, args.dataset, dir_name)
     if os.path.exists(save_dir):
         print('aready ran', save_dir)

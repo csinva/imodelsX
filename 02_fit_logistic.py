@@ -88,14 +88,6 @@ def fit_and_score(X_train, X_val, y_train, y_val, r):
     r['acc_val'] = m.score(X_val, y_val)
     return r
 
-def get_dir_name(args, full_dset=False):
-    subsample = args.subsample
-    if full_dset:
-        subsample = -1
-    dir_name = f"ngram={args.ngrams}_" + 'sub=' + str(subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
-    if args.all == 'all':
-        dir_name += '-all'
-    return dir_name
 
 if __name__ == '__main__':
     
@@ -109,18 +101,17 @@ if __name__ == '__main__':
     parser.add_argument('--norm', type=str, default='', help='whether to normalize before fitting')
     parser.add_argument('--dataset', type=str, help='which dataset to fit', default='sst2') # sst2, imdb
     parser.add_argument('--seed', type=int, help='random seed', default=1)
+    parser.add_argument('--layer', type=str, help='which layer of the model to extract', default='pooler_output') # last_hidden_state_mean
     args = parser.parse_args()
     args.padding = True # 'max_length' # True
     print('\n-------------------------------------\nfit_logistic hyperparams', vars(args))
     
     # check if cached
-    dir_name = get_dir_name(args)
-    if args.all == 'all':
-        dir_name += '-all'
+    dir_name = data.get_dir_name(args)
     # note, this is not in the data_dir only in the save
     # must come before adding -norm to the name!
     data_dir = oj(config.data_dir, args.dataset, dir_name)
-    data_dir_full = oj(config.data_dir, args.dataset, get_dir_name(args, full_dset=True)) # no subsampling
+    data_dir_full = oj(config.data_dir, args.dataset, data.get_dir_name(args, full_dset=True)) # no subsampling
     if args.norm:
         dir_name += '-norm' 
     save_dir = oj(config.results_dir, args.dataset, dir_name)

@@ -86,6 +86,23 @@ def load_fitted_results(fname_filters=['all'], dset_filters=[], drop_model=True)
     rs = pd.concat(rs)
     return rs
 
+def get_dir_name(args, full_dset=False, ngrams=None):
+    
+    # handle arguments
+    subsample = args.subsample
+    if full_dset:
+        subsample = -1
+    if not ngrams:
+        ngrams = args.ngrams        
+        
+    # create dir_name
+    dir_name = f"ngram={ngrams}_" + 'sub=' + str(subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
+    if not args.layer == 'pooler_output':
+        dir_name += '__' + args.layer
+    if args.all == 'all':
+        dir_name += '-all'
+    return dir_name
+
 
 DSETS_RENAME_DICT = {
     'emotion': 'Emotion',
