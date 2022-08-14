@@ -2,7 +2,7 @@ import itertools
 from slurmpy import Slurm
 
 # slurm params
-partition = 'yugroup' # yugroup, jsteinhardt
+partition = 'jsteinhardt' # yugroup, jsteinhardt
 num_gpus = 1
 s = Slurm("embed_dset", {"partition": partition, "time": "4-0", "gres": f"gpu:{num_gpus}"})
 
@@ -16,28 +16,28 @@ PARAMS_LIST = [
 {
     'dataset': ['sst2'],    
     # 'checkpoint': ['textattack/bert-base-uncased-SST-2', 'bert-base-uncased'], #
-    'checkpoint': ['distilbert-base-uncased-finetuned-sst-2-english', 'distilbert-base-uncased'], #    
+    'checkpoint': ['distilbert-base-uncased-finetuned-sst-2-english'], #, 'distilbert-base-uncased'], #    
 },
-{
-    'dataset': ['emotion'],
-    # 'checkpoint': ["bert-base-uncased", 'nateraw/bert-base-uncased-emotion'],
-    'checkpoint': ['aatmasidha/distilbert-base-uncased-finetuned-emotion', 'distilbert-base-uncased'], #        
-},
-{
-   'dataset': ['rotten_tomatoes'],
-   # 'checkpoint': ["bert-base-uncased", 'textattack/bert-base-uncased-rotten_tomatoes'],
-    'checkpoint': ['textattack/distilbert-base-uncased-rotten-tomatoes', 'distilbert-base-uncased'], #        
-},
+# {
+#     'dataset': ['emotion'],
+#     # 'checkpoint': ["bert-base-uncased", 'nateraw/bert-base-uncased-emotion'],
+#     'checkpoint': ['aatmasidha/distilbert-base-uncased-finetuned-emotion', 'distilbert-base-uncased'], #        
+# },
+# {
+#    'dataset': ['rotten_tomatoes'],
+#    # 'checkpoint': ["bert-base-uncased", 'textattack/bert-base-uncased-rotten_tomatoes'],
+#     'checkpoint': ['textattack/distilbert-base-uncased-rotten-tomatoes', 'distilbert-base-uncased'], #        
+# },
 {
     'dataset': ['tweet_eval'],
     # 'checkpoint': ['philschmid/BERT-tweet-eval-emotion', 'bert-base-uncased'],
-    'checkpoint': ['philschmid/DistilBERT-tweet-eval-emotion', 'distilbert-base-uncased'], #        
+    'checkpoint': ['philschmid/DistilBERT-tweet-eval-emotion'], #, 'distilbert-base-uncased'], #        
 },
-{
-    'dataset': ['financial_phrasebank'],
-    # 'checkpoint': ['ahmedrachid/FinancialBERT-Sentiment-Analysis', 'bert-base-uncased'],
-    'checkpoint': ['yseop/distilbert-base-financial-relation-extraction', 'distilbert-base-uncased'], #  note this match isn't perfect
-},
+# {
+#     'dataset': ['financial_phrasebank'],
+#     # 'checkpoint': ['ahmedrachid/FinancialBERT-Sentiment-Analysis', 'bert-base-uncased'],
+#     'checkpoint': ['yseop/distilbert-base-financial-relation-extraction', 'distilbert-base-uncased'], #  note this match isn't perfect
+# },
 ]
 
 for PARAMS in PARAMS_LIST:

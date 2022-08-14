@@ -114,7 +114,7 @@ if __name__ == '__main__':
     dir_name = data.get_dir_name(args)
     save_dir = oj(config.data_dir, args.dataset, dir_name)
     if os.path.exists(save_dir):
-        print('aready ran', save_dir)
+        print('aready ran', save_dir, '\n-------------------SUCCESS------------------------\n\n')
         exit(0)
     
     # set up model
