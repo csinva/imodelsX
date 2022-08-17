@@ -100,6 +100,8 @@ def get_dir_name(args, full_dset=False, ngrams=None):
     dir_name = f"ngram={ngrams}_" + 'sub=' + str(subsample) + '_' + args.checkpoint.replace('/', '-') # + "_" + padding
     if not args.layer == 'pooler_output':
         dir_name += '__' + args.layer
+    if args.parsing:
+        dir_name += '__' + args.parsing
     if hasattr(args, 'all') and args.all == 'all':
         dir_name += '-all'
     return dir_name

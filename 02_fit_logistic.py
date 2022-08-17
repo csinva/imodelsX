@@ -102,6 +102,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str, help='which dataset to fit', default='sst2') # sst2, imdb
     parser.add_argument('--seed', type=int, help='random seed', default=1)
     parser.add_argument('--layer', type=str, help='which layer of the model to extract', default='pooler_output') # last_hidden_state_mean
+    parser.add_argument('--parsing', type=str, help='extra logic for parsing', default='') # noun_chunks
     args = parser.parse_args()
     args.padding = True # 'max_length' # True
     print('\n-------------------------------------\nfit_logistic hyperparams', vars(args))

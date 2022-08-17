@@ -11,3 +11,7 @@ Probably later want to switch to "bert-base-uncased", ""distilbert-base-uncased-
 - could include positional information...
 
 - GAM version of this - train a different net for single-word embedding, multi-word, etc....
+
+
+# requirements
+- spacy also requires `python -m spacy download en_core_web_sm` for parsing

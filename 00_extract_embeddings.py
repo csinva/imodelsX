@@ -8,6 +8,7 @@ import os
 import os.path
 from os.path import join as oj
 from spacy.lang.en import English
+import spacy
 import argparse
 import config
 import torch
@@ -22,29 +23,40 @@ def generate_ngrams_list(sentence, all_ngrams=False):
     args.ngrams: int
     all_ngrams: bool
         whether to include all n-grams up to n or just n
+    args.parsing: str, ""
     """
     
-    # unigrams_list = sentence.split(' ')
-    if args.ngrams == 1:
-        return [str(x) for x in simple_tokenizer(sentence)]
-    
     seqs = []
-    unigrams_list = [x for x in simple_tokenizer(sentence)]
-    if all_ngrams:
-        ngram_lengths = range(1, args.ngrams + 1)
-#         seqs = [str(x) for x in simple_tokenizer(sentence)] # precompute length 1
+    
+    # unigrams
+    if args.ngrams == 1:
+        seqs += [str(x) for x in simple_tokenizer(sentence)]
+    
+    # all ngrams in loop
     else:
-        ngram_lengths = range(args.ngrams, args.ngrams + 1)
-        
-        
-    for ngram_length in ngram_lengths:
-        for idx_starting in range(0, len(unigrams_list) + 1 - ngram_length):
-            idx_ending = idx_starting + ngram_length
-            seq = ''.join([t.text + t.whitespace_
-                                 for t in unigrams_list[idx_starting: idx_ending]]).strip() # convert the tokens back to text
-            if len(seq) > 0 and not seq.isspace(): # str is not just whitespace
-                seqs.append(seq)
-    # print('seqs', seqs)
+        unigrams_list = [x for x in simple_tokenizer(sentence)]
+        if all_ngrams:
+            ngram_lengths = range(1, args.ngrams + 1)
+    #         seqs = [str(x) for x in simple_tokenizer(sentence)] # precompute length 1
+        else:
+            ngram_lengths = range(args.ngrams, args.ngrams + 1)
+
+
+        for ngram_length in ngram_lengths:
+            for idx_starting in range(0, len(unigrams_list) + 1 - ngram_length):
+                idx_ending = idx_starting + ngram_length
+                seq = ''.join([t.text + t.whitespace_
+                                     for t in unigrams_list[idx_starting: idx_ending]]).strip() # convert the tokens back to text
+                if len(seq) > 0 and not seq.isspace(): # str is not just whitespace
+                    seqs.append(seq)
+    
+    # add noun_chunks which at least have a space in them
+    if args.parsing == 'noun_chunks':
+        doc = nlp_chunks(sentence)
+        seqs += [
+            chunk.text for chunk in doc.noun_chunks
+            if ' ' in chunk.text
+        ]
     return seqs
 
 def embed_and_sum_function(example):
@@ -96,12 +108,14 @@ if __name__ == '__main__':
     # hyperparams
     # python 00_extract_embeddings.py --dataset sst2 --checkpoint textattack/bert-base-uncased-SST-2
     # python 00_extract_embeddings.py --dataset sst2 --checkpoint distilbert-base-uncased --layer last_hidden_state_mean
+    # python 00_extract_embeddings.py --dataset sst2 --layer last_hidden_state_mean --parsing noun_chunks
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--checkpoint', type=str, help='name of model checkpoint', default='bert-base-uncased')
     parser.add_argument('--ngrams', type=int, help='dimensionality of ngrams', default=1)
     parser.add_argument('--subsample', type=int, help='must be -1! subsampling no longer supported', default=-1)
     parser.add_argument('--dataset', type=str, help='which dataset to fit', default='sst2') # sst2, imdb, emotion, rotten_tomatoes
     parser.add_argument('--layer', type=str, help='which layer of the model to extract', default='pooler_output') # last_hidden_state_mean
+    parser.add_argument('--parsing', type=str, help='extra logic for parsing', default='') # noun_chunks
     args = parser.parse_args()
     args.padding = True # 'max_length' # True
     print('\n\nextract_embeddings hyperparams', vars(args), '\n\n')
@@ -121,6 +135,8 @@ if __name__ == '__main__':
     nlp = English()
     simple_tokenizer = nlp.tokenizer # for our word-finding
     tokenizer = AutoTokenizer.from_pretrained(args.checkpoint) # tokenizing for the transformer
+    if args.parsing == 'noun_chunks': # for finding noun chunks
+        nlp_chunks = spacy.load("en_core_web_sm")
     if 'distilbert' in args.checkpoint.lower():
         model = DistilBertModel.from_pretrained(args.checkpoint)
     elif 'bert-base' in args.checkpoint.lower() or 'BERT' in args.checkpoint:

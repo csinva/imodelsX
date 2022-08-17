@@ -6,11 +6,12 @@ partition = 'jsteinhardt' # yugroup, jsteinhardt
 num_gpus = 1
 s = Slurm("embed_dset", {"partition": partition, "time": "4-0", "gres": f"gpu:{num_gpus}"})
 
-
-GLOBAL_PARAMS = {
-    'ngrams': [1, 2, 3, 4, 5, 6, 7],    
-    'layer': ['last_hidden_state_mean'], # 'pooler_output'
-}
+"""
+# main setting
+# GLOBAL_PARAMS = {
+#     'ngrams': [1, 2, 3, 4, 5, 6, 7],    
+#     'layer': ['last_hidden_state_mean'], # 'pooler_output'
+# }
 
 PARAMS_LIST = [
 {
@@ -38,6 +39,37 @@ PARAMS_LIST = [
 #     # 'checkpoint': ['ahmedrachid/FinancialBERT-Sentiment-Analysis', 'bert-base-uncased'],
 #     'checkpoint': ['yseop/distilbert-base-financial-relation-extraction', 'distilbert-base-uncased'], #  note this match isn't perfect
 # },
+]
+"""
+
+# noun_chunks
+GLOBAL_PARAMS = {
+    'ngrams': [1, 2],    
+    'layer': ['last_hidden_state_mean'],
+    'parsing': ['noun_chunks'],
+}
+
+PARAMS_LIST = [
+{
+    'dataset': ['sst2'],    
+    'checkpoint': ['textattack/bert-base-uncased-SST-2'],
+},
+{
+    'dataset': ['emotion'],
+    'checkpoint': ['nateraw/bert-base-uncased-emotion'],
+},
+{
+   'dataset': ['rotten_tomatoes'],
+   'checkpoint': ['textattack/bert-base-uncased-rotten_tomatoes'],
+},
+{
+    'dataset': ['tweet_eval'],
+    'checkpoint': ['philschmid/BERT-tweet-eval-emotion'],       
+},
+{
+    'dataset': ['financial_phrasebank'],
+    'checkpoint': ['ahmedrachid/FinancialBERT-Sentiment-Analysis'],
+},
 ]
 
 for PARAMS in PARAMS_LIST:
