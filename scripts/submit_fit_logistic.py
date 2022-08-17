@@ -5,55 +5,92 @@ from slurmpy import Slurm
 partition = 'high'
 s = Slurm("fit_logistic", {"partition": partition, "time": "1-0"})
 
-
-# set param combos
-PARAMS = {
-    'subsample': [100, 1000, -1],
+GLOBAL_PARAMS = {
+    'subsample': [-1, 100, 1000], # 100, 1000
     'ngrams': [1, 2, 3, 4, 5, 6, 7],    
-    'dataset': [
-        # 'emotion',
-        'tweet_eval',
-        # 'rotten_tomatoes',             
-        # 'financial_phrasebank',
-        # 'sst2',        
-    ],    
-    'checkpoint': [
-        # 'countvectorizer',
-        # 'tfidfvectorizer',
-        # 'bert-base-uncased',
-        # 'distilbert-base-uncased',
-
-       # distilbert finetuned
-       # 'aatmasidha/distilbert-base-uncased-finetuned-emotion',      
-        'philschmid/DistilBERT-tweet-eval-emotion',                   
-        # 'textattack/distilbert-base-uncased-rotten-tomatoes',           
-        # 'yseop/distilbert-base-financial-relation-extraction',           
-       # 'distilbert-base-uncased-finetuned-sst-2-english',
-        
-                   
-           # bert models                   
-        # 'nateraw/bert-base-uncased-emotion',
-           # 'philschmid/BERT-tweet-eval-emotion'
-        # 'textattack/bert-base-uncased-rotten_tomatoes',         
-        # 'ahmedrachid/FinancialBERT-Sentiment-Analysis',
-        # 'textattack/bert-base-uncased-SST-2',
-        
-    ],
-    'all': ['all'],
-    'layer': ['last_hidden_state_mean'],
+    'all': ['all'],    
+    'layer': ['last_hidden_state_mean', 'pooler_output'],    
+    'seed': [1, 2, 3],    
 }
 
-        # 'imdb', # too big                   # 'textattack/bert-base-uncased-imdb', # too big
+PARAMS_LIST = [
+{
+    'dataset': ['emotion'],
+    'checkpoint': ['nateraw/bert-base-uncased-emotion',
+                   'aatmasidha/distilbert-base-uncased-finetuned-emotion'],
+},    
+{
+    'dataset': ['tweet_eval'],
+    'checkpoint': ['philschmid/BERT-tweet-eval-emotion',
+                   'philschmid/DistilBERT-tweet-eval-emotion'],
+},    
+{
+    'dataset': ['rotten_tomatoes'],
+    'checkpoint': ['textattack/bert-base-uncased-rotten_tomatoes',
+                   'textattack/distilbert-base-uncased-rotten-tomatoes'],
+},     
+{
+    'dataset': ['financial_phrasebank'],
+    'checkpoint': ['ahmedrachid/FinancialBERT-Sentiment-Analysis',
+                  'yseop/distilbert-base-financial-relation-extraction'],
+},     
+{
+    'dataset': ['sst2'],
+    'checkpoint': ['textattack/bert-base-uncased-SST-2',           
+                   'distilbert-base-uncased-finetuned-sst-2-english',],
+},     
+]
+
+CHECKPOINTS_SHARED = [
+    'countvectorizer',
+    'tfidfvectorizer',
+    'bert-base-uncased',
+    'distilbert-base-uncased',
+]
+
+for i in range(len(PARAMS_LIST)):
+    d = PARAMS_LIST[i]
+    d['checkpoint'] = d['checkpoint'] + CHECKPOINTS_SHARED
+
+# print(PARAMS_LIST)
 
 
-ks = PARAMS.keys()
-vals = [PARAMS[k] for k in ks]
-param_combinations = list(itertools.product(*vals)) # list of tuples
+
+for PARAMS in PARAMS_LIST:
+    ks = list(PARAMS.keys())
+    vals = [PARAMS[k] for k in ks]
+
+    ks2 = list(GLOBAL_PARAMS.keys())
+    vals += [GLOBAL_PARAMS[k] for k in ks2]
+    ks += ks2
+
+    param_combinations_all = list(itertools.product(*vals)) # list of tuples
+    
+    
+    # block impossible pairings
+    checkpoint_key = ks.index('checkpoint')
+    layer_key = ks.index('layer')
+    param_combinations = []
+    for i in range(len(param_combinations_all)):
+        param_tuple = param_combinations_all[i]
+        if param_tuple[layer_key] == 'pooler_output':
+            if 'bert' in param_tuple[checkpoint_key].lower():
+                if 'distilbert' in param_tuple[checkpoint_key].lower():
+                    pass
+                else:
+                    param_combinations.append(param_tuple)
+        else:
+            param_combinations.append(param_tuple)
+    
+    print('filtered from', len(param_combinations_all), 'to', len(param_combinations))
+    print(checkpoint_key, layer_key)
+    for i in range(len(param_combinations)):
+        param_str = '/usr/local/linux/anaconda3.8/bin/python3 ../02_fit_logistic.py '    
+        for j, key in enumerate(ks):
+            param_str += '--' + key + ' ' + str(param_combinations[i][j]) + ' '
+        s.run(param_str)
+        print(param_str)
 
 
-for i in range(len(param_combinations)):
-    param_str = '/usr/local/linux/anaconda3.8/bin/python3 ../02_fit_logistic.py '    
-    for j, key in enumerate(ks):
-        param_str += '--' + key + ' ' + str(param_combinations[i][j]) + ' '
-    s.run(param_str)
-#     print(param_str)
+
+# 'imdb', # too big                   # 'textattack/bert-base-uncased-imdb', # too big

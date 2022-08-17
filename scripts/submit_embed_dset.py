@@ -3,7 +3,7 @@ from slurmpy import Slurm
 
 # slurm params
 partition = 'jsteinhardt' # yugroup, jsteinhardt
-num_gpus = 1
+num_gpus = 0
 s = Slurm("embed_dset", {"partition": partition, "time": "4-0", "gres": f"gpu:{num_gpus}"})
 
 """
