@@ -15,6 +15,7 @@ from datasets import load_from_disk
 import config
 import sklearn
 import warnings
+from datetime import datetime
 
 
 def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
@@ -108,14 +109,16 @@ if __name__ == '__main__':
     print('\n-------------------------------------\nfit_logistic hyperparams', vars(args))
     
     # check if cached
-    dir_name = data.get_dir_name(args)
+    dir_name = data.get_dir_name(args, seed=None)
     # note, this is not in the data_dir only in the save
     # must come before adding -norm to the name!
     data_dir = oj(config.data_dir, args.dataset, dir_name)
     data_dir_full = oj(config.data_dir, args.dataset, data.get_dir_name(args, full_dset=True)) # no subsampling
     if args.norm:
         dir_name += '-norm' 
-    save_dir = oj(config.results_dir, args.dataset, dir_name)
+        
+    out_dir_name = data.get_dir_name(args, seed=args.seed)
+    save_dir = oj(config.results_dir, args.dataset, out_dir_name)
     if os.path.exists(save_dir):
         print('aready ran', save_dir)
         exit(0)

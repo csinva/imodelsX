@@ -87,7 +87,7 @@ def load_fitted_results(fname_filters=['all'], dset_filters=[], drop_model=True)
     rs = pd.concat(rs)
     return rs
 
-def get_dir_name(args, full_dset=False, ngrams=None):
+def get_dir_name(args, full_dset=False, ngrams=None, seed=None):
     
     # handle arguments
     subsample = args.subsample
@@ -105,8 +105,8 @@ def get_dir_name(args, full_dset=False, ngrams=None):
         dir_name += '__' + args.layer
     if args.parsing:
         dir_name += '__' + args.parsing
-    if hasattr(args, 'seed'):
-        dir_name += '__' + str(args.seed)        
+    if seed:
+        dir_name += '__' + str(seed)        
     if hasattr(args, 'all') and args.all == 'all':
         dir_name += '-all'
     return dir_name
