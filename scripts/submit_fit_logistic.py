@@ -5,6 +5,7 @@ from slurmpy import Slurm
 partition = 'high'
 s = Slurm("fit_logistic", {"partition": partition, "time": "1-0"})
 
+
 GLOBAL_PARAMS = {
     'subsample': [-1, 100, 1000], # 100, 1000
     'ngrams': [1, 2, 3, 4, 5, 6, 7],    
@@ -56,6 +57,43 @@ for i in range(len(PARAMS_LIST)):
 
 
 
+
+"""
+# noun_chunks
+# python ../02_fit_logistic.py --dataset sst2 --checkpoint textattack/bert-base-uncased-SST-2 --subsample -1 --ngrams 1 --layer last_hidden_state_mean --seed 1 --parsing noun_chunks
+GLOBAL_PARAMS = {
+    'subsample': [-1, 100, 1000], # 100, 1000
+    'ngrams': [1, 2],        
+    'layer': ['last_hidden_state_mean'],    
+    'seed': [1, 2, 3],    
+    'parsing': ['noun_chunks']
+}
+
+PARAMS_LIST = [
+{
+    'dataset': ['emotion'],
+    'checkpoint': ['nateraw/bert-base-uncased-emotion'],
+},    
+{
+    'dataset': ['tweet_eval'],
+    'checkpoint': ['philschmid/BERT-tweet-eval-emotion'],
+},    
+{
+    'dataset': ['rotten_tomatoes'],
+    'checkpoint': ['textattack/bert-base-uncased-rotten_tomatoes'],
+},     
+{
+    'dataset': ['financial_phrasebank'],
+    'checkpoint': ['ahmedrachid/FinancialBERT-Sentiment-Analysis'],
+},     
+{
+    'dataset': ['sst2'],
+    'checkpoint': ['textattack/bert-base-uncased-SST-2'],
+},     
+]
+"""
+
+
 for PARAMS in PARAMS_LIST:
     ks = list(PARAMS.keys())
     vals = [PARAMS[k] for k in ks]
@@ -90,7 +128,6 @@ for PARAMS in PARAMS_LIST:
             param_str += '--' + key + ' ' + str(param_combinations[i][j]) + ' '
         s.run(param_str)
         print(param_str)
-
 
 
 # 'imdb', # too big                   # 'textattack/bert-base-uncased-imdb', # too big
