@@ -80,7 +80,7 @@ def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
     
 def fit_and_score(X_train, X_val, y_train, y_val, r):
     # model
-    m = LogisticRegressionCV()
+    m = LogisticRegressionCV(random_state=args.seed, refit=False)
     m.fit(X_train, y_train)
     r['model'] = deepcopy(m)
     
