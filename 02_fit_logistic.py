@@ -7,6 +7,7 @@ import argparse
 path_to_current_file = os.path.dirname(os.path.abspath(__file__))
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.linear_model import LogisticRegressionCV
+from sklearn.model_selection import StratifiedKFold
 from collections import defaultdict
 from copy import deepcopy
 import pandas as pd
@@ -80,7 +81,8 @@ def get_dataset(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
     
 def fit_and_score(X_train, X_val, y_train, y_val, r):
     # model
-    m = LogisticRegressionCV(random_state=args.seed, refit=False)
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=args.seed)
+    m = LogisticRegressionCV(random_state=args.seed, refit=False, cv=cv)
     m.fit(X_train, y_train)
     r['model'] = deepcopy(m)
     
@@ -104,6 +106,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, help='random seed', default=1)
     parser.add_argument('--layer', type=str, help='which layer of the model to extract', default='pooler_output') # last_hidden_state_mean
     parser.add_argument('--parsing', type=str, help='extra logic for parsing', default='') # noun_chunks
+    parser.add_argument('--ignore_cache', action='store_true', default=False)
     args = parser.parse_args()
     args.padding = True # 'max_length' # True
     print('\n-------------------------------------\nfit_logistic hyperparams', vars(args))
@@ -119,7 +122,7 @@ if __name__ == '__main__':
         
     out_dir_name = data.get_dir_name(args, seed=args.seed)
     save_dir = oj(config.results_dir, args.dataset, out_dir_name)
-    if os.path.exists(save_dir):
+    if os.path.exists(save_dir) and not args.ignore_cache:
         print('aready ran', save_dir)
         exit(0)
     

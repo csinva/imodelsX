@@ -58,6 +58,7 @@ def load_fitted_results(fname_filters=['all'], dset_filters=[], drop_model=True)
     rs = []
     print('dsets', dsets)
     for dset in dsets:
+        print('\tprocessing', dset)
         # depending on how much is saved, this may take a while
         results_dir = oj(config.results_dir, dset)
         dir_names = sorted([fname
