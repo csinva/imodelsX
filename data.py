@@ -47,7 +47,7 @@ def process_data_and_args(args):
     return dataset, args
 
 
-def load_fitted_results(fname_filters=['all'], dset_filters=[], drop_model=True):
+def load_fitted_results(fname_filters=[], dset_filters=[], drop_model=True):
     """filters must be included in fname to be included.
     Empty list of filters will return everything
     """
@@ -64,14 +64,10 @@ def load_fitted_results(fname_filters=['all'], dset_filters=[], drop_model=True)
         dir_names = sorted([fname
                             for fname in os.listdir(results_dir)
                             if os.path.isdir(oj(results_dir, fname))
-                            and not '-norm' in fname
-                            and 'all' in fname
                            ])
         
         for fname_filter in fname_filters:
             dir_names = [d for d in dir_names if fname_filter in d]
-        # print(dir_names)
-        
         if drop_model:
             results_list = [pd.Series(pkl.load(open(oj(results_dir, dir_name, 'results.pkl'), "rb"))).drop('model')
                         for dir_name in tqdm(dir_names)]

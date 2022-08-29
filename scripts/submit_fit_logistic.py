@@ -58,6 +58,7 @@ CHECKPOINTS_SHARED = [
 for i in range(len(PARAMS_LIST)):
     d = PARAMS_LIST[i]
     d['checkpoint'] = d['checkpoint'] + CHECKPOINTS_SHARED
+
 # print(PARAMS_LIST)
 
 
