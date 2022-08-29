@@ -5,8 +5,13 @@ from slurmpy import Slurm
 partition = 'high'
 s = Slurm("fit_logistic", {"partition": partition, "time": "1-0"})
 
-"""
 # python ../02_fit_logistic.py --dataset financial_phrasebank --checkpoint distilbert-base-uncased --subsample 1000 --ngrams 1 --all all --layer last_hidden_state_mean --seed 1
+
+# # python ../02_fit_logistic.py --dataset financial_phrasebank --checkpoint distilbert-base-uncased --subsample 1000 --ngrams 1 --all all --layer last_hidden_state_mean --seed 1 --ignore_cache
+
+# python ../02_fit_logistic.py --dataset financial_phrasebank --checkpoint bert-base-uncased --ngrams 1 --all all --layer last_hidden_state_mean --seed 1 --ignore_cache
+
+
 GLOBAL_PARAMS = {
     'subsample': [-1, 100, 1000], # 100, 1000
     'ngrams': [1, 2, 3, 4, 5, 6, 7],    
@@ -53,11 +58,10 @@ CHECKPOINTS_SHARED = [
 for i in range(len(PARAMS_LIST)):
     d = PARAMS_LIST[i]
     d['checkpoint'] = d['checkpoint'] + CHECKPOINTS_SHARED
-"""
 # print(PARAMS_LIST)
 
 
-
+"""
 # noun_chunks
 # python ../02_fit_logistic.py --dataset sst2 --checkpoint textattack/bert-base-uncased-SST-2 --subsample -1 --ngrams 1 --layer last_hidden_state_mean --seed 1 --parsing noun_chunks
 
@@ -91,7 +95,7 @@ PARAMS_LIST = [
     'checkpoint': ['textattack/bert-base-uncased-SST-2'],
 },     
 ]
-
+"""
 
 
 for PARAMS in PARAMS_LIST:

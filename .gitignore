@@ -43,3 +43,4 @@ experiments/*.txt
 .nfs*
 data
 results
+scratch
