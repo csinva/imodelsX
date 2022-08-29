@@ -1,6 +1,6 @@
 from transformers import BertModel, DistilBertModel
 from transformers import pipeline
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModel, AutoModelForCausalLM
 import data
 import numpy as np
 import pickle as pkl
@@ -59,6 +59,27 @@ def generate_ngrams_list(sentence, all_ngrams=False):
         ]
     return seqs
 
+
+def preprocess_gpt_token_batch(seqs):
+    """Preprocess token batch with token strings of different lengths
+    Add attention mask here
+    """
+    batch_size = len(seqs)
+    
+    token_ids = [tokenizer.encode(s, add_special_tokens=False) for s in seqs]
+    prompt_lengths = [len(s) for s in token_ids]
+    max_prompt_len = max(prompt_lengths)
+    
+    # use 0 as padding id, shouldn't matter (snippet from here https://github.com/huggingface/transformers/issues/3021)
+    padded_tokens = [tok_ids + [0] * (max_prompt_len - len(tok_ids)) for tok_ids in token_ids]
+    input_ids = torch.LongTensor(padded_tokens)
+    attn_mask = torch.zeros(input_ids.shape).long()
+    for ix, tok_ids in enumerate(token_ids):
+        attn_mask[ix][:len(tok_ids)] = 1
+    
+    # tokens = tokenizer(seqs, truncation=True, return_tensors="pt")
+    return {'input_ids': input_ids, 'attention_mask': attn_mask}
+
 def embed_and_sum_function(example):
     """
     Params
@@ -83,15 +104,33 @@ def embed_and_sum_function(example):
     if seq_len == 0:
         seqs = ["dummy"]
         
-    tokens = tokenizer(seqs, padding=args.padding, truncation=True, return_tensors="pt")
-    # print('tokens', tokens['input_ids'].shape, tokens['input_ids'])
-    output = model(**tokens) # has two keys, 'last_hidden_state', 'pooler_output'
-    if args.layer == 'pooler_output':
-        embs = output['pooler_output'].cpu().detach().numpy()
-    elif args.layer == 'last_hidden_state_mean':
-        embs = output['last_hidden_state'].cpu().detach().numpy()
-        embs = embs.mean(axis=1)
-    # print('embs', embs.shape)
+ 
+    if 'bert' in args.checkpoint.lower(): # has up to two keys, 'last_hidden_state', 'pooler_output'
+        tokens = tokenizer(seqs, padding=args.padding, truncation=True, return_tensors="pt")
+        try:
+            tokens = tokens.cuda()
+        except:
+            print('no cuda!')
+            pass
+        output = model(**tokens)
+        if args.layer == 'pooler_output':
+            embs = output['pooler_output'].cpu().detach().numpy()
+        elif args.layer == 'last_hidden_state_mean':
+            embs = output['last_hidden_state'].cpu().detach().numpy()
+            embs = embs.mean(axis=1)
+    elif 'gpt' in args.checkpoint.lower():
+        # print('tokens', tokens['input_ids'].shape, tokens['input_ids'])
+        tokens = preprocess_gpt_token_batch(seqs)
+        try:
+            tokens = tokens.cuda()
+        except:
+            pass
+        output = model(**tokens)
+        
+        h = output['hidden_states'] # tuple of (layer x (batch_size, seq_len, hidden_size))
+        embs = h[0].cpu().detach().numpy() # (batch_size, seq_len, hidden_size)
+        embs = embs.mean(axis=1) # (batch_size, hidden_size)
+    print('embs', embs.shape)
     
     # sum over the embeddings
     embs = embs.sum(axis=0).reshape(1, -1)
@@ -104,11 +143,12 @@ def embed_and_sum_function(example):
 
 
 if __name__ == '__main__':
-    
     # hyperparams
     # python 00_extract_embeddings.py --dataset sst2 --checkpoint textattack/bert-base-uncased-SST-2
     # python 00_extract_embeddings.py --dataset sst2 --checkpoint distilbert-base-uncased --layer last_hidden_state_mean
     # python 00_extract_embeddings.py --dataset sst2 --layer last_hidden_state_mean --parsing noun_chunks
+    # python 00_extract_embeddings.py --dataset sst2 --layer last_hidden_state_mean --checkpoint "EleutherAI/gpt-neo-2.7B"
+    
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--checkpoint', type=str, help='name of model checkpoint', default='bert-base-uncased')
     parser.add_argument('--ngrams', type=int, help='dimensionality of ngrams', default=1)
@@ -123,6 +163,8 @@ if __name__ == '__main__':
     # checking
     if 'distilbert' in args.checkpoint.lower() and not args.layer.startswith('last_hidden'):
         raise ValueError('distilbert only has last_hidden output!!!')
+    if 'gpt' in args.checkpoint.lower() and not args.layer.startswith('last_hidden'):
+        raise ValueError('gpt only has hidden_states output!!!')
     
     # check if cached
     dir_name = data.get_dir_name(args)
@@ -141,6 +183,13 @@ if __name__ == '__main__':
         model = DistilBertModel.from_pretrained(args.checkpoint)
     elif 'bert-base' in args.checkpoint.lower() or 'BERT' in args.checkpoint:
         model = BertModel.from_pretrained(args.checkpoint)
+    elif 'gpt' in args.checkpoint.lower():
+        model = AutoModelForCausalLM.from_pretrained(args.checkpoint, output_hidden_states=True)
+    try:
+        model = model.cuda()
+    except:
+        pass
+        
     
     
     # set up data
