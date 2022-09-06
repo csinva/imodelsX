@@ -15,6 +15,8 @@ import dvu
 dvu.set_style()
 import pandas as pd
 import config
+import string
+import seaborn as sns
 from os.path import join as oj
 import matplotlib.pyplot as plt
 pd.set_option('display.max_rows', None)
@@ -48,3 +50,53 @@ def bold_extreme_values(data):
     bolded = data.apply(lambda x : "\\textbf{%s}" % format_string % x)
     formatted = data.apply(lambda x : format_string % x)
     return formatted.where(extrema, bolded) 
+
+def corrplot_max_abs_unigrams(df, embs):
+    def get_idxs_largest_abs_coefs(unigrams, tot_counts, coef, percentile=99.5):
+        idxs_punc = np.array(list(map(lambda s: all(c.isdigit() or c in string.punctuation for c in s),
+                    unigrams)))
+        idxs_count_large = tot_counts > np.percentile(tot_counts, percentile)
+
+        cs = np.abs(coef).flatten()
+        idxs_pred = cs >= np.percentile(cs, percentile)
+
+        idxs = (idxs_pred | idxs_count_large) & ~idxs_punc
+        return idxs
+
+    idxs = get_idxs_largest_abs_coefs(df['unigram'], df['tot_counts'].values, df['coef'].values, percentile=99.5)
+    es = pd.DataFrame(embs[idxs].T, columns=df['unigram'].values[idxs])
+    sims = es.corr()
+
+    # def coef_colors(coef):
+    #     if coef >= 0:
+    #         return 'green'
+    #     else:
+    #         return 'purple'
+
+    plt.figure(figsize=(12, 12))
+    vabs = np.max(np.abs(sims))
+    cm = sns.diverging_palette(10, 240, as_cmap=True)
+    cg = sns.clustermap(sims, cmap=cm, center=0.0, dendrogram_ratio=0.01,
+                        cbar_pos=(0.7, 0.7, 0.05, 0.15),
+                        cbar_kws={'label': 'Correlation between embeddings'},
+    #                     row_colors=list(map(coef_colors, coef[idxs])),
+    #                     row_colors=list(map(cm, m.coef_.flatten()[idxs])),                    
+    #                     row_colors=list(map(cm, np.log(tot_counts[idxs]) / max(np.log(tot_counts[idxs])))),                      
+    #                     yticklabels=3 # how often to plot yticklabels
+    )
+
+    cg.ax_row_dendrogram.set_visible(False)
+    cg.ax_col_dendrogram.set_visible(False)
+
+    # mask
+    mask = np.triu(np.ones_like(sims))
+    values = cg.ax_heatmap.collections[0].get_array().reshape(sims.shape)
+    new_values = np.ma.array(values, mask=mask)
+    cg.ax_heatmap.collections[0].set_array(new_values)
+    cg.ax_heatmap.yaxis.set_ticks_position("left")
+
+
+    xaxis = cg.ax_heatmap.get_xaxis()
+    xticklabels = xaxis.get_majorticklabels()
+    # plt.tight_layout()
+    cg.savefig('results/unigrams_sim.pdf')

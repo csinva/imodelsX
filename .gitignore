@@ -44,3 +44,4 @@ experiments/*.txt
 data
 results
 scratch
+.embgrams
