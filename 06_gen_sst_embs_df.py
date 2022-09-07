@@ -39,6 +39,11 @@ def get_embs(texts: List[str]):
     return embs
 
 if __name__ == '__main__':
+    class A:
+        checkpoint = 'textattack/bert-base-uncased-SST-2'
+        dataset = 'sst2'
+        padding = True
+    args = A()
 
     dataset = analyze_helper.get_sst_dataset()
     tok_simp = English().tokenizer
@@ -135,7 +140,7 @@ if __name__ == '__main__':
 
         # see which bigrams interact the most
         d = df2.sort_values('interaction_score', ascending=False).round(2)
-        d = d[d.tot_counts > 2]
+        # d = d[d.tot_counts > 2]
         d = d.head(200)
 
         # compute embeddings for bigram
@@ -145,3 +150,4 @@ if __name__ == '__main__':
         pkl.dump(embs2, open(oj(config.misc_dir, 'embs2_sst_top_interactions.pkl'), 'wb'))
         pkl.dump(bigrams, open(oj(config.misc_dir, 'word_list_sst_top_interactions.pkl'), 'wb'))
         pkl.dump(d, open(oj(config.misc_dir, 'top_interacting_words_df2.pkl'), 'wb'))
+print('successfully completed!')
