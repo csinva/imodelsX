@@ -1,0 +1,17 @@
+transformers[torch]
+numpy
+datasets
+scikit-learn
+pandas
+spacy
+torch
+
+# basic
+tqdm
+
+# plotting
+seaborn
+matplotlib
+jupyter
+ipython
+dvu
