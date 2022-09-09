@@ -27,16 +27,31 @@ import config
 pd.set_option('display.max_rows', None)
 
 
-
 # set up model
-def get_embs(texts: List[str]):
+def get_embs(texts: List[str], device='cuda'):
     tokenizer = AutoTokenizer.from_pretrained(args.checkpoint) # for actually passing things to the model
     model = BertModel.from_pretrained(args.checkpoint)
-
-    tokens = tokenizer(texts, padding=args.padding, truncation=True, return_tensors="pt")
+    model = model.to(device)
+    """Run this quickly if it fits
+    tokens = tokenizer(texts, padding=args.padding, truncation=True, return_tensors="pt")    
+    tokens = tokens.to(device)
+    
     output = model(**tokens) # this takes a while....
     embs = output['pooler_output'].cpu().detach().numpy()
     return embs
+    """
+
+    # Slower way to run things...
+    embs = []
+    for i in tqdm(range(len(texts))):
+        tokens = tokenizer([texts[i]], padding=args.padding, truncation=True, return_tensors="pt")
+        tokens = tokens.to(device)
+        output = model(**tokens) # this takes a while....
+        emb = output['pooler_output'].cpu().detach().numpy()
+        embs.append(emb)
+    return np.array(embs).squeeze()
+
+    
 
 if __name__ == '__main__':
     class A:
@@ -60,24 +75,18 @@ if __name__ == '__main__':
 
 
     #############################################################
-    # Compute embs
+    # Compute unigram embs + linear coefs
     #############################################################
     try:
         embs = pkl.load(open(oj(config.misc_dir, 'word_embs_sst_train.pkl'), 'rb'))
+
+        df = pd.read_csv(oj(config.misc_dir, 'df_unigram_sst.csv'), index_col=0)
     except:
         embs = get_embs(words)
         os.makedirs(config.misc_dir)
         pkl.dump(embs, open(oj(config.misc_dir, 'word_embs_sst_train.pkl'), 'wb'))
         pkl.dump(words, open(oj(config.misc_dir, 'word_list_sst_train.pkl'), 'wb'))
 
-
-
-    #############################################################
-    # Compute unigram-embedding linear coefficients.
-    #############################################################
-    try:
-        df = pd.read_csv(oj(config.misc_dir, 'df_unigram_sst.csv'), index_col=0)
-    except:
         # countvec coefs
         matrix = v.transform(dataset['train']['sentence'])
         tot_counts = pd.DataFrame(matrix.sum(axis=0), columns=v.get_feature_names())
@@ -150,4 +159,38 @@ if __name__ == '__main__':
         pkl.dump(embs2, open(oj(config.misc_dir, 'embs2_sst_top_interactions.pkl'), 'wb'))
         pkl.dump(bigrams, open(oj(config.misc_dir, 'word_list_sst_top_interactions.pkl'), 'wb'))
         pkl.dump(d, open(oj(config.misc_dir, 'top_interacting_words_df2.pkl'), 'wb'))
+
+
+   ############################################################# 
+   # Get trigram coefs / embs
+   ############################################################# 
+    try:
+        df3 = pd.read_csv(oj(config.misc_dir, 'df_trigram_sst.csv'), index_col=0)
+    except:
+        print('computing trigram stuff...')
+
+        # fit countvec model
+        v2 = CountVectorizer(tokenizer=tokenizer_func, ngram_range=(3, 3))
+        v2.fit(dataset['train']['sentence'])
+
+        # countvec coefs
+        matrix2 = v2.transform(dataset['train']['sentence'])
+        tot_counts2 = pd.DataFrame(matrix2.sum(axis=0), columns=v2.get_feature_names())
+        m2 = LogisticRegressionCV()
+        m2.fit(matrix2, dataset['train']['label'])
+        coef2 = m2.coef_.flatten() # note -- coef has not been mapped to same idxs as words
+        trigrams = sorted(list(v2.vocabulary_.keys()))
+
+        df3 = pd.DataFrame.from_dict({
+            'coef': coef2,
+            'tot_counts': tot_counts2.values.squeeze(),
+            'trigram': trigrams
+        })
+        embs3 = get_embs(trigrams)
+
+        df3.to_csv(oj(config.misc_dir, 'df_trigram_sst.csv'))
+        pkl.dump(embs3, open(oj(config.misc_dir, 'embs3_sst_top_interactions.pkl'), 'wb'))
+        pkl.dump(trigrams, open(oj(config.misc_dir, 'trigrams.pkl'), 'wb'))
+        
+
 print('successfully completed!')

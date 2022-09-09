@@ -35,17 +35,17 @@ for k in ks:
     v = CountVectorizer(tokenizer=simple_tokenizer)
     v.fit(text)
     ds['n_tokens'].append(len(v.vocabulary_))
-    r[f'{k}_unigram'].append(deepcopy(v.vocabulary_))
+    # r[f'{k}_unigram'].append(deepcopy(v.vocabulary_))
 
     v = CountVectorizer(tokenizer=simple_tokenizer, ngram_range=(2, 2))
     v.fit(text)
     ds['n_bigrams'].append(len(v.vocabulary_))
-    r[f'{k}_bigram'].append(deepcopy(v.vocabulary_))
+    # r[f'{k}_bigram'].append(deepcopy(v.vocabulary_))
 
     v = CountVectorizer(tokenizer=simple_tokenizer, ngram_range=(3, 3))
-    v.fit(text)
+    matrix = v.fit_transform(text)
     ds['n_trigrams'].append(len(v.vocabulary_))    
-    r[f'{k}_trigram'].append(deepcopy(v.vocabulary_))    
+    r[f'{k}_trigram'].append(matrix.sum(axis=0))    
     
     
 
@@ -54,4 +54,4 @@ df.index = ks
 df
 df.to_csv('results/datasets_ovw.csv')
 
-pkl.dump(r, open('results/datasets_ovw.pkl', 'w'))
+pkl.dump(r, open('results/datasets_ovw.pkl', 'wb'))
