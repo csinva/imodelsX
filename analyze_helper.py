@@ -121,6 +121,13 @@ def corrplot_max_abs_unigrams(df, embs):
     cg.savefig("results/unigrams_sim.pdf")
 
 
+def get_bert_coefs(embs, cached_model="results/sst_bert_finetuned_ngrams=2.pkl"):
+    ex_model = pkl.load(open(cached_model, "rb")) # pickled with python 3.8
+    logistic = ex_model.model
+    coef_bert = logistic.coef_.squeeze()
+    return embs @ coef_bert    
+
+
 def add_bert_coefs(
     d, df, embs, embs2, cached_model="results/sst_bert_finetuned_ngrams=2.pkl"
 ):
@@ -132,14 +139,9 @@ def add_bert_coefs(
     ex_model = r[(r.checkpoint == 'textattack/bert-base-uncased-SST-2') & (r.ngrams == 2)].iloc[0]
     """
 
-    # pickled with python 3.8
-    ex_model = pkl.load(open(cached_model, "rb"))
-    logistic = ex_model.model
-    coef_bert = logistic.coef_.squeeze()
-
-    d["bert_coef_bigram"] = embs2 @ coef_bert
-    df["bert_coef_unigram"] = embs @ coef_bert  # used for looking-up
-
+    df["bert_coef_unigram"] = get_bert_coefs(embs, cached_model)
+    d["bert_coef_bigram"] = get_bert_coefs(embs2, cached_model)
+    
     def find_unigram_scores(unigram):
         return df.loc[df["unigram"] == unigram, "bert_coef_unigram"].iloc[0]
 
