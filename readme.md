@@ -1,17 +1,49 @@
-# baselines
+<h1 align="center">   <img src="https://yu-group.github.io/adaptive-wavelets/anim.gif" width="15%"> Emb-GAM <img src="https://yu-group.github.io/adaptive-wavelets/anim.gif" width="15%"></h1>
+<p align="center"> Interpretable linear model that leverages a pre-trained language model to better learn interactions.
+</p>
 
-- [fasttext](https://adityaroc.medium.com/understanding-fasttext-an-embedding-to-look-forward-to-3ee9aa08787#:~:text=Fasttext%20can%20generate%20embedding%20for,representation%20in%20the%20training%20set.) - sums partial embeddings of a word to make up the whole word
-    - [paper](https://arxiv.org/pdf/1607.01759.pdf) - they do exactly this
-- similar to [dirtycat](https://www.linkedin.com/feed/update/urn:li:activity:6944476456701820928?updateEntityUrn=urn%3Ali%3Afs_feedUpdate%3A%28V2%2Curn%3Ali%3Aactivity%3A6944476456701820928%29)
+<p align="center">
+  <img src="https://img.shields.io/badge/license-mit-blue.svg">
+  <img src="https://img.shields.io/badge/python-3.6--3.8-blue">
+  <a href="https://github.com/csinva/imodels/actions"><img src="https://github.com/Yu-Group/adaptive-wavelets/workflows/tests/badge.svg"></a>
+</p>  
 
-# follow-up experiments
+<details>
+<summary>Official code for using / reproducing Emb-GAM from the paper "Adaptive wavelet distillation from neural networks through interpretations" (<a href="https://arxiv.org/abs/2107.09145">Ha et al. NeurIPS, 2021</a>).
+</summary>
 
-Probably later want to switch to "bert-base-uncased", ""distilbert-base-uncased-finetuned-sst-2-english" + try different layers + train custom dnn for this task.
+<img src="https://yu-group.github.io/adaptive-wavelets/awd.jpg">
 
-- could include positional information...
+<blockquote>
+<b>Abstract</b>: Deep learning models have achieved impressive prediction performance but often sacrifice interpretability, a critical consideration in high-stakes domains such as healthcare or policymaking.
+In contrast, generalized additive models (GAMs) can maintain interpretability, but often suffer from poor prediction performance due to their inability to effectively capture feature interactions.
+In this work, we aim to bridge this gap by using pre-trained large-language-models to extract embeddings for each input, and then learning a linear model in the embedding space.
+The final learned model (which we call Emb-GAM) is a transparent, linear function of its input features and feature interactions
+Leveraging the language model allows Emb-GAM to learn far fewer linear coefficients, modeling larger interactions, and generalizing well to novel inputs (e.g. unseen tokens in text).
+Across a variety of natural-language-processing datasets, Emb-GAM achieves strong prediction performance without sacrificing interpretability.</blockquote>
+</details>
 
-- GAM version of this - train a different net for single-word embedding, multi-word, etc....
+<details>
 
 
-# requirements
-- spacy also requires `python -m spacy download en_core_web_sm` for parsing
+# Related work
+
+- Adaptive wavelet distillation (NeurIPS 2021 [pdf](https://arxiv.org/abs/2107.09145), [github](https://github.com/Yu-Group/adaptive-wavelets)) - distilling a neural network into a concise wavelet model
+- TRIM (ICLR 2020 workshop [pdf](https://arxiv.org/abs/2003.01926), [github](https://github.com/csinva/transformation-importance)) - using simple reparameterizations, allows for calculating disentangled importances to transformations of the input (e.g. assigning importances to different frequencies)
+- ACD (ICLR 2019 [pdf](https://openreview.net/pdf?id=SkEqro0ctQ), [github](https://github.com/csinva/hierarchical-dnn-interpretations)) - extends CD to CNNs / arbitrary DNNs, and aggregates explanations into a hierarchy
+- CDEP (ICML 2020 [pdf](https://arxiv.org/abs/1909.13584), [github](https://github.com/laura-rieger/deep-explanation-penalization)) - penalizes CD / ACD scores during training to make models generalize better
+- DAC (arXiv 2019 [pdf](https://arxiv.org/abs/1905.07631), [github](https://github.com/csinva/disentangled-attribution-curves)) - finds disentangled interpretations for random forests
+- PDR framework (PNAS 2019 [pdf](https://arxiv.org/abs/1901.04592)) - an overarching framewwork for guiding and framing interpretable machine learning
+
+
+If this package is useful for you, please cite the following!
+
+```r
+@article{ha2021adaptive,
+  title={Adaptive wavelet distillation from neural networks through interpretations},
+  author={Ha, Wooseok and Singh, Chandan and Lanusse, Francois and Upadhyayula, Srigokul and Yu, Bin},
+  journal={Advances in Neural Information Processing Systems},
+  volume={34},
+  year={2021}
+}
+```
