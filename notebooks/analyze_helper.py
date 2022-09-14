@@ -121,7 +121,7 @@ def corrplot_max_abs_unigrams(df, embs):
     cg.savefig("results/unigrams_sim.pdf")
 
 
-def get_bert_coefs(embs, cached_model="results/sst_bert_finetuned_ngrams=2.pkl"):
+def get_bert_coefs(embs, cached_model=oj(config.repo_dir, 'results/sst_bert_finetuned_ngrams=2.pkl')):
     ex_model = pkl.load(open(cached_model, "rb")) # pickled with python 3.8
     logistic = ex_model.model
     coef_bert = logistic.coef_.squeeze()
@@ -129,7 +129,7 @@ def get_bert_coefs(embs, cached_model="results/sst_bert_finetuned_ngrams=2.pkl")
 
 
 def add_bert_coefs(
-    d, df, embs, embs2, cached_model="results/sst_bert_finetuned_ngrams=2.pkl"
+    d, df, embs, embs2, cached_model=oj(config.repo_dir, 'results/sst_bert_finetuned_ngrams=2.pkl'),
 ):
 
     """
