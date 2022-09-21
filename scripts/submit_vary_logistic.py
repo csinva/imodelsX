@@ -85,7 +85,7 @@ for PARAMS in PARAMS_LIST:
         param_str = f'{py_cmd} {fname} '    
         for j, key in enumerate(ks):
             param_str += '--' + key + ' ' + str(param_combinations[i][j]) + ' '
-        param_str += '--ignore_cache'
+        # param_str += '--ignore_cache'
         print(param_str)
         # s.run(param_str)
         os.system(param_str)
