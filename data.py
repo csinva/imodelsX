@@ -59,28 +59,31 @@ def load_fitted_results(fname_filters=[], dset_filters=[], drop_model=True):
     print('dsets', dsets)
     for dset in dsets:
         print('\tprocessing', dset)
-        # depending on how much is saved, this may take a while
-        results_dir = oj(config.results_dir, dset)
-        dir_names = sorted([fname
-                            for fname in os.listdir(results_dir)
-                            if os.path.isdir(oj(results_dir, fname))
-                           ])
-        
-        for fname_filter in fname_filters:
-            dir_names = [d for d in dir_names if fname_filter in d]
-        if drop_model:
-            results_list = [pd.Series(pkl.load(open(oj(results_dir, dir_name, 'results.pkl'), "rb"))).drop('model')
-                        for dir_name in tqdm(dir_names)]
-        else:
-            results_list = [pd.Series(pkl.load(open(oj(results_dir, dir_name, 'results.pkl'), "rb")))
-                        for dir_name in tqdm(dir_names)]            
-        r = pd.concat(results_list, axis=1).T.infer_objects() #.drop(columns='model')
-        r['all'] = r['all'].replace('True', 'all')
-        r['seed'] = r['seed'].fillna(1)    
-        r['layer'] = r['layer'].fillna('pooler_output')
-        r = r.fillna('')
-        r['dataset'] = dset
-        rs.append(r)
+        try:
+            # depending on how much is saved, this may take a while
+            results_dir = oj(config.results_dir, dset)
+            dir_names = sorted([fname
+                                for fname in os.listdir(results_dir)
+                                if os.path.isdir(oj(results_dir, fname))
+                            ])
+            
+            for fname_filter in fname_filters:
+                dir_names = [d for d in dir_names if fname_filter in d]
+            if drop_model:
+                results_list = [pd.Series(pkl.load(open(oj(results_dir, dir_name, 'results.pkl'), "rb"))).drop('model')
+                            for dir_name in tqdm(dir_names)]
+            else:
+                results_list = [pd.Series(pkl.load(open(oj(results_dir, dir_name, 'results.pkl'), "rb")))
+                            for dir_name in tqdm(dir_names)]            
+            r = pd.concat(results_list, axis=1).T.infer_objects() #.drop(columns='model')
+            r['all'] = r['all'].replace('True', 'all')
+            r['seed'] = r['seed'].fillna(1)    
+            r['layer'] = r['layer'].fillna('pooler_output')
+            r = r.fillna('')
+            r['dataset'] = dset
+            rs.append(r)
+        except Exception as e:
+            print('ignoring this exception: ', e)
     rs = pd.concat(rs)
     return rs
 

@@ -113,13 +113,8 @@ if __name__ == '__main__':
     print('\n-------------------------------------\nfit_logistic hyperparams', vars(args))
     
     # check if cached
-    dir_name = data.get_dir_name(args, seed=None)
-    # note, this is not in the data_dir only in the save
-    # must come before adding -norm to the name!
-    data_dir = oj(config.data_dir, args.dataset, dir_name)
+    data_dir = oj(config.data_dir, args.dataset, data.get_dir_name(args, seed=None))
     data_dir_full = oj(config.data_dir, args.dataset, data.get_dir_name(args, full_dset=True)) # no subsampling
-    if args.norm:
-        dir_name += '-norm' 
         
     out_dir_name = data.get_dir_name(args, seed=args.seed, ngrams_test=args.ngrams_test)
     save_dir = oj(config.results_dir, args.dataset, out_dir_name)
@@ -143,8 +138,10 @@ if __name__ == '__main__':
     X_train, X_val, y_train, y_val = get_dataset(args.checkpoint, args.ngrams, args.all, args.norm,
                                                  dataset, data_dir, data_dir_full, simple_tokenizer)
     if args.ngrams_test is not None:
+        data_dir_ng = oj(config.data_dir, args.dataset, data.get_dir_name(args, seed=None, ngrams=args.ngrams_test)) 
+        data_dir_full_ng = oj(config.data_dir, args.dataset, data.get_dir_name(args, ngrams=args.ngrams_test, full_dset=True)) # no subsampling
         _, X_val, _, y_val = get_dataset(args.checkpoint, args.ngrams_test, args.all, args.norm,
-            dataset, data_dir, data_dir_full, simple_tokenizer)
+            dataset, data_dir_ng, data_dir_full_ng, simple_tokenizer)
     r['num_features'] = X_train.shape[1]
     
     # fit and return model
