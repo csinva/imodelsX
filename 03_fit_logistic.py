@@ -99,6 +99,7 @@ if __name__ == '__main__':
     # checkpoint values: countvectorizer, tfidfvectorizer
     parser.add_argument('--checkpoint', type=str, help='name of model checkpoint', default='bert-base-uncased')
     parser.add_argument('--ngrams', type=int, help='dimensionality of ngrams', default=1)
+    parser.add_argument('--ngrams_test', type=int, help='optional, test dim of ngrams (if different from training dim of ngrams)', default=None)
     parser.add_argument('--subsample', type=int, help='whether to only keep only this many training samples', default=-1)
     parser.add_argument('--all', type=str, default='', help='whether to use all-ngrams')
     parser.add_argument('--norm', type=str, default='', help='whether to normalize before fitting')
@@ -120,7 +121,7 @@ if __name__ == '__main__':
     if args.norm:
         dir_name += '-norm' 
         
-    out_dir_name = data.get_dir_name(args, seed=args.seed)
+    out_dir_name = data.get_dir_name(args, seed=args.seed, ngrams_test=args.ngrams_test)
     save_dir = oj(config.results_dir, args.dataset, out_dir_name)
     if os.path.exists(save_dir) and not args.ignore_cache:
         print('aready ran', save_dir)
@@ -141,6 +142,9 @@ if __name__ == '__main__':
     r = vars(args)
     X_train, X_val, y_train, y_val = get_dataset(args.checkpoint, args.ngrams, args.all, args.norm,
                                                  dataset, data_dir, data_dir_full, simple_tokenizer)
+    if args.ngrams_test is not None:
+        _, X_val, _, y_val = get_dataset(args.checkpoint, args.ngrams_test, args.all, args.norm,
+            dataset, data_dir, data_dir_full, simple_tokenizer)
     r['num_features'] = X_train.shape[1]
     
     # fit and return model
