@@ -22,6 +22,12 @@ Leveraging the language model allows \methods to learn far fewer linear coeffici
 Across a variety of natural-language-processing datasets, Emb-GAM achieves strong prediction performance without sacrificing interpretability.</blockquote>
 
 
+# Docs
+- the main python scripts are in the root directory
+- the `notebooks` folder contains notebooks for analyzing the outputs + making figures
+- the `scripts` folder contains hyperparameters for running sweeps
+- stored outputs after running all experiments are available in [this gdrive folder](https://drive.google.com/file/d/1C5ooDIlFdPxROufWWjlPr4Wmx8hDYBnh/view?usp=sharing)
+
 # Related work
 
 - Adaptive wavelet distillation (NeurIPS 2021 [pdf](https://arxiv.org/abs/2107.09145), [github](https://github.com/Yu-Group/adaptive-wavelets)) - distilling a neural network into a concise wavelet model
