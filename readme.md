@@ -1,25 +1,24 @@
-<h1 align="center">   <img src="https://yu-group.github.io/adaptive-wavelets/anim.gif" width="15%"> Emb-GAM <img src="https://yu-group.github.io/adaptive-wavelets/anim.gif" width="15%"></h1>
+<h1 align="center">   <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="15%"> Emb-GAM <img src="https://csinva.io/emb-gam/embgam_gif" width="15%"></h1>
 <p align="center"> Interpretable linear model that leverages a pre-trained language model to better learn interactions.
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-mit-blue.svg">
   <img src="https://img.shields.io/badge/python-3.6--3.8-blue">
-  <a href="https://github.com/csinva/imodels/actions"><img src="https://github.com/Yu-Group/adaptive-wavelets/workflows/tests/badge.svg"></a>
 </p>  
 
 
-<b>Official code for using / reproducing Emb-GAM from the paper "Emb-GAM: an interpretable and efficient predictor using pre-trained language models" (<a href="https://arxiv.org/abs/2107.09145">Singh et al. 2022</a>).
+<b>Official code for using / reproducing Emb-GAM from the paper "Emb-GAM: an interpretable and efficient predictor using pre-trained language models" (<a href="https://arxiv.org/abs/2107.09145">singh & gao, 2022</a>).
 </b>
 
-<img src="https://yu-group.github.io/adaptive-wavelets/awd.jpg">
+<img src="https://csinva.io/emb-gam/intro_emb_gam.svg?sanitize=True">
 
 <blockquote>
 <b>Abstract</b>: Deep learning models have achieved impressive prediction performance but often sacrifice interpretability, a critical consideration in high-stakes domains such as healthcare or policymaking.
-In contrast, generalized additive models (GAMs) can maintain interpretability, but often suffer from poor prediction performance due to their inability to effectively capture feature interactions.
-In this work, we aim to bridge this gap by using pre-trained large-language-models to extract embeddings for each input, and then learning a linear model in the embedding space.
-The final learned model (which we call Emb-GAM) is a transparent, linear function of its input features and feature interactions
-Leveraging the language model allows Emb-GAM to learn far fewer linear coefficients, modeling larger interactions, and generalizing well to novel inputs (e.g. unseen tokens in text).
+In contrast, generalized additive models (GAMs) can maintain interpretability but often suffer from poor prediction performance due to their inability to effectively capture feature interactions.
+In this work, we aim to bridge this gap by using pre-trained large-language models to extract embeddings for each input before learning a linear model in the embedding space.
+The final model (which we call Emb-GAM) is a transparent, linear function of its input features and feature interactions.
+Leveraging the language model allows \methods to learn far fewer linear coefficients, model larger interactions, and generalize well to novel inputs (e.g. unseen ngrams in text).
 Across a variety of natural-language-processing datasets, Emb-GAM achieves strong prediction performance without sacrificing interpretability.</blockquote>
 
 
@@ -36,11 +35,4 @@ Across a variety of natural-language-processing datasets, Emb-GAM achieves stron
 If this package is useful for you, please cite the following!
 
 ```r
-@article{ha2021adaptive,
-  title={Adaptive wavelet distillation from neural networks through interpretations},
-  author={Ha, Wooseok and Singh, Chandan and Lanusse, Francois and Upadhyayula, Srigokul and Yu, Bin},
-  journal={Advances in Neural Information Processing Systems},
-  volume={34},
-  year={2021}
-}
 ```
