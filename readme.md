@@ -1,4 +1,4 @@
-<h1 align="center">   <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="15%"> Emb-GAM <img src="https://csinva.io/emb-gam/embgam_gif" width="15%"></h1>
+<h1 align="center">   <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="15%"> Emb-GAM <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="15%"></h1>
 <p align="center"> Interpretable linear model that leverages a pre-trained language model to better learn interactions.
 </p>
 
