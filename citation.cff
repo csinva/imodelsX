@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Singh"
+  given-names: "Chandan"
+- family-names: "Gao"
+  given-names: "Jianfeng"
+title: "Emb-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models"
+journal: "arXiv preprint arXiv:2209.11799"
+date-released: 2022-09-26
+url: "https://arxiv.org/abs/2209.11799"
