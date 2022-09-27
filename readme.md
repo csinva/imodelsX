@@ -8,7 +8,7 @@
 </p>  
 
 
-<b>Official code for using / reproducing Emb-GAM from the paper "Emb-GAM: an interpretable and efficient predictor using pre-trained language models" (<a href="https://arxiv.org/abs/2107.09145">singh & gao, 2022</a>).
+<b>Official code for using / reproducing Emb-GAM from the paper "Emb-GAM: an interpretable and efficient predictor using pre-trained language models" (<a href="https://arxiv.org/abs/2209.11799">singh & gao, 2022</a>).
 </b>
 
 <img src="https://csinva.io/emb-gam/intro_emb_gam.svg?sanitize=True">
@@ -29,7 +29,7 @@ Across a variety of natural-language-processing datasets, Emb-GAM achieves stron
 - stored outputs after running all experiments are available in [this gdrive folder](https://drive.google.com/file/d/1C5ooDIlFdPxROufWWjlPr4Wmx8hDYBnh/view?usp=sharing)
 
 # Related work
-
+- imodels package (JOSS 2021 [github](https://github.com/csinva/imodels)) - interpretable ML package for concise, transparent, and accurate predictive modeling (sklearn-compatible).
 - Adaptive wavelet distillation (NeurIPS 2021 [pdf](https://arxiv.org/abs/2107.09145), [github](https://github.com/Yu-Group/adaptive-wavelets)) - distilling a neural network into a concise wavelet model
 - Transformation importance (ICLR 2020 workshop [pdf](https://arxiv.org/abs/2003.01926), [github](https://github.com/csinva/transformation-importance)) - using simple reparameterizations, allows for calculating disentangled importances to transformations of the input (e.g. assigning importances to different frequencies)
 - Hierarchical interpretations (ICLR 2019 [pdf](https://openreview.net/pdf?id=SkEqro0ctQ), [github](https://github.com/csinva/hierarchical-dnn-interpretations)) - extends CD to CNNs / arbitrary DNNs, and aggregates explanations into a hierarchy
@@ -41,4 +41,13 @@ Across a variety of natural-language-processing datasets, Emb-GAM achieves stron
 If this package is useful for you, please cite the following!
 
 ```r
+@article{singh2022embgam,
+  title = {Emb-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models},
+  author = {Singh, Chandan and Gao, Jianfeng},
+  journal={arXiv preprint arXiv:2209.11799},
+  doi = {10.48550/arxiv.2209.11799},
+  url = {https://arxiv.org/abs/2209.11799},
+  year = {2022},
+}
+
 ```
