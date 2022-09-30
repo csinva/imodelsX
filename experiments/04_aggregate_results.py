@@ -1,4 +1,4 @@
-import data
+import embgam.data as data
 import config
 from os.path import join as oj
 

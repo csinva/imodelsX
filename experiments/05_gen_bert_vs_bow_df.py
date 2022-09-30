@@ -20,7 +20,7 @@ import pandas as pd
 from os.path import join as oj
 import string
 from typing import List
-import data
+import embgam.data as data
 import matplotlib.pyplot as plt
 import seaborn as sns
 import config

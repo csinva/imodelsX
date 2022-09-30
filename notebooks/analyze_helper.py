@@ -1,9 +1,15 @@
+import matplotlib.pyplot as plt
+from os.path import join as oj
+import seaborn as sns
+import string
+import config
+import pandas as pd
 from transformers import BertModel, DistilBertModel
 from transformers import pipeline
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import datasets
 import numpy as np
-import data
+import embgam.data as data
 import os.path
 from datasets import load_from_disk
 import pickle as pkl
@@ -14,12 +20,6 @@ from tqdm import tqdm
 import dvu
 
 dvu.set_style()
-import pandas as pd
-import config
-import string
-import seaborn as sns
-from os.path import join as oj
-import matplotlib.pyplot as plt
 
 pd.set_option("display.max_rows", None)
 
@@ -64,7 +64,8 @@ def corrplot_max_abs_unigrams(df, embs):
         idxs_punc = np.array(
             list(
                 map(
-                    lambda s: all(c.isdigit() or c in string.punctuation for c in s),
+                    lambda s: all(
+                        c.isdigit() or c in string.punctuation for c in s),
                     unigrams,
                 )
             )
@@ -122,16 +123,16 @@ def corrplot_max_abs_unigrams(df, embs):
 
 
 def get_bert_coefs(embs, cached_model=oj(config.repo_dir, 'results/sst_bert_finetuned_ngrams=2.pkl')):
-    ex_model = pkl.load(open(cached_model, "rb")) # pickled with python 3.8
+    ex_model = pkl.load(open(cached_model, "rb"))  # pickled with python 3.8
     logistic = ex_model.model
     coef_bert = logistic.coef_.squeeze()
-    return embs @ coef_bert    
+    return embs @ coef_bert
 
 
 def add_bert_coefs(
-    d, df, embs, embs2, cached_model=oj(config.repo_dir, 'results/sst_bert_finetuned_ngrams=2.pkl'),
+    d, df, embs, embs2, cached_model=oj(
+        config.repo_dir, 'results/sst_bert_finetuned_ngrams=2.pkl'),
 ):
-
     """
     r = data.load_fitted_results(fname_filters=['bert-base', 'sub=-1'],
                                 dset_filters=['sst2'],
@@ -141,13 +142,14 @@ def add_bert_coefs(
 
     df["bert_coef_unigram"] = get_bert_coefs(embs, cached_model)
     d["bert_coef_bigram"] = get_bert_coefs(embs2, cached_model)
-    
+
     def find_unigram_scores(unigram):
         return df.loc[df["unigram"] == unigram, "bert_coef_unigram"].iloc[0]
 
     d["bert_coef_unigram1"] = d["unigram1"].apply(find_unigram_scores)
     d["bert_coef_unigram2"] = d["unigram2"].apply(find_unigram_scores)
     return d
+
 
 def get_sst_dataset():
     class A:
