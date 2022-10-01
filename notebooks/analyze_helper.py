@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from os.path import join as oj
 import seaborn as sns
 import string
-import config
+import experiments.config as config
 import pandas as pd
 from transformers import BertModel, DistilBertModel
 from transformers import pipeline
@@ -23,6 +23,34 @@ dvu.set_style()
 
 pd.set_option("display.max_rows", None)
 
+DSETS_RENAME_DICT = {
+    'emotion': 'Emotion',
+    'sst2': 'SST2',
+    'tweet_eval': 'Tweet (Hate)',
+    'rotten_tomatoes': 'Rotten tomatoes',
+    'financial_phrasebank': 'Financial phrasebank',
+}
+
+COLUMNS_RENAME_DICT = {
+    'n_train': 'Samples (train)',
+    'n_val': 'Samples (val)',
+    'n_tokens': 'Unigrams',
+    'n_bigrams': 'Bigrams',
+    'n_trigrams': 'Trigrams',            
+    'num_classes': 'Classes',
+    'imbalance': 'Majority class fraction',
+    
+    # models
+    'countvectorizer': 'Bag of ngrams',
+    'tfidfvectorizer': 'TF-IDF',    
+    'bert-finetuned': 'Emb-grams (BERT finetuned)',
+    'bert-base-uncased': 'Emb-grams (BERT)',
+    'distilbert-finetuned': 'Emb-grams (DistilBERT finetuned)',  
+    'distilbert-base-uncased': 'Emb-grams (DistilBERT)',
+    'bert-base-uncased___last_hidden_state_mean': 'Emb-grams (BERT final layer)',
+    'bert-finetuned___last_hidden_state_mean': 'Emb-grams (BERT finetuned final layer)',
+
+}
 
 def average_seeds(rs):
     varying_cols = ["seed", "acc_train", "acc_val"]

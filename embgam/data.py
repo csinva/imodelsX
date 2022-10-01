@@ -1,5 +1,5 @@
 import datasets
-import config
+import experiments.config as config
 import os
 from os.path import join as oj
 from tqdm import tqdm
@@ -88,6 +88,8 @@ def load_fitted_results(fname_filters=[], dset_filters=[], drop_model=True):
     return rs
 
 def get_dir_name(args, full_dset=False, ngrams=None, seed=None, ngrams_test=None):
+    """Get directory named for saving between embeddings / fit logistic
+    """
     
     # handle arguments
     subsample = args.subsample
@@ -112,33 +114,3 @@ def get_dir_name(args, full_dset=False, ngrams=None, seed=None, ngrams_test=None
     if ngrams_test:
         dir_name += '___ngtest=' + str(ngrams_test)
     return dir_name
-
-
-DSETS_RENAME_DICT = {
-    'emotion': 'Emotion',
-    'sst2': 'SST2',
-    'tweet_eval': 'Tweet (Hate)',
-    'rotten_tomatoes': 'Rotten tomatoes',
-    'financial_phrasebank': 'Financial phrasebank',
-}
-
-COLUMNS_RENAME_DICT = {
-    'n_train': 'Samples (train)',
-    'n_val': 'Samples (val)',
-    'n_tokens': 'Unigrams',
-    'n_bigrams': 'Bigrams',
-    'n_trigrams': 'Trigrams',            
-    'num_classes': 'Classes',
-    'imbalance': 'Majority class fraction',
-    
-    # models
-    'countvectorizer': 'Bag of ngrams',
-    'tfidfvectorizer': 'TF-IDF',    
-    'bert-finetuned': 'Emb-grams (BERT finetuned)',
-    'bert-base-uncased': 'Emb-grams (BERT)',
-    'distilbert-finetuned': 'Emb-grams (DistilBERT finetuned)',  
-    'distilbert-base-uncased': 'Emb-grams (DistilBERT)',
-    'bert-base-uncased___last_hidden_state_mean': 'Emb-grams (BERT final layer)',
-    'bert-finetuned___last_hidden_state_mean': 'Emb-grams (BERT finetuned final layer)',
-
-}

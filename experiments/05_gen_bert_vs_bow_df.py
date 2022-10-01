@@ -23,7 +23,7 @@ from typing import List
 import embgam.data as data
 import matplotlib.pyplot as plt
 import seaborn as sns
-import config
+import experiments.config as config
 pd.set_option('display.max_rows', None)
 
 

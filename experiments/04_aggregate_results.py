@@ -1,5 +1,5 @@
 import embgam.data as data
-import config
+import experiments.config as config
 from os.path import join as oj
 
 if __name__ == '__main__':

@@ -21,7 +21,7 @@ import pandas as pd
 from datasets import load_from_disk
 import sklearn
 import warnings
-import config
+import experiments.config as config
 
 
 if __name__ == '__main__':

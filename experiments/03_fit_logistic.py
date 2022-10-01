@@ -13,7 +13,7 @@ from copy import deepcopy
 import pandas as pd
 import embgam.data as data
 from datasets import load_from_disk
-import config
+import experiments.config as config
 import sklearn
 import warnings
 from datetime import datetime
