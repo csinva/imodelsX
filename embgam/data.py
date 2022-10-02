@@ -8,43 +8,47 @@ import pickle as pkl
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-def process_data_and_args(args):
+def process_data_and_args(dataset):
+    """Load dataset + return the relevant dataset key
+    """
     # load dset
-    if args.dataset == 'tweet_eval':
-        dataset = datasets.load_dataset('tweet_eval', 'hate')
-    elif args.dataset == 'financial_phrasebank':
+    if dataset == 'tweet_eval':
+        dset = datasets.load_dataset('tweet_eval', 'hate')
+    elif dataset == 'financial_phrasebank':
         train = datasets.load_dataset('financial_phrasebank', 'sentences_75agree',
                                       revision='main', split='train')
         idxs_train, idxs_val = train_test_split(np.arange(len(train)), test_size=0.33, random_state=13)
-        dataset = datasets.DatasetDict()
-        dataset['train'] = train.select(idxs_train)
-        dataset['validation'] = train.select(idxs_val)
+        dset = datasets.DatasetDict()
+        dset['train'] = train.select(idxs_train)
+        dset['validation'] = train.select(idxs_val)
     else:
-        dataset = datasets.load_dataset(args.dataset)
+        dset = datasets.load_dataset(dataset)
         
     # process dset
-    if args.dataset == 'sst2':
-        del dataset['test']
-        args.dataset_key_text = 'sentence'
-    if args.dataset == 'financial_phrasebank':
-        args.dataset_key_text = 'sentence'        
-    elif args.dataset == 'imdb':
-        del dataset['unsupervised']
-        dataset['validation'] = dataset['test']
-        del dataset['test']
-        args.dataset_key_text = 'text'
-    elif args.dataset == 'emotion':
-        del dataset['test']
-        args.dataset_key_text = 'text'
-    elif args.dataset == 'rotten_tomatoes':
-        del dataset['test']
-        args.dataset_key_text = 'text'       
-    elif args.dataset == 'tweet_eval':
-        del dataset['test']
-        args.dataset_key_text = 'text'               
+    if dataset == 'sst2':
+        del dset['test']
+        dataset_key_text = 'sentence'
+    elif dataset == 'financial_phrasebank':
+        dataset_key_text = 'sentence'        
+    elif dataset == 'imdb':
+        del dset['unsupervised']
+        dset['validation'] = dset['test']
+        del dset['test']
+        dataset_key_text = 'text'
+    elif dataset == 'emotion':
+        del dset['test']
+        dataset_key_text = 'text'
+    elif dataset == 'rotten_tomatoes':
+        del dset['test']
+        dataset_key_text = 'text'       
+    elif dataset == 'tweet_eval':
+        del dset['test']
+        dataset_key_text = 'text'               
+    else:
+        dataset_key_text = 'text' # default
     #if args.subsample > 0:
     #    dataset['train'] = dataset['train'].select(range(args.subsample))
-    return dataset, args
+    return dset, dataset_key_text
 
 
 def load_fitted_results(fname_filters=[], dset_filters=[], drop_model=True):
