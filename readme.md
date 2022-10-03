@@ -36,8 +36,7 @@ dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=Fal
 # fit model
 m = EmbGAMClassifier(
     checkpoint='textattack/distilbert-base-uncased-rotten-tomatoes',
-    ngrams=2,
-    all_ngrams=True, # also use lower-order ngrams
+    ngrams=2, # use bigrams
 )
 m.fit(dset['text'], dset['label'])
 
