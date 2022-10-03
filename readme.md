@@ -8,6 +8,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/license-mit-blue.svg">
   <img src="https://img.shields.io/badge/python-3.6--3.8-blue">
+  <img src="https://img.shields.io/pypi/v/embgam?color=green">  
 </p>  
 
 
@@ -21,7 +22,7 @@
 
 **Usage example** (see <a href="https://csinva.github.io/emb-gam/">api</a> or <a href="https://github.com/csinva/emb-gam/blob/master/demo.ipynb">demo notebook</a> for more details):
 
-```
+```python
 from embgam import EmbGAMClassifier
 import datasets
 import numpy as np
@@ -68,12 +69,12 @@ In this work, we aim to bridge this gap by using pre-trained large-language mode
 The final model (which we call Emb-GAM) is a transparent, linear function of its input features and feature interactions.
 Leveraging the language model allows \methods to learn far fewer linear coefficients, model larger interactions, and generalize well to novel inputs (e.g. unseen ngrams in text).
 Across a variety of natural-language-processing datasets, Emb-GAM achieves strong prediction performance without sacrificing interpretability.</blockquote>
+
 - imodels package (JOSS 2021 [github](https://github.com/csinva/imodels)) - interpretable ML package for concise, transparent, and accurate predictive modeling (sklearn-compatible).
 - Adaptive wavelet distillation (NeurIPS 2021 [pdf](https://arxiv.org/abs/2107.09145), [github](https://github.com/Yu-Group/adaptive-wavelets)) - distilling a neural network into a concise wavelet model
 - Transformation importance (ICLR 2020 workshop [pdf](https://arxiv.org/abs/2003.01926), [github](https://github.com/csinva/transformation-importance)) - using simple reparameterizations, allows for calculating disentangled importances to transformations of the input (e.g. assigning importances to different frequencies)
 - Hierarchical interpretations (ICLR 2019 [pdf](https://openreview.net/pdf?id=SkEqro0ctQ), [github](https://github.com/csinva/hierarchical-dnn-interpretations)) - extends CD to CNNs / arbitrary DNNs, and aggregates explanations into a hierarchy
 - Interpretation regularization (ICML 2020 [pdf](https://arxiv.org/abs/1909.13584), [github](https://github.com/laura-rieger/deep-explanation-penalization)) - penalizes CD / ACD scores during training to make models generalize better
-- Disentangled attribution curves (arXiv 2019 [pdf](https://arxiv.org/abs/1905.07631), [github](https://github.com/csinva/disentangled-attribution-curves)) - finds disentangled interpretations for random forests
 - PDR interpretability framework (PNAS 2019 [pdf](https://arxiv.org/abs/1901.04592)) - an overarching framewwork for guiding and framing interpretable machine learning
 
 
