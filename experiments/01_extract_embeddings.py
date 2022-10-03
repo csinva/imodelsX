@@ -2,7 +2,6 @@ from functools import partial
 from transformers import BertModel, DistilBertModel
 from transformers import pipeline
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModel, AutoModelForCausalLM
-import embgam.data as data
 import numpy as np
 import pickle as pkl
 import os
@@ -13,7 +12,8 @@ import spacy
 import argparse
 import config
 import torch
-from embgam.embed import embed_and_sum_function, get_model
+import embgam.data
+import embgam.embed
 path_to_current_file = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -30,14 +30,17 @@ if __name__ == '__main__':
     parser.add_argument('--ngrams', type=int,
                         help='dimensionality of ngrams', default=1)
     parser.add_argument('--subsample', type=int,
+                        choices=[-1],
                         help='must be -1! subsampling no longer supported', default=-1)
     # sst2, imdb, emotion, rotten_tomatoes
     parser.add_argument('--dataset', type=str,
                         help='which dataset to fit', default='sst2')
     parser.add_argument('--layer', type=str, help='which layer of the model to extract',
-                        default='pooler_output')  # last_hidden_state_mean
+                        choices=['pooler_output', 'last_hidden_state_mean'],
+                        default='pooler_output')
     parser.add_argument('--parsing', type=str,
-                        help='extra logic for parsing', default='')  # noun_chunks
+                        choices=['', 'noun_chunks'],
+                        help='extra logic for parsing', default='')
     args = parser.parse_args()
     args.padding = True  # 'max_length' # True
     print('\n\nextract_embeddings hyperparams', vars(args), '\n\n')
@@ -49,7 +52,7 @@ if __name__ == '__main__':
         raise ValueError('gpt only has hidden_states output!!!')
 
     # check if cached
-    dir_name = data.get_dir_name(args)
+    dir_name = embgam.data.get_dir_name(args)
     save_dir = oj(config.data_dir, args.dataset, dir_name)
     if os.path.exists(save_dir):
         print('aready ran', save_dir,
@@ -57,29 +60,27 @@ if __name__ == '__main__':
         exit(0)
 
     # set up model
-    nlp = English()
-    tokenizer_ngrams = nlp.tokenizer  # for our word-finding
-    tokenizer_embeddings = AutoTokenizer.from_pretrained(args.checkpoint)    
+    tokenizer_ngrams = English().tokenizer  # for our word-finding
+    tokenizer_embeddings = AutoTokenizer.from_pretrained(args.checkpoint)
     if args.parsing == 'noun_chunks':  # for finding noun chunks
         nlp_chunks = spacy.load("en_core_web_sm")
     else:
         nlp_chunks = None
-    model_embeddings = get_model(args.checkpoint)
+    model = embgam.embed.get_model(args.checkpoint)
 
     # set up data
-    dataset, dataset_key_text = data.process_data_and_args(args.dataset)
-    args.dataset_key_text = dataset_key_text
+    dataset, dataset_key_text = embgam.data.process_data_and_args(args.dataset)
 
     # run
     with torch.no_grad():
         embed_and_sum = partial(
-            embed_and_sum_function,
-            model_embeddings=model_embeddings,
+            embgam.embed.embed_and_sum_function,
+            model=model,
             ngrams=args.ngrams,
             tokenizer_embeddings=tokenizer_embeddings,
             tokenizer_ngrams=tokenizer_ngrams,
             checkpoint=args.checkpoint,
-            dataset_key_text=args.dataset_key_text,
+            dataset_key_text=dataset_key_text,
             layer=args.layer,
             padding=args.padding,
             parsing=args.parsing,

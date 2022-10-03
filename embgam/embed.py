@@ -12,7 +12,7 @@ import spacy
 import argparse
 import experiments.config as config
 import torch
-
+from functools import partial
 
 def generate_ngrams_list(
     sentence,
@@ -105,16 +105,17 @@ def preprocess_gpt_token_batch(seqs, tokenizer_embeddings):
 
 def embed_and_sum_function(
     example,
-    model_embeddings,
+    model,
     ngrams: int,
     tokenizer_embeddings,
     tokenizer_ngrams,
     checkpoint: str,
-    dataset_key_text: str = 'sentence',
-    layer: str = 'last_hidden_state_mean',
+    dataset_key_text: str = None,
+    layer: str = 'last_hidden_state',
     padding: bool = True,
     parsing: str = '',
     nlp_chunks = None,
+    all_ngrams: bool=False,
 ):
     """Get summed embeddings for a single example
     Note: this function gets called many times, so don't want to do things like load a model here
@@ -135,13 +136,16 @@ def embed_and_sum_function(
     nlp_chunks
         if parsing is not empty string, a parser that extracts specific ngrams
     """
-    sentence = example[dataset_key_text]
+    if dataset_key_text is not None:
+        sentence = example[dataset_key_text]
+    else:
+        sentence = example
     # seqs = sentence
 
     if isinstance(sentence, str):
         seqs = generate_ngrams_list(
             sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
-            parsing=parsing, nlp_chunks=nlp_chunks,
+            parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
         )
     elif isinstance(sentence, list):
         raise Exception('batched mode not supported')
@@ -155,17 +159,17 @@ def embed_and_sum_function(
     if 'bert' in checkpoint.lower():  # has up to two keys, 'last_hidden_state', 'pooler_output'
         tokens = tokenizer_embeddings(seqs, padding=padding,
                                       truncation=True, return_tensors="pt")
-        tokens = tokens.to(model_embeddings.device)
-        output = model_embeddings(**tokens)
+        tokens = tokens.to(model.device)
+        output = model(**tokens)
         if layer == 'pooler_output':
             embs = output['pooler_output'].cpu().detach().numpy()
-        elif layer == 'last_hidden_state_mean':
+        elif layer == 'last_hidden_state_mean' or layer == 'last_hidden_state':
             embs = output['last_hidden_state'].cpu().detach().numpy()
             embs = embs.mean(axis=1)
     elif 'gpt' in checkpoint.lower():
         tokens = preprocess_gpt_token_batch(seqs, tokenizer_embeddings)
-        tokens = tokens.to(model_embeddings.device)
-        output = model_embeddings(**tokens)
+        tokens = tokens.to(model.device)
+        output = model(**tokens)
 
         # tuple of (layer x (batch_size, seq_len, hidden_size))
         h = output['hidden_states']

@@ -13,13 +13,18 @@ from copy import deepcopy
 import pandas as pd
 import embgam.data as data
 from datasets import load_from_disk
-import config
+import experiments.config as config
 import sklearn
 import warnings
 from datetime import datetime
 
-def get_dataset_for_logistic(checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
-                dataset, data_dir, data_dir_full, simple_tokenizer):
+def get_dataset_for_logistic(
+    checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,
+    dataset, data_dir, data_dir_full, tokenizer_ngrams,
+    seed: int=1,
+    subsample: int=-1,
+    dataset_key_text: str='text',
+):
     """
     args.dataset_key_text: str, e.g. "sentence" for sst2
     """
@@ -54,8 +59,8 @@ def get_dataset_for_logistic(checkpoint: str, ngrams: int, all_ngrams: bool, nor
             X_val = np.array(reloaded_dataset['validation']['embs']).squeeze()
         
             
-        if args.subsample > 0:
-            rng = np.random.default_rng(args.seed)
+        if subsample > 0:
+            rng = np.random.default_rng(seed)
             idxs_subsample = rng.choice(X_train.shape[0], size=args.subsample, replace=False)
             X_train = X_train[idxs_subsample]
             y_train = np.array(y_train)[idxs_subsample]
@@ -70,20 +75,20 @@ def get_dataset_for_logistic(checkpoint: str, ngrams: int, all_ngrams: bool, nor
         else:
             lower_ngram = ngrams
         if checkpoint == 'countvectorizer':
-            vectorizer = CountVectorizer(tokenizer=simple_tokenizer, ngram_range=(lower_ngram, ngrams))
+            vectorizer = CountVectorizer(tokenizer=tokenizer_ngrams, ngram_range=(lower_ngram, ngrams))
         elif checkpoint == 'tfidfvectorizer':
-            vectorizer = TfidfVectorizer(tokenizer=simple_tokenizer, ngram_range=(lower_ngram, ngrams))
+            vectorizer = TfidfVectorizer(tokenizer=tokenizer_ngrams, ngram_range=(lower_ngram, ngrams))
         # vectorizer.fit(dataset['train']['sentence'])
-        X_train = vectorizer.fit_transform(dataset['train'][args.dataset_key_text])
-        X_val = vectorizer.transform(dataset['validation'][args.dataset_key_text])
+        X_train = vectorizer.fit_transform(dataset['train'][dataset_key_text])
+        X_val = vectorizer.transform(dataset['validation'][dataset_key_text])
         return X_train, X_val, y_train, y_val
     
-def fit_and_score_logistic(X_train, X_val, y_train, y_val, r):
+def fit_and_score_logistic(X_train, X_val, y_train, y_val, r, seed: int=1):
     """Fit logistic model and return acc
     """
     # model
-    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=args.seed)
-    m = LogisticRegressionCV(random_state=args.seed, refit=False, cv=cv)
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
+    m = LogisticRegressionCV(random_state=seed, refit=False, cv=cv)
     m.fit(X_train, y_train)
     r['model'] = deepcopy(m)
     

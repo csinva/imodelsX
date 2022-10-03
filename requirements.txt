@@ -1,20 +1,22 @@
-transformers[torch]
+pandas
 numpy
+torch
+transformers[torch]
 datasets
 scikit-learn
-pandas
 spacy
-torch
 
 # basic
 tqdm
 
 # plotting
-seaborn
-matplotlib
-jupyter
-ipython
-dvu
+# seaborn
+# matplotlib
+# jupyter
+# ipython
+# dvu
 
+# docs
+# pdoc3
 
 # spacy also requires `python -m spacy download en_core_web_sm` for parsing

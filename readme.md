@@ -22,7 +22,7 @@ Leveraging the language model allows \methods to learn far fewer linear coeffici
 Across a variety of natural-language-processing datasets, Emb-GAM achieves strong prediction performance without sacrificing interpretability.</blockquote>
 
 # Installation
-`pip install embgam` (or, for more control, clone and install from source: `pip install -e .`)
+`pip install embgam` (or, for more control, clone and install from source)
 
 
 # Docs
