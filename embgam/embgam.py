@@ -44,7 +44,8 @@ class EmbGAM(BaseEstimator):
     ):
         """
         Params
-        ------
+        -------
+        
         checkpoint
             Name of model checkpoint (i.e. to be fetch by huggingface)
         layer
