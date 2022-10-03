@@ -6,22 +6,16 @@ Emb-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Mod
 Chandan Singh & Jianfeng Gao
 https://arxiv.org/abs/2209.11799
 """
-from numbers import Number
-from re import I
-from typing import List, Tuple
 from numpy.typing import ArrayLike
 import numpy as np
-import pandas as pd
 from scipy.special import softmax
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.linear_model import LogisticRegressionCV, RidgeCV
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.validation import check_is_fitted
 from spacy.lang.en import English
 import transformers
 import embgam.embed
-from functools import partial
 from tqdm import tqdm
 import warnings
 import torch
@@ -30,9 +24,6 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 class EmbGAM(BaseEstimator):
-    """Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor to call these functions
-    """
-
     def __init__(
         self,
         checkpoint: str = 'bert-base-uncased',
@@ -42,13 +33,13 @@ class EmbGAM(BaseEstimator):
         tokenizer_ngrams=None,
         random_state=None,
     ):
-        """
-        Params
-        -------
+        '''Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor to call these functions
         
-        checkpoint
+        Params
+        ------
+        checkpoint: str
             Name of model checkpoint (i.e. to be fetch by huggingface)
-        layer
+        layer: str
             Name of layer to extract embeddings from
         ngrams
             Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
@@ -58,7 +49,7 @@ class EmbGAM(BaseEstimator):
             if None, defaults to spacy English tokenizer
         random_state
             random seed for fitting
-        """
+        '''
         self.checkpoint = checkpoint
         self.ngrams = ngrams
         if tokenizer_ngrams == None:
@@ -71,13 +62,13 @@ class EmbGAM(BaseEstimator):
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True):
-        """Extract embeddings then fit linear model
+        '''Extract embeddings then fit linear model
 
         Params
         ------
         X: ArrayLike[str]
         y: ArrayLike[str]
-        """
+        '''
 
         # metadata
         if isinstance(self, ClassifierMixin):

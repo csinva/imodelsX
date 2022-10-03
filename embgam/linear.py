@@ -2,21 +2,12 @@ import numpy as np
 import pickle as pkl
 import os
 from os.path import join as oj
-from spacy.lang.en import English
-import argparse
 path_to_current_file = os.path.dirname(os.path.abspath(__file__))
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.model_selection import StratifiedKFold
-from collections import defaultdict
 from copy import deepcopy
-import pandas as pd
-import embgam.data as data
 from datasets import load_from_disk
-import experiments.config as config
-import sklearn
-import warnings
-from datetime import datetime
 
 def get_dataset_for_logistic(
     checkpoint: str, ngrams: int, all_ngrams: bool, norm: bool,

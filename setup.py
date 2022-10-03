@@ -19,7 +19,7 @@ required_pypi = [
 
 setuptools.setup(
     name="embgam",
-    version="0.01",
+    version="0.02",
     author="Chandan Singh",
     author_email="chansingh@microsoft.com",
     description="Emb-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models",

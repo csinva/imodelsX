@@ -1,18 +1,7 @@
 from transformers import BertModel, DistilBertModel
-from transformers import pipeline
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModel, AutoModelForCausalLM
-import embgam.data as data
-import numpy as np
-import pickle as pkl
-import os
-import os.path
+from transformers import AutoModelForCausalLM
 from os.path import join as oj
-from spacy.lang.en import English
-import spacy
-import argparse
-import experiments.config as config
 import torch
-from functools import partial
 
 def generate_ngrams_list(
     sentence,
