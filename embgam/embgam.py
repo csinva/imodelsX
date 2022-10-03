@@ -25,18 +25,17 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 class EmbGAM(BaseEstimator):
     def __init__(
-        self,
-        checkpoint: str = 'bert-base-uncased',
-        layer: str = 'last_hidden_state',
-        ngrams: int = 2,
-        all_ngrams: bool = False,
-        tokenizer_ngrams=None,
-        random_state=None,
-    ):
-        '''Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor to call these functions
-        
-        Params
-        ------
+            self,
+            checkpoint: str = 'bert-base-uncased',
+            layer: str = 'last_hidden_state',
+            ngrams: int = 2,
+            all_ngrams: bool = False,
+            tokenizer_ngrams=None,
+            random_state=None,):
+        '''Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.
+
+        Parameters
+        ----------
         checkpoint: str
             Name of model checkpoint (i.e. to be fetch by huggingface)
         layer: str
@@ -64,8 +63,8 @@ class EmbGAM(BaseEstimator):
             cache_linear_coefs: bool = True):
         '''Extract embeddings then fit linear model
 
-        Params
-        ------
+        Parameters
+        ----------
         X: ArrayLike[str]
         y: ArrayLike[str]
         '''
@@ -205,7 +204,7 @@ class EmbGAM(BaseEstimator):
         """
 
     def predict(self, X):
-        '''Predict. For regression returns continuous output.
+        '''For regression returns continuous output.
         For classification, returns discrete output.
         '''
         check_is_fitted(self)
@@ -251,14 +250,6 @@ class EmbGAM(BaseEstimator):
 For better performance, call cache_linear_coefs on the test dataset \
 before calling predict.')
         return np.array(preds)
-    """
-    def __str__(self):
-        s = '> ------------------------------\n'
-        s += '> EmbGAM:\n'
-        s += '> \tPredictions are made by summing the coefficients of each rule\n'
-        s += '> ------------------------------\n'
-        return s + self.visualize().to_string(index=False) + '\n'
-    """
 
 
 class EmbGAMRegressor(EmbGAM, RegressorMixin):

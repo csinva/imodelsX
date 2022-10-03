@@ -38,22 +38,16 @@ Emb-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Mod
 Chandan Singh &amp; Jianfeng Gao
 https://arxiv.org/abs/2209.11799
 &#34;&#34;&#34;
-from numbers import Number
-from re import I
-from typing import List, Tuple
 from numpy.typing import ArrayLike
 import numpy as np
-import pandas as pd
 from scipy.special import softmax
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.linear_model import LogisticRegressionCV, RidgeCV
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.validation import check_is_fitted
 from spacy.lang.en import English
 import transformers
 import embgam.embed
-from functools import partial
 from tqdm import tqdm
 import warnings
 import torch
@@ -62,24 +56,21 @@ device = &#39;cuda&#39; if torch.cuda.is_available() else &#39;cpu&#39;
 
 
 class EmbGAM(BaseEstimator):
-    &#34;&#34;&#34;Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor to call these functions
-    &#34;&#34;&#34;
-
     def __init__(
-        self,
-        checkpoint: str = &#39;bert-base-uncased&#39;,
-        layer: str = &#39;last_hidden_state&#39;,
-        ngrams: int = 2,
-        all_ngrams: bool = False,
-        tokenizer_ngrams=None,
-        random_state=None,
-    ):
-        &#34;&#34;&#34;
-        Params
-        ------
-        checkpoint
+            self,
+            checkpoint: str = &#39;bert-base-uncased&#39;,
+            layer: str = &#39;last_hidden_state&#39;,
+            ngrams: int = 2,
+            all_ngrams: bool = False,
+            tokenizer_ngrams=None,
+            random_state=None,):
+        &#39;&#39;&#39;Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.
+
+        Parameters
+        ----------
+        checkpoint: str
             Name of model checkpoint (i.e. to be fetch by huggingface)
-        layer
+        layer: str
             Name of layer to extract embeddings from
         ngrams
             Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
@@ -89,7 +80,7 @@ class EmbGAM(BaseEstimator):
             if None, defaults to spacy English tokenizer
         random_state
             random seed for fitting
-        &#34;&#34;&#34;
+        &#39;&#39;&#39;
         self.checkpoint = checkpoint
         self.ngrams = ngrams
         if tokenizer_ngrams == None:
@@ -102,13 +93,13 @@ class EmbGAM(BaseEstimator):
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True):
-        &#34;&#34;&#34;Extract embeddings then fit linear model
+        &#39;&#39;&#39;Extract embeddings then fit linear model
 
-        Params
-        ------
+        Parameters
+        ----------
         X: ArrayLike[str]
         y: ArrayLike[str]
-        &#34;&#34;&#34;
+        &#39;&#39;&#39;
 
         # metadata
         if isinstance(self, ClassifierMixin):
@@ -245,7 +236,7 @@ class EmbGAM(BaseEstimator):
         &#34;&#34;&#34;
 
     def predict(self, X):
-        &#39;&#39;&#39;Predict. For regression returns continuous output.
+        &#39;&#39;&#39;For regression returns continuous output.
         For classification, returns discrete output.
         &#39;&#39;&#39;
         check_is_fitted(self)
@@ -291,14 +282,6 @@ class EmbGAM(BaseEstimator):
 For better performance, call cache_linear_coefs on the test dataset \
 before calling predict.&#39;)
         return np.array(preds)
-    &#34;&#34;&#34;
-    def __str__(self):
-        s = &#39;&gt; ------------------------------\n&#39;
-        s += &#39;&gt; EmbGAM:\n&#39;
-        s += &#39;&gt; \tPredictions are made by summing the coefficients of each rule\n&#39;
-        s += &#39;&gt; ------------------------------\n&#39;
-        return s + self.visualize().to_string(index=False) + &#39;\n&#39;
-    &#34;&#34;&#34;
 
 
 class EmbGAMRegressor(EmbGAM, RegressorMixin):
@@ -323,43 +306,47 @@ class EmbGAMClassifier(EmbGAM, ClassifierMixin):
 <span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor to call these functions</p>
-<h2 id="params">Params</h2>
-<p>checkpoint
-Name of model checkpoint (i.e. to be fetch by huggingface)
-layer
-Name of layer to extract embeddings from
-ngrams
-Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
-all_ngrams
-Whether to use all order ngrams &lt;= ngrams argument
-tokenizer_ngrams
-if None, defaults to spacy English tokenizer
-random_state
-random seed for fitting</p></div>
+<div class="desc"><p>Base class for all estimators in scikit-learn.</p>
+<h2 id="notes">Notes</h2>
+<p>All estimators should specify all the parameters that can be set
+at the class level in their <code>__init__</code> as explicit keyword
+arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
+<p>Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of model checkpoint (i.e. to be fetch by huggingface)</dd>
+<dt><strong><code>layer</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of layer to extract embeddings from</dd>
+<dt><strong><code>ngrams</code></strong></dt>
+<dd>Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.</dd>
+<dt><strong><code>all_ngrams</code></strong></dt>
+<dd>Whether to use all order ngrams &lt;= ngrams argument</dd>
+<dt><strong><code>tokenizer_ngrams</code></strong></dt>
+<dd>if None, defaults to spacy English tokenizer</dd>
+<dt><strong><code>random_state</code></strong></dt>
+<dd>random seed for fitting</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class EmbGAM(BaseEstimator):
-    &#34;&#34;&#34;Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor to call these functions
-    &#34;&#34;&#34;
-
     def __init__(
-        self,
-        checkpoint: str = &#39;bert-base-uncased&#39;,
-        layer: str = &#39;last_hidden_state&#39;,
-        ngrams: int = 2,
-        all_ngrams: bool = False,
-        tokenizer_ngrams=None,
-        random_state=None,
-    ):
-        &#34;&#34;&#34;
-        Params
-        ------
-        checkpoint
+            self,
+            checkpoint: str = &#39;bert-base-uncased&#39;,
+            layer: str = &#39;last_hidden_state&#39;,
+            ngrams: int = 2,
+            all_ngrams: bool = False,
+            tokenizer_ngrams=None,
+            random_state=None,):
+        &#39;&#39;&#39;Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.
+
+        Parameters
+        ----------
+        checkpoint: str
             Name of model checkpoint (i.e. to be fetch by huggingface)
-        layer
+        layer: str
             Name of layer to extract embeddings from
         ngrams
             Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
@@ -369,7 +356,7 @@ random seed for fitting</p></div>
             if None, defaults to spacy English tokenizer
         random_state
             random seed for fitting
-        &#34;&#34;&#34;
+        &#39;&#39;&#39;
         self.checkpoint = checkpoint
         self.ngrams = ngrams
         if tokenizer_ngrams == None:
@@ -382,13 +369,13 @@ random seed for fitting</p></div>
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True):
-        &#34;&#34;&#34;Extract embeddings then fit linear model
+        &#39;&#39;&#39;Extract embeddings then fit linear model
 
-        Params
-        ------
+        Parameters
+        ----------
         X: ArrayLike[str]
         y: ArrayLike[str]
-        &#34;&#34;&#34;
+        &#39;&#39;&#39;
 
         # metadata
         if isinstance(self, ClassifierMixin):
@@ -525,7 +512,7 @@ random seed for fitting</p></div>
         &#34;&#34;&#34;
 
     def predict(self, X):
-        &#39;&#39;&#39;Predict. For regression returns continuous output.
+        &#39;&#39;&#39;For regression returns continuous output.
         For classification, returns discrete output.
         &#39;&#39;&#39;
         check_is_fitted(self)
@@ -570,15 +557,7 @@ random seed for fitting</p></div>
                 f&#39;Saw an unseen ungram {n_unseen_ngrams} times. \
 For better performance, call cache_linear_coefs on the test dataset \
 before calling predict.&#39;)
-        return np.array(preds)
-    &#34;&#34;&#34;
-    def __str__(self):
-        s = &#39;&gt; ------------------------------\n&#39;
-        s += &#39;&gt; EmbGAM:\n&#39;
-        s += &#39;&gt; \tPredictions are made by summing the coefficients of each rule\n&#39;
-        s += &#39;&gt; ------------------------------\n&#39;
-        return s + self.visualize().to_string(index=False) + &#39;\n&#39;
-    &#34;&#34;&#34;</code></pre>
+        return np.array(preds)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -666,22 +645,26 @@ If it already exists, only add linear coefs for new ngrams</p></div>
 </code></dt>
 <dd>
 <div class="desc"><p>Extract embeddings then fit linear model</p>
-<h2 id="params">Params</h2>
-<p>X: ArrayLike[str]
-y: ArrayLike[str]</p></div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>X</code></strong> :&ensp;<code>ArrayLike[str]</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>ArrayLike[str]</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
         cache_linear_coefs: bool = True):
-    &#34;&#34;&#34;Extract embeddings then fit linear model
+    &#39;&#39;&#39;Extract embeddings then fit linear model
 
-    Params
-    ------
+    Parameters
+    ----------
     X: ArrayLike[str]
     y: ArrayLike[str]
-    &#34;&#34;&#34;
+    &#39;&#39;&#39;
 
     # metadata
     if isinstance(self, ClassifierMixin):
@@ -783,14 +766,14 @@ y: ArrayLike[str]</p></div>
 <span>def <span class="ident">predict</span></span>(<span>self, X)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Predict. For regression returns continuous output.
+<div class="desc"><p>For regression returns continuous output.
 For classification, returns discrete output.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def predict(self, X):
-    &#39;&#39;&#39;Predict. For regression returns continuous output.
+    &#39;&#39;&#39;For regression returns continuous output.
     For classification, returns discrete output.
     &#39;&#39;&#39;
     check_is_fitted(self)
@@ -865,20 +848,27 @@ before calling predict.&#39;)
 <span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor to call these functions</p>
-<h2 id="params">Params</h2>
-<p>checkpoint
-Name of model checkpoint (i.e. to be fetch by huggingface)
-layer
-Name of layer to extract embeddings from
-ngrams
-Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
-all_ngrams
-Whether to use all order ngrams &lt;= ngrams argument
-tokenizer_ngrams
-if None, defaults to spacy English tokenizer
-random_state
-random seed for fitting</p></div>
+<div class="desc"><p>Base class for all estimators in scikit-learn.</p>
+<h2 id="notes">Notes</h2>
+<p>All estimators should specify all the parameters that can be set
+at the class level in their <code>__init__</code> as explicit keyword
+arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
+<p>Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of model checkpoint (i.e. to be fetch by huggingface)</dd>
+<dt><strong><code>layer</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of layer to extract embeddings from</dd>
+<dt><strong><code>ngrams</code></strong></dt>
+<dd>Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.</dd>
+<dt><strong><code>all_ngrams</code></strong></dt>
+<dd>Whether to use all order ngrams &lt;= ngrams argument</dd>
+<dt><strong><code>tokenizer_ngrams</code></strong></dt>
+<dd>if None, defaults to spacy English tokenizer</dd>
+<dt><strong><code>random_state</code></strong></dt>
+<dd>random seed for fitting</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -909,20 +899,27 @@ random seed for fitting</p></div>
 <span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor to call these functions</p>
-<h2 id="params">Params</h2>
-<p>checkpoint
-Name of model checkpoint (i.e. to be fetch by huggingface)
-layer
-Name of layer to extract embeddings from
-ngrams
-Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
-all_ngrams
-Whether to use all order ngrams &lt;= ngrams argument
-tokenizer_ngrams
-if None, defaults to spacy English tokenizer
-random_state
-random seed for fitting</p></div>
+<div class="desc"><p>Base class for all estimators in scikit-learn.</p>
+<h2 id="notes">Notes</h2>
+<p>All estimators should specify all the parameters that can be set
+at the class level in their <code>__init__</code> as explicit keyword
+arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
+<p>Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of model checkpoint (i.e. to be fetch by huggingface)</dd>
+<dt><strong><code>layer</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of layer to extract embeddings from</dd>
+<dt><strong><code>ngrams</code></strong></dt>
+<dd>Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.</dd>
+<dt><strong><code>all_ngrams</code></strong></dt>
+<dd>Whether to use all order ngrams &lt;= ngrams argument</dd>
+<dt><strong><code>tokenizer_ngrams</code></strong></dt>
+<dd>if None, defaults to spacy English tokenizer</dd>
+<dt><strong><code>random_state</code></strong></dt>
+<dd>random seed for fitting</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
