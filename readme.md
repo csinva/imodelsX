@@ -1,7 +1,10 @@
 <h1 align="center">   <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="30%"> Emb-GAM <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="30%"></h1>
-<p align="center"> Interpretable linear model that leverages a pre-trained language model to better learn interactions.
+<p align="center"> Interpretable linear model that leverages a pre-trained language model to better learn interactions. One-line fit function.
 </p>
-
+<p align="center">
+  <a href="https://csinva.github.io/emb-gap/">📚 sklearn-friendly api</a> •
+  <a href="https://github.com/csinva/emb-gam/blob/master/demo.ipynb">📖 demo notebook</a>
+</p>
 <p align="center">
   <img src="https://img.shields.io/badge/license-mit-blue.svg">
   <img src="https://img.shields.io/badge/python-3.6--3.8-blue">

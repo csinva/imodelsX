@@ -1,4 +1,8 @@
-"""Emb-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models
+"""
+Simple scikit-learn interface for Emb-GAM.
+
+
+Emb-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models
 Chandan Singh & Jianfeng Gao
 https://arxiv.org/abs/2209.11799
 """
@@ -31,18 +35,28 @@ class EmbGAM(BaseEstimator):
 
     def __init__(
         self,
-        checkpoint='bert-base-uncased',
-        layer='last_hidden_state',
-        ngrams=2,
-        all_ngrams=False,
+        checkpoint: str = 'bert-base-uncased',
+        layer: str = 'last_hidden_state',
+        ngrams: int = 2,
+        all_ngrams: bool = False,
         tokenizer_ngrams=None,
         random_state=None,
     ):
         """
         Params
         ------
+        checkpoint
+            Name of model checkpoint (i.e. to be fetch by huggingface)
+        layer
+            Name of layer to extract embeddings from
+        ngrams
+            Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
+        all_ngrams
+            Whether to use all order ngrams <= ngrams argument
         tokenizer_ngrams
             if None, defaults to spacy English tokenizer
+        random_state
+            random seed for fitting
         """
         self.checkpoint = checkpoint
         self.ngrams = ngrams
@@ -56,12 +70,12 @@ class EmbGAM(BaseEstimator):
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True):
-        """Extract embeddings then get linear model
+        """Extract embeddings then fit linear model
 
         Params
         ------
         X: ArrayLike[str]
-
+        y: ArrayLike[str]
         """
 
         # metadata
@@ -177,16 +191,6 @@ class EmbGAM(BaseEstimator):
         print('coefs_dict_ len', len(self.coefs_dict_))
 
     def get_ngrams_list(self, X):
-        """
-        # Approach using sklearn tokenizer (faster but not perfect match)
-        def tokenizer_func(x):
-            return [str(x) for x in self.tokenizer_ngrams(x)]
-        v = CountVectorizer(tokenizer=tokenizer_func,
-                            ngram_range=(self.ngrams, self.ngrams))
-        v.fit(X)
-        ngrams_list = sorted(list(v.vocabulary_.keys()))
-        """
-
         all_ngrams = set()
         for x in X:
             seqs = embgam.embed.generate_ngrams_list(
@@ -197,6 +201,16 @@ class EmbGAM(BaseEstimator):
             )
             all_ngrams |= set(seqs)
         return sorted(list(all_ngrams))
+
+        """
+        # Approach using sklearn tokenizer (faster but not perfect match)
+        def tokenizer_func(x):
+            return [str(x) for x in self.tokenizer_ngrams(x)]
+        v = CountVectorizer(tokenizer=tokenizer_func,
+                            ngram_range=(self.ngrams, self.ngrams))
+        v.fit(X)
+        ngrams_list = sorted(list(v.vocabulary_.keys()))
+        """
 
     def predict(self, X):
         '''Predict. For regression returns continuous output.
@@ -220,7 +234,7 @@ class EmbGAM(BaseEstimator):
         return softmax(logits, axis=1)
 
     def predict_cached(self, X):
-        """Predict only using cached coefs
+        """Predict only the cached coefs in self.coefs_dict_
         """
         assert hasattr(self, 'coefs_dict_'), 'coefs are not cached!'
         preds = []
