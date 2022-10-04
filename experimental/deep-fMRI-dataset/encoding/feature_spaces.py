@@ -11,7 +11,7 @@ from ridge_utils.stimulus_utils import load_textgrids, load_simulated_trfiles
 
 repo_dir = join(dirname(dirname(os.path.abspath(__file__))))
 em_data_dir = join(repo_dir, 'em_data')
-data_dir = join(repo_dir, 'encoding', 'data')
+data_dir = join(repo_dir, 'data')
 
 def get_story_wordseqs(stories):
 	grids = load_textgrids(stories, data_dir)
