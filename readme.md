@@ -1,14 +1,14 @@
-<h1 align="center">   <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="30%"> Emb-GAM <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="30%"></h1>
+<h1 align="center">   <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="30%"> imodelsX: interpretability for teXt <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="30%"></h1>
 <p align="center"> Interpretable linear model that leverages a pre-trained language model to better learn interactions. One-line fit function.
 </p>
 <p align="center">
   <a href="https://csinva.github.io/emb-gam/">📚 sklearn-friendly api</a> •
-  <a href="https://github.com/csinva/emb-gam/blob/master/demo.ipynb">📖 demo notebook</a>
+  <a href="https://github.com/csinva/emb-gam/blob/master/demo_embgam.ipynb">📖 demo notebook</a>
 </p>
 <p align="center">
   <img src="https://img.shields.io/badge/license-mit-blue.svg">
   <img src="https://img.shields.io/badge/python-3.6--3.8-blue">
-  <img src="https://img.shields.io/pypi/v/embgam?color=green">  
+  <img src="https://img.shields.io/pypi/v/imodelsx?color=green">  
 </p>  
 
 
@@ -18,9 +18,9 @@
 </b> Emb-GAM uses a pre-trained language model to extract features from text data then combines them in order to extract out a simple, linear model.
 
 # Quickstart
-**Installation**: `pip install embgam` (or, for more control, clone and install from source)
+**Installation**: `pip install imodelsx` (or, for more control, clone and install from source)
 
-**Usage example** (see <a href="https://csinva.github.io/emb-gam/">api</a> or <a href="https://github.com/csinva/emb-gam/blob/master/demo.ipynb">demo notebook</a> for more details):
+**Usage example** (see <a href="https://csinva.github.io/emb-gam/">api</a> or <a href="https://github.com/csinva/emb-gam/blob/master/demo_embgam.ipynb">demo notebook</a> for more details):
 
 ```python
 from embgam import EmbGAMClassifier

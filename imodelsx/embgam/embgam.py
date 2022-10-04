@@ -16,7 +16,7 @@ from sklearn.utils.validation import check_is_fitted
 from spacy.lang.en import English
 from sklearn.preprocessing import StandardScaler
 import transformers
-import embgam.embed
+import imodelsx.embgam.embed
 from tqdm import tqdm
 import os
 import os.path
@@ -130,7 +130,7 @@ class EmbGAM(BaseEstimator):
     def _get_embs_summed(self, X, model, tokenizer_embeddings):
         embs = []
         for x in tqdm(X):
-            emb = embgam.embed.embed_and_sum_function(
+            emb = imodelsx.embgam.embed.embed_and_sum_function(
                 x,
                 model=model,
                 ngrams=self.ngrams,
@@ -207,7 +207,7 @@ class EmbGAM(BaseEstimator):
     def _get_ngrams_list(self, X):
         all_ngrams = set()
         for x in X:
-            seqs = embgam.embed.generate_ngrams_list(
+            seqs = imodelsx.embgam.embed.generate_ngrams_list(
                 x,
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,
@@ -245,7 +245,7 @@ class EmbGAM(BaseEstimator):
         n_unseen_ngrams = 0
         for x in X:
             pred = 0
-            seqs = embgam.embed.generate_ngrams_list(
+            seqs = imodelsx.embgam.embed.generate_ngrams_list(
                 x,
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,

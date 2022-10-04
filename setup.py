@@ -18,14 +18,14 @@ required_pypi = [
 ]
 
 setuptools.setup(
-    name="embgam",
-    version="0.3",
-    author="Chandan Singh",
+    name="imodelsx",
+    version="0.01",
+    author="Chandan Singh, John X. Morris",
     author_email="chansingh@microsoft.com",
-    description="Emb-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models",
+    description="Library to explain *a dataset* in natural language.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/csinva/emb-gam",
+    url="https://github.com/csinva/imodelsX",
     packages=setuptools.find_packages(
         exclude=['tests', 'tests.*', '*.test.*']
     ),
