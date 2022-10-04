@@ -46,10 +46,14 @@ from sklearn.linear_model import LogisticRegressionCV, RidgeCV
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
 from spacy.lang.en import English
+from sklearn.preprocessing import StandardScaler
 import transformers
 import embgam.embed
 from tqdm import tqdm
+import os
+import os.path
 import warnings
+import pickle as pkl
 import torch
 from sklearn.exceptions import ConvergenceWarning
 device = &#39;cuda&#39; if torch.cuda.is_available() else &#39;cpu&#39;
@@ -57,13 +61,15 @@ device = &#39;cuda&#39; if torch.cuda.is_available() else &#39;cpu&#39;
 
 class EmbGAM(BaseEstimator):
     def __init__(
-            self,
-            checkpoint: str = &#39;bert-base-uncased&#39;,
-            layer: str = &#39;last_hidden_state&#39;,
-            ngrams: int = 2,
-            all_ngrams: bool = False,
-            tokenizer_ngrams=None,
-            random_state=None,):
+        self,
+        checkpoint: str = &#39;bert-base-uncased&#39;,
+        layer: str = &#39;last_hidden_state&#39;,
+        ngrams: int = 2,
+        all_ngrams: bool = False,
+        tokenizer_ngrams=None,
+        random_state=None,
+        normalize_embs=False,
+    ):
         &#39;&#39;&#39;Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.
 
         Parameters
@@ -80,6 +86,8 @@ class EmbGAM(BaseEstimator):
             if None, defaults to spacy English tokenizer
         random_state
             random seed for fitting
+        normalize_embs
+            whether to normalize embeddings before fitting linear model
         &#39;&#39;&#39;
         self.checkpoint = checkpoint
         self.ngrams = ngrams
@@ -90,15 +98,22 @@ class EmbGAM(BaseEstimator):
         self.layer = layer
         self.random_state = random_state
         self.all_ngrams = all_ngrams
+        self.normalize_embs = normalize_embs
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
-            cache_linear_coefs: bool = True):
+            cache_linear_coefs: bool = True,
+            cache_embs_dir: str=None,
+        ):
         &#39;&#39;&#39;Extract embeddings then fit linear model
 
         Parameters
         ----------
         X: ArrayLike[str]
         y: ArrayLike[str]
+        cache_linear_coefs
+            Whether to compute and cache linear coefs into self.coefs_dict_
+        cache_embs_dir, optional
+            if not None, directory to save embeddings into
         &#39;&#39;&#39;
 
         # metadata
@@ -118,7 +133,13 @@ class EmbGAM(BaseEstimator):
         # get embs
         if verbose:
             print(&#39;calculating embeddings...&#39;)
-        embs = self.get_embs_summed(X, model, tokenizer_embeddings)
+        embs = self._get_embs_summed(X, model, tokenizer_embeddings)
+        if self.normalize_embs:
+            self.normalizer = StandardScaler()
+            embs = self.normalizer.fit_transform(embs)
+        if cache_embs_dir is not None:
+            os.makedirs(cache_embs_dir, exist_ok=True)
+            pkl.dump(embs, open(os.path.join(cache_embs_dir, &#39;embs.pkl&#39;), &#39;wb&#39;))
 
         # train linear
         warnings.filterwarnings(&#34;ignore&#34;, category=ConvergenceWarning)
@@ -138,9 +159,9 @@ class EmbGAM(BaseEstimator):
 
         return self
 
-    def get_embs_summed(self, X, model, tokenizer_embeddings):
+    def _get_embs_summed(self, X, model, tokenizer_embeddings):
         embs = []
-        for i, x in tqdm(enumerate(X)):
+        for x in tqdm(X):
             emb = embgam.embed.embed_and_sum_function(
                 x,
                 model=model,
@@ -166,7 +187,7 @@ class EmbGAM(BaseEstimator):
             tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
                 self.checkpoint)
 
-        ngrams_list = self.get_ngrams_list(X)
+        ngrams_list = self._get_ngrams_list(X)
 
         # dont recompute ngrams we already know
         if hasattr(self, &#39;coefs_dict_&#39;):
@@ -202,6 +223,8 @@ class EmbGAM(BaseEstimator):
                 emb = emb.mean(axis=1)
             embs.append(emb)
         embs = np.array(embs).squeeze()
+        if self.normalize_embs:
+            embs = self.normalizer.transform(embs)
 
         # save coefs
         coef_embs = self.linear.coef_.squeeze()
@@ -213,7 +236,7 @@ class EmbGAM(BaseEstimator):
         }
         print(&#39;coefs_dict_ len&#39;, len(self.coefs_dict_))
 
-    def get_ngrams_list(self, X):
+    def _get_ngrams_list(self, X):
         all_ngrams = set()
         for x in X:
             seqs = embgam.embed.generate_ngrams_list(
@@ -235,34 +258,34 @@ class EmbGAM(BaseEstimator):
         ngrams_list = sorted(list(v.vocabulary_.keys()))
         &#34;&#34;&#34;
 
-    def predict(self, X):
+    def predict(self, X, warn=True):
         &#39;&#39;&#39;For regression returns continuous output.
         For classification, returns discrete output.
         &#39;&#39;&#39;
         check_is_fitted(self)
-        preds = self.predict_cached(X)
+        preds = self._predict_cached(X, warn=warn)
         if isinstance(self, RegressorMixin):
             return preds
         elif isinstance(self, ClassifierMixin):
             return ((preds + self.linear.intercept_) &gt; 0).astype(int)
 
-    def predict_proba(self, X):
+    def predict_proba(self, X, warn=True):
         if not isinstance(self, ClassifierMixin):
             raise Exception(
                 &#34;predict_proba only available for EmbGAMClassifier&#34;)
         check_is_fitted(self)
-        preds = self.predict_cached(X)
+        preds = self._predict_cached(X, warn=warn)
         logits = np.vstack(
             (1 - preds, preds)).transpose()
         return softmax(logits, axis=1)
 
-    def predict_cached(self, X):
+    def _predict_cached(self, X, warn):
         &#34;&#34;&#34;Predict only the cached coefs in self.coefs_dict_
         &#34;&#34;&#34;
         assert hasattr(self, &#39;coefs_dict_&#39;), &#39;coefs are not cached!&#39;
         preds = []
         n_unseen_ngrams = 0
-        for x in tqdm(X):
+        for x in X:
             pred = 0
             seqs = embgam.embed.generate_ngrams_list(
                 x,
@@ -276,7 +299,7 @@ class EmbGAM(BaseEstimator):
                 else:
                     n_unseen_ngrams += 1
             preds.append(pred)
-        if n_unseen_ngrams &gt; 0:
+        if n_unseen_ngrams &gt; 0 and warn:
             warnings.warn(
                 f&#39;Saw an unseen ungram {n_unseen_ngrams} times. \
 For better performance, call cache_linear_coefs on the test dataset \
@@ -303,7 +326,7 @@ class EmbGAMClassifier(EmbGAM, ClassifierMixin):
 <dl>
 <dt id="embgam.embgam.EmbGAM"><code class="flex name class">
 <span>class <span class="ident">EmbGAM</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -326,6 +349,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>if None, defaults to spacy English tokenizer</dd>
 <dt><strong><code>random_state</code></strong></dt>
 <dd>random seed for fitting</dd>
+<dt><strong><code>normalize_embs</code></strong></dt>
+<dd>whether to normalize embeddings before fitting linear model</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -333,13 +358,15 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 </summary>
 <pre><code class="python">class EmbGAM(BaseEstimator):
     def __init__(
-            self,
-            checkpoint: str = &#39;bert-base-uncased&#39;,
-            layer: str = &#39;last_hidden_state&#39;,
-            ngrams: int = 2,
-            all_ngrams: bool = False,
-            tokenizer_ngrams=None,
-            random_state=None,):
+        self,
+        checkpoint: str = &#39;bert-base-uncased&#39;,
+        layer: str = &#39;last_hidden_state&#39;,
+        ngrams: int = 2,
+        all_ngrams: bool = False,
+        tokenizer_ngrams=None,
+        random_state=None,
+        normalize_embs=False,
+    ):
         &#39;&#39;&#39;Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.
 
         Parameters
@@ -356,6 +383,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
             if None, defaults to spacy English tokenizer
         random_state
             random seed for fitting
+        normalize_embs
+            whether to normalize embeddings before fitting linear model
         &#39;&#39;&#39;
         self.checkpoint = checkpoint
         self.ngrams = ngrams
@@ -366,15 +395,22 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
         self.layer = layer
         self.random_state = random_state
         self.all_ngrams = all_ngrams
+        self.normalize_embs = normalize_embs
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
-            cache_linear_coefs: bool = True):
+            cache_linear_coefs: bool = True,
+            cache_embs_dir: str=None,
+        ):
         &#39;&#39;&#39;Extract embeddings then fit linear model
 
         Parameters
         ----------
         X: ArrayLike[str]
         y: ArrayLike[str]
+        cache_linear_coefs
+            Whether to compute and cache linear coefs into self.coefs_dict_
+        cache_embs_dir, optional
+            if not None, directory to save embeddings into
         &#39;&#39;&#39;
 
         # metadata
@@ -394,7 +430,13 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
         # get embs
         if verbose:
             print(&#39;calculating embeddings...&#39;)
-        embs = self.get_embs_summed(X, model, tokenizer_embeddings)
+        embs = self._get_embs_summed(X, model, tokenizer_embeddings)
+        if self.normalize_embs:
+            self.normalizer = StandardScaler()
+            embs = self.normalizer.fit_transform(embs)
+        if cache_embs_dir is not None:
+            os.makedirs(cache_embs_dir, exist_ok=True)
+            pkl.dump(embs, open(os.path.join(cache_embs_dir, &#39;embs.pkl&#39;), &#39;wb&#39;))
 
         # train linear
         warnings.filterwarnings(&#34;ignore&#34;, category=ConvergenceWarning)
@@ -414,9 +456,9 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 
         return self
 
-    def get_embs_summed(self, X, model, tokenizer_embeddings):
+    def _get_embs_summed(self, X, model, tokenizer_embeddings):
         embs = []
-        for i, x in tqdm(enumerate(X)):
+        for x in tqdm(X):
             emb = embgam.embed.embed_and_sum_function(
                 x,
                 model=model,
@@ -442,7 +484,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
             tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
                 self.checkpoint)
 
-        ngrams_list = self.get_ngrams_list(X)
+        ngrams_list = self._get_ngrams_list(X)
 
         # dont recompute ngrams we already know
         if hasattr(self, &#39;coefs_dict_&#39;):
@@ -478,6 +520,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
                 emb = emb.mean(axis=1)
             embs.append(emb)
         embs = np.array(embs).squeeze()
+        if self.normalize_embs:
+            embs = self.normalizer.transform(embs)
 
         # save coefs
         coef_embs = self.linear.coef_.squeeze()
@@ -489,7 +533,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
         }
         print(&#39;coefs_dict_ len&#39;, len(self.coefs_dict_))
 
-    def get_ngrams_list(self, X):
+    def _get_ngrams_list(self, X):
         all_ngrams = set()
         for x in X:
             seqs = embgam.embed.generate_ngrams_list(
@@ -511,34 +555,34 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
         ngrams_list = sorted(list(v.vocabulary_.keys()))
         &#34;&#34;&#34;
 
-    def predict(self, X):
+    def predict(self, X, warn=True):
         &#39;&#39;&#39;For regression returns continuous output.
         For classification, returns discrete output.
         &#39;&#39;&#39;
         check_is_fitted(self)
-        preds = self.predict_cached(X)
+        preds = self._predict_cached(X, warn=warn)
         if isinstance(self, RegressorMixin):
             return preds
         elif isinstance(self, ClassifierMixin):
             return ((preds + self.linear.intercept_) &gt; 0).astype(int)
 
-    def predict_proba(self, X):
+    def predict_proba(self, X, warn=True):
         if not isinstance(self, ClassifierMixin):
             raise Exception(
                 &#34;predict_proba only available for EmbGAMClassifier&#34;)
         check_is_fitted(self)
-        preds = self.predict_cached(X)
+        preds = self._predict_cached(X, warn=warn)
         logits = np.vstack(
             (1 - preds, preds)).transpose()
         return softmax(logits, axis=1)
 
-    def predict_cached(self, X):
+    def _predict_cached(self, X, warn):
         &#34;&#34;&#34;Predict only the cached coefs in self.coefs_dict_
         &#34;&#34;&#34;
         assert hasattr(self, &#39;coefs_dict_&#39;), &#39;coefs are not cached!&#39;
         preds = []
         n_unseen_ngrams = 0
-        for x in tqdm(X):
+        for x in X:
             pred = 0
             seqs = embgam.embed.generate_ngrams_list(
                 x,
@@ -552,7 +596,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
                 else:
                     n_unseen_ngrams += 1
             preds.append(pred)
-        if n_unseen_ngrams &gt; 0:
+        if n_unseen_ngrams &gt; 0 and warn:
             warnings.warn(
                 f&#39;Saw an unseen ungram {n_unseen_ngrams} times. \
 For better performance, call cache_linear_coefs on the test dataset \
@@ -592,7 +636,7 @@ If it already exists, only add linear coefs for new ngrams</p></div>
         tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
             self.checkpoint)
 
-    ngrams_list = self.get_ngrams_list(X)
+    ngrams_list = self._get_ngrams_list(X)
 
     # dont recompute ngrams we already know
     if hasattr(self, &#39;coefs_dict_&#39;):
@@ -628,6 +672,8 @@ If it already exists, only add linear coefs for new ngrams</p></div>
             emb = emb.mean(axis=1)
         embs.append(emb)
     embs = np.array(embs).squeeze()
+    if self.normalize_embs:
+        embs = self.normalizer.transform(embs)
 
     # save coefs
     coef_embs = self.linear.coef_.squeeze()
@@ -641,7 +687,7 @@ If it already exists, only add linear coefs for new ngrams</p></div>
 </details>
 </dd>
 <dt id="embgam.embgam.EmbGAM.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, X: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_linear_coefs: bool = True)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, X: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_linear_coefs: bool = True, cache_embs_dir: str = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Extract embeddings then fit linear model</p>
@@ -651,19 +697,29 @@ If it already exists, only add linear coefs for new ngrams</p></div>
 <dd>&nbsp;</dd>
 <dt><strong><code>y</code></strong> :&ensp;<code>ArrayLike[str]</code></dt>
 <dd>&nbsp;</dd>
+<dt><strong><code>cache_linear_coefs</code></strong></dt>
+<dd>Whether to compute and cache linear coefs into self.coefs_dict_</dd>
+<dt><strong><code>cache_embs_dir</code></strong>, <strong><code>optional</code></strong></dt>
+<dd>if not None, directory to save embeddings into</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
-        cache_linear_coefs: bool = True):
+        cache_linear_coefs: bool = True,
+        cache_embs_dir: str=None,
+    ):
     &#39;&#39;&#39;Extract embeddings then fit linear model
 
     Parameters
     ----------
     X: ArrayLike[str]
     y: ArrayLike[str]
+    cache_linear_coefs
+        Whether to compute and cache linear coefs into self.coefs_dict_
+    cache_embs_dir, optional
+        if not None, directory to save embeddings into
     &#39;&#39;&#39;
 
     # metadata
@@ -683,7 +739,13 @@ If it already exists, only add linear coefs for new ngrams</p></div>
     # get embs
     if verbose:
         print(&#39;calculating embeddings...&#39;)
-    embs = self.get_embs_summed(X, model, tokenizer_embeddings)
+    embs = self._get_embs_summed(X, model, tokenizer_embeddings)
+    if self.normalize_embs:
+        self.normalizer = StandardScaler()
+        embs = self.normalizer.fit_transform(embs)
+    if cache_embs_dir is not None:
+        os.makedirs(cache_embs_dir, exist_ok=True)
+        pkl.dump(embs, open(os.path.join(cache_embs_dir, &#39;embs.pkl&#39;), &#39;wb&#39;))
 
     # train linear
     warnings.filterwarnings(&#34;ignore&#34;, category=ConvergenceWarning)
@@ -704,66 +766,8 @@ If it already exists, only add linear coefs for new ngrams</p></div>
     return self</code></pre>
 </details>
 </dd>
-<dt id="embgam.embgam.EmbGAM.get_embs_summed"><code class="name flex">
-<span>def <span class="ident">get_embs_summed</span></span>(<span>self, X, model, tokenizer_embeddings)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_embs_summed(self, X, model, tokenizer_embeddings):
-    embs = []
-    for i, x in tqdm(enumerate(X)):
-        emb = embgam.embed.embed_and_sum_function(
-            x,
-            model=model,
-            ngrams=self.ngrams,
-            tokenizer_embeddings=tokenizer_embeddings,
-            tokenizer_ngrams=self.tokenizer_ngrams,
-            checkpoint=self.checkpoint,
-            layer=self.layer,
-            all_ngrams=self.all_ngrams,
-        )
-        embs.append(emb[&#39;embs&#39;])
-    return np.array(embs).squeeze()  # num_examples x embedding_size</code></pre>
-</details>
-</dd>
-<dt id="embgam.embgam.EmbGAM.get_ngrams_list"><code class="name flex">
-<span>def <span class="ident">get_ngrams_list</span></span>(<span>self, X)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_ngrams_list(self, X):
-    all_ngrams = set()
-    for x in X:
-        seqs = embgam.embed.generate_ngrams_list(
-            x,
-            ngrams=self.ngrams,
-            tokenizer_ngrams=self.tokenizer_ngrams,
-            all_ngrams=self.all_ngrams,
-        )
-        all_ngrams |= set(seqs)
-    return sorted(list(all_ngrams))
-
-    &#34;&#34;&#34;
-    # Approach using sklearn tokenizer (faster but not perfect match)
-    def tokenizer_func(x):
-        return [str(x) for x in self.tokenizer_ngrams(x)]
-    v = CountVectorizer(tokenizer=tokenizer_func,
-                        ngram_range=(self.ngrams, self.ngrams))
-    v.fit(X)
-    ngrams_list = sorted(list(v.vocabulary_.keys()))
-    &#34;&#34;&#34;</code></pre>
-</details>
-</dd>
 <dt id="embgam.embgam.EmbGAM.predict"><code class="name flex">
-<span>def <span class="ident">predict</span></span>(<span>self, X)</span>
+<span>def <span class="ident">predict</span></span>(<span>self, X, warn=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>For regression returns continuous output.
@@ -772,57 +776,20 @@ For classification, returns discrete output.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def predict(self, X):
+<pre><code class="python">def predict(self, X, warn=True):
     &#39;&#39;&#39;For regression returns continuous output.
     For classification, returns discrete output.
     &#39;&#39;&#39;
     check_is_fitted(self)
-    preds = self.predict_cached(X)
+    preds = self._predict_cached(X, warn=warn)
     if isinstance(self, RegressorMixin):
         return preds
     elif isinstance(self, ClassifierMixin):
         return ((preds + self.linear.intercept_) &gt; 0).astype(int)</code></pre>
 </details>
 </dd>
-<dt id="embgam.embgam.EmbGAM.predict_cached"><code class="name flex">
-<span>def <span class="ident">predict_cached</span></span>(<span>self, X)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Predict only the cached coefs in self.coefs_dict_</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">    def predict_cached(self, X):
-        &#34;&#34;&#34;Predict only the cached coefs in self.coefs_dict_
-        &#34;&#34;&#34;
-        assert hasattr(self, &#39;coefs_dict_&#39;), &#39;coefs are not cached!&#39;
-        preds = []
-        n_unseen_ngrams = 0
-        for x in tqdm(X):
-            pred = 0
-            seqs = embgam.embed.generate_ngrams_list(
-                x,
-                ngrams=self.ngrams,
-                tokenizer_ngrams=self.tokenizer_ngrams,
-                all_ngrams=self.all_ngrams,
-            )
-            for seq in seqs:
-                if seq in self.coefs_dict_:
-                    pred += self.coefs_dict_[seq]
-                else:
-                    n_unseen_ngrams += 1
-            preds.append(pred)
-        if n_unseen_ngrams &gt; 0:
-            warnings.warn(
-                f&#39;Saw an unseen ungram {n_unseen_ngrams} times. \
-For better performance, call cache_linear_coefs on the test dataset \
-before calling predict.&#39;)
-        return np.array(preds)</code></pre>
-</details>
-</dd>
 <dt id="embgam.embgam.EmbGAM.predict_proba"><code class="name flex">
-<span>def <span class="ident">predict_proba</span></span>(<span>self, X)</span>
+<span>def <span class="ident">predict_proba</span></span>(<span>self, X, warn=True)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -830,12 +797,12 @@ before calling predict.&#39;)
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def predict_proba(self, X):
+<pre><code class="python">def predict_proba(self, X, warn=True):
     if not isinstance(self, ClassifierMixin):
         raise Exception(
             &#34;predict_proba only available for EmbGAMClassifier&#34;)
     check_is_fitted(self)
-    preds = self.predict_cached(X)
+    preds = self._predict_cached(X, warn=warn)
     logits = np.vstack(
         (1 - preds, preds)).transpose()
     return softmax(logits, axis=1)</code></pre>
@@ -845,7 +812,7 @@ before calling predict.&#39;)
 </dd>
 <dt id="embgam.embgam.EmbGAMClassifier"><code class="flex name class">
 <span>class <span class="ident">EmbGAMClassifier</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -868,6 +835,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>if None, defaults to spacy English tokenizer</dd>
 <dt><strong><code>random_state</code></strong></dt>
 <dd>random seed for fitting</dd>
+<dt><strong><code>normalize_embs</code></strong></dt>
+<dd>whether to normalize embeddings before fitting linear model</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -889,14 +858,13 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <li><code><a title="embgam.embgam.EmbGAM.cache_linear_coefs" href="#embgam.embgam.EmbGAM.cache_linear_coefs">cache_linear_coefs</a></code></li>
 <li><code><a title="embgam.embgam.EmbGAM.fit" href="#embgam.embgam.EmbGAM.fit">fit</a></code></li>
 <li><code><a title="embgam.embgam.EmbGAM.predict" href="#embgam.embgam.EmbGAM.predict">predict</a></code></li>
-<li><code><a title="embgam.embgam.EmbGAM.predict_cached" href="#embgam.embgam.EmbGAM.predict_cached">predict_cached</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="embgam.embgam.EmbGAMRegressor"><code class="flex name class">
 <span>class <span class="ident">EmbGAMRegressor</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -919,6 +887,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>if None, defaults to spacy English tokenizer</dd>
 <dt><strong><code>random_state</code></strong></dt>
 <dd>random seed for fitting</dd>
+<dt><strong><code>normalize_embs</code></strong></dt>
+<dd>whether to normalize embeddings before fitting linear model</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -940,7 +910,6 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <li><code><a title="embgam.embgam.EmbGAM.cache_linear_coefs" href="#embgam.embgam.EmbGAM.cache_linear_coefs">cache_linear_coefs</a></code></li>
 <li><code><a title="embgam.embgam.EmbGAM.fit" href="#embgam.embgam.EmbGAM.fit">fit</a></code></li>
 <li><code><a title="embgam.embgam.EmbGAM.predict" href="#embgam.embgam.EmbGAM.predict">predict</a></code></li>
-<li><code><a title="embgam.embgam.EmbGAM.predict_cached" href="#embgam.embgam.EmbGAM.predict_cached">predict_cached</a></code></li>
 </ul>
 </li>
 </ul>
@@ -959,13 +928,10 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <ul>
 <li>
 <h4><code><a title="embgam.embgam.EmbGAM" href="#embgam.embgam.EmbGAM">EmbGAM</a></code></h4>
-<ul class="two-column">
+<ul class="">
 <li><code><a title="embgam.embgam.EmbGAM.cache_linear_coefs" href="#embgam.embgam.EmbGAM.cache_linear_coefs">cache_linear_coefs</a></code></li>
 <li><code><a title="embgam.embgam.EmbGAM.fit" href="#embgam.embgam.EmbGAM.fit">fit</a></code></li>
-<li><code><a title="embgam.embgam.EmbGAM.get_embs_summed" href="#embgam.embgam.EmbGAM.get_embs_summed">get_embs_summed</a></code></li>
-<li><code><a title="embgam.embgam.EmbGAM.get_ngrams_list" href="#embgam.embgam.EmbGAM.get_ngrams_list">get_ngrams_list</a></code></li>
 <li><code><a title="embgam.embgam.EmbGAM.predict" href="#embgam.embgam.EmbGAM.predict">predict</a></code></li>
-<li><code><a title="embgam.embgam.EmbGAM.predict_cached" href="#embgam.embgam.EmbGAM.predict_cached">predict_cached</a></code></li>
 <li><code><a title="embgam.embgam.EmbGAM.predict_proba" href="#embgam.embgam.EmbGAM.predict_proba">predict_proba</a></code></li>
 </ul>
 </li>

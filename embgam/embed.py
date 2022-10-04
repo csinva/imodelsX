@@ -146,6 +146,8 @@ def embed_and_sum_function(
         seqs = ["dummy"]
 
     if 'bert' in checkpoint.lower():  # has up to two keys, 'last_hidden_state', 'pooler_output'
+        if not hasattr(tokenizer_embeddings, 'pad_token') or tokenizer_embeddings.pad_token is None:
+            tokenizer_embeddings.pad_token = tokenizer_embeddings.eos_token
         tokens = tokenizer_embeddings(seqs, padding=padding,
                                       truncation=True, return_tensors="pt")
         tokens = tokens.to(model.device)
