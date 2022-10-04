@@ -1,0 +1,5 @@
+datalad # note: pip-installing didn't work, had to do sudo apt-get install datalad
+pathlib
+h5py
+tables
+numpy
