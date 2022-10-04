@@ -16,7 +16,11 @@ tqdm
 # ipython
 # dvu
 
-# docs
+# docs/packaging
 # pdoc3
+# wheel
+
+# experimental rules
+# imodels
 
 # spacy also requires `python -m spacy download en_core_web_sm` for parsing

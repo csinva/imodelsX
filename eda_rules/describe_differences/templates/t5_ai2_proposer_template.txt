@@ -1,0 +1,21 @@
+Definition: In this task, you will be given two groups of sentences (Group A and Group B). You need to summarize one key difference between the two groups. The difference can range from shallow (“contains the word “yay” at the end of the sentence”) to topical (“loves school”) to more complex social and linguistic cues (“supports universal healthcare”, “is written in first person”).
+PositiveExample:
+  input: Group A: Highly recommend.
+Group A: Definitely watch it.
+Group A: Really exciting.
+Group A: I love this movie.
+
+Group B: Waste of time.
+Group B: Not worth the ticket.
+Group B: Boring.
+Group B: I hate this movie.
+
+Compared to sentences from Group B, each sentence from Group A
+  output: is a positive movie review.
+  explanation: The word "recommend", "definitely watch", "exciting", "love" in Group A indicates a positive sentiment.
+input: {A_block}
+
+{B_block}
+
+Compared to sentences from Group B, each sentence from Group A
+output: 
