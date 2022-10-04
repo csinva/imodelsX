@@ -216,16 +216,6 @@ class EmbGAM(BaseEstimator):
             all_ngrams |= set(seqs)
         return sorted(list(all_ngrams))
 
-        """
-        # Approach using sklearn tokenizer (faster but not perfect match)
-        def tokenizer_func(x):
-            return [str(x) for x in self.tokenizer_ngrams(x)]
-        v = CountVectorizer(tokenizer=tokenizer_func,
-                            ngram_range=(self.ngrams, self.ngrams))
-        v.fit(X)
-        ngrams_list = sorted(list(v.vocabulary_.keys()))
-        """
-
     def predict(self, X, warn=True):
         '''For regression returns continuous output.
         For classification, returns discrete output.
