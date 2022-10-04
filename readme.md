@@ -36,8 +36,7 @@ dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=Fal
 # fit model
 m = EmbGAMClassifier(
     checkpoint='textattack/distilbert-base-uncased-rotten-tomatoes',
-    ngrams=2,
-    all_ngrams=True, # also use lower-order ngrams
+    ngrams=2, # use bigrams
 )
 m.fit(dset['text'], dset['label'])
 
@@ -56,12 +55,6 @@ for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
 ``` 
 
 # Docs
-- the main api requires simply importing `embgam.EmbGAMClassifier` or `embgam.EmbGAMRegressor`
-- the `experiments` and `scripts` folder contains hyperparameters for running sweeps contained in the paper
-- the `notebooks` folder contains notebooks for analyzing the outputs + making figures
-- stored outputs after running all experiments are available in [this gdrive folder](https://drive.google.com/file/d/1C5ooDIlFdPxROufWWjlPr4Wmx8hDYBnh/view?usp=sharing)
-
-# Related work
 <blockquote>
 <b>Abstract</b>: Deep learning models have achieved impressive prediction performance but often sacrifice interpretability, a critical consideration in high-stakes domains such as healthcare or policymaking.
 In contrast, generalized additive models (GAMs) can maintain interpretability but often suffer from poor prediction performance due to their inability to effectively capture feature interactions.
@@ -70,6 +63,12 @@ The final model (which we call Emb-GAM) is a transparent, linear function of its
 Leveraging the language model allows \methods to learn far fewer linear coefficients, model larger interactions, and generalize well to novel inputs (e.g. unseen ngrams in text).
 Across a variety of natural-language-processing datasets, Emb-GAM achieves strong prediction performance without sacrificing interpretability.</blockquote>
 
+- the main api requires simply importing `embgam.EmbGAMClassifier` or `embgam.EmbGAMRegressor`
+- the `experiments` and `scripts` folder contains hyperparameters for running sweeps contained in the paper
+- the `notebooks` folder contains notebooks for analyzing the outputs + making figures
+- stored outputs after running all experiments are available in [this gdrive folder](https://drive.google.com/file/d/1C5ooDIlFdPxROufWWjlPr4Wmx8hDYBnh/view?usp=sharing)
+
+# Related work
 - imodels package (JOSS 2021 [github](https://github.com/csinva/imodels)) - interpretable ML package for concise, transparent, and accurate predictive modeling (sklearn-compatible).
 - Adaptive wavelet distillation (NeurIPS 2021 [pdf](https://arxiv.org/abs/2107.09145), [github](https://github.com/Yu-Group/adaptive-wavelets)) - distilling a neural network into a concise wavelet model
 - Transformation importance (ICLR 2020 workshop [pdf](https://arxiv.org/abs/2003.01926), [github](https://github.com/csinva/transformation-importance)) - using simple reparameterizations, allows for calculating disentangled importances to transformations of the input (e.g. assigning importances to different frequencies)
