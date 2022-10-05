@@ -1,0 +1,5 @@
+{A_block}
+
+{B_block}
+
+Compared to sentences from Group B, each sentence from Group A
