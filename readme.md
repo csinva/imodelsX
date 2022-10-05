@@ -1,7 +1,7 @@
-<h1 align="center">   <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="20%"> 
-<img align="center" width=59% src="https://csinva.io/imodelsX/imodelsx_logo.svg?sanitize=True&kill_cache=1"> </img>	<img src="https://csinva.io/emb-gam/embgam_gif.gif" width="20%"></h1>
+<p align="center">  <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="25%"> 
+<img align="center" width=49% src="https://csinva.io/imodelsX/imodelsx_logo.svg?sanitize=True&kill_cache=1"> </img>	<img src="https://csinva.io/emb-gam/embgam_gif.gif" width="25%"></p>
 
-<p align="center"> Interpretable linear model that leverages a pre-trained language model to better learn interactions. One-line fit function.
+<p align="center">Library to explain *a dataset* in natural language.
 </p>
 <p align="center">
   <a href="https://csinva.github.io/emb-gam/">📚 sklearn-friendly api</a> •
@@ -13,11 +13,12 @@
   <img src="https://img.shields.io/pypi/v/imodelsx?color=green">  
 </p>  
 
-
-<img src="https://csinva.io/emb-gam/intro_emb_gam.svg?sanitize=True">
-
-<b>Official code for using / reproducing Emb-GAM from the paper "Emb-GAM: an interpretable and efficient predictor using pre-trained language models" (<a href="https://arxiv.org/abs/2209.11799">singh & gao, 2022</a>).
+- <b>Official code for using / reproducing Emb-GAM from the paper "Emb-GAM: an interpretable and efficient predictor using pre-trained language models" (<a href="https://arxiv.org/abs/2209.11799">singh & gao, 2022</a>).
 </b> Emb-GAM uses a pre-trained language model to extract features from text data then combines them in order to extract out a simple, linear model.
+- <b>Official code for using / reproducing iPrompt from the paper "Explaining Patterns in Data  with  Language Models via Interpretable Autoprompting" (<a href="https://arxiv.org/abs/2">Singh*, Morris*, Aneja, Rush & Gao, 2022</a>) </b> iPrompt generates a human-interpretable prompt that explains patterns in data while still inducing strong generalization performance.
+- Autoprompt
+- D3
+
 
 # Quickstart
 **Installation**: `pip install imodelsx` (or, for more control, clone and install from source)
@@ -25,46 +26,12 @@
 **Usage example** (see <a href="https://csinva.github.io/emb-gam/">api</a> or <a href="https://github.com/csinva/emb-gam/blob/master/demo_embgam.ipynb">demo notebook</a> for more details):
 
 ```python
-from embgam import EmbGAMClassifier
+from imodelsx import EmbGAMClassifier
 import datasets
 import numpy as np
-
-# set up data
-dset = datasets.load_dataset('rotten_tomatoes')['train']
-dset = dset.select(np.random.choice(len(dset), size=300, replace=False))
-dset_val = datasets.load_dataset('rotten_tomatoes')['validation']
-dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
-
-# fit model
-m = EmbGAMClassifier(
-    checkpoint='textattack/distilbert-base-uncased-rotten-tomatoes',
-    ngrams=2, # use bigrams
-)
-m.fit(dset['text'], dset['label'])
-
-# predict
-preds = m.predict(dset_val['text'])
-print('acc_val', np.mean(preds == dset_val['label']))
-
-# interpret
-print('Total ngram coefficients: ', len(m.coefs_dict_))
-print('Most positive ngrams')
-for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1], reverse=True)[:8]:
-    print('\t', k, round(v, 2))
-print('Most negative ngrams')
-for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
-    print('\t', k, round(v, 2))
 ``` 
 
 # Docs
-<blockquote>
-<b>Abstract</b>: Deep learning models have achieved impressive prediction performance but often sacrifice interpretability, a critical consideration in high-stakes domains such as healthcare or policymaking.
-In contrast, generalized additive models (GAMs) can maintain interpretability but often suffer from poor prediction performance due to their inability to effectively capture feature interactions.
-In this work, we aim to bridge this gap by using pre-trained large-language models to extract embeddings for each input before learning a linear model in the embedding space.
-The final model (which we call Emb-GAM) is a transparent, linear function of its input features and feature interactions.
-Leveraging the language model allows \methods to learn far fewer linear coefficients, model larger interactions, and generalize well to novel inputs (e.g. unseen ngrams in text).
-Across a variety of natural-language-processing datasets, Emb-GAM achieves strong prediction performance without sacrificing interpretability.</blockquote>
-
 - the main api requires simply importing `embgam.EmbGAMClassifier` or `embgam.EmbGAMRegressor`
 - the `experiments` and `scripts` folder contains hyperparameters for running sweeps contained in the paper
 - the `notebooks` folder contains notebooks for analyzing the outputs + making figures
