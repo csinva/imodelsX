@@ -1,4 +1,6 @@
-<h1 align="center">   <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="30%"> imodelsX: interpretability for teXt <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="30%"></h1>
+<h1 align="center">   <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="20%"> 
+<img align="center" width=59% src="https://csinva.io/imodelsX/imodelsx_logo.svg?sanitize=True&kill_cache=1"> </img>	<img src="https://csinva.io/emb-gam/embgam_gif.gif" width="20%"></h1>
+
 <p align="center"> Interpretable linear model that leverages a pre-trained language model to better learn interactions. One-line fit function.
 </p>
 <p align="center">
