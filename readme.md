@@ -9,16 +9,16 @@
 </p>
 <p align="center">
   <img src="https://img.shields.io/badge/license-mit-blue.svg">
-  <img src="https://img.shields.io/badge/python-3.6--3.8-blue">
+  <img src="https://img.shields.io/badge/python-3.6+-blue">
   <img src="https://img.shields.io/pypi/v/imodelsx?color=green">  
 </p>  
 
 | Model                       | Reference                                                    | Description                                                  |
 | :-------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | Emb-GAM            | [🗂️](https://csinva.io/emb-gam/), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Fit better linear model using an LLM to extract embeddings (*Official*) |
-| iPrompt            | [🗂️](), [🔗](https://github.com/csinva/interpretable-autoprompting), [📄](https://arxiv.org/abs/2210.01848) | Generates a human-interpretable prompt that explains patterns in data while still inducing strong generalization performance. (*Official*) |
-| AutoPrompt            | [🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) |Find a natural-language prompt using input-gradients. |
-| D3            | [🗂️](), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) |Explain the difference between two distributions. |
+| iPrompt            | [🗂️](), [🔗](https://github.com/csinva/interpretable-autoprompting), [📄](https://arxiv.org/abs/2210.01848) | Generates a human-interpretable prompt that explains patterns in data (*Official*) |
+| AutoPrompt            | [🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) |Find a natural-language prompt using input-gradients |
+| D3            | [🗂️](), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) |Explain the difference between two distributions |
 | More models                 | ⌛                                                            | (Coming soon!) Lightweight Rule Induction, MLRules, ... |
 
 <p align="center">
