@@ -13,13 +13,13 @@ import argparse
 from transformers import AutoTokenizer, AutoModel, AutoModelForCausalLM
 from tqdm import tqdm
 from collections import defaultdict
-from . import (
+from imodelsx.iprompt import (
     AutoPrompt, iPrompt,
     PrefixLoss, PrefixModel,
     PromptTunedModel, HotFlip, GumbelPrefixModel
 )
 import pandas as pd
-# import iprompt.data as data
+import iprompt.data as data
 import logging
 import pickle as pkl
 from torch.utils.data import DataLoader
@@ -31,7 +31,6 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 model_cls_dict = {
     'autoprompt': AutoPrompt,
-    'genetic': iPrompt,  # outdated alias
     'iprompt': iPrompt,
     'gumbel': GumbelPrefixModel,
     'hotflip': HotFlip,
@@ -265,7 +264,7 @@ def eval_model(
         dset, batch_size=args.batch_size, shuffle=False, drop_last=False)
 
     if r["prefixes"]:
-        # if we specified multiple prefixes (autoprompt or genetic), let's evaluate them all!
+        # if we specified multiple prefixes (autoprompt or iprompt), let's evaluate them all!
         for prefix_ids in tqdm(r["prefix_ids"], desc="evaluating prefixes"):
             model._set_prefix_ids(new_ids=torch.tensor(prefix_ids).to(device))
 
@@ -291,13 +290,15 @@ def eval_model(
     pkl.dump(r, open(os.path.join(save_dir, 'results.pkl'), 'wb'))
     return r
 
+# python api.py --task_name_list add_two --model_cls iprompt --num_learned_tokens 3 --max_dset_size 100 --max_n_datapoints 100 --early_stopping_steps 5 --max_digit 10 --train_split_frac 0.75 --single_shot_loss 1 --save_dir /home/chansingh/tmp/iprompt --checkpoint EleutherAI/gpt-j-6B --batch_size 64 --n_epochs 20
+# python api.py --task_name_list add_two --model_cls iprompt --num_learned_tokens 3 --max_dset_size 5000 --max_n_datapoints 5000 --early_stopping_steps 25 --max_digit 10 --train_split_frac 0.75 --single_shot_loss 1 --save_dir /home/chansingh/tmp/iprompt --checkpoint EleutherAI/gpt-j-6B --batch_size 64 --float16 1
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--model_cls', type=str,
                         choices=model_cls_dict.keys(),
-                        required=True,
+                        default='iprompt',
                         help='model type to use for training')
     parser.add_argument('--batch_size', type=int, default=500,
                         help='batch size for training')
@@ -363,7 +364,7 @@ if __name__ == '__main__':
                         type=int, default=4)
     parser.add_argument('--llm_float16', '--float16', '--parsimonious', type=int, default=0, choices=(0, 1),
                         help='if true, loads LLM in fp16 and at low-ram')
-    parser.add_argument('--checkpoint', type=str, default="EleutherAI/gpt-neo-2.7B",
+    parser.add_argument('--checkpoint', type=str, default="gpt2",
                         choices=(
                             ############################
                             "EleutherAI/gpt-neo-125M",
@@ -382,6 +383,8 @@ if __name__ == '__main__':
                         ),
                         help='model checkpoint to use'
                         )
+
+
     args = parser.parse_args()
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -439,16 +442,15 @@ if __name__ == '__main__':
         logging.info('saving to ' + save_dir)
         args.save_dir_unique = save_dir
 
-        preprefix = data.get_init_suffix(args.task_name, args.use_generic_query, args.template_num_init_string) if args.use_preprefix else ''
+        preprefix = ''
         model = model_cls_dict[args.model_cls](
             args=args,
             loss_func=loss_func, model=lm, tokenizer=tokenizer, preprefix=preprefix
         )
-        dset, check_answer_func, description = data.get_data(
+        dset, _, _ = data.get_data(
             task_name=args.task_name, n_shots=args.n_shots, train_split_frac=args.train_split_frac, max_dset_size=args.max_dset_size,
             template_num_task_phrasing=args.template_num_task_phrasing, max_digit=args.max_digit
         )
-        print(f'Attempting task with description: "{description}"')
 
         logger.info('beginning training...')
 

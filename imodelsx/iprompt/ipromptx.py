@@ -6,8 +6,8 @@ import random
 import torch
 import transformers
 
-from .autoprompt import AutoPrompt
-from .utils import device, PrefixLoss, PrefixModel, PrefixPool
+from imodelsx.iprompt.autoprompt import AutoPrompt
+from imodelsx.iprompt.utils import device, PrefixLoss, PrefixModel, PrefixPool
 
 
 """

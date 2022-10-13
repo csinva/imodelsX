@@ -1,14 +1,18 @@
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import argparse
+import functools
 import os
 import pickle
 import random
+
+import pandas as pd
 import torch
+import tqdm
 import transformers
 
-from .hotflip import HotFlip
-from .utils import device, PrefixLoss, PrefixModel, PrefixPool
+from imodelsx.iprompt.hotflip import HotFlip
+from imodelsx.iprompt.utils import device, PrefixLoss, PrefixModel, PrefixPool
 
 
 class AutoPrompt(HotFlip):
@@ -39,8 +43,41 @@ class AutoPrompt(HotFlip):
         )
         self._VERBOSE = False
         self._num_min_occurrences = 1
+        # Will rank and save this many prefixes at the end of training.
+        self._num_prefixes_to_test = 1024
     
-    def serialize(self) -> Dict[str, Any]:
+    def _test_prefixes(self, prefixes: List[Tuple[int]], eval_dataloader: torch.utils.data.DataLoader, possible_answer_mask: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Computes loss & accuracy for each prefix on data in dataloader. Used to rank
+        prefixes at the end of training.
+        """
+        all_candidate_losses = torch.zeros(len(prefixes), dtype=torch.float32)
+        all_candidate_n_correct = torch.zeros(len(prefixes), dtype=torch.float32)
+        total_n = 0
+        for batch in tqdm.tqdm(eval_dataloader, desc='evaluating prefixes'):
+            x_text, y_text = self.prepare_batch(batch=batch)
+            total_n += len(x_text)
+            tok = functools.partial(
+                self.tokenizer, return_tensors='pt', padding='longest',
+                truncation=True, max_length=self.args.max_length # TODO set max_length on self
+            )
+            x_tokenized = tok(x_text).to(device)
+            y_tokenized = tok(y_text).to(device)
+            next_token_ids = y_tokenized.input_ids[:, 0:1] # only compute loss over next token
+            for i in range(len(prefixes)):
+                with torch.no_grad():
+                    _cand_input_ids, cand_loss, cand_n_correct = (
+                        self._compute_loss_with_set_prefix(
+                            original_input_ids=x_tokenized.input_ids,
+                            next_token_ids=next_token_ids,
+                            possible_answer_mask=possible_answer_mask,
+                            prefix_ids=torch.tensor(prefixes[i]).to(device),
+                        )
+                    )
+                all_candidate_losses[i] = cand_loss
+                all_candidate_n_correct[i] = cand_n_correct
+        return all_candidate_losses.cpu().tolist(), (all_candidate_n_correct / total_n).cpu().tolist()
+    
+    def serialize(self, eval_dataloader: torch.utils.data.DataLoader, possible_answer_mask: torch.Tensor) -> Dict[str, Any]:
         """Writes stuff to disk. Saves other stuff to save as full results file.
         """
         save_dir = self.args.save_dir_unique
@@ -48,29 +85,31 @@ class AutoPrompt(HotFlip):
 
         # Uncomment following line to save all the prefixes we tested.
         # pickle.dump(self._prefix_pool, open(os.path.join(save_dir, 'prefix_pool.p'), 'wb'))
-        
-        N_p = 64 # num prefixes to save
-        
-        # logic here is that we want to see a sample a good number of times before
-        # we actually have a good estimate of its loss.
-        num_min_occurrences = self._num_min_occurrences
 
-        topk_prefixes = self._prefix_pool.topk_all(k=N_p, min_occurrences=num_min_occurrences)
-        topk_different_prefixes = self._prefix_pool.topk_with_different_start_token(k=N_p, min_occurrences=num_min_occurrences)
-        top_prefixes = topk_prefixes + topk_different_prefixes
-        top_prefix_types = ((["topk_all"] * len(topk_prefixes)) + (["topk_with_different_start_token"] * len(topk_different_prefixes)))
-        top_prefixes_str = [self.tokenizer.decode(p) for p in top_prefixes]
-        top_prefix_accs = [self._prefix_pool._avg_accuracy[p] for p in top_prefixes]
-        top_prefix_losses = [self._prefix_pool._avg_loss[p] for p in top_prefixes]
-        top_prefix_n_queries = [len(self._prefix_pool._all_losses[p]) for p in top_prefixes]
+        all_prefixes = self._prefix_pool.topk_all(k=self._num_prefixes_to_test, min_occurrences=1)
+        all_losses, all_accuracies = self._test_prefixes(
+            prefixes=all_prefixes, eval_dataloader=eval_dataloader, possible_answer_mask=possible_answer_mask
+        )
+        df = pd.DataFrame(
+            zip(*[all_prefixes, all_losses, all_accuracies]),
+            columns=['prefix', 'loss', 'accuracy']
+        )
+        df = df.sort_values(by=['accuracy', 'loss'], ascending=[False, True]).reset_index()
+        # df = df.sort_values(by='loss', ascending=True).reset_index()
+        df['prefix_str'] = df['prefix'].map(self.tokenizer.decode)
+        df['n_queries'] = df['prefix'].map(lambda p_ids: len(self._prefix_pool._all_losses[p_ids]))
+
+        print('Final prefixes')
+        print(df.head())
+
         return {
-            "prefix_ids": top_prefixes,
-            "prefix_type": top_prefix_types,
-            "prefixes": top_prefixes_str,
-            "prefix_train_acc": top_prefix_accs,
-            "prefix_train_loss": top_prefix_losses,
-            "prefix_n_queries": top_prefix_n_queries,
+            "prefix_ids": df['prefix'].tolist(),
+            "prefixes": df['prefix_str'].tolist(),
+            "prefix_train_acc": df['accuracy'].tolist(),
+            "prefix_train_loss": df['loss'].tolist(),
+            "prefix_n_queries": df['n_queries'].tolist(),
         }
+            
 
     def compute_loss_and_call_backward(
             self,

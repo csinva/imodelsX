@@ -11,7 +11,7 @@ import torch.nn as nn
 import tqdm
 import transformers
 
-from .utils import device, PrefixLoss, PrefixModel
+from imodelsx.iprompt.utils import device, PrefixLoss, PrefixModel
 
 
 VERBOSE = False # whether to print grads, etc.
