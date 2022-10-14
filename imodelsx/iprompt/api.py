@@ -39,11 +39,23 @@ model_cls_dict = {
 
 
 def train_model(
-    args: argparse.Namespace,
     r: Dict[str, List],
     dset: datasets.Dataset,
     model: PrefixModel,
-    tokenizer: transformers.PreTrainedTokenizer
+    tokenizer: transformers.PreTrainedTokenizer,
+    lr: float=1e-4,
+    batch_size: int=500,
+    max_length: int=128,
+    mask_possible_answers: bool=False,
+    n_epochs: int=100,
+    n_shots: int=1,
+    single_shot_loss: bool=False,
+    accum_grad_over_epoch: bool=False,
+    max_n_datapoints: int=10**10,
+    max_n_steps: int=10**10,
+    epoch_save_interval: int=1,
+    save_dir: str='results',    
+    check_answer_func=None,
 ):
     """
     Trains a model, either by optimizing continuous embeddings or finding an optimal discrete embedding.
@@ -59,10 +71,10 @@ def train_model(
 
     model = model.to(device)
     dataloader = DataLoader(
-        dset, batch_size=args.batch_size, shuffle=True, drop_last=False)
+        dset, batch_size=batch_size, shuffle=True, drop_last=False)
 
     # optimizer
-    optim = torch.optim.AdamW(model.trainable_params, lr=args.lr)
+    optim = torch.optim.AdamW(model.trainable_params, lr=lr)
 
     assert model.training
 
@@ -87,7 +99,7 @@ def train_model(
 
     vocab_size = len(tokenizer.vocab)
 
-    if args.mask_possible_answers:
+    if mask_possible_answers:
         possible_answer_mask = (
             torch.arange(start=0, end=vocab_size)[:, None]
             ==
@@ -99,7 +111,7 @@ def train_model(
     stopping_early = False
     total_n_steps = 0
     total_n_datapoints = 0
-    for epoch in range(args.n_epochs):
+    for epoch in range(n_epochs):
         model.pre_epoch()
 
         all_losses = []
@@ -109,13 +121,13 @@ def train_model(
         pbar = tqdm(enumerate(dataloader), total=len(dataloader))
         for idx, batch in pbar:
             total_n_steps += 1
-            if (args.n_shots > 1) and (args.single_shot_loss):
+            if (n_shots > 1) and (single_shot_loss):
                 batch['input'] = batch['last_input']
             x_text, y_text = model.prepare_batch(batch=batch)
 
             tok = functools.partial(
                 model.tokenizer, return_tensors='pt', padding='longest',
-                truncation=True, max_length=args.max_length)
+                truncation=True, max_length=max_length)
             x_tokenized = tok(x_text).to(device)
             y_tokenized = tok(y_text).to(device)
             full_text_tokenized = tok(batch['text']).to(device)
@@ -137,7 +149,7 @@ def train_model(
             all_losses.append(loss)
             pbar.set_description(f"Loss = {loss:.3f}")
 
-            if not args.accum_grad_over_epoch:
+            if not accum_grad_over_epoch:
                 # if hotflip, autoprompt, etc., grad will be zero
                 optim.step()
                 optim.zero_grad()
@@ -146,7 +158,7 @@ def train_model(
             model_check_early_stop = model.check_early_stop()
             if model_check_early_stop:
                 print("model_check_early_stop returned true")
-            if (total_n_datapoints > args.max_n_datapoints) or (total_n_steps > args.max_n_steps) or model_check_early_stop:
+            if (total_n_datapoints > max_n_datapoints) or (total_n_steps > max_n_steps) or model_check_early_stop:
                 stopping_early = True
                 break
 
@@ -160,14 +172,14 @@ def train_model(
             r[key].append(val)
 
         # r['losses'].append(avg_loss)
-        if epoch % args.epoch_save_interval == 0:
+        if epoch % epoch_save_interval == 0:
             os.makedirs(save_dir, exist_ok=True)
             pkl.dump(r, open(os.path.join(save_dir, 'results.pkl'), 'wb'))
 
         model.post_epoch(dataloader=dataloader,
                          possible_answer_mask=possible_answer_mask)
 
-        if args.accum_grad_over_epoch:
+        if accum_grad_over_epoch:
             optim.step()
             optim.zero_grad()
 
@@ -194,11 +206,8 @@ def train_model(
 
 
 def eval_model_with_set_prefix(
-    args: argparse.Namespace,
-    r: Dict[str, List],
     dataloader: DataLoader,
     model: PrefixModel,
-    tokenizer: transformers.PreTrainedTokenizer
 ) -> Tuple[float, float]:
     """
     Evaluates a model based on set prefix. May be called multiple times with different prefixes
@@ -223,7 +232,7 @@ def eval_model_with_set_prefix(
             model.tokenizer, return_tensors='pt', padding='longest')
         x_tokenized = tok(x_text).to(device)
         y_tokenized = tok(y_text).to(device)
-        full_text_tokenized = tok(batch['text']).to(device)
+        # full_text_tokenized = tok(batch['text']).to(device)
 
         with torch.no_grad():
             _input_ids, loss, n_correct = model._compute_loss_with_set_prefix(
@@ -244,11 +253,11 @@ def eval_model_with_set_prefix(
 
 
 def eval_model(
-    args: argparse.Namespace,
     r: Dict[str, List],
     dset: datasets.Dataset,
     model: PrefixModel,
-    tokenizer: transformers.PreTrainedTokenizer
+    batch_size: int=500,
+    save_dir: str='results',
 ):
     """
     Evaluates a model based on the learned prefix(es).
@@ -261,16 +270,14 @@ def eval_model(
     r["test_start_time"] = time.time()
     model.eval()
     dataloader = DataLoader(
-        dset, batch_size=args.batch_size, shuffle=False, drop_last=False)
+        dset, batch_size=batch_size, shuffle=False, drop_last=False)
 
     if r["prefixes"]:
         # if we specified multiple prefixes (autoprompt or iprompt), let's evaluate them all!
         for prefix_ids in tqdm(r["prefix_ids"], desc="evaluating prefixes"):
             model._set_prefix_ids(new_ids=torch.tensor(prefix_ids).to(device))
 
-            loss, acc = eval_model_with_set_prefix(
-                args=args, r=r, dataloader=dataloader, model=model, tokenizer=tokenizer
-            )
+            loss, acc = eval_model_with_set_prefix(dataloader, model)
 
             r["prefix_test_loss"].append(loss)
             r["prefix_test_acc"].append(acc)
@@ -278,9 +285,7 @@ def eval_model(
 
     else:
         # otherwise, there's just one prefix (like for prompt tuning) so just run single eval loop.
-        loss, acc = eval_model_with_set_prefix(
-            args=args, r=r, dataloader=dataloader, model=model, tokenizer=tokenizer
-        )
+        loss, acc = eval_model_with_set_prefix(dataloader, model)
         r["prefix_test_acc"] = loss
         r["prefix_test_loss"] = acc
         r["num_prefixes_used_for_test"] = 1
@@ -384,7 +389,7 @@ if __name__ == '__main__':
                         help='model checkpoint to use'
                         )
 
-
+    """
     args = parser.parse_args()
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -462,3 +467,4 @@ if __name__ == '__main__':
             r = train_model(args=args, r=r, dset=dset_train,
                             model=model, tokenizer=tokenizer)
             # r = eval_model(args=args, r=r, dset=Dataset.from_dict(dset_test[:128]), model=model, tokenizer=tokenizer)
+    """
