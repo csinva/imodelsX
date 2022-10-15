@@ -1,11 +1,11 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import argparse
 import collections
 import random
 import torch
 import transformers
-
+from torch import nn
 from imodelsx.iprompt.autoprompt import AutoPrompt
 from imodelsx.iprompt.utils import device, PrefixLoss, PrefixModel, PrefixPool
 
@@ -20,43 +20,43 @@ generation example:
 """
 
 
-class iPrompt(AutoPrompt):
-    args: argparse.Namespace
-    loss_func: PrefixLoss
-    model: transformers.PreTrainedModel
-    tokenizer: transformers.PreTrainedTokenizer
-    prefix_ids: torch.Tensor
-    prefix_embedding: torch.nn.Parameter
-    preprefix: str
+class iPrompt(PrefixModel):
     def __init__(
             self,
-            args: argparse.Namespace,
             loss_func: PrefixLoss,
             model: transformers.PreTrainedModel,
             tokenizer: transformers.PreTrainedTokenizer,
-            preprefix: str = ''
+            preprefix_str: str = '',
+            pop_size: int=8,
+            num_mutations: int=4,
+            num_random_generations: int=4,
+            generation_repetition_penalty: float=2.0,
+            early_stopping_steps: int=-1,
         ):
+        # super().__init__()
         super().__init__(
-            args=args, loss_func=loss_func, model=model, tokenizer=tokenizer, preprefix=''
+            args=None, loss_func=loss_func, model=model, tokenizer=tokenizer, preprefix=''
         )
+        self.tokenizer = tokenizer
         self.preprefix_ids = torch.tensor([], dtype=int).to(device)
         self.tokenizer.add_special_tokens = False
         ####################################################################
         # iPrompt-specific parameters
         # TODO argparse for GA-specific hparams
-        self._pop_size = args.iprompt_pop_size
+        self._pop_size = pop_size
         self._topk_pop_sample = (self._pop_size + 4) # sample next population from this num of top things. set higher for more randomness.
-        self._num_mutations_per_ex = args.iprompt_num_mutations # num mutations for each population item
-        self._num_random_generations = args.iprompt_num_random_generations # extra random examples to throw in there (won't get mutated)
+        self._num_mutations_per_ex = num_mutations # num mutations for each population item
+        self._num_random_generations = num_random_generations # extra random examples to throw in there (won't get mutated)
         self._generation_temp = 1.0
         self._generation_top_p = 1.0
-        self._generation_repetition_penalty = self.args.iprompt_generation_repetition_penalty # 1 means no penalty
+        self._generation_repetition_penalty = generation_repetition_penalty # 1 means no penalty
         self._pop_initialized = False
         self._generation_bad_words_ids = [
             self.tokenizer.encode('\n'),
             self.tokenizer.encode('\n\n'),
             self.tokenizer.encode('\n\n\n')
         ]
+        self._early_stopping_steps = early_stopping_steps
         ####################################################################
         self._prefix_pool = PrefixPool(
             tokenizer=self.tokenizer,
@@ -66,7 +66,7 @@ class iPrompt(AutoPrompt):
         self._last_population = None
         self._steps_since_new_population = 0
         ####################################################################
-        prompt_str = args.iprompt_preprefix_str.lstrip()
+        prompt_str = preprefix_str.lstrip()
         prompt_str = (' ' + prompt_str) if len(prompt_str) else ''
         self._pre_data_token_ids = self.tokenizer("Data:\n\n", return_tensors='pt').input_ids.to(device)
         self._post_data_token_ids = self.tokenizer("\n\nPrompt:" + prompt_str, return_tensors='pt').input_ids.to(device)
@@ -155,9 +155,9 @@ class iPrompt(AutoPrompt):
 
     def check_early_stop(self) -> bool:
         """Allow prefix models to stop early."""
-        if self.args.early_stopping_steps == -1:
+        if self._early_stopping_steps == -1:
             return False
-        return self._steps_since_new_population >= self.args.early_stopping_steps
+        return self._steps_since_new_population >= self._early_stopping_steps
     
     def _get_population_and_random_generations(self, full_text_ids: torch.Tensor) -> torch.Tensor:
         population_pool = self._select_pop_topk(k=self._topk_pop_sample)
@@ -330,3 +330,46 @@ class iPrompt(AutoPrompt):
         # Get candidate IDs for every position.
         # 
         pass
+
+    @property
+    def trainable_params(self) -> Iterable[nn.Parameter]:
+        return [self.prefix_embedding]
+
+    def embed_input_ids(self, input_ids: torch.Tensor, prefix_ids: Optional[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Gets token embeddings for tokens given by `input_ids` prefixed by `prefix_ids`.
+
+        If not provided, `prefix_ids` is replaced with `self.prefix_ids`
+        at every position.
+
+        Args:
+            input_ids (int torch.Tensor) -- IDs for batch of sentences
+            prefix_ids (Optional int torch.Tensor) -- IDs for a single prefix
+                to be prepended before each input ID. If not provided,
+                will be overridden with prefix from `self.prefix_ids`.
+
+        Returns:
+            input_ids (int torch.Tensor) -- IDs of all tokens, including prefix
+            outputs (float torch.Tensor): embedded tokens
+        """
+        batch_size = len(input_ids)
+        if prefix_ids is None:
+            prefix_ids = self.prefix_ids
+            prefix_embedding = self.prefix_embedding
+            
+        else:
+            prefix_embedding = self.token_embedding.forward(prefix_ids)
+
+        # concatenate preprefix (fixed) + prefix (learned) + example
+        prefix_ids = prefix_ids[None].to(device).repeat((batch_size, 1)).to(device)
+        preprefix_ids = self.preprefix_ids[None].to(device).repeat((batch_size, 1)).to(device)
+        full_input_ids = torch.cat(
+            (preprefix_ids, prefix_ids, input_ids), dim=1
+        )
+        outputs = torch.cat(
+            (
+                self.token_embedding.forward(preprefix_ids),
+                prefix_embedding[None].repeat((batch_size, 1, 1)),
+                self.token_embedding.forward(input_ids)
+            ), dim=1
+        )
+        return full_input_ids, outputs

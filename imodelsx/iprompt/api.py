@@ -43,18 +43,18 @@ def train_model(
     dset: datasets.Dataset,
     model: PrefixModel,
     tokenizer: transformers.PreTrainedTokenizer,
+    save_dir: str='results',
     lr: float=1e-4,
     batch_size: int=500,
     max_length: int=128,
-    mask_possible_answers: bool=False,
     n_epochs: int=100,
     n_shots: int=1,
     single_shot_loss: bool=False,
     accum_grad_over_epoch: bool=False,
     max_n_datapoints: int=10**10,
     max_n_steps: int=10**10,
-    epoch_save_interval: int=1,
-    save_dir: str='results',    
+    epoch_save_interval: int=1,    
+    mask_possible_answers: bool=False,
     check_answer_func=None,
 ):
     """
@@ -331,8 +331,6 @@ if __name__ == '__main__':
                         help='directory for saving')
     parser.add_argument('--epoch_save_interval', type=int, default=1,
                         help='interval to save results')
-    parser.add_argument('--iprompt_generation_repetition_penalty', type=float, default=2.0,
-                        help='repetition penalty for iprompt generations')
     parser.add_argument('--lr', type=float, default=1e-4,
                         help='learning rate')
     parser.add_argument('--gamma', type=float, default=0.0,
@@ -367,6 +365,8 @@ if __name__ == '__main__':
     parser.add_argument('--iprompt_num_mutations', type=int, default=4)
     parser.add_argument('--iprompt_num_random_generations',
                         type=int, default=4)
+    parser.add_argument('--iprompt_generation_repetition_penalty', type=float, default=2.0,
+                        help='repetition penalty for iprompt generations')
     parser.add_argument('--llm_float16', '--float16', '--parsimonious', type=int, default=0, choices=(0, 1),
                         help='if true, loads LLM in fp16 and at low-ram')
     parser.add_argument('--checkpoint', type=str, default="gpt2",
@@ -389,7 +389,6 @@ if __name__ == '__main__':
                         help='model checkpoint to use'
                         )
 
-    """
     args = parser.parse_args()
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -448,10 +447,18 @@ if __name__ == '__main__':
         args.save_dir_unique = save_dir
 
         preprefix = ''
-        model = model_cls_dict[args.model_cls](
-            args=args,
-            loss_func=loss_func, model=lm, tokenizer=tokenizer, preprefix=preprefix
-        )
+        if args.model_cls == 'iprompt':
+            model = iPrompt(
+                loss_func=loss_func,
+                model=lm,
+                tokenizer=tokenizer,
+                preprefix_str=preprefix,
+            )
+        else:
+            model = model_cls_dict[args.model_cls](
+                args=args,
+                loss_func=loss_func, model=lm, tokenizer=tokenizer, preprefix=preprefix
+            )
         dset, _, _ = data.get_data(
             task_name=args.task_name, n_shots=args.n_shots, train_split_frac=args.train_split_frac, max_dset_size=args.max_dset_size,
             template_num_task_phrasing=args.template_num_task_phrasing, max_digit=args.max_digit
@@ -459,12 +466,24 @@ if __name__ == '__main__':
 
         logger.info('beginning training...')
 
-        if args.train_split_frac is None:
-            r = train_model(args=args, r=r, dset=dset,
-                            model=model, tokenizer=tokenizer)
-        else:
-            dset_train, dset_test = dset
-            r = train_model(args=args, r=r, dset=dset_train,
-                            model=model, tokenizer=tokenizer)
-            # r = eval_model(args=args, r=r, dset=Dataset.from_dict(dset_test[:128]), model=model, tokenizer=tokenizer)
-    """
+        train_model(
+            r=r,
+            dset=dset,
+            model=model,
+            tokenizer=tokenizer,
+            save_dir=save_dir,
+            lr=args.lr,
+            batch_size=args.batch_size,
+            max_length=args.max_length,
+            mask_possible_answers=args.mask_possible_answers,
+            n_epochs=args.n_epochs,
+            n_shots=args.n_shots,
+            single_shot_loss=args.single_shot_loss,
+            accum_grad_over_epoch=args.accum_grad_over_epoch,
+            max_n_datapoints=args.max_n_datapoints,
+            max_n_steps=args.max_n_steps,
+            epoch_save_interval=args.epoch_save_interval,
+            check_answer_func=None,
+        )
+            
+        # r = eval_model(args=args, r=r, dset=Dataset.from_dict(dset_test[:128]), model=model, tokenizer=tokenizer)
