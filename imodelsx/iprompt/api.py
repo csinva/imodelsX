@@ -40,21 +40,22 @@ model_cls_dict = {
 
 def train_model(
     r: Dict[str, List],
-    dset: datasets.Dataset,
+    input_strs: List[str],
+    output_strs: List[str],
     model: PrefixModel,
     tokenizer: transformers.PreTrainedTokenizer,
-    save_dir: str='results',
-    lr: float=1e-4,
-    batch_size: int=500,
-    max_length: int=128,
-    n_epochs: int=100,
-    n_shots: int=1,
-    single_shot_loss: bool=False,
-    accum_grad_over_epoch: bool=False,
-    max_n_datapoints: int=10**10,
-    max_n_steps: int=10**10,
-    epoch_save_interval: int=1,    
-    mask_possible_answers: bool=False,
+    save_dir: str = 'results',
+    lr: float = 1e-4,
+    batch_size: int = 500,
+    max_length: int = 128,
+    n_epochs: int = 100,
+    n_shots: int = 1,
+    single_shot_loss: bool = False,
+    accum_grad_over_epoch: bool = False,
+    max_n_datapoints: int = 10**10,
+    max_n_steps: int = 10**10,
+    epoch_save_interval: int = 1,
+    mask_possible_answers: bool = False,
     check_answer_func=None,
 ):
     """
@@ -68,6 +69,10 @@ def train_model(
 
     r['train_start_time'] = time.time()
     model.train()
+    dset = datasets.Dataset.from_dict({
+        'input': input_strs,
+        'output': output_strs,
+    })
 
     model = model.to(device)
     dataloader = DataLoader(
@@ -130,7 +135,9 @@ def train_model(
                 truncation=True, max_length=max_length)
             x_tokenized = tok(x_text).to(device)
             y_tokenized = tok(y_text).to(device)
-            full_text_tokenized = tok(batch['text']).to(device)
+            text = [batch['input'][i] + batch['output'][i]
+                    for i in range(len(batch))]
+            full_text_tokenized = tok(text).to(device)
 
             loss, n_correct = model.compute_loss_and_call_backward(
                 x_tokenized=x_tokenized,
@@ -256,8 +263,8 @@ def eval_model(
     r: Dict[str, List],
     dset: datasets.Dataset,
     model: PrefixModel,
-    batch_size: int=500,
-    save_dir: str='results',
+    batch_size: int = 500,
+    save_dir: str = 'results',
 ):
     """
     Evaluates a model based on the learned prefix(es).
@@ -295,30 +302,32 @@ def eval_model(
     pkl.dump(r, open(os.path.join(save_dir, 'results.pkl'), 'wb'))
     return r
 
+
 def explain_dataset(
-    dset,
+    input_strings: List[str],
+    output_strings: List[str],
     checkpoint: str,
-    save_dir: str='./results',
-    lr: float=0.01,
-    pop_size: int=8,
+    num_learned_tokens=1,
+    save_dir: str = './results',
+    lr: float = 0.01,
+    pop_size: int = 8,
     num_mutations: int = 4,
     num_random_generations: int = 4,
     generation_repetition_penalty: float = 2.0,
     early_stopping_steps: int = -1,
-    num_learned_tokens=1,
-    llm_float16 = False,
-    gamma: float=0.0,
-    batch_size: int=500,
-    max_length: int=128,
-    n_epochs: int=100,
-    n_shots: int=1,
-    single_shot_loss: bool=False,
-    accum_grad_over_epoch: bool=False,
-    max_n_datapoints: int=10**10,
-    max_n_steps: int=10**10,
-    epoch_save_interval: int=1,    
-    mask_possible_answers: bool=False,
-    model_cls: str='iprompt',
+    llm_float16=False,
+    gamma: float = 0.0,
+    batch_size: int = 500,
+    max_length: int = 128,
+    n_epochs: int = 100,
+    n_shots: int = 1,
+    single_shot_loss: bool = False,
+    accum_grad_over_epoch: bool = False,
+    max_n_datapoints: int = 10**10,
+    max_n_steps: int = 10**10,
+    epoch_save_interval: int = 1,
+    mask_possible_answers: bool = False,
+    model_cls: str = 'iprompt',
 ):
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
     tokenizer.pad_token = tokenizer.eos_token
@@ -342,7 +351,6 @@ def explain_dataset(
         )
     loss_func = PrefixLoss(gamma=gamma, tokenizer=tokenizer)
 
-
     preprefix = ''
     if model_cls == 'iprompt':
         model = iPrompt(
@@ -365,13 +373,13 @@ def explain_dataset(
             loss_func=loss_func, model=lm, tokenizer=tokenizer, preprefix=preprefix
         )
         """
-    
 
     logger.info('beginning training...')
     r = defaultdict(list)
     return train_model(
         r=r,
-        dset=dset,
+        input_strs=input_strings,
+        output_strs=output_strings,
         model=model,
         tokenizer=tokenizer,
         save_dir=save_dir,
@@ -388,8 +396,9 @@ def explain_dataset(
         epoch_save_interval=epoch_save_interval,
         check_answer_func=None,
     )
-                
-            # r = eval_model(args=args, r=r, dset=Dataset.from_dict(dset_test[:128]), model=model, tokenizer=tokenizer)
+
+    # r = eval_model(args=args, r=r, dset=Dataset.from_dict(dset_test[:128]), model=model, tokenizer=tokenizer)
+
 
 # python api.py --task_name_list add_two --model_cls iprompt --num_learned_tokens 3 --max_dset_size 100 --max_n_datapoints 100 --early_stopping_steps 5 --max_digit 10 --train_split_frac 0.75 --single_shot_loss 1 --save_dir /home/chansingh/tmp/iprompt --checkpoint EleutherAI/gpt-j-6B --batch_size 64 --n_epochs 20
 # python api.py --task_name_list add_two --model_cls iprompt --num_learned_tokens 3 --max_dset_size 5000 --max_n_datapoints 5000 --early_stopping_steps 25 --max_digit 10 --train_split_frac 0.75 --single_shot_loss 1 --save_dir /home/chansingh/tmp/iprompt --checkpoint EleutherAI/gpt-j-6B --batch_size 64 --float16 1
@@ -524,11 +533,10 @@ if __name__ == '__main__':
             task_name=args.task_name, n_shots=args.n_shots, train_split_frac=args.train_split_frac, max_dset_size=args.max_dset_size,
             template_num_task_phrasing=args.template_num_task_phrasing, max_digit=args.max_digit
         )
-        # dset = dset.remove_columns(['input', 'output'])
-        # print(dset)
 
         r = explain_dataset(
-            dset,
+            input_strings=dset['input'],
+            output_strings=dset['output'],
             checkpoint=args.checkpoint,
             save_dir=args.save_dir,
             lr=args.lr,
@@ -553,4 +561,3 @@ if __name__ == '__main__':
             model_cls=args.model_cls,
         )
         print('r', r)
-            
