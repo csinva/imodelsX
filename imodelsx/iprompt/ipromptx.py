@@ -7,6 +7,7 @@ import torch
 import transformers
 from torch import nn
 from imodelsx.iprompt.autoprompt import AutoPrompt
+from imodelsx.iprompt.hotflip import HotFlip
 from imodelsx.iprompt.utils import device, PrefixLoss, PrefixModel, PrefixPool
 
 
@@ -20,22 +21,29 @@ generation example:
 """
 
 
-class iPrompt(PrefixModel):
+class iPrompt(AutoPrompt):
     def __init__(
-            self,
-            loss_func: PrefixLoss,
-            model: transformers.PreTrainedModel,
-            tokenizer: transformers.PreTrainedTokenizer,
-            preprefix_str: str = '',
-            pop_size: int=8,
-            num_mutations: int=4,
-            num_random_generations: int=4,
-            generation_repetition_penalty: float=2.0,
-            early_stopping_steps: int=-1,
-        ):
+        self,
+        loss_func: PrefixLoss,
+        model: transformers.PreTrainedModel,
+        tokenizer: transformers.PreTrainedTokenizer,
+        preprefix_str: str = '',
+        pop_size: int = 8,
+        num_mutations: int = 4,
+        num_random_generations: int = 4,
+        generation_repetition_penalty: float = 2.0,
+        early_stopping_steps: int = -1,
+        num_learned_tokens=1,
+    ):
         # super().__init__()
+        class fake_args:
+            pass
+        args = fake_args()
+        args.num_learned_tokens = num_learned_tokens
+        args.hotflip_num_candidates = None
+        args.autoprompt_init_strategy = None
         super().__init__(
-            args=None, loss_func=loss_func, model=model, tokenizer=tokenizer, preprefix=''
+            args=args, loss_func=loss_func, model=model, tokenizer=tokenizer, preprefix=''
         )
         self.tokenizer = tokenizer
         self.preprefix_ids = torch.tensor([], dtype=int).to(device)
@@ -44,12 +52,15 @@ class iPrompt(PrefixModel):
         # iPrompt-specific parameters
         # TODO argparse for GA-specific hparams
         self._pop_size = pop_size
-        self._topk_pop_sample = (self._pop_size + 4) # sample next population from this num of top things. set higher for more randomness.
-        self._num_mutations_per_ex = num_mutations # num mutations for each population item
-        self._num_random_generations = num_random_generations # extra random examples to throw in there (won't get mutated)
+        # sample next population from this num of top things. set higher for more randomness.
+        self._topk_pop_sample = (self._pop_size + 4)
+        # num mutations for each population item
+        self._num_mutations_per_ex = num_mutations
+        # extra random examples to throw in there (won't get mutated)
+        self._num_random_generations = num_random_generations
         self._generation_temp = 1.0
         self._generation_top_p = 1.0
-        self._generation_repetition_penalty = generation_repetition_penalty # 1 means no penalty
+        self._generation_repetition_penalty = generation_repetition_penalty  # 1 means no penalty
         self._pop_initialized = False
         self._generation_bad_words_ids = [
             self.tokenizer.encode('\n'),
@@ -68,13 +79,16 @@ class iPrompt(PrefixModel):
         ####################################################################
         prompt_str = preprefix_str.lstrip()
         prompt_str = (' ' + prompt_str) if len(prompt_str) else ''
-        self._pre_data_token_ids = self.tokenizer("Data:\n\n", return_tensors='pt').input_ids.to(device)
-        self._post_data_token_ids = self.tokenizer("\n\nPrompt:" + prompt_str, return_tensors='pt').input_ids.to(device)
+        self._pre_data_token_ids = self.tokenizer(
+            "Data:\n\n", return_tensors='pt').input_ids.to(device)
+        self._post_data_token_ids = self.tokenizer(
+            "\n\nPrompt:" + prompt_str, return_tensors='pt').input_ids.to(device)
         ####################################################################
         self._verbose = True
-    
+
     def serialize(self) -> Dict[str, Any]:
-        r = super().serialize()
+        # r = super().serialize()
+        r = {}
         r["topk_pop_sample"] = self._topk_pop_sample
         r["pop_size"] = self._pop_size
         r["num_mutations_per_ex"] = self._num_mutations_per_ex
@@ -83,12 +97,15 @@ class iPrompt(PrefixModel):
         r["generation_top_p"] = self._generation_top_p
         r["generation_repetition_penalty"] = self._generation_repetition_penalty
         r["generation_bad_words_ids"] = self._generation_bad_words_ids
-        r["pre_data_prompt_str"] = self.tokenizer.decode(self._pre_data_token_ids.flatten())
-        r["post_data_prompt_str"] = self.tokenizer.decode(self._post_data_token_ids.flatten())
+        r["pre_data_prompt_str"] = self.tokenizer.decode(
+            self._pre_data_token_ids.flatten())
+        r["post_data_prompt_str"] = self.tokenizer.decode(
+            self._post_data_token_ids.flatten())
         return r
-    
+
     def _initialize_pop_once(self, full_text_ids: torch.Tensor):
-        if self._pop_initialized: return
+        if self._pop_initialized:
+            return
 
         while len(self._prefix_pool) < self._pop_size:
             conditional_input_ids = random.choice(full_text_ids)[None]
@@ -102,7 +119,7 @@ class iPrompt(PrefixModel):
             self._prefix_pool.initialize_prefix(input_ids)
 
         self._pop_initialized = True
-    
+
     def _generate(self, input_ids: torch.Tensor, num_conditional_tokens: int) -> torch.Tensor:
         """Generates some text using the model and preset hparams.
 
@@ -112,7 +129,7 @@ class iPrompt(PrefixModel):
         output_length = self._num_tokens + num_conditional_tokens
         attention_mask = ~(input_ids == self.tokenizer.pad_token_id)
         assert attention_mask.shape == input_ids.shape
-        
+
         g = self.model.generate(
             input_ids=input_ids,
             attention_mask=attention_mask,
@@ -132,37 +149,42 @@ class iPrompt(PrefixModel):
             #     (attention_mask[idx], torch.ones(self._num_tokens).to(device)), dim=0
             # ).bool()
             random_sentence_ids = g[idx]
-            print(">>", self.tokenizer.decode(random_sentence_ids).replace('\n', '\\n'))
+            print(">>", self.tokenizer.decode(
+                random_sentence_ids).replace('\n', '\\n'))
 
         return g
-    
+
     def _select_pop_topk(self, k: int, min_occurrences: int = None) -> List[Tuple[int]]:
         return self._prefix_pool.topk(k=k, min_occurrences=min_occurrences)
 
     def _track_early_stopping(self):
         """Track changes in population to tell when to stop early."""
         __n_early_stop = 5
-        population = set(self._select_pop_topk(k=__n_early_stop, min_occurrences=3))
+        population = set(self._select_pop_topk(
+            k=__n_early_stop, min_occurrences=3))
         if (len(population) == __n_early_stop) and (self._last_population == population):
             self._steps_since_new_population += 1
             if self._verbose:
-                print("self._steps_since_new_population:", self._steps_since_new_population)
+                print("self._steps_since_new_population:",
+                      self._steps_since_new_population)
         else:
             self._last_population = population
             self._steps_since_new_population = 0
             if self._verbose:
-                print("new population:", [self.tokenizer.decode(p) for p in sorted(population)])
+                print("new population:", [self.tokenizer.decode(
+                    p) for p in sorted(population)])
 
     def check_early_stop(self) -> bool:
         """Allow prefix models to stop early."""
         if self._early_stopping_steps == -1:
             return False
         return self._steps_since_new_population >= self._early_stopping_steps
-    
+
     def _get_population_and_random_generations(self, full_text_ids: torch.Tensor) -> torch.Tensor:
         population_pool = self._select_pop_topk(k=self._topk_pop_sample)
         if self._verbose:
-            print("population_pool:", [self.tokenizer.decode(p) for p in population_pool])
+            print("population_pool:", [
+                  self.tokenizer.decode(p) for p in population_pool])
         population = random.sample(population_pool, self._pop_size)
         population = torch.tensor(population).to(device)
 
@@ -182,7 +204,7 @@ class iPrompt(PrefixModel):
             self._num_tokens
         )
         return full_population
-    
+
     def _mutate(self, population_input_ids: torch.Tensor, full_text_ids: torch.Tensor) -> List[torch.Tensor]:
         """Mutates a population of prefixes.
 
@@ -195,7 +217,8 @@ class iPrompt(PrefixModel):
                 be used to do prefix generation conditioned on data
         """
         assert population_input_ids.shape[1] == self._num_tokens
-        input_ids = population_input_ids.repeat((self._num_mutations_per_ex, 1))
+        input_ids = population_input_ids.repeat(
+            (self._num_mutations_per_ex, 1))
 
         self._roll_before_truncation = False
         if self._roll_before_truncation:
@@ -205,9 +228,11 @@ class iPrompt(PrefixModel):
         truncate_position = random.randint(0, self._num_tokens-1)
         truncated_input_ids = input_ids[:, :truncate_position]
 
-        random_idxs = torch.randint(low=0, high=len(full_text_ids), size=(len(input_ids), ))
+        random_idxs = torch.randint(low=0, high=len(
+            full_text_ids), size=(len(input_ids), ))
         random_full_text_ids = full_text_ids[random_idxs]
-        conditional_input_ids = torch.cat((random_full_text_ids, truncated_input_ids), dim=1)
+        conditional_input_ids = torch.cat(
+            (random_full_text_ids, truncated_input_ids), dim=1)
 
         num_conditional_tokens = full_text_ids.shape[1]
         new_input_ids = self._generate(
@@ -217,17 +242,17 @@ class iPrompt(PrefixModel):
         # Split off the conditional part, we only want the prefix part, which
         # starts after the conditional part.
         new_input_ids = new_input_ids[:, num_conditional_tokens:]
-        
+
         # TODO consider adding crossover (combining spans?) here.
         return new_input_ids
-    
+
     def _score_population(
-            self, 
-            x_tokenized: transformers.BatchEncoding,
-            y_tokenized: transformers.BatchEncoding,
-            population_input_ids: torch.Tensor,
-            possible_answer_mask: torch.Tensor
-        ) -> Tuple[torch.Tensor, torch.Tensor]:
+        self,
+        x_tokenized: transformers.BatchEncoding,
+        y_tokenized: transformers.BatchEncoding,
+        population_input_ids: torch.Tensor,
+        possible_answer_mask: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Scores a population of prefixes and updates `self._genetic_pool`."""
         pop_size = len(population_input_ids)
         all_candidate_losses = torch.zeros(pop_size, dtype=float).to(device)
@@ -247,7 +272,7 @@ class iPrompt(PrefixModel):
             all_candidate_n_correct[i] += cand_n_correct
             all_candidate_losses[i] += cand_loss
             all_accuracy[i] += cand_accuracy
-        
+
         for i in range(pop_size):
             new_pop_input_ids = tuple(population_input_ids[i].cpu().tolist())
             assert len(new_pop_input_ids) == self._num_tokens
@@ -255,9 +280,9 @@ class iPrompt(PrefixModel):
                 population_input_ids[i], all_candidate_losses[i], all_accuracy[i]
             )
         return all_candidate_losses, all_candidate_n_correct
-    
+
     def _create_full_text_ids(
-        self, full_text_input_ids: torch.Tensor) -> torch.Tensor:
+            self, full_text_input_ids: torch.Tensor) -> torch.Tensor:
         """Creates input for generating explanation.
 
         Takes tokenized inputs (like: "Input: 7 8 Output: 15")
@@ -271,16 +296,16 @@ class iPrompt(PrefixModel):
         return output
 
     def compute_loss_and_call_backward(
-            self,
-            x_tokenized: transformers.BatchEncoding,
-            y_tokenized: transformers.BatchEncoding,
-            possible_answer_mask: torch.Tensor,
-            full_text_tokenized: Optional[transformers.BatchEncoding] = None
-        ) -> Tuple[torch.Tensor, int]:
+        self,
+        x_tokenized: transformers.BatchEncoding,
+        y_tokenized: transformers.BatchEncoding,
+        possible_answer_mask: torch.Tensor,
+        full_text_tokenized: Optional[transformers.BatchEncoding] = None
+    ) -> Tuple[torch.Tensor, int]:
         """Returns the loss from the best example in the population
 
         Note: does not call loss.backward()
-        
+
         Returns:
             loss (float torch.Tensor) -- the loss
             num_correct (int): number of examples where prediction was correct
@@ -319,16 +344,17 @@ class iPrompt(PrefixModel):
         self._track_early_stopping()
 
         # Reset prefix IDs so that the model can be readily used for eval.
-        best_prefix_ids = min(self._prefix_pool._avg_loss, key=self._prefix_pool._avg_loss.get)
+        best_prefix_ids = min(self._prefix_pool._avg_loss,
+                              key=self._prefix_pool._avg_loss.get)
         self._set_prefix_ids(torch.tensor(best_prefix_ids).to(device))
         self.prefix_embedding.requires_grad = False
 
         return all_candidate_losses.min(), all_candidate_n_correct.max()
-        
+
     def post_epoch(self, dataloader: torch.utils.data.DataLoader, possible_answer_mask: torch.Tensor) -> None:
-        # 
+        #
         # Get candidate IDs for every position.
-        # 
+        #
         pass
 
     @property
@@ -355,13 +381,15 @@ class iPrompt(PrefixModel):
         if prefix_ids is None:
             prefix_ids = self.prefix_ids
             prefix_embedding = self.prefix_embedding
-            
+
         else:
             prefix_embedding = self.token_embedding.forward(prefix_ids)
 
         # concatenate preprefix (fixed) + prefix (learned) + example
-        prefix_ids = prefix_ids[None].to(device).repeat((batch_size, 1)).to(device)
-        preprefix_ids = self.preprefix_ids[None].to(device).repeat((batch_size, 1)).to(device)
+        prefix_ids = prefix_ids[None].to(
+            device).repeat((batch_size, 1)).to(device)
+        preprefix_ids = self.preprefix_ids[None].to(
+            device).repeat((batch_size, 1)).to(device)
         full_input_ids = torch.cat(
             (preprefix_ids, prefix_ids, input_ids), dim=1
         )

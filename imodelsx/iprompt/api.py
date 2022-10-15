@@ -295,9 +295,105 @@ def eval_model(
     pkl.dump(r, open(os.path.join(save_dir, 'results.pkl'), 'wb'))
     return r
 
+def explain_dataset(
+    dset,
+    checkpoint: str,
+    save_dir: str='./results',
+    lr: float=0.01,
+    pop_size: int=8,
+    num_mutations: int = 4,
+    num_random_generations: int = 4,
+    generation_repetition_penalty: float = 2.0,
+    early_stopping_steps: int = -1,
+    num_learned_tokens=1,
+    llm_float16 = False,
+    gamma: float=0.0,
+    batch_size: int=500,
+    max_length: int=128,
+    n_epochs: int=100,
+    n_shots: int=1,
+    single_shot_loss: bool=False,
+    accum_grad_over_epoch: bool=False,
+    max_n_datapoints: int=10**10,
+    max_n_steps: int=10**10,
+    epoch_save_interval: int=1,    
+    mask_possible_answers: bool=False,
+    model_cls: str='iprompt',
+):
+    tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+    tokenizer.pad_token = tokenizer.eos_token
+
+    if llm_float16:
+        if checkpoint == "EleutherAI/gpt-j-6B":
+            lm = AutoModelForCausalLM.from_pretrained(
+                checkpoint, output_hidden_states=False, pad_token_id=tokenizer.eos_token_id,
+                revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True
+            )
+        else:
+            # (only certain models are pre-float16ed)
+            print(f"trying to convert {checkpoint} to float16...")
+            lm = transformers.AutoModelForCausalLM.from_pretrained(
+                checkpoint, torch_dtype=torch.float16
+            )
+            lm = lm.half()
+    else:
+        lm = AutoModelForCausalLM.from_pretrained(
+            checkpoint, output_hidden_states=False, pad_token_id=tokenizer.eos_token_id
+        )
+    loss_func = PrefixLoss(gamma=gamma, tokenizer=tokenizer)
+
+
+    preprefix = ''
+    if model_cls == 'iprompt':
+        model = iPrompt(
+            loss_func=loss_func,
+            model=lm,
+            tokenizer=tokenizer,
+            preprefix_str=preprefix,
+            pop_size=pop_size,
+            num_mutations=num_mutations,
+            num_random_generations=num_random_generations,
+            generation_repetition_penalty=generation_repetition_penalty,
+            early_stopping_steps=early_stopping_steps,
+            num_learned_tokens=num_learned_tokens,
+        )
+    else:
+        pass
+        """
+        model = model_cls_dict[model_cls](
+            args=args,
+            loss_func=loss_func, model=lm, tokenizer=tokenizer, preprefix=preprefix
+        )
+        """
+    
+
+    logger.info('beginning training...')
+    r = defaultdict(list)
+    return train_model(
+        r=r,
+        dset=dset,
+        model=model,
+        tokenizer=tokenizer,
+        save_dir=save_dir,
+        lr=lr,
+        batch_size=batch_size,
+        max_length=max_length,
+        mask_possible_answers=mask_possible_answers,
+        n_epochs=n_epochs,
+        n_shots=n_shots,
+        single_shot_loss=single_shot_loss,
+        accum_grad_over_epoch=accum_grad_over_epoch,
+        max_n_datapoints=max_n_datapoints,
+        max_n_steps=max_n_steps,
+        epoch_save_interval=epoch_save_interval,
+        check_answer_func=None,
+    )
+                
+            # r = eval_model(args=args, r=r, dset=Dataset.from_dict(dset_test[:128]), model=model, tokenizer=tokenizer)
+
 # python api.py --task_name_list add_two --model_cls iprompt --num_learned_tokens 3 --max_dset_size 100 --max_n_datapoints 100 --early_stopping_steps 5 --max_digit 10 --train_split_frac 0.75 --single_shot_loss 1 --save_dir /home/chansingh/tmp/iprompt --checkpoint EleutherAI/gpt-j-6B --batch_size 64 --n_epochs 20
 # python api.py --task_name_list add_two --model_cls iprompt --num_learned_tokens 3 --max_dset_size 5000 --max_n_datapoints 5000 --early_stopping_steps 25 --max_digit 10 --train_split_frac 0.75 --single_shot_loss 1 --save_dir /home/chansingh/tmp/iprompt --checkpoint EleutherAI/gpt-j-6B --batch_size 64 --float16 1
-
+# python api.py --n_epochs 1 --max_n_steps 3 --max_n_datapoints 10
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
@@ -415,30 +511,7 @@ if __name__ == '__main__':
         logger = logging.getLogger()
         logging.basicConfig(level=logging.INFO)
 
-        logger.info('loading model and data...')
-        checkpoint = args.checkpoint
-        tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-        tokenizer.pad_token = tokenizer.eos_token
-
-        if args.llm_float16:
-            if checkpoint == "EleutherAI/gpt-j-6B":
-                lm = AutoModelForCausalLM.from_pretrained(
-                    checkpoint, output_hidden_states=False, pad_token_id=tokenizer.eos_token_id,
-                    revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True
-                )
-            else:
-                # (only certain models are pre-float16ed)
-                print(f"trying to convert {checkpoint} to float16...")
-                lm = transformers.AutoModelForCausalLM.from_pretrained(
-                    checkpoint, torch_dtype=torch.float16
-                )
-                lm = lm.half()
-        else:
-            lm = AutoModelForCausalLM.from_pretrained(
-                checkpoint, output_hidden_states=False, pad_token_id=tokenizer.eos_token_id
-            )
-        loss_func = PrefixLoss(gamma=args.gamma, tokenizer=tokenizer)
-
+        logger.info('loading data and model...')
         # set up saving
         save_dir_unique = datetime.now().strftime("%b_%d_%H_%M_") + \
             ''.join(random.choices(string.ascii_lowercase, k=12))
@@ -446,36 +519,29 @@ if __name__ == '__main__':
         logging.info('saving to ' + save_dir)
         args.save_dir_unique = save_dir
 
-        preprefix = ''
-        if args.model_cls == 'iprompt':
-            model = iPrompt(
-                loss_func=loss_func,
-                model=lm,
-                tokenizer=tokenizer,
-                preprefix_str=preprefix,
-            )
-        else:
-            model = model_cls_dict[args.model_cls](
-                args=args,
-                loss_func=loss_func, model=lm, tokenizer=tokenizer, preprefix=preprefix
-            )
+        # get data
         dset, _, _ = data.get_data(
             task_name=args.task_name, n_shots=args.n_shots, train_split_frac=args.train_split_frac, max_dset_size=args.max_dset_size,
             template_num_task_phrasing=args.template_num_task_phrasing, max_digit=args.max_digit
         )
+        # dset = dset.remove_columns(['input', 'output'])
+        # print(dset)
 
-        logger.info('beginning training...')
-
-        train_model(
-            r=r,
-            dset=dset,
-            model=model,
-            tokenizer=tokenizer,
-            save_dir=save_dir,
+        r = explain_dataset(
+            dset,
+            checkpoint=args.checkpoint,
+            save_dir=args.save_dir,
             lr=args.lr,
+            pop_size=args.iprompt_pop_size,
+            num_mutations=args.iprompt_num_mutations,
+            num_random_generations=args.iprompt_num_random_generations,
+            generation_repetition_penalty=args.iprompt_generation_repetition_penalty,
+            early_stopping_steps=args.early_stopping_steps,
+            num_learned_tokens=args.num_learned_tokens,
+            llm_float16=args.llm_float16,
+            gamma=args.gamma,
             batch_size=args.batch_size,
             max_length=args.max_length,
-            mask_possible_answers=args.mask_possible_answers,
             n_epochs=args.n_epochs,
             n_shots=args.n_shots,
             single_shot_loss=args.single_shot_loss,
@@ -483,7 +549,8 @@ if __name__ == '__main__':
             max_n_datapoints=args.max_n_datapoints,
             max_n_steps=args.max_n_steps,
             epoch_save_interval=args.epoch_save_interval,
-            check_answer_func=None,
+            mask_possible_answers=args.mask_possible_answers,
+            model_cls=args.model_cls,
         )
+        print('r', r)
             
-        # r = eval_model(args=args, r=r, dset=Dataset.from_dict(dset_test[:128]), model=model, tokenizer=tokenizer)
