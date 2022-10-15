@@ -12,7 +12,7 @@ from typing import List
 import tqdm
 
 
-def explain_d3(
+def explain_datasets_d3(
     pos: List[str],  # a list of text samples from D_1
     neg: List[str],  # a list of text samples from D_0
     note: str = '',  # a note about this distribution, for logging purposes

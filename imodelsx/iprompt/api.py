@@ -303,7 +303,7 @@ def eval_model(
     return r
 
 
-def explain_dataset(
+def explain_dataset_iprompt(
     input_strings: List[str],
     output_strings: List[str],
     checkpoint: str,
@@ -329,8 +329,18 @@ def explain_dataset(
     mask_possible_answers: bool = False,
     model_cls: str = 'iprompt',
 ):
+    """Explain the relationship between the input strings and the output strings
+
+    Params
+    ------
+    input_strings
+
+
+
+    """
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
     tokenizer.pad_token = tokenizer.eos_token
+    logger = logging.getLogger()
 
     if llm_float16:
         if checkpoint == "EleutherAI/gpt-j-6B":
@@ -533,8 +543,12 @@ if __name__ == '__main__':
             task_name=args.task_name, n_shots=args.n_shots, train_split_frac=args.train_split_frac, max_dset_size=args.max_dset_size,
             template_num_task_phrasing=args.template_num_task_phrasing, max_digit=args.max_digit
         )
+        pd.DataFrame.from_dict({
+            'input_strings': dset['input'],
+            'output_strings': [repr(x) for x in dset['output']],
+        }).to_csv('add_two.csv', index=False)
 
-        r = explain_dataset(
+        r = explain_dataset_iprompt(
             input_strings=dset['input'],
             output_strings=dset['output'],
             checkpoint=args.checkpoint,
