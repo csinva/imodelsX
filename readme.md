@@ -15,8 +15,8 @@
 
 | Model                       | Reference                                                    | Description                                                  |
 | :-------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Emb-GAM            | [🗂️](https://csinva.io/emb-gam/), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Fit better linear model using an LLM to extract embeddings (*Official*) |
 | iPrompt            | [🗂️](), [🔗](https://github.com/csinva/interpretable-autoprompting), [📄](https://arxiv.org/abs/2210.01848) | Generates a human-interpretable prompt that explains patterns in data (*Official*) |
+| Emb-GAM            | [🗂️](https://csinva.io/emb-gam/), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Fit better linear model using an LLM to extract embeddings (*Official*) |
 | AutoPrompt            | [🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) |Find a natural-language prompt using input-gradients |
 | D3            | [🗂️](), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) |Explain the difference between two distributions |
 | More models                 | ⌛                                                            | (Coming soon!) Lightweight Rule Induction, MLRules, ... |
@@ -30,14 +30,66 @@ Docs <a href="https://csinva.io/imodels/">🗂️</a>, Reference code implementa
 # Quickstart
 **Installation**: `pip install imodelsx` (or, for more control, clone and install from source)
 
-**Usage example** (see <a href="https://csinva.github.io/emb-gam/">api</a> or <a href="https://github.com/csinva/emb-gam/blob/master/demo_embgam.ipynb">demo notebook</a> for more details):
+**Demos**: see the [demo notebooks](demos)
+
+### iPrompt
 
 ```python
-from imodelsx import EmbGAMClassifier, ...
-``` 
+from imodelsx import explain_dataset_iprompt, get_add_two_numbers_dataset
 
-# Docs
-- still in progress....
+# get a simple dataset of adding two numbers
+input_strings, output_strings = get_add_two_numbers_dataset(num_examples=100)
+for i in range(5):
+    print(repr(input_strings[i]), repr(output_strings[i]))o
+
+# explain the relationship between the inputs and outputs
+# with a natural-language prompt string
+prompts, metadata = explain_dataset_iprompt(
+    input_strings=input_strings,
+    output_strings=output_strings,
+    checkpoint='EleutherAI/gpt-j-6B', # which language model to use
+    num_learned_tokens=3, # how long of a prompt to learn
+
+    n_epochs=15, # how many epochs to search
+    verbose=0, # how much to print
+    llm_float16=True, # whether to load the model in float_16
+)
+```
+
+### Emb-GAM
+**[api reference](https://csinva.github.io/emb-gam/)**
+
+```python
+from imodelsx import EmbGAMClassifier
+import datasets
+import numpy as np
+
+# set up data
+dset = datasets.load_dataset('rotten_tomatoes')['train']
+dset = dset.select(np.random.choice(len(dset), size=300, replace=False))
+dset_val = datasets.load_dataset('rotten_tomatoes')['validation']
+dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
+
+# fit model
+m = EmbGAMClassifier(
+    checkpoint='textattack/distilbert-base-uncased-rotten-tomatoes',
+    ngrams=2, # use bigrams
+)
+m.fit(dset['text'], dset['label'])
+
+# predict
+preds = m.predict(dset_val['text'])
+print('acc_val', np.mean(preds == dset_val['label']))
+
+# interpret
+print('Total ngram coefficients: ', len(m.coefs_dict_))
+print('Most positive ngrams')
+for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1], reverse=True)[:8]:
+    print('\t', k, round(v, 2))
+print('Most negative ngrams')
+for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
+    print('\t', k, round(v, 2))
+```
 
 # Related work
 - imodels package (JOSS 2021 [github](https://github.com/csinva/imodels)) - interpretable ML package for concise, transparent, and accurate predictive modeling (sklearn-compatible).

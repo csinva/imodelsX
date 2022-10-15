@@ -19,7 +19,6 @@ from imodelsx.iprompt import (
     PromptTunedModel, HotFlip, GumbelPrefixModel
 )
 import pandas as pd
-import iprompt.data as data
 import logging
 import pickle as pkl
 from torch.utils.data import DataLoader
@@ -56,7 +55,7 @@ def train_model(
     max_n_steps: int = 10**10,
     epoch_save_interval: int = 1,
     mask_possible_answers: bool = False,
-    check_answer_func=None,
+    verbose: int = 0,
 ):
     """
     Trains a model, either by optimizing continuous embeddings or finding an optimal discrete embedding.
@@ -73,7 +72,7 @@ def train_model(
         'input': input_strs,
         'output': output_strs,
     })
-
+    print('loading model...')
     model = model.to(device)
     dataloader = DataLoader(
         dset, batch_size=batch_size, shuffle=True, drop_last=False)
@@ -197,12 +196,19 @@ def train_model(
             break
 
     # Serialize model-specific stuff (prefixes & losses for autoprompt, embeddings for prompt tuning, etc.)
-    r.update(model.serialize())
+    n_eval = 128
+    eval_dset = datasets.Dataset.from_dict(dset[:n_eval])
+    eval_dataloader = DataLoader(
+        eval_dset, batch_size=batch_size, shuffle=True, drop_last=False)
+    r.update(model.serialize(eval_dataloader, possible_answer_mask))
+    # r.update(model.serialize())
 
     # save whether prefixes fit the template
+    """
     if "prefixes" in r:
         r["prefixes__check_answer_func"] = list(
             map(check_answer_func, r["prefixes"]))
+    """
 
     r['train_end_time'] = time.time()
     r['train_time_elapsed'] = r['train_end_time'] - r['train_start_time']
@@ -321,14 +327,16 @@ def explain_dataset_iprompt(
     max_length: int = 128,
     n_epochs: int = 100,
     n_shots: int = 1,
-    single_shot_loss: bool = False,
+    single_shot_loss: bool = True,
     accum_grad_over_epoch: bool = False,
     max_n_datapoints: int = 10**10,
     max_n_steps: int = 10**10,
     epoch_save_interval: int = 1,
     mask_possible_answers: bool = False,
     model_cls: str = 'iprompt',
-):
+    verbose: int = 0,  # verbosity level (0 for minimal)
+    seed: int = 42,
+) -> Tuple[List[str], Dict]:
     """Explain the relationship between the input strings and the output strings
 
     Params
@@ -336,7 +344,11 @@ def explain_dataset_iprompt(
     input_strings
 
 
-
+    Returns
+    best_prompts
+        List of the best found prompts
+    metadata_dict
+        Dictionary of metadata from fitting
     """
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
     tokenizer.pad_token = tokenizer.eos_token
@@ -374,6 +386,8 @@ def explain_dataset_iprompt(
             generation_repetition_penalty=generation_repetition_penalty,
             early_stopping_steps=early_stopping_steps,
             num_learned_tokens=num_learned_tokens,
+            max_length=max_length,
+            verbose=verbose,
         )
     else:
         pass
@@ -383,10 +397,11 @@ def explain_dataset_iprompt(
             loss_func=loss_func, model=lm, tokenizer=tokenizer, preprefix=preprefix
         )
         """
-
-    logger.info('beginning training...')
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    random.seed(seed)
     r = defaultdict(list)
-    return train_model(
+    r = train_model(
         r=r,
         input_strs=input_strings,
         output_strs=output_strings,
@@ -404,8 +419,9 @@ def explain_dataset_iprompt(
         max_n_datapoints=max_n_datapoints,
         max_n_steps=max_n_steps,
         epoch_save_interval=epoch_save_interval,
-        check_answer_func=None,
+        verbose=verbose,
     )
+    return r['prefixes'], r
 
     # r = eval_model(args=args, r=r, dset=Dataset.from_dict(dset_test[:128]), model=model, tokenizer=tokenizer)
 
@@ -424,11 +440,11 @@ if __name__ == '__main__':
                         help='batch size for training')
     parser.add_argument('--seed', type=int, default=1,
                         help='random seed')
-    parser.add_argument('--n_epochs', type=int, default=100,
+    parser.add_argument('--n_epochs', type=int, default=2,
                         help='number of epochs for training')
     parser.add_argument('--max_n_steps', type=int, default=10**10,
                         help='max number of steps for training')
-    parser.add_argument('--max_n_datapoints', type=int, default=10**10,
+    parser.add_argument('--max_n_datapoints', type=int, default=20,  # 10**10,
                         help='max number of datapoints for training')
     parser.add_argument('--train_split_frac', type=float,
                         default=None, help='fraction for train-test split if desired')
@@ -436,7 +452,7 @@ if __name__ == '__main__':
                         default=10**4, help='maximum allowable dataset size')
     parser.add_argument('--early_stopping_steps', type=int, default=-1,
                         help='if > 0, number of steps until stopping early after no improvement')
-    parser.add_argument('--max_digit', type=int, default=100,
+    parser.add_argument('--max_digit', type=int, default=10,
                         help='maximum value of each digit in summand')
     parser.add_argument('--template_num_init_string', type=int, default=0,
                         help='the number of the manually-specified prefix to be initialize with')
@@ -539,16 +555,17 @@ if __name__ == '__main__':
         args.save_dir_unique = save_dir
 
         # get data
+        import iprompt.data as data # import this here so it's not needed for the package....
         dset, _, _ = data.get_data(
             task_name=args.task_name, n_shots=args.n_shots, train_split_frac=args.train_split_frac, max_dset_size=args.max_dset_size,
             template_num_task_phrasing=args.template_num_task_phrasing, max_digit=args.max_digit
         )
-        pd.DataFrame.from_dict({
-            'input_strings': dset['input'],
-            'output_strings': [repr(x) for x in dset['output']],
-        }).to_csv('add_two.csv', index=False)
+        # pd.DataFrame.from_dict({
+        #     'input_strings': dset['input'],
+        #     'output_strings': [repr(x) for x in dset['output']],
+        # }).to_csv('add_two.csv', index=False)
 
-        r = explain_dataset_iprompt(
+        prompts, meta = explain_dataset_iprompt(
             input_strings=dset['input'],
             output_strings=dset['output'],
             checkpoint=args.checkpoint,
@@ -574,4 +591,5 @@ if __name__ == '__main__':
             mask_possible_answers=args.mask_possible_answers,
             model_cls=args.model_cls,
         )
-        print('r', r)
+        print('prompts', prompts)
+        print('\nmeta', meta)

@@ -33,7 +33,9 @@ class iPrompt(AutoPrompt):
         num_random_generations: int = 4,
         generation_repetition_penalty: float = 2.0,
         early_stopping_steps: int = -1,
-        num_learned_tokens=1,
+        num_learned_tokens: int=1,
+        max_length: int=128,
+        verbose: int=0,
     ):
         # super().__init__()
         class fake_args:
@@ -42,6 +44,8 @@ class iPrompt(AutoPrompt):
         args.num_learned_tokens = num_learned_tokens
         args.hotflip_num_candidates = None
         args.autoprompt_init_strategy = None
+        args.save_dir_unique = '.'
+        args.max_length = max_length
         super().__init__(
             args=args, loss_func=loss_func, model=model, tokenizer=tokenizer, preprefix=''
         )
@@ -84,11 +88,26 @@ class iPrompt(AutoPrompt):
         self._post_data_token_ids = self.tokenizer(
             "\n\nPrompt:" + prompt_str, return_tensors='pt').input_ids.to(device)
         ####################################################################
-        self._verbose = True
+        self._verbose = verbose
 
-    def serialize(self) -> Dict[str, Any]:
-        # r = super().serialize()
-        r = {}
+    # def serialize(self) -> Dict[str, Any]:
+    #     # r = super().serialize()
+    #     r = {}
+    #     r["topk_pop_sample"] = self._topk_pop_sample
+    #     r["pop_size"] = self._pop_size
+    #     r["num_mutations_per_ex"] = self._num_mutations_per_ex
+    #     r["num_random_generations"] = self._num_random_generations
+    #     r["generation_temp"] = self._generation_temp
+    #     r["generation_top_p"] = self._generation_top_p
+    #     r["generation_repetition_penalty"] = self._generation_repetition_penalty
+    #     r["generation_bad_words_ids"] = self._generation_bad_words_ids
+    #     r["pre_data_prompt_str"] = self.tokenizer.decode(
+    #         self._pre_data_token_ids.flatten())
+    #     r["post_data_prompt_str"] = self.tokenizer.decode(
+    #         self._post_data_token_ids.flatten())
+    #     return r
+    def serialize(self, eval_dataloader: torch.utils.data.DataLoader, possible_answer_mask: torch.Tensor) -> Dict[str, Any]:
+        r = super().serialize(eval_dataloader=eval_dataloader, possible_answer_mask=possible_answer_mask)
         r["topk_pop_sample"] = self._topk_pop_sample
         r["pop_size"] = self._pop_size
         r["num_mutations_per_ex"] = self._num_mutations_per_ex
@@ -97,10 +116,8 @@ class iPrompt(AutoPrompt):
         r["generation_top_p"] = self._generation_top_p
         r["generation_repetition_penalty"] = self._generation_repetition_penalty
         r["generation_bad_words_ids"] = self._generation_bad_words_ids
-        r["pre_data_prompt_str"] = self.tokenizer.decode(
-            self._pre_data_token_ids.flatten())
-        r["post_data_prompt_str"] = self.tokenizer.decode(
-            self._post_data_token_ids.flatten())
+        r["pre_data_prompt_str"] = self.tokenizer.decode(self._pre_data_token_ids.flatten())
+        r["post_data_prompt_str"] = self.tokenizer.decode(self._post_data_token_ids.flatten())
         return r
 
     def _initialize_pop_once(self, full_text_ids: torch.Tensor):
@@ -182,9 +199,8 @@ class iPrompt(AutoPrompt):
 
     def _get_population_and_random_generations(self, full_text_ids: torch.Tensor) -> torch.Tensor:
         population_pool = self._select_pop_topk(k=self._topk_pop_sample)
-        if self._verbose:
-            print("population_pool:", [
-                  self.tokenizer.decode(p) for p in population_pool])
+        if self._verbose > -1:
+            print("population_pool:", [self.tokenizer.decode(p) for p in population_pool])
         population = random.sample(population_pool, self._pop_size)
         population = torch.tensor(population).to(device)
 
@@ -320,7 +336,8 @@ class iPrompt(AutoPrompt):
             full_text_input_ids=full_text_tokenized.input_ids,
         )
         self._initialize_pop_once(full_text_ids=full_text_ids)
-        self._prefix_pool.print(topk=10, min_occurrences=num_min_occurrences)
+        if self._verbose:
+            self._prefix_pool.print(topk=10, min_occurrences=num_min_occurrences)
 
         # Grab new population
         population_input_ids = self._get_population_and_random_generations(
