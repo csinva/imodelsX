@@ -7,22 +7,24 @@ with open(path.join(path_to_repo, 'readme.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 required_pypi = [
-    'transformers[torch]',
-    'numpy',
     'datasets',
-    'scikit-learn',
+    'imodels',
+    'numpy',
     'pandas',
+    'scikit-learn',
+    'scipy',
     'spacy',
     'torch',
     'tqdm',
+    'transformers[torch] >= 4.23.1',
 ]
 
 setuptools.setup(
     name="imodelsx",
-    version="0.01",
+    version="0.02",
     author="Chandan Singh, John X. Morris",
     author_email="chansingh@microsoft.com",
-    description="Library to explain *a dataset* in natural language.",
+    description="Library to explain a dataset in natural language.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/csinva/imodelsX",

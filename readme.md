@@ -4,8 +4,7 @@
 <p align="center">Library to explain <i>a dataset</i> in natural language.
 </p>
 <p align="center">
-  <a href="https://csinva.github.io/emb-gam/">📚 sklearn-friendly api</a> •
-  <a href="https://github.com/csinva/emb-gam/blob/master/demo_embgam.ipynb">📖 demo notebook</a>
+  <a href="https://github.com/csinva/imodelsX/tree/master/demos">📖 demo notebooks</a>
 </p>
 <p align="center">
   <img src="https://img.shields.io/badge/license-mit-blue.svg">
