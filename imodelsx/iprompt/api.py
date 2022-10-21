@@ -66,11 +66,15 @@ def train_model(
         dictionary of things to save
     """
 
+    # remove periods and newlines from the output so we actually use the tokens
+    # for the reranking step in iPrompt
+    output_strs = [s.rstrip().rstrip('.') for s in output_strs]
+
     r['train_start_time'] = time.time()
     model.train()
 
     assert len(input_strs) == len(output_strs), "input and output must be same length to create input-output pairs"
-    text_strs = list(map(''.join, zip(input_strs, output_strs)))
+    text_strs = list(map('.\n\n'.join, zip(input_strs, output_strs)))
     df = pd.DataFrame.from_dict({
         'input': input_strs,
         'output': output_strs,
@@ -97,7 +101,6 @@ def train_model(
         # shuffle rows
         df = df.sample(n=max_n_datapoints, replace=False)
         dset = datasets.Dataset.from_pandas(df)
-        breakpoint()
     print('loading model...')
 
 
@@ -162,9 +165,7 @@ def train_model(
                 truncation=True, max_length=max_length)
             x_tokenized = tok(x_text).to(device)
             y_tokenized = tok(y_text).to(device)
-            text = [batch['input'][i] + batch['output'][i]
-                    for i in range(len(batch))]
-            full_text_tokenized = tok(text).to(device)
+            full_text_tokenized = tok(batch['text']).to(device)
 
             loss, n_correct = model.compute_loss_and_call_backward(
                 x_tokenized=x_tokenized,

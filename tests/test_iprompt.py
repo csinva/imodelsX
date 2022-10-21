@@ -23,5 +23,6 @@ prompts, metadata = explain_dataset_iprompt(
     n_shots=5, # number of examples in context
     n_epochs=15, # how many epochs to search
     verbose=1, # how much to print
+    batch_size=16, # batch size for iprompt
     llm_float16=llm_float16, # whether to load the model in float_16
 )

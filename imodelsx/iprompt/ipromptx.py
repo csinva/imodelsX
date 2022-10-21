@@ -89,23 +89,7 @@ class iPrompt(AutoPrompt):
             "\n\nPrompt:" + prompt_str, return_tensors='pt').input_ids.to(device)
         ####################################################################
         self._verbose = verbose
-
-    # def serialize(self) -> Dict[str, Any]:
-    #     # r = super().serialize()
-    #     r = {}
-    #     r["topk_pop_sample"] = self._topk_pop_sample
-    #     r["pop_size"] = self._pop_size
-    #     r["num_mutations_per_ex"] = self._num_mutations_per_ex
-    #     r["num_random_generations"] = self._num_random_generations
-    #     r["generation_temp"] = self._generation_temp
-    #     r["generation_top_p"] = self._generation_top_p
-    #     r["generation_repetition_penalty"] = self._generation_repetition_penalty
-    #     r["generation_bad_words_ids"] = self._generation_bad_words_ids
-    #     r["pre_data_prompt_str"] = self.tokenizer.decode(
-    #         self._pre_data_token_ids.flatten())
-    #     r["post_data_prompt_str"] = self.tokenizer.decode(
-    #         self._post_data_token_ids.flatten())
-    #     return r
+    
     def serialize(self, eval_dataloader: torch.utils.data.DataLoader, possible_answer_mask: torch.Tensor) -> Dict[str, Any]:
         r = super().serialize(eval_dataloader=eval_dataloader, possible_answer_mask=possible_answer_mask)
         r["topk_pop_sample"] = self._topk_pop_sample
