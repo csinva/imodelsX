@@ -45,14 +45,14 @@ def train_model(
     tokenizer: transformers.PreTrainedTokenizer,
     save_dir: str = 'results',
     lr: float = 1e-4,
-    batch_size: int = 500,
+    batch_size: int = 64,
     max_length: int = 128,
     n_epochs: int = 100,
     n_shots: int = 1,
-    single_shot_loss: bool = False,
+    single_shot_loss: bool = True,
     accum_grad_over_epoch: bool = False,
-    max_n_datapoints: int = 10**10,
-    max_n_steps: int = 10**10,
+    max_n_datapoints: int = 10**4,
+    max_n_steps: int = 10**4,
     epoch_save_interval: int = 1,
     mask_possible_answers: bool = False,
     verbose: int = 0,
@@ -68,11 +68,39 @@ def train_model(
 
     r['train_start_time'] = time.time()
     model.train()
-    dset = datasets.Dataset.from_dict({
+
+    assert len(input_strs) == len(output_strs), "input and output must be same length to create input-output pairs"
+    text_strs = list(map(''.join, zip(input_strs, output_strs)))
+    df = pd.DataFrame.from_dict({
         'input': input_strs,
         'output': output_strs,
+        'text': text_strs,
     })
+    if n_shots == 1:
+        dset = datasets.Dataset.from_pandas(df)
+    else:
+        d2 = defaultdict(list)
+        for i in range(max_n_datapoints):
+            all_shots = df.sample(n=n_shots, replace=False)
+            d2['text'].append(''.join(all_shots['text'].values))
+            #
+            last_input = all_shots.tail(n=1)['input'].values[0]
+            d2['input'].append(
+                ''.join(all_shots['text'].values[:-1]) + last_input)
+            d2['last_input'].append(last_input)
+            #
+            last_output = all_shots.tail(n=1)['output'].values[0]
+            d2['output'].append(last_output)
+            #
+
+        df = pd.DataFrame.from_dict(d2)
+        # shuffle rows
+        df = df.sample(n=max_n_datapoints, replace=False)
+        dset = datasets.Dataset.from_pandas(df)
+        breakpoint()
     print('loading model...')
+
+
     model = model.to(device)
     dataloader = DataLoader(
         dset, batch_size=batch_size, shuffle=True, drop_last=False)
@@ -323,14 +351,14 @@ def explain_dataset_iprompt(
     early_stopping_steps: int = -1,
     llm_float16=False,
     gamma: float = 0.0,
-    batch_size: int = 500,
+    batch_size: int = 64,
     max_length: int = 128,
     n_epochs: int = 100,
     n_shots: int = 1,
     single_shot_loss: bool = True,
     accum_grad_over_epoch: bool = False,
-    max_n_datapoints: int = 10**10,
-    max_n_steps: int = 10**10,
+    max_n_datapoints: int = 10**4,
+    max_n_steps: int = 10**4,
     epoch_save_interval: int = 1,
     mask_possible_answers: bool = False,
     model_cls: str = 'iprompt',

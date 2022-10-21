@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-def get_add_two_numbers_dataset(num_examples: int=None):
+def get_add_two_numbers_dataset(num_examples: int= None):
     df = pd.read_csv(os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
         'add_two.csv'

@@ -39,7 +39,7 @@ from imodelsx import explain_dataset_iprompt, get_add_two_numbers_dataset
 # get a simple dataset of adding two numbers
 input_strings, output_strings = get_add_two_numbers_dataset(num_examples=100)
 for i in range(5):
-    print(repr(input_strings[i]), repr(output_strings[i]))o
+    print(repr(input_strings[i]), repr(output_strings[i]))
 
 # explain the relationship between the inputs and outputs
 # with a natural-language prompt string
@@ -47,7 +47,7 @@ prompts, metadata = explain_dataset_iprompt(
     input_strings=input_strings,
     output_strings=output_strings,
     checkpoint='EleutherAI/gpt-j-6B', # which language model to use
-    num_learned_tokens=3, # how long of a prompt to learn
+    num_learned_tokens=12, # how long of a prompt to learn
 
     n_epochs=15, # how many epochs to search
     verbose=0, # how much to print

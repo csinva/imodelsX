@@ -33,9 +33,9 @@ class iPrompt(AutoPrompt):
         num_random_generations: int = 4,
         generation_repetition_penalty: float = 2.0,
         early_stopping_steps: int = -1,
-        num_learned_tokens: int=1,
-        max_length: int=128,
-        verbose: int=0,
+        num_learned_tokens: int = 1,
+        max_length: int = 128,
+        verbose: int = 0,
     ):
         # super().__init__()
         class fake_args:
