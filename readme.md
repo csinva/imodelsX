@@ -18,7 +18,7 @@
 | Emb-GAM            | [🗂️](https://csinva.io/emb-gam/), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Fit better linear model using an LLM to extract embeddings (*Official*) |
 | AutoPrompt            | [🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) |Find a natural-language prompt using input-gradients |
 | D3            | [🗂️](), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) |Explain the difference between two distributions |
-| More models                 | ⌛                                                            | (Coming soon!) Lightweight Rule Induction, MLRules, ... |
+| (Coming soon!)                 | ⌛                                                            |  We hope to support other interpretable models like [RLPrompt](https://arxiv.org/abs/2205.12548), [concept bottleneck models](https://arxiv.org/abs/2007.04612), [NAMs](https://proceedings.neurips.cc/paper/2021/hash/251bd0442dfcc53b5a761e050f8022b8-Abstract.html), and [NBDT](https://arxiv.org/abs/2004.00221)  |
 
 <p align="center">
 Docs <a href="https://csinva.io/imodels/">🗂️</a>, Reference code implementation 🔗, Research paper 📄
