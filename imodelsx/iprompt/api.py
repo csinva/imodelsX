@@ -153,6 +153,7 @@ def train_model(
 
         total_n = 0
         total_n_correct = 0
+        print(f'Beginning epoch {epoch}')
         pbar = tqdm(enumerate(dataloader), total=len(dataloader))
         for idx, batch in pbar:
             total_n_steps += 1

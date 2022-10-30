@@ -54,7 +54,7 @@ class HotFlip(PrefixModel):
         self._set_prefix_ids(
             self.init_discrete_prefix(num_tokens=self._num_tokens)
         )
-        print(f"preprefix: '{preprefix}'")
+        # print(f"preprefix: '{preprefix}'")
 
         # disable grads to model
         for p in self.model.parameters(): p.requires_grad = False

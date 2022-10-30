@@ -47,12 +47,15 @@ prompts, metadata = explain_dataset_iprompt(
     input_strings=input_strings,
     output_strings=output_strings,
     checkpoint='EleutherAI/gpt-j-6B', # which language model to use
-    num_learned_tokens=12, # how long of a prompt to learn
+    num_learned_tokens=3, # how long of a prompt to learn
+    n_shots=3, # shots per example
 
     n_epochs=15, # how many epochs to search
     verbose=0, # how much to print
     llm_float16=True, # whether to load the model in float_16
 )
+--------
+prompts is a list of found natural-language prompt strings
 ```
 
 ### Emb-GAM
