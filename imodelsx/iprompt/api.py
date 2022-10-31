@@ -25,6 +25,13 @@ from torch.utils.data import DataLoader
 from datetime import datetime
 
 
+"""
+Explaining Patterns in Data with Language Models via Interpretable Autoprompting
+
+Chandan Singh*, John X. Morris*, Jyoti Aneja, Alexander M. Rush, Jianfeng Gao
+https://arxiv.org/abs/2210.01848
+"""
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -73,7 +80,8 @@ def train_model(
     r['train_start_time'] = time.time()
     model.train()
 
-    assert len(input_strs) == len(output_strs), "input and output must be same length to create input-output pairs"
+    assert len(input_strs) == len(
+        output_strs), "input and output must be same length to create input-output pairs"
     text_strs = list(map('.\n\n'.join, zip(input_strs, output_strs)))
     df = pd.DataFrame.from_dict({
         'input': input_strs,
@@ -102,7 +110,6 @@ def train_model(
         df = df.sample(n=max_n_datapoints, replace=False)
         dset = datasets.Dataset.from_pandas(df)
     print('loading model...')
-
 
     model = model.to(device)
     dataloader = DataLoader(
@@ -369,12 +376,28 @@ def explain_dataset_iprompt(
 ) -> Tuple[List[str], Dict]:
     """Explain the relationship between the input strings and the output strings
 
-    Params
-    ------
-    input_strings
+    Parameters
+    ----------
+    input_strings: List[str]
+        list of input strings (e.g. "2 + 2")
+    output_strings: List[str]
+        list of output strings (e.g. "4")
+    checkpoint: str
+        name of model checkpoint to prompt (e.g. EleutherAI/gpt-j-6B)
+    num_learned_tokens: int
+        number of tokens to learn in prompt
+    save_dir: str
+        directory to save results
+    lr: float
+        learning rate for prompt tuning
+    pop_size: int
+        number of prompt candidates to evaluate for each iteration of iprompt
+    num_mutations: int
+        number of mutations to apply to each prompt candidate
 
 
     Returns
+    -------
     best_prompts
         List of the best found prompts
     metadata_dict
@@ -585,7 +608,8 @@ if __name__ == '__main__':
         args.save_dir_unique = save_dir
 
         # get data
-        import iprompt.data as data # import this here so it's not needed for the package....
+        # import this here so it's not needed for the package....
+        import iprompt.data as data
         dset, _, _ = data.get_data(
             task_name=args.task_name, n_shots=args.n_shots, train_split_frac=args.train_split_frac, max_dset_size=args.max_dset_size,
             template_num_task_phrasing=args.template_num_task_phrasing, max_digit=args.max_digit

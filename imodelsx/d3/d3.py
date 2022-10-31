@@ -12,24 +12,50 @@ import json
 from typing import List, Dict
 import tqdm
 
+"""
+Describing Differences between Text Distributions with Natural Language
+
+Ruiqi Zhong, Charlie Snell, Dan Klein, Jacob Steinhardt
+https://arxiv.org/abs/2201.12323
+"""
+
 
 def explain_datasets_d3(
-    pos: List[str],  # a list of text samples from D_1
-    neg: List[str],  # a list of text samples from D_0
-    # the name of the proposer. the name starts with either t5 or gpt3, followed by the directory/model-name/engine name. change argument to "t5t5-small" to debug
+    pos: List[str],
+    neg: List[str],
     proposer_name: str = 't5ruiqi-zhong/t5proposer_0514',
-    # the name of the verifier, with options detailed in verifier_wrapper.py. change argument to "dummy" to debug
     verifier_name: str = 'ruiqi-zhong/t5verifier_0514',
     save_folder: str='results',
-    num_steps: int=500,  # default 2000
+    num_steps: int=500,
     num_folds: int=2,    # default 4
     batch_size: int=32,  # default 16
     verbose: bool=True,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Warning: proposer.inference_on_ensemble_prompts is currently not using ensembling!
+    """This function returns hypothesis that describe the difference between
+    the distributions present in two lists of strings
+
+    Parameters
+    ----------
+    pos : List[str]
+        a list of text samples from D_1
+    neg : List[str]
+        a list of text samples from D_0
+    proposer_name : str, optional
+        the name of the proposer. the name starts with either t5 or gpt3, followed by the directory/model-name/engine name. change argument to "t5t5-small" to debug, by default 't5ruiqi-zhong/t5proposer_0514'
+    verifier_name : str, optional
+        the name of the verifier, with options detailed in verifier_wrapper.py. change argument to "dummy" to debug, by default 'ruiqi-zhong/t5verifier_0514'
+    save_folder : str, optional
+        the folder to save the results, by default 'results'
+    num_steps : int, optional
+        the number of steps to run the algorithm, by default 500
+    num_folds : int, optional
+        the number of folds to use in cross-validation, by default 2
+    batch_size : int, optional
+    verbose : bool, optional
+        whether to print intermediate updates, by default True
 
     Returns
+    -------
     hypotheses: np.ndarray[str]
         String hypotheses for differentiating the classes
     hypothesis_scores: np.ndarray[float]
@@ -56,6 +82,7 @@ def explain_datasets_d3(
 
     with torch.no_grad():
         # propose hypotheses
+        # Warning: proposer.inference_on_ensemble_prompts is currently not using ensembling!
         if verbose:
             print('\nStep 2/3: propose hypothesis...')
         pos2score, neg2score = extreme_vals['pos2score'], extreme_vals['neg2score']

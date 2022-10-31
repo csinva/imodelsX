@@ -53,6 +53,13 @@ from torch.utils.data import DataLoader
 from datetime import datetime
 
 
+&#34;&#34;&#34;
+Explaining Patterns in Data with Language Models via Interpretable Autoprompting
+
+Chandan Singh*, John X. Morris*, Jyoti Aneja, Alexander M. Rush, Jianfeng Gao
+https://arxiv.org/abs/2210.01848
+&#34;&#34;&#34;
+
 device = torch.device(&#39;cuda&#39; if torch.cuda.is_available() else &#39;cpu&#39;)
 
 
@@ -101,7 +108,8 @@ def train_model(
     r[&#39;train_start_time&#39;] = time.time()
     model.train()
 
-    assert len(input_strs) == len(output_strs), &#34;input and output must be same length to create input-output pairs&#34;
+    assert len(input_strs) == len(
+        output_strs), &#34;input and output must be same length to create input-output pairs&#34;
     text_strs = list(map(&#39;.\n\n&#39;.join, zip(input_strs, output_strs)))
     df = pd.DataFrame.from_dict({
         &#39;input&#39;: input_strs,
@@ -130,7 +138,6 @@ def train_model(
         df = df.sample(n=max_n_datapoints, replace=False)
         dset = datasets.Dataset.from_pandas(df)
     print(&#39;loading model...&#39;)
-
 
     model = model.to(device)
     dataloader = DataLoader(
@@ -397,12 +404,28 @@ def explain_dataset_iprompt(
 ) -&gt; Tuple[List[str], Dict]:
     &#34;&#34;&#34;Explain the relationship between the input strings and the output strings
 
-    Params
-    ------
-    input_strings
+    Parameters
+    ----------
+    input_strings: List[str]
+        list of input strings (e.g. &#34;2 + 2&#34;)
+    output_strings: List[str]
+        list of output strings (e.g. &#34;4&#34;)
+    checkpoint: str
+        name of model checkpoint to prompt (e.g. EleutherAI/gpt-j-6B)
+    num_learned_tokens: int
+        number of tokens to learn in prompt
+    save_dir: str
+        directory to save results
+    lr: float
+        learning rate for prompt tuning
+    pop_size: int
+        number of prompt candidates to evaluate for each iteration of iprompt
+    num_mutations: int
+        number of mutations to apply to each prompt candidate
 
 
     Returns
+    -------
     best_prompts
         List of the best found prompts
     metadata_dict
@@ -613,7 +636,8 @@ if __name__ == &#39;__main__&#39;:
         args.save_dir_unique = save_dir
 
         # get data
-        import iprompt.data as data # import this here so it&#39;s not needed for the package....
+        # import this here so it&#39;s not needed for the package....
+        import iprompt.data as data
         dset, _, _ = data.get_data(
             task_name=args.task_name, n_shots=args.n_shots, train_split_frac=args.train_split_frac, max_dset_size=args.max_dset_size,
             template_num_task_phrasing=args.template_num_task_phrasing, max_digit=args.max_digit
@@ -782,13 +806,32 @@ average loss, accuracy per sample over eval dataset</p></div>
 </code></dt>
 <dd>
 <div class="desc"><p>Explain the relationship between the input strings and the output strings</p>
-<h2 id="params">Params</h2>
-<p>input_strings</p>
-<p>Returns
-best_prompts
-List of the best found prompts
-metadata_dict
-Dictionary of metadata from fitting</p></div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>input_strings</code></strong> :&ensp;<code>List[str]</code></dt>
+<dd>list of input strings (e.g. "2 + 2")</dd>
+<dt><strong><code>output_strings</code></strong> :&ensp;<code>List[str]</code></dt>
+<dd>list of output strings (e.g. "4")</dd>
+<dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
+<dd>name of model checkpoint to prompt (e.g. EleutherAI/gpt-j-6B)</dd>
+<dt><strong><code>num_learned_tokens</code></strong> :&ensp;<code>int</code></dt>
+<dd>number of tokens to learn in prompt</dd>
+<dt><strong><code>save_dir</code></strong> :&ensp;<code>str</code></dt>
+<dd>directory to save results</dd>
+<dt><strong><code>lr</code></strong> :&ensp;<code>float</code></dt>
+<dd>learning rate for prompt tuning</dd>
+<dt><strong><code>pop_size</code></strong> :&ensp;<code>int</code></dt>
+<dd>number of prompt candidates to evaluate for each iteration of iprompt</dd>
+<dt><strong><code>num_mutations</code></strong> :&ensp;<code>int</code></dt>
+<dd>number of mutations to apply to each prompt candidate</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>best_prompts</code></dt>
+<dd>List of the best found prompts</dd>
+<dt><code>metadata_dict</code></dt>
+<dd>Dictionary of metadata from fitting</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -823,12 +866,28 @@ Dictionary of metadata from fitting</p></div>
 ) -&gt; Tuple[List[str], Dict]:
     &#34;&#34;&#34;Explain the relationship between the input strings and the output strings
 
-    Params
-    ------
-    input_strings
+    Parameters
+    ----------
+    input_strings: List[str]
+        list of input strings (e.g. &#34;2 + 2&#34;)
+    output_strings: List[str]
+        list of output strings (e.g. &#34;4&#34;)
+    checkpoint: str
+        name of model checkpoint to prompt (e.g. EleutherAI/gpt-j-6B)
+    num_learned_tokens: int
+        number of tokens to learn in prompt
+    save_dir: str
+        directory to save results
+    lr: float
+        learning rate for prompt tuning
+    pop_size: int
+        number of prompt candidates to evaluate for each iteration of iprompt
+    num_mutations: int
+        number of mutations to apply to each prompt candidate
 
 
     Returns
+    -------
     best_prompts
         List of the best found prompts
     metadata_dict
@@ -958,7 +1017,8 @@ dictionary of things to save</p></div>
     r[&#39;train_start_time&#39;] = time.time()
     model.train()
 
-    assert len(input_strs) == len(output_strs), &#34;input and output must be same length to create input-output pairs&#34;
+    assert len(input_strs) == len(
+        output_strs), &#34;input and output must be same length to create input-output pairs&#34;
     text_strs = list(map(&#39;.\n\n&#39;.join, zip(input_strs, output_strs)))
     df = pd.DataFrame.from_dict({
         &#39;input&#39;: input_strs,
@@ -987,7 +1047,6 @@ dictionary of things to save</p></div>
         df = df.sample(n=max_n_datapoints, replace=False)
         dset = datasets.Dataset.from_pandas(df)
     print(&#39;loading model...&#39;)
-
 
     model = model.to(device)
     dataloader = DataLoader(

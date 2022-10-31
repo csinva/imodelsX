@@ -48,23 +48,23 @@
 <tbody>
 <tr>
 <td style="text-align: left;">iPrompt</td>
-<td><a href="">🗂️</a>, <a href="https://github.com/csinva/interpretable-autoprompting">🔗</a>, <a href="https://arxiv.org/abs/2210.01848">📄</a></td>
+<td><a href="http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt">🗂️</a>, <a href="https://github.com/csinva/interpretable-autoprompting">🔗</a>, <a href="https://arxiv.org/abs/2210.01848">📄</a></td>
 <td>Generates a human-interpretable prompt that explains patterns <br/> in data (<em>Official</em>)</td>
 </tr>
 <tr>
 <td style="text-align: left;">Emb-GAM</td>
-<td><a href="https://csinva.io/emb-gam/">🗂️</a>, <a href="https://github.com/csinva/emb-gam">🔗</a>, <a href="https://arxiv.org/abs/2209.11799">📄</a></td>
+<td><a href="http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier">🗂️</a>, <a href="https://github.com/csinva/emb-gam">🔗</a>, <a href="https://arxiv.org/abs/2209.11799">📄</a></td>
 <td>Fit better linear model using an LLM to extract embeddings (<em>Official</em>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">D3</td>
+<td><a href="http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_datasets_d3">🗂️</a>, <a href="https://github.com/ruiqi-zhong/DescribeDistributionalDifferences">🔗</a>, <a href="https://arxiv.org/abs/2201.12323">📄</a></td>
+<td>Explain the difference between two distributions</td>
 </tr>
 <tr>
 <td style="text-align: left;">AutoPrompt</td>
 <td><a href="">🗂️</a>, <a href="https://github.com/ucinlp/autoprompt">🔗</a>, <a href="https://arxiv.org/abs/2010.15980">📄</a></td>
-<td>Find a natural-language prompt using input-gradients</td>
-</tr>
-<tr>
-<td style="text-align: left;">D3</td>
-<td><a href="">🗂️</a>, <a href="https://github.com/ruiqi-zhong/DescribeDistributionalDifferences">🔗</a>, <a href="https://arxiv.org/abs/2201.12323">📄</a></td>
-<td>Explain the difference between two distributions</td>
+<td>Find a natural-language prompt using input-gradients (⌛ In progress)</td>
 </tr>
 <tr>
 <td style="text-align: left;">(Coming soon!)</td>
@@ -104,6 +104,7 @@ prompts, metadata = explain_dataset_iprompt(
 --------
 prompts is a list of found natural-language prompt strings
 </code></pre>
+<p><a href="http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt">API Doc: 🗂️</a></p>
 <h3 id="d3-describedistributionaldifferences">D3 (DescribeDistributionalDifferences)</h3>
 <pre><code class="language-python">import imodelsx
 hypotheses, hypothesis_scores = imodelsx.explain_datasets_d3(
@@ -114,8 +115,8 @@ hypotheses, hypothesis_scores = imodelsx.explain_datasets_d3(
     batch_size=64,
 )
 </code></pre>
+<p><a href="http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_datasets_d3">API Doc: 🗂️</a></p>
 <h3 id="emb-gam">Emb-GAM</h3>
-<p><strong><a href="https://csinva.github.io/emb-gam/">api reference</a></strong></p>
 <pre><code class="language-python">from imodelsx import EmbGAMClassifier
 import datasets
 import numpy as np
@@ -146,6 +147,7 @@ print('Most negative ngrams')
 for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
     print('\t', k, round(v, 2))
 </code></pre>
+<p><a href="http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier">API Doc: 🗂️</a></p>
 <h1 id="related-work">Related work</h1>
 <ul>
 <li>imodels package (JOSS 2021 <a href="https://github.com/csinva/imodels">github</a>) - interpretable ML package for concise, transparent, and accurate predictive modeling (sklearn-compatible).</li>

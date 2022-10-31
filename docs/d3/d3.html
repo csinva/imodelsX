@@ -40,24 +40,50 @@ import json
 from typing import List, Dict
 import tqdm
 
+&#34;&#34;&#34;
+Describing Differences between Text Distributions with Natural Language
+
+Ruiqi Zhong, Charlie Snell, Dan Klein, Jacob Steinhardt
+https://arxiv.org/abs/2201.12323
+&#34;&#34;&#34;
+
 
 def explain_datasets_d3(
-    pos: List[str],  # a list of text samples from D_1
-    neg: List[str],  # a list of text samples from D_0
-    # the name of the proposer. the name starts with either t5 or gpt3, followed by the directory/model-name/engine name. change argument to &#34;t5t5-small&#34; to debug
+    pos: List[str],
+    neg: List[str],
     proposer_name: str = &#39;t5ruiqi-zhong/t5proposer_0514&#39;,
-    # the name of the verifier, with options detailed in verifier_wrapper.py. change argument to &#34;dummy&#34; to debug
     verifier_name: str = &#39;ruiqi-zhong/t5verifier_0514&#39;,
     save_folder: str=&#39;results&#39;,
-    num_steps: int=500,  # default 2000
+    num_steps: int=500,
     num_folds: int=2,    # default 4
     batch_size: int=32,  # default 16
     verbose: bool=True,
 ) -&gt; Tuple[np.ndarray, np.ndarray]:
-    &#34;&#34;&#34;
-    Warning: proposer.inference_on_ensemble_prompts is currently not using ensembling!
+    &#34;&#34;&#34;This function returns hypothesis that describe the difference between
+    the distributions present in two lists of strings
+
+    Parameters
+    ----------
+    pos : List[str]
+        a list of text samples from D_1
+    neg : List[str]
+        a list of text samples from D_0
+    proposer_name : str, optional
+        the name of the proposer. the name starts with either t5 or gpt3, followed by the directory/model-name/engine name. change argument to &#34;t5t5-small&#34; to debug, by default &#39;t5ruiqi-zhong/t5proposer_0514&#39;
+    verifier_name : str, optional
+        the name of the verifier, with options detailed in verifier_wrapper.py. change argument to &#34;dummy&#34; to debug, by default &#39;ruiqi-zhong/t5verifier_0514&#39;
+    save_folder : str, optional
+        the folder to save the results, by default &#39;results&#39;
+    num_steps : int, optional
+        the number of steps to run the algorithm, by default 500
+    num_folds : int, optional
+        the number of folds to use in cross-validation, by default 2
+    batch_size : int, optional
+    verbose : bool, optional
+        whether to print intermediate updates, by default True
 
     Returns
+    -------
     hypotheses: np.ndarray[str]
         String hypotheses for differentiating the classes
     hypothesis_scores: np.ndarray[float]
@@ -84,6 +110,7 @@ def explain_datasets_d3(
 
     with torch.no_grad():
         # propose hypotheses
+        # Warning: proposer.inference_on_ensemble_prompts is currently not using ensembling!
         if verbose:
             print(&#39;\nStep 2/3: propose hypothesis...&#39;)
         pos2score, neg2score = extreme_vals[&#39;pos2score&#39;], extreme_vals[&#39;neg2score&#39;]
@@ -120,33 +147,76 @@ def explain_datasets_d3(
 <span>def <span class="ident">explain_datasets_d3</span></span>(<span>pos: List[str], neg: List[str], proposer_name: str = 't5ruiqi-zhong/t5proposer_0514', verifier_name: str = 'ruiqi-zhong/t5verifier_0514', save_folder: str = 'results', num_steps: int = 500, num_folds: int = 2, batch_size: int = 32, verbose: bool = True) ‑> Tuple[numpy.ndarray, numpy.ndarray]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Warning: proposer.inference_on_ensemble_prompts is currently not using ensembling!</p>
-<p>Returns
-hypotheses: np.ndarray[str]
-String hypotheses for differentiating the classes
-hypothesis_scores: np.ndarray[float]
-Score for each hypothesis (how well it matches the positive class - the negative class)</p></div>
+<div class="desc"><p>This function returns hypothesis that describe the difference between
+the distributions present in two lists of strings</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>pos</code></strong> :&ensp;<code>List[str]</code></dt>
+<dd>a list of text samples from D_1</dd>
+<dt><strong><code>neg</code></strong> :&ensp;<code>List[str]</code></dt>
+<dd>a list of text samples from D_0</dd>
+<dt><strong><code>proposer_name</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the name of the proposer. the name starts with either t5 or gpt3, followed by the directory/model-name/engine name. change argument to "t5t5-small" to debug, by default 't5ruiqi-zhong/t5proposer_0514'</dd>
+<dt><strong><code>verifier_name</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the name of the verifier, with options detailed in verifier_wrapper.py. change argument to "dummy" to debug, by default 'ruiqi-zhong/t5verifier_0514'</dd>
+<dt><strong><code>save_folder</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>the folder to save the results, by default 'results'</dd>
+<dt><strong><code>num_steps</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>the number of steps to run the algorithm, by default 500</dd>
+<dt><strong><code>num_folds</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>the number of folds to use in cross-validation, by default 2</dd>
+<dt><strong><code>batch_size</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>whether to print intermediate updates, by default True</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>hypotheses</code></strong> :&ensp;<code>np.ndarray[str]</code></dt>
+<dd>String hypotheses for differentiating the classes</dd>
+<dt><strong><code>hypothesis_scores</code></strong> :&ensp;<code>np.ndarray[float]</code></dt>
+<dd>Score for each hypothesis (how well it matches the positive class - the negative class)</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def explain_datasets_d3(
-    pos: List[str],  # a list of text samples from D_1
-    neg: List[str],  # a list of text samples from D_0
-    # the name of the proposer. the name starts with either t5 or gpt3, followed by the directory/model-name/engine name. change argument to &#34;t5t5-small&#34; to debug
+    pos: List[str],
+    neg: List[str],
     proposer_name: str = &#39;t5ruiqi-zhong/t5proposer_0514&#39;,
-    # the name of the verifier, with options detailed in verifier_wrapper.py. change argument to &#34;dummy&#34; to debug
     verifier_name: str = &#39;ruiqi-zhong/t5verifier_0514&#39;,
     save_folder: str=&#39;results&#39;,
-    num_steps: int=500,  # default 2000
+    num_steps: int=500,
     num_folds: int=2,    # default 4
     batch_size: int=32,  # default 16
     verbose: bool=True,
 ) -&gt; Tuple[np.ndarray, np.ndarray]:
-    &#34;&#34;&#34;
-    Warning: proposer.inference_on_ensemble_prompts is currently not using ensembling!
+    &#34;&#34;&#34;This function returns hypothesis that describe the difference between
+    the distributions present in two lists of strings
+
+    Parameters
+    ----------
+    pos : List[str]
+        a list of text samples from D_1
+    neg : List[str]
+        a list of text samples from D_0
+    proposer_name : str, optional
+        the name of the proposer. the name starts with either t5 or gpt3, followed by the directory/model-name/engine name. change argument to &#34;t5t5-small&#34; to debug, by default &#39;t5ruiqi-zhong/t5proposer_0514&#39;
+    verifier_name : str, optional
+        the name of the verifier, with options detailed in verifier_wrapper.py. change argument to &#34;dummy&#34; to debug, by default &#39;ruiqi-zhong/t5verifier_0514&#39;
+    save_folder : str, optional
+        the folder to save the results, by default &#39;results&#39;
+    num_steps : int, optional
+        the number of steps to run the algorithm, by default 500
+    num_folds : int, optional
+        the number of folds to use in cross-validation, by default 2
+    batch_size : int, optional
+    verbose : bool, optional
+        whether to print intermediate updates, by default True
 
     Returns
+    -------
     hypotheses: np.ndarray[str]
         String hypotheses for differentiating the classes
     hypothesis_scores: np.ndarray[float]
@@ -173,6 +243,7 @@ Score for each hypothesis (how well it matches the positive class - the negative
 
     with torch.no_grad():
         # propose hypotheses
+        # Warning: proposer.inference_on_ensemble_prompts is currently not using ensembling!
         if verbose:
             print(&#39;\nStep 2/3: propose hypothesis...&#39;)
         pos2score, neg2score = extreme_vals[&#39;pos2score&#39;], extreme_vals[&#39;neg2score&#39;]

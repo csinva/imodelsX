@@ -12,12 +12,10 @@ from imodelsx.iprompt.utils import device, PrefixLoss, PrefixModel, PrefixPool
 
 
 """
-docs for generate():
-    https://huggingface.co/docs/transformers/v4.22.1/en/main_classes/text_generation#transformers.generation_utils.GenerationMixin.generate
+Explaining Patterns in Data with Language Models via Interpretable Autoprompting
 
-
-generation example:
-    tokenizer.decode(lm.generate(input_ids=None, max_length=15, temperature=0.8, top_p=0.8, do_sample=True)[0])
+Chandan Singh*, John X. Morris*, Jyoti Aneja, Alexander M. Rush, Jianfeng Gao
+https://arxiv.org/abs/2210.01848
 """
 
 

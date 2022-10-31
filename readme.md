@@ -57,6 +57,8 @@ prompts, metadata = explain_dataset_iprompt(
 --------
 prompts is a list of found natural-language prompt strings
 ```
+[API Doc: 🗂️](http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt)
+
 
 ### D3 (DescribeDistributionalDifferences)
 
@@ -70,9 +72,10 @@ hypotheses, hypothesis_scores = imodelsx.explain_datasets_d3(
     batch_size=64,
 )
 ```
+[API Doc: 🗂️](http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_datasets_d3)
+
 
 ### Emb-GAM
-**[api reference](https://csinva.github.io/emb-gam/)**
 
 ```python
 from imodelsx import EmbGAMClassifier
@@ -105,6 +108,8 @@ print('Most negative ngrams')
 for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
     print('\t', k, round(v, 2))
 ```
+[API Doc: 🗂️](http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier)
+
 
 # Related work
 - imodels package (JOSS 2021 [github](https://github.com/csinva/imodels)) - interpretable ML package for concise, transparent, and accurate predictive modeling (sklearn-compatible).
