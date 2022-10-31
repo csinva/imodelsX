@@ -58,6 +58,19 @@ prompts, metadata = explain_dataset_iprompt(
 prompts is a list of found natural-language prompt strings
 ```
 
+### D3 (DescribeDistributionalDifferences)
+
+```python
+import imodelsx
+hypotheses, hypothesis_scores = imodelsx.explain_datasets_d3(
+    pos=positive_samples, # List[str] of positive examples
+    neg=negative_samples, # another List[str]
+    num_steps=100,
+    num_folds=2,
+    batch_size=64,
+)
+```
+
 ### Emb-GAM
 **[api reference](https://csinva.github.io/emb-gam/)**
 

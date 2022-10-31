@@ -2,20 +2,20 @@ import os
 import random
 import pickle as pkl
 import torch
+import numpy as np
 
-from traitlets import Dict
-from imodelsx.d3.get_extreme import return_extreme_values
-from imodelsx.d3.proposer import init_proposer
-from imodelsx.d3.verifier import init_verifier
+from typing import Tuple
+from imodelsx.d3.step1_get_extreme import return_extreme_values
+from imodelsx.d3.step2_proposer import init_proposer
+from imodelsx.d3.step3_verifier import init_verifier
 import json
-from typing import List
+from typing import List, Dict
 import tqdm
 
 
 def explain_datasets_d3(
     pos: List[str],  # a list of text samples from D_1
     neg: List[str],  # a list of text samples from D_0
-    note: str = '',  # a note about this distribution, for logging purposes
     # the name of the proposer. the name starts with either t5 or gpt3, followed by the directory/model-name/engine name. change argument to "t5t5-small" to debug
     proposer_name: str = 't5ruiqi-zhong/t5proposer_0514',
     # the name of the verifier, with options detailed in verifier_wrapper.py. change argument to "dummy" to debug
@@ -25,9 +25,15 @@ def explain_datasets_d3(
     num_folds: int=2,    # default 4
     batch_size: int=32,  # default 16
     verbose: bool=True,
-) -> Dict:
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Warning: proposer.inference_on_ensemble_prompts is currently not using ensembling!
+
+    Returns
+    hypotheses: np.ndarray[str]
+        String hypotheses for differentiating the classes
+    hypothesis_scores: np.ndarray[float]
+        Score for each hypothesis (how well it matches the positive class - the negative class)
     """
     # saving the initial arguments
     if save_folder is None:
@@ -43,7 +49,7 @@ def explain_datasets_d3(
 
     # get samples that are representative of the differences between two distributions
     if verbose:
-        print('\nStep 1/3: get extreme samples...')
+        print('\n**************************\nStep 1/3: get extreme samples...')
     extreme_vals = return_extreme_values(
         pos, neg, num_steps, num_folds, batch_size)
     pkl.dump(extreme_vals, open(os.path.join(
@@ -68,13 +74,19 @@ def explain_datasets_d3(
             h2result[h] = verifier.return_verification(h, pos, neg, 500)
         pkl.dump(h2result, open(os.path.join(
             save_folder, '03_verified_hypotheses.pkl'), 'wb'))
-        return {h: v['h_score'] for h, v in h2result.items()}
+        # note: h_score is pos_score - neg_score for verifier
+        h_scores = {h: v['h_score'] for h, v in h2result.items()}
+        hypotheses = np.array(list(h_scores.keys()))
+        hypothesis_scores = np.array(list(h_scores.values()))
+        args_sorted = np.argsort(hypothesis_scores)[::-1]
+        return hypotheses[args_sorted], hypothesis_scores[args_sorted]
 
 
 def save_args(args: Dict, verbose=True):
     if verbose:
-        for k in ['note', 'proposer_name', 'verifier_name']:
+        for k in ['proposer_name', 'verifier_name']:
             print(k, args[k])
     pkl.dump(
         args, open(os.path.join(args['save_folder'], 'args.pkl'), 'wb')
     )
+
