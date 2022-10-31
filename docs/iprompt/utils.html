@@ -1,0 +1,1849 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>imodelsx.iprompt.utils API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>imodelsx.iprompt.utils</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from typing import Any, Dict, List, Iterable, Optional, Tuple, Union
+
+import abc
+import argparse
+import collections
+import dataclasses
+import functools
+import heapq
+import random
+import transformers
+import torch
+from torch.utils.data import DataLoader
+from torch import nn
+import tqdm
+
+device = torch.device(&#39;cuda&#39; if torch.cuda.is_available() else &#39;cpu&#39;)
+DEBUG_VERBOSE = False
+
+
+def get_token_replacements_single_mask(
+    dataloader: DataLoader, model: transformers.AutoModelForMaskedLM,
+    tokenizer: transformers.AutoTokenizer, init_prefix_template: str, num_candidates: int)-&gt; List[str]:
+    &#34;&#34;&#34;Given a template like `{mask} the numbers`, returns the `num_candidates` most likely
+    single-token replacements for `{mask}` given `model`.
+    &#34;&#34;&#34;
+    single_mask_prefix_str = init_prefix_template.format(mask=tokenizer.mask_token)
+    all_mask_probs = torch.zeros((tokenizer.vocab_size,), dtype=float).to(device)
+    for idx, batch in tqdm.tqdm(enumerate(dataloader), total=len(dataloader)):
+        full_text = [f&#39;{single_mask_prefix_str} {input_text}&#39; for input_text in batch[&#39;text&#39;]]
+        if idx == 0:
+            print(&#39;Sample input: &#39;, full_text[0])
+        inputs = tokenizer(full_text, return_tensors=&#39;pt&#39;, padding=&#39;longest&#39;)
+        with torch.no_grad():
+            outputs = model(**inputs.to(device))
+        mask_idxs = (inputs[&#39;input_ids&#39;] == tokenizer.mask_token_id).nonzero()
+        # TODO: how to do this better in torch?
+        mask_probs = outputs.logits[mask_idxs[:, 0], mask_idxs[:, 1]].log_softmax(dim=1)
+        all_mask_probs += mask_probs.sum(dim=0)
+        
+    prefix_idxs = all_mask_probs.topk(num_candidates).indices
+    return [init_prefix_template.format(mask=tokenizer.decode(idx)) for idx in prefix_idxs]
+
+
+def get_prefix_from_mlm(
+        dataloader: DataLoader,
+        mlm_name: str,
+        num_candidates: int,
+        template: str
+    ) -&gt; List[str]:
+    &#34;&#34;&#34; Getting prefix from MLM.&#34;&#34;&#34;
+    mlm = transformers.RobertaForMaskedLM.from_pretrained(mlm_name).to(device)
+    mlm_tokenizer = transformers.AutoTokenizer.from_pretrained(mlm_name)
+    # template = &#34;{mask} the two numbers to get the answer.&#34;
+    # template = &#34;{mask} the input number to get the answer.&#34;
+    # template = &#34;Return the{mask} of the input.&#34;
+
+    candidates = get_token_replacements_single_mask(
+        dataloader=dataloader,
+        model=mlm, tokenizer=mlm_tokenizer,
+        init_prefix_template=template,
+        num_candidates=num_candidates
+    )
+    mlm.to(&#39;cpu&#39;) # no need for mlm on GPU anymore
+    return candidates
+
+
+def compute_log_ppl_loss(logits: torch.Tensor, input_ids: torch.Tensor) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Computes LM perplexity loss given logits for next tokens and original input IDs.
+    Exponentiate this quantity if you want the actual perplexity.
+    &#34;&#34;&#34;
+    # logits gives us the probability of each token that comes after each token in input_ids.
+    # so they have the same shape. But we only want to compute ppl using the tokens we have,
+    # i.e. not the first true token (which we don&#39;t have logits for) or the last predicted token
+    # (which we don&#39;t know the true id for). so we have to shift each by one index.
+    assert logits.shape[0:2] == input_ids.shape
+    logits = logits[:, :-1, :]
+    input_ids = input_ids[:, 1:]
+
+    # now flatten along sequence length so we can compute crossentropy.
+    batch_size, sequence_length, vocab_size = logits.shape
+    assert input_ids.shape == (batch_size, sequence_length)
+    logits = logits.reshape((batch_size * sequence_length, vocab_size))
+    input_ids = input_ids.reshape((batch_size * sequence_length, ))
+    
+    loss = torch.nn.functional.cross_entropy(
+        input=logits,
+        target=input_ids,
+        reduction=&#39;mean&#39;
+    )
+    return loss
+
+@dataclasses.dataclass
+class PrefixLoss:
+    &#34;&#34;&#34;Computes next-token-prediction loss with optional language modeling component.
+    &#34;&#34;&#34;
+    gamma: float
+    tokenizer: transformers.PreTrainedTokenizer # for debugging
+
+    def _compute_fluency_loss(
+            self, logits: torch.Tensor, input_ids: torch.Tensor
+        ) -&gt; torch.Tensor:
+        if self.gamma == 0:
+            return torch.tensor(0.0).to(device)
+        return compute_log_ppl_loss(logits=logits, input_ids=input_ids)
+
+    def _compute_token_loss(
+            self, next_token_logits: torch.Tensor, next_token_idxs: torch.Tensor, answer_mask: torch.Tensor
+        ) -&gt; torch.Tensor:
+        batch_size, vocab_size = next_token_logits.shape
+        assert next_token_idxs.shape == (batch_size,)
+
+        if answer_mask is not None:
+            assert answer_mask.shape == (vocab_size,)
+            next_token_logits = torch.where(
+                answer_mask[None],
+                next_token_logits, torch.tensor(float(&#39;-inf&#39;)).to(device)
+            )
+                
+        return torch.nn.functional.cross_entropy(
+            input=next_token_logits,
+            target=next_token_idxs,
+            reduction=&#39;mean&#39;
+        )
+    
+    def __call__(
+            self,
+            input_ids: torch.Tensor,
+            next_token_ids: torch.Tensor,
+            logits: torch.Tensor,
+            answer_mask: torch.Tensor,
+        ) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Computes loss.
+
+        Args:
+            input_ids (int torch.Tensor): array of token IDs for inputs
+            next_token_ids (int torch.Tensor): array of token IDs for the word
+                that comes after the input
+            logits (float torch.Tensor): logits for all output tokens, including
+                the next one
+            answer_mask (bool torch.Tensor): mask over tokens to remove irrelevant ones
+
+        Returns: float torch.Tensor scalar, loss value (lower is better).
+        &#34;&#34;&#34;
+        fluency_loss = (
+            self._compute_fluency_loss(
+                logits=logits,
+                input_ids=input_ids
+            )
+        )
+
+        token_loss = (
+            self._compute_token_loss(
+                next_token_logits=logits[:, -1, :],
+                next_token_idxs=next_token_ids,
+                answer_mask=answer_mask,
+            )
+        )
+
+        loss = token_loss + (self.gamma * fluency_loss)
+        if DEBUG_VERBOSE: 
+            print(f&#34;&gt;&gt; loss for input string: {self.tokenizer.decode(input_ids[0])}&#34;)
+            print(f&#34;\tLoss = {loss:.3f}&#34;)
+        return loss
+
+
+class PrefixModel(nn.Module, abc.ABC):
+    args: argparse.Namespace
+    loss_func: PrefixLoss
+    model: transformers.PreTrainedModel
+    tokenizer: transformers.PreTrainedTokenizer
+    
+    def __init__(self, args: argparse.Namespace, loss_func: PrefixLoss, model: transformers.PreTrainedModel, tokenizer: transformers.PreTrainedTokenizer, preprefix: str):
+        super().__init__()
+        self.args = args
+        self.loss_func = loss_func
+        self.model = model
+        self.tokenizer = tokenizer
+
+    @property
+    def id_to_word(self) -&gt; Dict[int, str]:
+        # track token-to-word mapping 
+        return {num: word for word, num in self.tokenizer.vocab.items()}
+    
+    @property
+    def _is_gpt_neox(self) -&gt; bool:
+        return isinstance(self.model, transformers.GPTNeoXModel) or isinstance(self.model, transformers.GPTNeoXForCausalLM)
+
+    @property
+    def transformer(self) -&gt; nn.Module:
+        if self._is_gpt_neox:
+            return self.model._modules[&#39;gpt_neox&#39;]
+        else:
+            return self.model._modules[&#39;transformer&#39;]
+
+    @property
+    def token_embedding(self) -&gt; nn.Embedding:
+        if self._is_gpt_neox:
+            return self.transformer.embed_in
+        else:
+            return self.transformer.wte
+    
+    @property
+    def vocab_size(self) -&gt; int:
+        return self.token_embedding.weight.shape[0] # 50_257 for GPT2
+
+    @property 
+    def token_embedding_dim(self) -&gt; int:
+        return self.token_embedding.weight.shape[1] # often 768, or 2560 for some larger models
+    
+    def prepare_batch(self, batch: Dict[str, str]) -&gt; Tuple[str, str]:
+        &#34;&#34;&#34;Preprocesses text from `batch[&#39;input&#39;]` and `batch[&#39;output&#39;]` for inputting into prefix model.
+        &#34;&#34;&#34;
+        x_text = [f&#39;. {prompt}&#39; for prompt in batch[&#39;input&#39;]]
+        y_text = [answer.rstrip().rstrip(&#39;.&#39;) for answer in batch[&#39;output&#39;]] # strip whitespace at the end.
+        return x_text, y_text
+
+    def forward(
+            self,
+            input_ids: torch.Tensor,
+            prefix_ids: Optional[torch.Tensor],
+        ) -&gt; torch.Tensor:
+        new_input_ids, embeddings = self.embed_input_ids(
+            input_ids=input_ids, prefix_ids=prefix_ids
+        )
+
+        # Automatically set attention mask and position-ids
+        attention_mask = ~(new_input_ids == self.tokenizer.pad_token_id)
+
+        assert new_input_ids.shape == embeddings.shape[0:2]
+        return new_input_ids, self.model(
+            inputs_embeds=embeddings,
+            attention_mask=attention_mask,
+        )
+    
+    def pre_epoch(self) -&gt; None:
+        return
+    
+    def post_epoch(self, dataloader: torch.utils.data.DataLoader, possible_answer_mask: torch.Tensor) -&gt; None:
+        return
+    
+    def compute_metrics(self) -&gt; Dict[str, Any]:
+        return {}
+    
+    def serialize(self) -&gt; Dict[str, Any]:
+        &#34;&#34;&#34;Writes stuff to disk after training.&#34;&#34;&#34;
+        return {}
+
+    @abc.abstractproperty
+    def trainable_params(self) -&gt; Iterable[nn.Parameter]:
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def embed_input_ids(self, input_ids: torch.Tensor) -&gt; Tuple[torch.Tensor, torch.Tensor]:
+        &#34;&#34;&#34;To be implemented by subclasses -- embeds input ids and includes some sort of prefix,
+        for example, in the case of prompt-tuning, by prepending a continuous embedding.
+        &#34;&#34;&#34;
+        raise NotImplementedError()
+    
+    def init_continuous_prefix(self, num_tokens: int) -&gt; nn.Parameter:
+        return nn.Parameter(
+            self.token_embedding.weight.mean(dim=0, keepdim=True)[None].repeat(1, num_tokens, 1), requires_grad=True
+        )
+    
+    def init_discrete_prefix(self, num_tokens: int) -&gt; nn.Parameter:
+        if self.args.autoprompt_init_strategy == &#39;random&#39;:
+            return torch.randint(low=0, high=self.tokenizer.vocab_size, size=(num_tokens,))
+        else:
+            start_word_id = torch.tensor([self.tokenizer.vocab[&#39;the&#39;]], dtype=int)
+            # print(f&#34;start_word_id = {start_word_id}&#34;)
+            return start_word_id.repeat((num_tokens,))
+
+    def _compute_loss_with_set_prefix(
+            self,
+            original_input_ids: torch.Tensor,
+            next_token_ids: torch.Tensor,
+            possible_answer_mask: torch.Tensor,
+            prefix_ids: Optional[torch.Tensor] = None
+        ) -&gt; torch.Tensor:
+        # roll tensors together to put padding at the end. slow but I know it&#39;s right. (TODO: tensorize)
+        input_ids = []
+        num_pad_tokens = (original_input_ids == self.tokenizer.eos_token_id).sum(dim=1)
+        for i in range(len(original_input_ids)):
+            if num_pad_tokens[i] == 0:
+                next_tensor = torch.cat((original_input_ids[i], next_token_ids[i]), dim=0)
+            else:
+                num_non_pad_tokens = original_input_ids.shape[1] - num_pad_tokens[i]
+                padding = torch.full(size=(num_pad_tokens[i], ), fill_value=self.tokenizer.eos_token_id).to(device)
+                next_tensor = torch.cat((original_input_ids[i][:num_non_pad_tokens], next_token_ids[i], padding), dim=0)
+            input_ids.append(
+                next_tensor
+            )
+
+        input_ids = torch.stack(input_ids)
+        assert input_ids.shape == (original_input_ids.shape[0], original_input_ids.shape[1] + next_token_ids.shape[1])
+
+        # feed into the model. prefix-handling is implemented in PrefixModel::forward.
+        full_input_ids, outputs = self.forward(
+            input_ids=input_ids,
+            prefix_ids=prefix_ids,
+        )
+        # make sure we have same number of predictions as tokens
+        assert full_input_ids.shape == outputs.logits.shape[:2]
+
+        # get first predicted token logits
+        next_token_idx = (~(full_input_ids == self.tokenizer.eos_token_id)).cumsum(dim=1).argmax(dim=1)
+        next_token_logits = outputs.logits[torch.arange(len(original_input_ids)), next_token_idx-1]
+
+        # compute first-token acc
+        if possible_answer_mask is None:
+            n_correct = (
+                next_token_logits.argmax(dim=-1) == next_token_ids[:, 0]
+            ).int().sum()
+        else:
+            # apply possible answer mask for single-token
+            next_token_logits = torch.where(
+                possible_answer_mask[None],
+                next_token_logits, torch.tensor(float(&#39;-inf&#39;)).to(device)
+            )
+            n_correct = (
+                (next_token_logits.exp() * possible_answer_mask).argmax(dim=-1)
+                    ==
+                next_token_ids[:, 0]
+            ).int().sum()
+
+        # compute loss from first token
+        original_losses = torch.nn.functional.cross_entropy(
+            input=next_token_logits,
+            target=next_token_ids[:, 0],
+            ignore_index=self.tokenizer.pad_token_id,
+            reduction=&#39;none&#39;
+        )
+
+        # add loss from other tokens
+        b, label_sequence_length = next_token_ids.shape
+        if label_sequence_length &gt; 1:
+            other_next_token_logits = (
+                outputs.logits[:, -label_sequence_length:-1]
+                    .reshape((b * (label_sequence_length-1), -1))
+            )
+            other_next_token_ids = (
+                next_token_ids[:, 1:]
+                    .reshape((b * (label_sequence_length-1),))
+            )
+            other_losses = torch.nn.functional.cross_entropy(
+                input=other_next_token_logits,
+                target=other_next_token_ids,
+                ignore_index=self.tokenizer.pad_token_id,
+                reduction=&#39;none&#39;
+            )
+            # take the mean of losses on the batch level, and normalize for length
+            all_losses = torch.cat(
+                (original_losses[:, None], other_losses.reshape((b, -1))), dim=1
+            )
+            num_tokens_per_output = (
+                ~(next_token_ids == self.tokenizer.bos_token_id)).sum(dim=1)
+            all_losses = all_losses.sum(dim=1) / num_tokens_per_output
+            assert all_losses.shape == (b,)
+            loss = all_losses.mean()
+        else:
+            loss = original_losses.mean()
+        
+        if DEBUG_VERBOSE: 
+            print(f&#34;&gt;&gt; loss for input string: {self.tokenizer.decode(full_input_ids[0])}&#34;)
+            print(f&#34;\tLoss = {loss:.3f}&#34;)
+
+        return full_input_ids, loss, n_correct
+    
+    def compute_loss_and_call_backward(
+            self,
+            x_tokenized: transformers.BatchEncoding,
+            y_tokenized: transformers.BatchEncoding,
+            possible_answer_mask: Optional[torch.Tensor],
+            full_text_tokenized: Optional[transformers.BatchEncoding] = None
+        ) -&gt; Tuple[torch.Tensor, int]:
+        &#34;&#34;&#34;Computes loss using `self.loss_func`.
+        
+        Returns:
+            loss (float torch.Tensor) -- the loss
+            num_correct (int): number of examples where prediction was correct
+        &#34;&#34;&#34;
+        original_input_ids = x_tokenized.input_ids
+        next_token_ids = y_tokenized.input_ids[:, 0] # only compute loss over next token
+
+        input_ids, outputs = self.forward(input_ids=original_input_ids, prefix_ids=None)
+
+        next_token_logits = outputs.logits[:, -1, :]
+
+        n_correct = (
+            next_token_logits.argmax(dim=-1)
+                ==
+            next_token_ids
+        ).int().sum()
+
+        loss = self.loss_func(
+            input_ids=input_ids,
+            next_token_ids=next_token_ids,
+            logits=outputs[&#39;logits&#39;],
+            answer_mask=possible_answer_mask
+        )
+        loss.backward()
+        return loss, n_correct
+    
+    def check_early_stop(self) -&gt; bool:
+        &#34;&#34;&#34;Allow prefix models to stop early.&#34;&#34;&#34;
+        return False
+
+
+def mean(_list: List[Union[int, float]]) -&gt; float:
+    return sum(_list) / len(_list)
+
+
+class PrefixPool:
+    &#34;&#34;&#34;Tracks a pool of candidate prefixes and their associated metrics over time.&#34;&#34;&#34;
+    criterion: str
+    tokenizer: transformers.PreTrainedTokenizer
+    # 
+    _all_losses: Dict[Tuple[int], List[float]]
+    _avg_loss: Dict[Tuple[int], float]
+    _all_accuracy: Dict[Tuple[int], List[float]]
+    _avg_accuracy: Dict[Tuple[int], float]
+    _best_prefix_by_start_token: Dict[int, Tuple[Tuple[int], float]]
+
+    def __init__(self, tokenizer: transformers.PreTrainedTokenizer, criterion: str):
+        self.tokenizer = tokenizer
+        self.criterion = criterion
+        # tuple (input_ids) -&gt; float (loss)
+        self._avg_loss = {}
+        self._all_losses = collections.defaultdict(list)
+        # tuple (input_ids) -&gt; int (n_correct)
+        self._avg_accuracy = {}
+        self._all_accuracy = collections.defaultdict(list)
+        # 
+        self._best_prefix_by_start_token = {}
+        # 
+        self._topk_strategy = &#39;different_start_token&#39; # [&#39;different_start_token&#39;, &#39;all&#39;]
+    
+    @property
+    def prefixes(self) -&gt; List[Tuple[int]]:
+        return self._avg_loss.keys()
+    
+    @property
+    def num_start_tokens(self) -&gt; int:
+        &#34;&#34;&#34;Number of different start tokens seen across all prefixes.&#34;&#34;&#34;
+        return len(self._best_prefix_by_start_token.keys())
+    
+    def print(self, topk: int, min_occurrences: int = 2) -&gt; None:
+        top_token_ids = self.topk(k=topk, min_occurrences=min_occurrences)
+        ########################### Debugging code ##########################
+        # import pandas as pd
+        # vd = pd.DataFrame(self._avg_loss.items(), columns=[&#39;prefix&#39;, &#39;loss&#39;])
+        # vd[&#39;prefix_str&#39;] = vd[&#39;prefix&#39;].map(self.tokenizer.decode)
+        # vd[&#39;n&#39;] = vd[&#39;prefix&#39;].map(lambda p: len(self._all_losses[p]))
+        # vd.sort_values(by=&#39;loss&#39;)[&#34;prefix_str&#34;].iloc[:25]
+        # vd.sort_values(by=[&#39;n&#39;, &#39;loss&#39;], ascending=[False, True])[[&#34;n&#34;, &#34;prefix_str&#34;]].iloc[:25]
+        #####################################################################
+        if not len(top_token_ids): return
+        print((&#34; &#34; * 45), (&#34;*&#34; * 20), &#34;Population&#34;, (&#34;*&#34; * 20))
+        for token_ids in top_token_ids:
+            prefix_str = &#34;{:&gt;65}&#34;.format(self.tokenizer.decode(list(token_ids)).replace(&#34;\n&#34;, &#34;\\\\n&#34;))
+            loss_str = f&#34;{self._avg_loss[token_ids]:.3f}&#34;
+            acc_str = f&#34;{self._avg_accuracy[token_ids]*100:.1f}&#34;
+            print(prefix_str, &#34;\t\t&#34;, loss_str, &#34;\t\t&#34;, acc_str)
+        print()
+    
+    def initialize_prefix(self, prefix: torch.Tensor):
+        prefix = tuple(prefix.cpu().tolist())
+        self._avg_loss[prefix] = 10_000.0
+        self._avg_accuracy[prefix] = 0
+        self._best_prefix_by_start_token.setdefault(prefix[0], (prefix, (10_000.0,)))
+
+    def topk(self, *args, **kwargs) -&gt; List[Tuple[int]]:
+        if self._topk_strategy == &#39;different_start_token&#39;:
+            return self.topk_with_different_start_token(*args, **kwargs)
+        elif self._topk_strategy == &#39;all&#39;:
+            return self.topk_all(*args, **kwargs)
+        else:
+            raise ValueError(f&#39;Unknown strategy {self._topk_strategy}&#39;)
+
+    def topk_with_different_start_token(
+        self,
+        k: int,
+        min_occurrences: Optional[int] = None
+        ) -&gt; List[Tuple[int]]:
+        all_prefixes = [p for p, score in self._best_prefix_by_start_token.values()]
+        top_prefixes = self._topk_from_prefixes(
+            all_prefixes, k=k, min_occurrences=min_occurrences
+        )
+        if not len(top_prefixes):
+            # get top prefixes the first time
+            top_prefixes = self._topk_from_prefixes(
+                all_prefixes, k=k, min_occurrences=0
+            )
+        n_so_far = len(top_prefixes)
+        if n_so_far &lt; k:
+            # fallback if we don&#39;t have enough first-tokens yet
+            # more_prefixes = (
+            #     set(self.topk_all(k=k, min_occurrences=min_occurrences))
+            #     - set(top_prefixes)
+            # )
+            num_prefixes_to_add = k - len(top_prefixes)
+            # num_prefixes_to_add = min(len(more_prefixes), num_prefixes_to_add)
+            more_prefixes = [
+                random.choice(top_prefixes) for _ in range(num_prefixes_to_add)
+            ]
+            top_prefixes += more_prefixes
+        top_prefixes.sort(key=self._score)
+        return top_prefixes
+
+    def topk_all(self, k: int, min_occurrences: Optional[int] = None) -&gt; List[Tuple[int]]:
+        all_prefixes = self._avg_loss.keys()
+        return self._topk_from_prefixes(
+            all_prefixes, k=k, min_occurrences=min_occurrences
+        )
+    
+    def _score(self, prefix: Tuple[int]) -&gt; Tuple[float]:
+        criterion = self.criterion
+        if criterion == &#39;loss&#39;:
+            # sort by min loss
+            return (self._avg_loss[prefix], )
+        elif criterion == &#39;combined&#39;:
+            return (-1 * round(self._avg_accuracy[prefix], 2), self._avg_loss[prefix])
+        else:
+            return (-1 * self._avg_accuracy[prefix], 2)
+    
+    def _topk_from_prefixes(
+        self,
+        prefixes: Iterable[Tuple[int]],
+        k: int, 
+        min_occurrences: Optional[int] = None
+        ) -&gt; List[Tuple[int]]:
+        if min_occurrences:
+            prefixes = {
+                prefix for prefix in prefixes
+                if len(self._all_accuracy[prefix]) &gt; min_occurrences
+            }
+
+        population = [(self._score(p), p) for p in prefixes]
+        topk_pop = heapq.nsmallest(k, population)
+        topk_pop.sort(key = lambda t: t[0])
+        return [prefix_ids for _, prefix_ids in topk_pop]
+
+    def update(self, prefix: torch.Tensor, loss: torch.Tensor, accuracy: torch.Tensor):
+        # todo abstract these data strcutures into a class
+        prefix = tuple(prefix.cpu().flatten().tolist())
+        self._all_losses[prefix].append(loss.item())
+        self._avg_loss[prefix] = mean(self._all_losses[prefix])
+        self._all_accuracy[prefix].append(accuracy.item())
+        self._avg_accuracy[prefix] = mean(self._all_accuracy[prefix])
+
+        # track best score for each starting token
+        self._best_prefix_by_start_token.setdefault(prefix[0], (prefix, (1000.0,)))
+        score = self._score(prefix)
+        best_prefix, best_score = self._best_prefix_by_start_token[prefix[0]]
+        if score &lt; best_score:
+            self._best_prefix_by_start_token[prefix[0]] = (prefix, score)
+    
+    def __len__(self) -&gt; int:
+        return len(self._avg_loss)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="imodelsx.iprompt.utils.compute_log_ppl_loss"><code class="name flex">
+<span>def <span class="ident">compute_log_ppl_loss</span></span>(<span>logits: torch.Tensor, input_ids: torch.Tensor) ‑> torch.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes LM perplexity loss given logits for next tokens and original input IDs.
+Exponentiate this quantity if you want the actual perplexity.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compute_log_ppl_loss(logits: torch.Tensor, input_ids: torch.Tensor) -&gt; torch.Tensor:
+    &#34;&#34;&#34;Computes LM perplexity loss given logits for next tokens and original input IDs.
+    Exponentiate this quantity if you want the actual perplexity.
+    &#34;&#34;&#34;
+    # logits gives us the probability of each token that comes after each token in input_ids.
+    # so they have the same shape. But we only want to compute ppl using the tokens we have,
+    # i.e. not the first true token (which we don&#39;t have logits for) or the last predicted token
+    # (which we don&#39;t know the true id for). so we have to shift each by one index.
+    assert logits.shape[0:2] == input_ids.shape
+    logits = logits[:, :-1, :]
+    input_ids = input_ids[:, 1:]
+
+    # now flatten along sequence length so we can compute crossentropy.
+    batch_size, sequence_length, vocab_size = logits.shape
+    assert input_ids.shape == (batch_size, sequence_length)
+    logits = logits.reshape((batch_size * sequence_length, vocab_size))
+    input_ids = input_ids.reshape((batch_size * sequence_length, ))
+    
+    loss = torch.nn.functional.cross_entropy(
+        input=logits,
+        target=input_ids,
+        reduction=&#39;mean&#39;
+    )
+    return loss</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.get_prefix_from_mlm"><code class="name flex">
+<span>def <span class="ident">get_prefix_from_mlm</span></span>(<span>dataloader: torch.utils.data.dataloader.DataLoader, mlm_name: str, num_candidates: int, template: str) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Getting prefix from MLM.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_prefix_from_mlm(
+        dataloader: DataLoader,
+        mlm_name: str,
+        num_candidates: int,
+        template: str
+    ) -&gt; List[str]:
+    &#34;&#34;&#34; Getting prefix from MLM.&#34;&#34;&#34;
+    mlm = transformers.RobertaForMaskedLM.from_pretrained(mlm_name).to(device)
+    mlm_tokenizer = transformers.AutoTokenizer.from_pretrained(mlm_name)
+    # template = &#34;{mask} the two numbers to get the answer.&#34;
+    # template = &#34;{mask} the input number to get the answer.&#34;
+    # template = &#34;Return the{mask} of the input.&#34;
+
+    candidates = get_token_replacements_single_mask(
+        dataloader=dataloader,
+        model=mlm, tokenizer=mlm_tokenizer,
+        init_prefix_template=template,
+        num_candidates=num_candidates
+    )
+    mlm.to(&#39;cpu&#39;) # no need for mlm on GPU anymore
+    return candidates</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.get_token_replacements_single_mask"><code class="name flex">
+<span>def <span class="ident">get_token_replacements_single_mask</span></span>(<span>dataloader: torch.utils.data.dataloader.DataLoader, model: transformers.models.auto.modeling_auto.AutoModelForMaskedLM, tokenizer: transformers.models.auto.tokenization_auto.AutoTokenizer, init_prefix_template: str, num_candidates: int) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Given a template like <code>{mask} the numbers</code>, returns the <code>num_candidates</code> most likely
+single-token replacements for <code>{mask}</code> given <code>model</code>.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_token_replacements_single_mask(
+    dataloader: DataLoader, model: transformers.AutoModelForMaskedLM,
+    tokenizer: transformers.AutoTokenizer, init_prefix_template: str, num_candidates: int)-&gt; List[str]:
+    &#34;&#34;&#34;Given a template like `{mask} the numbers`, returns the `num_candidates` most likely
+    single-token replacements for `{mask}` given `model`.
+    &#34;&#34;&#34;
+    single_mask_prefix_str = init_prefix_template.format(mask=tokenizer.mask_token)
+    all_mask_probs = torch.zeros((tokenizer.vocab_size,), dtype=float).to(device)
+    for idx, batch in tqdm.tqdm(enumerate(dataloader), total=len(dataloader)):
+        full_text = [f&#39;{single_mask_prefix_str} {input_text}&#39; for input_text in batch[&#39;text&#39;]]
+        if idx == 0:
+            print(&#39;Sample input: &#39;, full_text[0])
+        inputs = tokenizer(full_text, return_tensors=&#39;pt&#39;, padding=&#39;longest&#39;)
+        with torch.no_grad():
+            outputs = model(**inputs.to(device))
+        mask_idxs = (inputs[&#39;input_ids&#39;] == tokenizer.mask_token_id).nonzero()
+        # TODO: how to do this better in torch?
+        mask_probs = outputs.logits[mask_idxs[:, 0], mask_idxs[:, 1]].log_softmax(dim=1)
+        all_mask_probs += mask_probs.sum(dim=0)
+        
+    prefix_idxs = all_mask_probs.topk(num_candidates).indices
+    return [init_prefix_template.format(mask=tokenizer.decode(idx)) for idx in prefix_idxs]</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.mean"><code class="name flex">
+<span>def <span class="ident">mean</span></span>(<span>_list: List[Union[int, float]]) ‑> float</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mean(_list: List[Union[int, float]]) -&gt; float:
+    return sum(_list) / len(_list)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="imodelsx.iprompt.utils.PrefixLoss"><code class="flex name class">
+<span>class <span class="ident">PrefixLoss</span></span>
+<span>(</span><span>gamma: float, tokenizer: transformers.tokenization_utils.PreTrainedTokenizer)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes next-token-prediction loss with optional language modeling component.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PrefixLoss:
+    &#34;&#34;&#34;Computes next-token-prediction loss with optional language modeling component.
+    &#34;&#34;&#34;
+    gamma: float
+    tokenizer: transformers.PreTrainedTokenizer # for debugging
+
+    def _compute_fluency_loss(
+            self, logits: torch.Tensor, input_ids: torch.Tensor
+        ) -&gt; torch.Tensor:
+        if self.gamma == 0:
+            return torch.tensor(0.0).to(device)
+        return compute_log_ppl_loss(logits=logits, input_ids=input_ids)
+
+    def _compute_token_loss(
+            self, next_token_logits: torch.Tensor, next_token_idxs: torch.Tensor, answer_mask: torch.Tensor
+        ) -&gt; torch.Tensor:
+        batch_size, vocab_size = next_token_logits.shape
+        assert next_token_idxs.shape == (batch_size,)
+
+        if answer_mask is not None:
+            assert answer_mask.shape == (vocab_size,)
+            next_token_logits = torch.where(
+                answer_mask[None],
+                next_token_logits, torch.tensor(float(&#39;-inf&#39;)).to(device)
+            )
+                
+        return torch.nn.functional.cross_entropy(
+            input=next_token_logits,
+            target=next_token_idxs,
+            reduction=&#39;mean&#39;
+        )
+    
+    def __call__(
+            self,
+            input_ids: torch.Tensor,
+            next_token_ids: torch.Tensor,
+            logits: torch.Tensor,
+            answer_mask: torch.Tensor,
+        ) -&gt; torch.Tensor:
+        &#34;&#34;&#34;Computes loss.
+
+        Args:
+            input_ids (int torch.Tensor): array of token IDs for inputs
+            next_token_ids (int torch.Tensor): array of token IDs for the word
+                that comes after the input
+            logits (float torch.Tensor): logits for all output tokens, including
+                the next one
+            answer_mask (bool torch.Tensor): mask over tokens to remove irrelevant ones
+
+        Returns: float torch.Tensor scalar, loss value (lower is better).
+        &#34;&#34;&#34;
+        fluency_loss = (
+            self._compute_fluency_loss(
+                logits=logits,
+                input_ids=input_ids
+            )
+        )
+
+        token_loss = (
+            self._compute_token_loss(
+                next_token_logits=logits[:, -1, :],
+                next_token_idxs=next_token_ids,
+                answer_mask=answer_mask,
+            )
+        )
+
+        loss = token_loss + (self.gamma * fluency_loss)
+        if DEBUG_VERBOSE: 
+            print(f&#34;&gt;&gt; loss for input string: {self.tokenizer.decode(input_ids[0])}&#34;)
+            print(f&#34;\tLoss = {loss:.3f}&#34;)
+        return loss</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="imodelsx.iprompt.utils.PrefixLoss.gamma"><code class="name">var <span class="ident">gamma</span> : float</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixLoss.tokenizer"><code class="name">var <span class="ident">tokenizer</span> : transformers.tokenization_utils.PreTrainedTokenizer</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel"><code class="flex name class">
+<span>class <span class="ident">PrefixModel</span></span>
+<span>(</span><span>args: argparse.Namespace, loss_func: <a title="imodelsx.iprompt.utils.PrefixLoss" href="#imodelsx.iprompt.utils.PrefixLoss">PrefixLoss</a>, model: transformers.modeling_utils.PreTrainedModel, tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, preprefix: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PrefixModel(nn.Module, abc.ABC):
+    args: argparse.Namespace
+    loss_func: PrefixLoss
+    model: transformers.PreTrainedModel
+    tokenizer: transformers.PreTrainedTokenizer
+    
+    def __init__(self, args: argparse.Namespace, loss_func: PrefixLoss, model: transformers.PreTrainedModel, tokenizer: transformers.PreTrainedTokenizer, preprefix: str):
+        super().__init__()
+        self.args = args
+        self.loss_func = loss_func
+        self.model = model
+        self.tokenizer = tokenizer
+
+    @property
+    def id_to_word(self) -&gt; Dict[int, str]:
+        # track token-to-word mapping 
+        return {num: word for word, num in self.tokenizer.vocab.items()}
+    
+    @property
+    def _is_gpt_neox(self) -&gt; bool:
+        return isinstance(self.model, transformers.GPTNeoXModel) or isinstance(self.model, transformers.GPTNeoXForCausalLM)
+
+    @property
+    def transformer(self) -&gt; nn.Module:
+        if self._is_gpt_neox:
+            return self.model._modules[&#39;gpt_neox&#39;]
+        else:
+            return self.model._modules[&#39;transformer&#39;]
+
+    @property
+    def token_embedding(self) -&gt; nn.Embedding:
+        if self._is_gpt_neox:
+            return self.transformer.embed_in
+        else:
+            return self.transformer.wte
+    
+    @property
+    def vocab_size(self) -&gt; int:
+        return self.token_embedding.weight.shape[0] # 50_257 for GPT2
+
+    @property 
+    def token_embedding_dim(self) -&gt; int:
+        return self.token_embedding.weight.shape[1] # often 768, or 2560 for some larger models
+    
+    def prepare_batch(self, batch: Dict[str, str]) -&gt; Tuple[str, str]:
+        &#34;&#34;&#34;Preprocesses text from `batch[&#39;input&#39;]` and `batch[&#39;output&#39;]` for inputting into prefix model.
+        &#34;&#34;&#34;
+        x_text = [f&#39;. {prompt}&#39; for prompt in batch[&#39;input&#39;]]
+        y_text = [answer.rstrip().rstrip(&#39;.&#39;) for answer in batch[&#39;output&#39;]] # strip whitespace at the end.
+        return x_text, y_text
+
+    def forward(
+            self,
+            input_ids: torch.Tensor,
+            prefix_ids: Optional[torch.Tensor],
+        ) -&gt; torch.Tensor:
+        new_input_ids, embeddings = self.embed_input_ids(
+            input_ids=input_ids, prefix_ids=prefix_ids
+        )
+
+        # Automatically set attention mask and position-ids
+        attention_mask = ~(new_input_ids == self.tokenizer.pad_token_id)
+
+        assert new_input_ids.shape == embeddings.shape[0:2]
+        return new_input_ids, self.model(
+            inputs_embeds=embeddings,
+            attention_mask=attention_mask,
+        )
+    
+    def pre_epoch(self) -&gt; None:
+        return
+    
+    def post_epoch(self, dataloader: torch.utils.data.DataLoader, possible_answer_mask: torch.Tensor) -&gt; None:
+        return
+    
+    def compute_metrics(self) -&gt; Dict[str, Any]:
+        return {}
+    
+    def serialize(self) -&gt; Dict[str, Any]:
+        &#34;&#34;&#34;Writes stuff to disk after training.&#34;&#34;&#34;
+        return {}
+
+    @abc.abstractproperty
+    def trainable_params(self) -&gt; Iterable[nn.Parameter]:
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def embed_input_ids(self, input_ids: torch.Tensor) -&gt; Tuple[torch.Tensor, torch.Tensor]:
+        &#34;&#34;&#34;To be implemented by subclasses -- embeds input ids and includes some sort of prefix,
+        for example, in the case of prompt-tuning, by prepending a continuous embedding.
+        &#34;&#34;&#34;
+        raise NotImplementedError()
+    
+    def init_continuous_prefix(self, num_tokens: int) -&gt; nn.Parameter:
+        return nn.Parameter(
+            self.token_embedding.weight.mean(dim=0, keepdim=True)[None].repeat(1, num_tokens, 1), requires_grad=True
+        )
+    
+    def init_discrete_prefix(self, num_tokens: int) -&gt; nn.Parameter:
+        if self.args.autoprompt_init_strategy == &#39;random&#39;:
+            return torch.randint(low=0, high=self.tokenizer.vocab_size, size=(num_tokens,))
+        else:
+            start_word_id = torch.tensor([self.tokenizer.vocab[&#39;the&#39;]], dtype=int)
+            # print(f&#34;start_word_id = {start_word_id}&#34;)
+            return start_word_id.repeat((num_tokens,))
+
+    def _compute_loss_with_set_prefix(
+            self,
+            original_input_ids: torch.Tensor,
+            next_token_ids: torch.Tensor,
+            possible_answer_mask: torch.Tensor,
+            prefix_ids: Optional[torch.Tensor] = None
+        ) -&gt; torch.Tensor:
+        # roll tensors together to put padding at the end. slow but I know it&#39;s right. (TODO: tensorize)
+        input_ids = []
+        num_pad_tokens = (original_input_ids == self.tokenizer.eos_token_id).sum(dim=1)
+        for i in range(len(original_input_ids)):
+            if num_pad_tokens[i] == 0:
+                next_tensor = torch.cat((original_input_ids[i], next_token_ids[i]), dim=0)
+            else:
+                num_non_pad_tokens = original_input_ids.shape[1] - num_pad_tokens[i]
+                padding = torch.full(size=(num_pad_tokens[i], ), fill_value=self.tokenizer.eos_token_id).to(device)
+                next_tensor = torch.cat((original_input_ids[i][:num_non_pad_tokens], next_token_ids[i], padding), dim=0)
+            input_ids.append(
+                next_tensor
+            )
+
+        input_ids = torch.stack(input_ids)
+        assert input_ids.shape == (original_input_ids.shape[0], original_input_ids.shape[1] + next_token_ids.shape[1])
+
+        # feed into the model. prefix-handling is implemented in PrefixModel::forward.
+        full_input_ids, outputs = self.forward(
+            input_ids=input_ids,
+            prefix_ids=prefix_ids,
+        )
+        # make sure we have same number of predictions as tokens
+        assert full_input_ids.shape == outputs.logits.shape[:2]
+
+        # get first predicted token logits
+        next_token_idx = (~(full_input_ids == self.tokenizer.eos_token_id)).cumsum(dim=1).argmax(dim=1)
+        next_token_logits = outputs.logits[torch.arange(len(original_input_ids)), next_token_idx-1]
+
+        # compute first-token acc
+        if possible_answer_mask is None:
+            n_correct = (
+                next_token_logits.argmax(dim=-1) == next_token_ids[:, 0]
+            ).int().sum()
+        else:
+            # apply possible answer mask for single-token
+            next_token_logits = torch.where(
+                possible_answer_mask[None],
+                next_token_logits, torch.tensor(float(&#39;-inf&#39;)).to(device)
+            )
+            n_correct = (
+                (next_token_logits.exp() * possible_answer_mask).argmax(dim=-1)
+                    ==
+                next_token_ids[:, 0]
+            ).int().sum()
+
+        # compute loss from first token
+        original_losses = torch.nn.functional.cross_entropy(
+            input=next_token_logits,
+            target=next_token_ids[:, 0],
+            ignore_index=self.tokenizer.pad_token_id,
+            reduction=&#39;none&#39;
+        )
+
+        # add loss from other tokens
+        b, label_sequence_length = next_token_ids.shape
+        if label_sequence_length &gt; 1:
+            other_next_token_logits = (
+                outputs.logits[:, -label_sequence_length:-1]
+                    .reshape((b * (label_sequence_length-1), -1))
+            )
+            other_next_token_ids = (
+                next_token_ids[:, 1:]
+                    .reshape((b * (label_sequence_length-1),))
+            )
+            other_losses = torch.nn.functional.cross_entropy(
+                input=other_next_token_logits,
+                target=other_next_token_ids,
+                ignore_index=self.tokenizer.pad_token_id,
+                reduction=&#39;none&#39;
+            )
+            # take the mean of losses on the batch level, and normalize for length
+            all_losses = torch.cat(
+                (original_losses[:, None], other_losses.reshape((b, -1))), dim=1
+            )
+            num_tokens_per_output = (
+                ~(next_token_ids == self.tokenizer.bos_token_id)).sum(dim=1)
+            all_losses = all_losses.sum(dim=1) / num_tokens_per_output
+            assert all_losses.shape == (b,)
+            loss = all_losses.mean()
+        else:
+            loss = original_losses.mean()
+        
+        if DEBUG_VERBOSE: 
+            print(f&#34;&gt;&gt; loss for input string: {self.tokenizer.decode(full_input_ids[0])}&#34;)
+            print(f&#34;\tLoss = {loss:.3f}&#34;)
+
+        return full_input_ids, loss, n_correct
+    
+    def compute_loss_and_call_backward(
+            self,
+            x_tokenized: transformers.BatchEncoding,
+            y_tokenized: transformers.BatchEncoding,
+            possible_answer_mask: Optional[torch.Tensor],
+            full_text_tokenized: Optional[transformers.BatchEncoding] = None
+        ) -&gt; Tuple[torch.Tensor, int]:
+        &#34;&#34;&#34;Computes loss using `self.loss_func`.
+        
+        Returns:
+            loss (float torch.Tensor) -- the loss
+            num_correct (int): number of examples where prediction was correct
+        &#34;&#34;&#34;
+        original_input_ids = x_tokenized.input_ids
+        next_token_ids = y_tokenized.input_ids[:, 0] # only compute loss over next token
+
+        input_ids, outputs = self.forward(input_ids=original_input_ids, prefix_ids=None)
+
+        next_token_logits = outputs.logits[:, -1, :]
+
+        n_correct = (
+            next_token_logits.argmax(dim=-1)
+                ==
+            next_token_ids
+        ).int().sum()
+
+        loss = self.loss_func(
+            input_ids=input_ids,
+            next_token_ids=next_token_ids,
+            logits=outputs[&#39;logits&#39;],
+            answer_mask=possible_answer_mask
+        )
+        loss.backward()
+        return loss, n_correct
+    
+    def check_early_stop(self) -&gt; bool:
+        &#34;&#34;&#34;Allow prefix models to stop early.&#34;&#34;&#34;
+        return False</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="imodelsx.iprompt.gumbel.GumbelPrefixModel" href="gumbel.html#imodelsx.iprompt.gumbel.GumbelPrefixModel">GumbelPrefixModel</a></li>
+<li><a title="imodelsx.iprompt.hotflip.HotFlip" href="hotflip.html#imodelsx.iprompt.hotflip.HotFlip">HotFlip</a></li>
+<li><a title="imodelsx.iprompt.prompt_tune.PromptTunedModel" href="prompt_tune.html#imodelsx.iprompt.prompt_tune.PromptTunedModel">PromptTunedModel</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="imodelsx.iprompt.utils.PrefixModel.args"><code class="name">var <span class="ident">args</span> : argparse.Namespace</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.loss_func"><code class="name">var <span class="ident">loss_func</span> : <a title="imodelsx.iprompt.utils.PrefixLoss" href="#imodelsx.iprompt.utils.PrefixLoss">PrefixLoss</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.model"><code class="name">var <span class="ident">model</span> : transformers.modeling_utils.PreTrainedModel</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.tokenizer"><code class="name">var <span class="ident">tokenizer</span> : transformers.tokenization_utils.PreTrainedTokenizer</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="imodelsx.iprompt.utils.PrefixModel.id_to_word"><code class="name">var <span class="ident">id_to_word</span> : Dict[int, str]</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def id_to_word(self) -&gt; Dict[int, str]:
+    # track token-to-word mapping 
+    return {num: word for word, num in self.tokenizer.vocab.items()}</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.token_embedding"><code class="name">var <span class="ident">token_embedding</span> : torch.nn.modules.sparse.Embedding</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def token_embedding(self) -&gt; nn.Embedding:
+    if self._is_gpt_neox:
+        return self.transformer.embed_in
+    else:
+        return self.transformer.wte</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.token_embedding_dim"><code class="name">var <span class="ident">token_embedding_dim</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property 
+def token_embedding_dim(self) -&gt; int:
+    return self.token_embedding.weight.shape[1] # often 768, or 2560 for some larger models</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.trainable_params"><code class="name">var <span class="ident">trainable_params</span> : Iterable[torch.nn.parameter.Parameter]</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abc.abstractproperty
+def trainable_params(self) -&gt; Iterable[nn.Parameter]:
+    raise NotImplementedError()</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.transformer"><code class="name">var <span class="ident">transformer</span> : torch.nn.modules.module.Module</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def transformer(self) -&gt; nn.Module:
+    if self._is_gpt_neox:
+        return self.model._modules[&#39;gpt_neox&#39;]
+    else:
+        return self.model._modules[&#39;transformer&#39;]</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.vocab_size"><code class="name">var <span class="ident">vocab_size</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def vocab_size(self) -&gt; int:
+    return self.token_embedding.weight.shape[0] # 50_257 for GPT2</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="imodelsx.iprompt.utils.PrefixModel.check_early_stop"><code class="name flex">
+<span>def <span class="ident">check_early_stop</span></span>(<span>self) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Allow prefix models to stop early.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_early_stop(self) -&gt; bool:
+    &#34;&#34;&#34;Allow prefix models to stop early.&#34;&#34;&#34;
+    return False</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.compute_loss_and_call_backward"><code class="name flex">
+<span>def <span class="ident">compute_loss_and_call_backward</span></span>(<span>self, x_tokenized: transformers.tokenization_utils_base.BatchEncoding, y_tokenized: transformers.tokenization_utils_base.BatchEncoding, possible_answer_mask: Optional[torch.Tensor], full_text_tokenized: Optional[transformers.tokenization_utils_base.BatchEncoding] = None) ‑> Tuple[torch.Tensor, int]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes loss using <code>self.loss_func</code>.</p>
+<h2 id="returns">Returns</h2>
+<p>loss (float torch.Tensor) &ndash; the loss
+num_correct (int): number of examples where prediction was correct</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compute_loss_and_call_backward(
+        self,
+        x_tokenized: transformers.BatchEncoding,
+        y_tokenized: transformers.BatchEncoding,
+        possible_answer_mask: Optional[torch.Tensor],
+        full_text_tokenized: Optional[transformers.BatchEncoding] = None
+    ) -&gt; Tuple[torch.Tensor, int]:
+    &#34;&#34;&#34;Computes loss using `self.loss_func`.
+    
+    Returns:
+        loss (float torch.Tensor) -- the loss
+        num_correct (int): number of examples where prediction was correct
+    &#34;&#34;&#34;
+    original_input_ids = x_tokenized.input_ids
+    next_token_ids = y_tokenized.input_ids[:, 0] # only compute loss over next token
+
+    input_ids, outputs = self.forward(input_ids=original_input_ids, prefix_ids=None)
+
+    next_token_logits = outputs.logits[:, -1, :]
+
+    n_correct = (
+        next_token_logits.argmax(dim=-1)
+            ==
+        next_token_ids
+    ).int().sum()
+
+    loss = self.loss_func(
+        input_ids=input_ids,
+        next_token_ids=next_token_ids,
+        logits=outputs[&#39;logits&#39;],
+        answer_mask=possible_answer_mask
+    )
+    loss.backward()
+    return loss, n_correct</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.compute_metrics"><code class="name flex">
+<span>def <span class="ident">compute_metrics</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compute_metrics(self) -&gt; Dict[str, Any]:
+    return {}</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.embed_input_ids"><code class="name flex">
+<span>def <span class="ident">embed_input_ids</span></span>(<span>self, input_ids: torch.Tensor) ‑> Tuple[torch.Tensor, torch.Tensor]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>To be implemented by subclasses &ndash; embeds input ids and includes some sort of prefix,
+for example, in the case of prompt-tuning, by prepending a continuous embedding.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abc.abstractmethod
+def embed_input_ids(self, input_ids: torch.Tensor) -&gt; Tuple[torch.Tensor, torch.Tensor]:
+    &#34;&#34;&#34;To be implemented by subclasses -- embeds input ids and includes some sort of prefix,
+    for example, in the case of prompt-tuning, by prepending a continuous embedding.
+    &#34;&#34;&#34;
+    raise NotImplementedError()</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, input_ids: torch.Tensor, prefix_ids: Optional[torch.Tensor]) ‑> torch.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(
+        self,
+        input_ids: torch.Tensor,
+        prefix_ids: Optional[torch.Tensor],
+    ) -&gt; torch.Tensor:
+    new_input_ids, embeddings = self.embed_input_ids(
+        input_ids=input_ids, prefix_ids=prefix_ids
+    )
+
+    # Automatically set attention mask and position-ids
+    attention_mask = ~(new_input_ids == self.tokenizer.pad_token_id)
+
+    assert new_input_ids.shape == embeddings.shape[0:2]
+    return new_input_ids, self.model(
+        inputs_embeds=embeddings,
+        attention_mask=attention_mask,
+    )</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.init_continuous_prefix"><code class="name flex">
+<span>def <span class="ident">init_continuous_prefix</span></span>(<span>self, num_tokens: int) ‑> torch.nn.parameter.Parameter</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def init_continuous_prefix(self, num_tokens: int) -&gt; nn.Parameter:
+    return nn.Parameter(
+        self.token_embedding.weight.mean(dim=0, keepdim=True)[None].repeat(1, num_tokens, 1), requires_grad=True
+    )</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.init_discrete_prefix"><code class="name flex">
+<span>def <span class="ident">init_discrete_prefix</span></span>(<span>self, num_tokens: int) ‑> torch.nn.parameter.Parameter</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def init_discrete_prefix(self, num_tokens: int) -&gt; nn.Parameter:
+    if self.args.autoprompt_init_strategy == &#39;random&#39;:
+        return torch.randint(low=0, high=self.tokenizer.vocab_size, size=(num_tokens,))
+    else:
+        start_word_id = torch.tensor([self.tokenizer.vocab[&#39;the&#39;]], dtype=int)
+        # print(f&#34;start_word_id = {start_word_id}&#34;)
+        return start_word_id.repeat((num_tokens,))</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.post_epoch"><code class="name flex">
+<span>def <span class="ident">post_epoch</span></span>(<span>self, dataloader: torch.utils.data.dataloader.DataLoader, possible_answer_mask: torch.Tensor) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def post_epoch(self, dataloader: torch.utils.data.DataLoader, possible_answer_mask: torch.Tensor) -&gt; None:
+    return</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.pre_epoch"><code class="name flex">
+<span>def <span class="ident">pre_epoch</span></span>(<span>self) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pre_epoch(self) -&gt; None:
+    return</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.prepare_batch"><code class="name flex">
+<span>def <span class="ident">prepare_batch</span></span>(<span>self, batch: Dict[str, str]) ‑> Tuple[str, str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Preprocesses text from <code>batch['input']</code> and <code>batch['output']</code> for inputting into prefix model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def prepare_batch(self, batch: Dict[str, str]) -&gt; Tuple[str, str]:
+    &#34;&#34;&#34;Preprocesses text from `batch[&#39;input&#39;]` and `batch[&#39;output&#39;]` for inputting into prefix model.
+    &#34;&#34;&#34;
+    x_text = [f&#39;. {prompt}&#39; for prompt in batch[&#39;input&#39;]]
+    y_text = [answer.rstrip().rstrip(&#39;.&#39;) for answer in batch[&#39;output&#39;]] # strip whitespace at the end.
+    return x_text, y_text</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixModel.serialize"><code class="name flex">
+<span>def <span class="ident">serialize</span></span>(<span>self) ‑> Dict[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Writes stuff to disk after training.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def serialize(self) -&gt; Dict[str, Any]:
+    &#34;&#34;&#34;Writes stuff to disk after training.&#34;&#34;&#34;
+    return {}</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixPool"><code class="flex name class">
+<span>class <span class="ident">PrefixPool</span></span>
+<span>(</span><span>tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, criterion: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Tracks a pool of candidate prefixes and their associated metrics over time.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PrefixPool:
+    &#34;&#34;&#34;Tracks a pool of candidate prefixes and their associated metrics over time.&#34;&#34;&#34;
+    criterion: str
+    tokenizer: transformers.PreTrainedTokenizer
+    # 
+    _all_losses: Dict[Tuple[int], List[float]]
+    _avg_loss: Dict[Tuple[int], float]
+    _all_accuracy: Dict[Tuple[int], List[float]]
+    _avg_accuracy: Dict[Tuple[int], float]
+    _best_prefix_by_start_token: Dict[int, Tuple[Tuple[int], float]]
+
+    def __init__(self, tokenizer: transformers.PreTrainedTokenizer, criterion: str):
+        self.tokenizer = tokenizer
+        self.criterion = criterion
+        # tuple (input_ids) -&gt; float (loss)
+        self._avg_loss = {}
+        self._all_losses = collections.defaultdict(list)
+        # tuple (input_ids) -&gt; int (n_correct)
+        self._avg_accuracy = {}
+        self._all_accuracy = collections.defaultdict(list)
+        # 
+        self._best_prefix_by_start_token = {}
+        # 
+        self._topk_strategy = &#39;different_start_token&#39; # [&#39;different_start_token&#39;, &#39;all&#39;]
+    
+    @property
+    def prefixes(self) -&gt; List[Tuple[int]]:
+        return self._avg_loss.keys()
+    
+    @property
+    def num_start_tokens(self) -&gt; int:
+        &#34;&#34;&#34;Number of different start tokens seen across all prefixes.&#34;&#34;&#34;
+        return len(self._best_prefix_by_start_token.keys())
+    
+    def print(self, topk: int, min_occurrences: int = 2) -&gt; None:
+        top_token_ids = self.topk(k=topk, min_occurrences=min_occurrences)
+        ########################### Debugging code ##########################
+        # import pandas as pd
+        # vd = pd.DataFrame(self._avg_loss.items(), columns=[&#39;prefix&#39;, &#39;loss&#39;])
+        # vd[&#39;prefix_str&#39;] = vd[&#39;prefix&#39;].map(self.tokenizer.decode)
+        # vd[&#39;n&#39;] = vd[&#39;prefix&#39;].map(lambda p: len(self._all_losses[p]))
+        # vd.sort_values(by=&#39;loss&#39;)[&#34;prefix_str&#34;].iloc[:25]
+        # vd.sort_values(by=[&#39;n&#39;, &#39;loss&#39;], ascending=[False, True])[[&#34;n&#34;, &#34;prefix_str&#34;]].iloc[:25]
+        #####################################################################
+        if not len(top_token_ids): return
+        print((&#34; &#34; * 45), (&#34;*&#34; * 20), &#34;Population&#34;, (&#34;*&#34; * 20))
+        for token_ids in top_token_ids:
+            prefix_str = &#34;{:&gt;65}&#34;.format(self.tokenizer.decode(list(token_ids)).replace(&#34;\n&#34;, &#34;\\\\n&#34;))
+            loss_str = f&#34;{self._avg_loss[token_ids]:.3f}&#34;
+            acc_str = f&#34;{self._avg_accuracy[token_ids]*100:.1f}&#34;
+            print(prefix_str, &#34;\t\t&#34;, loss_str, &#34;\t\t&#34;, acc_str)
+        print()
+    
+    def initialize_prefix(self, prefix: torch.Tensor):
+        prefix = tuple(prefix.cpu().tolist())
+        self._avg_loss[prefix] = 10_000.0
+        self._avg_accuracy[prefix] = 0
+        self._best_prefix_by_start_token.setdefault(prefix[0], (prefix, (10_000.0,)))
+
+    def topk(self, *args, **kwargs) -&gt; List[Tuple[int]]:
+        if self._topk_strategy == &#39;different_start_token&#39;:
+            return self.topk_with_different_start_token(*args, **kwargs)
+        elif self._topk_strategy == &#39;all&#39;:
+            return self.topk_all(*args, **kwargs)
+        else:
+            raise ValueError(f&#39;Unknown strategy {self._topk_strategy}&#39;)
+
+    def topk_with_different_start_token(
+        self,
+        k: int,
+        min_occurrences: Optional[int] = None
+        ) -&gt; List[Tuple[int]]:
+        all_prefixes = [p for p, score in self._best_prefix_by_start_token.values()]
+        top_prefixes = self._topk_from_prefixes(
+            all_prefixes, k=k, min_occurrences=min_occurrences
+        )
+        if not len(top_prefixes):
+            # get top prefixes the first time
+            top_prefixes = self._topk_from_prefixes(
+                all_prefixes, k=k, min_occurrences=0
+            )
+        n_so_far = len(top_prefixes)
+        if n_so_far &lt; k:
+            # fallback if we don&#39;t have enough first-tokens yet
+            # more_prefixes = (
+            #     set(self.topk_all(k=k, min_occurrences=min_occurrences))
+            #     - set(top_prefixes)
+            # )
+            num_prefixes_to_add = k - len(top_prefixes)
+            # num_prefixes_to_add = min(len(more_prefixes), num_prefixes_to_add)
+            more_prefixes = [
+                random.choice(top_prefixes) for _ in range(num_prefixes_to_add)
+            ]
+            top_prefixes += more_prefixes
+        top_prefixes.sort(key=self._score)
+        return top_prefixes
+
+    def topk_all(self, k: int, min_occurrences: Optional[int] = None) -&gt; List[Tuple[int]]:
+        all_prefixes = self._avg_loss.keys()
+        return self._topk_from_prefixes(
+            all_prefixes, k=k, min_occurrences=min_occurrences
+        )
+    
+    def _score(self, prefix: Tuple[int]) -&gt; Tuple[float]:
+        criterion = self.criterion
+        if criterion == &#39;loss&#39;:
+            # sort by min loss
+            return (self._avg_loss[prefix], )
+        elif criterion == &#39;combined&#39;:
+            return (-1 * round(self._avg_accuracy[prefix], 2), self._avg_loss[prefix])
+        else:
+            return (-1 * self._avg_accuracy[prefix], 2)
+    
+    def _topk_from_prefixes(
+        self,
+        prefixes: Iterable[Tuple[int]],
+        k: int, 
+        min_occurrences: Optional[int] = None
+        ) -&gt; List[Tuple[int]]:
+        if min_occurrences:
+            prefixes = {
+                prefix for prefix in prefixes
+                if len(self._all_accuracy[prefix]) &gt; min_occurrences
+            }
+
+        population = [(self._score(p), p) for p in prefixes]
+        topk_pop = heapq.nsmallest(k, population)
+        topk_pop.sort(key = lambda t: t[0])
+        return [prefix_ids for _, prefix_ids in topk_pop]
+
+    def update(self, prefix: torch.Tensor, loss: torch.Tensor, accuracy: torch.Tensor):
+        # todo abstract these data strcutures into a class
+        prefix = tuple(prefix.cpu().flatten().tolist())
+        self._all_losses[prefix].append(loss.item())
+        self._avg_loss[prefix] = mean(self._all_losses[prefix])
+        self._all_accuracy[prefix].append(accuracy.item())
+        self._avg_accuracy[prefix] = mean(self._all_accuracy[prefix])
+
+        # track best score for each starting token
+        self._best_prefix_by_start_token.setdefault(prefix[0], (prefix, (1000.0,)))
+        score = self._score(prefix)
+        best_prefix, best_score = self._best_prefix_by_start_token[prefix[0]]
+        if score &lt; best_score:
+            self._best_prefix_by_start_token[prefix[0]] = (prefix, score)
+    
+    def __len__(self) -&gt; int:
+        return len(self._avg_loss)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="imodelsx.iprompt.utils.PrefixPool.criterion"><code class="name">var <span class="ident">criterion</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixPool.tokenizer"><code class="name">var <span class="ident">tokenizer</span> : transformers.tokenization_utils.PreTrainedTokenizer</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="imodelsx.iprompt.utils.PrefixPool.num_start_tokens"><code class="name">var <span class="ident">num_start_tokens</span> : int</code></dt>
+<dd>
+<div class="desc"><p>Number of different start tokens seen across all prefixes.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def num_start_tokens(self) -&gt; int:
+    &#34;&#34;&#34;Number of different start tokens seen across all prefixes.&#34;&#34;&#34;
+    return len(self._best_prefix_by_start_token.keys())</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixPool.prefixes"><code class="name">var <span class="ident">prefixes</span> : List[Tuple[int]]</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def prefixes(self) -&gt; List[Tuple[int]]:
+    return self._avg_loss.keys()</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="imodelsx.iprompt.utils.PrefixPool.initialize_prefix"><code class="name flex">
+<span>def <span class="ident">initialize_prefix</span></span>(<span>self, prefix: torch.Tensor)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def initialize_prefix(self, prefix: torch.Tensor):
+    prefix = tuple(prefix.cpu().tolist())
+    self._avg_loss[prefix] = 10_000.0
+    self._avg_accuracy[prefix] = 0
+    self._best_prefix_by_start_token.setdefault(prefix[0], (prefix, (10_000.0,)))</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixPool.print"><code class="name flex">
+<span>def <span class="ident">print</span></span>(<span>self, topk: int, min_occurrences: int = 2) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def print(self, topk: int, min_occurrences: int = 2) -&gt; None:
+    top_token_ids = self.topk(k=topk, min_occurrences=min_occurrences)
+    ########################### Debugging code ##########################
+    # import pandas as pd
+    # vd = pd.DataFrame(self._avg_loss.items(), columns=[&#39;prefix&#39;, &#39;loss&#39;])
+    # vd[&#39;prefix_str&#39;] = vd[&#39;prefix&#39;].map(self.tokenizer.decode)
+    # vd[&#39;n&#39;] = vd[&#39;prefix&#39;].map(lambda p: len(self._all_losses[p]))
+    # vd.sort_values(by=&#39;loss&#39;)[&#34;prefix_str&#34;].iloc[:25]
+    # vd.sort_values(by=[&#39;n&#39;, &#39;loss&#39;], ascending=[False, True])[[&#34;n&#34;, &#34;prefix_str&#34;]].iloc[:25]
+    #####################################################################
+    if not len(top_token_ids): return
+    print((&#34; &#34; * 45), (&#34;*&#34; * 20), &#34;Population&#34;, (&#34;*&#34; * 20))
+    for token_ids in top_token_ids:
+        prefix_str = &#34;{:&gt;65}&#34;.format(self.tokenizer.decode(list(token_ids)).replace(&#34;\n&#34;, &#34;\\\\n&#34;))
+        loss_str = f&#34;{self._avg_loss[token_ids]:.3f}&#34;
+        acc_str = f&#34;{self._avg_accuracy[token_ids]*100:.1f}&#34;
+        print(prefix_str, &#34;\t\t&#34;, loss_str, &#34;\t\t&#34;, acc_str)
+    print()</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixPool.topk"><code class="name flex">
+<span>def <span class="ident">topk</span></span>(<span>self, *args, **kwargs) ‑> List[Tuple[int]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def topk(self, *args, **kwargs) -&gt; List[Tuple[int]]:
+    if self._topk_strategy == &#39;different_start_token&#39;:
+        return self.topk_with_different_start_token(*args, **kwargs)
+    elif self._topk_strategy == &#39;all&#39;:
+        return self.topk_all(*args, **kwargs)
+    else:
+        raise ValueError(f&#39;Unknown strategy {self._topk_strategy}&#39;)</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixPool.topk_all"><code class="name flex">
+<span>def <span class="ident">topk_all</span></span>(<span>self, k: int, min_occurrences: Optional[int] = None) ‑> List[Tuple[int]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def topk_all(self, k: int, min_occurrences: Optional[int] = None) -&gt; List[Tuple[int]]:
+    all_prefixes = self._avg_loss.keys()
+    return self._topk_from_prefixes(
+        all_prefixes, k=k, min_occurrences=min_occurrences
+    )</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixPool.topk_with_different_start_token"><code class="name flex">
+<span>def <span class="ident">topk_with_different_start_token</span></span>(<span>self, k: int, min_occurrences: Optional[int] = None) ‑> List[Tuple[int]]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def topk_with_different_start_token(
+    self,
+    k: int,
+    min_occurrences: Optional[int] = None
+    ) -&gt; List[Tuple[int]]:
+    all_prefixes = [p for p, score in self._best_prefix_by_start_token.values()]
+    top_prefixes = self._topk_from_prefixes(
+        all_prefixes, k=k, min_occurrences=min_occurrences
+    )
+    if not len(top_prefixes):
+        # get top prefixes the first time
+        top_prefixes = self._topk_from_prefixes(
+            all_prefixes, k=k, min_occurrences=0
+        )
+    n_so_far = len(top_prefixes)
+    if n_so_far &lt; k:
+        # fallback if we don&#39;t have enough first-tokens yet
+        # more_prefixes = (
+        #     set(self.topk_all(k=k, min_occurrences=min_occurrences))
+        #     - set(top_prefixes)
+        # )
+        num_prefixes_to_add = k - len(top_prefixes)
+        # num_prefixes_to_add = min(len(more_prefixes), num_prefixes_to_add)
+        more_prefixes = [
+            random.choice(top_prefixes) for _ in range(num_prefixes_to_add)
+        ]
+        top_prefixes += more_prefixes
+    top_prefixes.sort(key=self._score)
+    return top_prefixes</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.utils.PrefixPool.update"><code class="name flex">
+<span>def <span class="ident">update</span></span>(<span>self, prefix: torch.Tensor, loss: torch.Tensor, accuracy: torch.Tensor)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def update(self, prefix: torch.Tensor, loss: torch.Tensor, accuracy: torch.Tensor):
+    # todo abstract these data strcutures into a class
+    prefix = tuple(prefix.cpu().flatten().tolist())
+    self._all_losses[prefix].append(loss.item())
+    self._avg_loss[prefix] = mean(self._all_losses[prefix])
+    self._all_accuracy[prefix].append(accuracy.item())
+    self._avg_accuracy[prefix] = mean(self._all_accuracy[prefix])
+
+    # track best score for each starting token
+    self._best_prefix_by_start_token.setdefault(prefix[0], (prefix, (1000.0,)))
+    score = self._score(prefix)
+    best_prefix, best_score = self._best_prefix_by_start_token[prefix[0]]
+    if score &lt; best_score:
+        self._best_prefix_by_start_token[prefix[0]] = (prefix, score)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="imodelsx.iprompt" href="index.html">imodelsx.iprompt</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="imodelsx.iprompt.utils.compute_log_ppl_loss" href="#imodelsx.iprompt.utils.compute_log_ppl_loss">compute_log_ppl_loss</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.get_prefix_from_mlm" href="#imodelsx.iprompt.utils.get_prefix_from_mlm">get_prefix_from_mlm</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.get_token_replacements_single_mask" href="#imodelsx.iprompt.utils.get_token_replacements_single_mask">get_token_replacements_single_mask</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.mean" href="#imodelsx.iprompt.utils.mean">mean</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="imodelsx.iprompt.utils.PrefixLoss" href="#imodelsx.iprompt.utils.PrefixLoss">PrefixLoss</a></code></h4>
+<ul class="">
+<li><code><a title="imodelsx.iprompt.utils.PrefixLoss.gamma" href="#imodelsx.iprompt.utils.PrefixLoss.gamma">gamma</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixLoss.tokenizer" href="#imodelsx.iprompt.utils.PrefixLoss.tokenizer">tokenizer</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="imodelsx.iprompt.utils.PrefixModel" href="#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a></code></h4>
+<ul class="">
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.args" href="#imodelsx.iprompt.utils.PrefixModel.args">args</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.check_early_stop" href="#imodelsx.iprompt.utils.PrefixModel.check_early_stop">check_early_stop</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.compute_loss_and_call_backward" href="#imodelsx.iprompt.utils.PrefixModel.compute_loss_and_call_backward">compute_loss_and_call_backward</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.compute_metrics" href="#imodelsx.iprompt.utils.PrefixModel.compute_metrics">compute_metrics</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.embed_input_ids" href="#imodelsx.iprompt.utils.PrefixModel.embed_input_ids">embed_input_ids</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.forward" href="#imodelsx.iprompt.utils.PrefixModel.forward">forward</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.id_to_word" href="#imodelsx.iprompt.utils.PrefixModel.id_to_word">id_to_word</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.init_continuous_prefix" href="#imodelsx.iprompt.utils.PrefixModel.init_continuous_prefix">init_continuous_prefix</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.init_discrete_prefix" href="#imodelsx.iprompt.utils.PrefixModel.init_discrete_prefix">init_discrete_prefix</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.loss_func" href="#imodelsx.iprompt.utils.PrefixModel.loss_func">loss_func</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.model" href="#imodelsx.iprompt.utils.PrefixModel.model">model</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.post_epoch" href="#imodelsx.iprompt.utils.PrefixModel.post_epoch">post_epoch</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.pre_epoch" href="#imodelsx.iprompt.utils.PrefixModel.pre_epoch">pre_epoch</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.prepare_batch" href="#imodelsx.iprompt.utils.PrefixModel.prepare_batch">prepare_batch</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.serialize" href="#imodelsx.iprompt.utils.PrefixModel.serialize">serialize</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.token_embedding" href="#imodelsx.iprompt.utils.PrefixModel.token_embedding">token_embedding</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.token_embedding_dim" href="#imodelsx.iprompt.utils.PrefixModel.token_embedding_dim">token_embedding_dim</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.tokenizer" href="#imodelsx.iprompt.utils.PrefixModel.tokenizer">tokenizer</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.trainable_params" href="#imodelsx.iprompt.utils.PrefixModel.trainable_params">trainable_params</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.transformer" href="#imodelsx.iprompt.utils.PrefixModel.transformer">transformer</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixModel.vocab_size" href="#imodelsx.iprompt.utils.PrefixModel.vocab_size">vocab_size</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="imodelsx.iprompt.utils.PrefixPool" href="#imodelsx.iprompt.utils.PrefixPool">PrefixPool</a></code></h4>
+<ul class="">
+<li><code><a title="imodelsx.iprompt.utils.PrefixPool.criterion" href="#imodelsx.iprompt.utils.PrefixPool.criterion">criterion</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixPool.initialize_prefix" href="#imodelsx.iprompt.utils.PrefixPool.initialize_prefix">initialize_prefix</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixPool.num_start_tokens" href="#imodelsx.iprompt.utils.PrefixPool.num_start_tokens">num_start_tokens</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixPool.prefixes" href="#imodelsx.iprompt.utils.PrefixPool.prefixes">prefixes</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixPool.print" href="#imodelsx.iprompt.utils.PrefixPool.print">print</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixPool.tokenizer" href="#imodelsx.iprompt.utils.PrefixPool.tokenizer">tokenizer</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixPool.topk" href="#imodelsx.iprompt.utils.PrefixPool.topk">topk</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixPool.topk_all" href="#imodelsx.iprompt.utils.PrefixPool.topk_all">topk_all</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixPool.topk_with_different_start_token" href="#imodelsx.iprompt.utils.PrefixPool.topk_with_different_start_token">topk_with_different_start_token</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixPool.update" href="#imodelsx.iprompt.utils.PrefixPool.update">update</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

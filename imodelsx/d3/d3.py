@@ -45,7 +45,6 @@ def explain_datasets_d3(
             print('Folder %s exists' % save_folder)
     if verbose:
         print('results will be saved to %s' % save_folder)
-    save_args(args=locals(), verbose=verbose)
 
     # get samples that are representative of the differences between two distributions
     if verbose:
@@ -80,13 +79,4 @@ def explain_datasets_d3(
         hypothesis_scores = np.array(list(h_scores.values()))
         args_sorted = np.argsort(hypothesis_scores)[::-1]
         return hypotheses[args_sorted], hypothesis_scores[args_sorted]
-
-
-def save_args(args: Dict, verbose=True):
-    if verbose:
-        for k in ['proposer_name', 'verifier_name']:
-            print(k, args[k])
-    pkl.dump(
-        args, open(os.path.join(args['save_folder'], 'args.pkl'), 'wb')
-    )
 
