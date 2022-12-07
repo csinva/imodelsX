@@ -70,8 +70,8 @@ class EmbGAM(BaseEstimator):
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True,
-            cache_embs_dir: str=None,
-        ):
+            cache_embs_dir: str = None,
+            ):
         '''Extract embeddings then fit linear model
 
         Parameters
@@ -195,7 +195,7 @@ class EmbGAM(BaseEstimator):
             embs = self.normalizer.transform(embs)
 
         # save coefs
-        coef_embs = self.linear.coef_.squeeze()
+        coef_embs = self.linear.coef_.squeeze().transpose()
         linear_coef = embs @ coef_embs
         self.coefs_dict_ = {
             **coefs_dict_old,
@@ -225,7 +225,10 @@ class EmbGAM(BaseEstimator):
         if isinstance(self, RegressorMixin):
             return preds
         elif isinstance(self, ClassifierMixin):
-            return ((preds + self.linear.intercept_) > 0).astype(int)
+            if preds.ndim > 1:  # multiclass classification
+                return np.argmax(preds, axis=1)
+            else:
+                return (preds + self.linear.intercept_ > 0).astype(int)
 
     def predict_proba(self, X, warn=True):
         if not isinstance(self, ClassifierMixin):
@@ -233,8 +236,11 @@ class EmbGAM(BaseEstimator):
                 "predict_proba only available for EmbGAMClassifier")
         check_is_fitted(self)
         preds = self._predict_cached(X, warn=warn)
-        logits = np.vstack(
-            (1 - preds, preds)).transpose()
+        if preds.ndim > 1:  # multiclass classification
+            logits = preds
+        else:
+            logits = np.vstack(
+                (1 - preds, preds)).transpose()
         return softmax(logits, axis=1)
 
     def _predict_cached(self, X, warn):
