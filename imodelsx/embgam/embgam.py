@@ -257,7 +257,7 @@ class EmbGAM(BaseEstimator):
         n_unseen_ngrams = 0
         for x in X:
             pred = 0
-            seqs = imodelsx.embgam.embed.generate_ngraxms_list(
+            seqs = imodelsx.embgam.embed.generate_ngrams_list(
                 x,
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,
