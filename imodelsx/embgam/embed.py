@@ -4,14 +4,14 @@ from os.path import join as oj
 import torch
 
 def generate_ngrams_list(
-    sentence,
+    sentence: str,
     ngrams: int,
     tokenizer_ngrams,
     all_ngrams=False,
     parsing: str='',
     nlp_chunks=None,
 ):
-    """get list of grams
+    """Get list of ngrams from sentence
 
     Params
     ------
@@ -119,7 +119,7 @@ def embed_and_sum_function(
     tokenizer_embeddings
         tokenizing for the embedding model
     tokenizer_ngrams
-        tokenizing the ngrams (word-based tokenization is probably more interpretable)
+        tokenizing the ngrams (word-based tokenization is more interpretable)
     parsing: str
         whether to use parsing rather than extracting all ngrams
     nlp_chunks
