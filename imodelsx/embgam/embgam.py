@@ -168,29 +168,7 @@ class EmbGAM(BaseEstimator):
             print('\tNothing to update!')
             return
 
-        # compute embeddings
-        """
-        # Faster version that needs more memory
-        tokens = tokenizer(ngrams_list, padding=args.padding,
-                           truncation=True, return_tensors="pt")
-        tokens = tokens.to(device)
-
-        output = model(**tokens) # this takes a while....
-        embs = output['pooler_output'].cpu().detach().numpy()
-        return embs
-        """
-        # Slower way to run things but won't run out of mem
-        embs = []
-        for i in tqdm(range(len(ngrams_list))):
-            tokens = tokenizer_embeddings(
-                [ngrams_list[i]], padding=True, truncation=True, return_tensors="pt")
-            tokens = tokens.to(model.device)
-            output = model(**tokens)
-            emb = output[self.layer].cpu().detach().numpy()
-            if len(emb.shape) == 3:  # includes seq_len
-                emb = emb.mean(axis=1)
-            embs.append(emb)
-        embs = np.array(embs).squeeze()
+        embs = self._get_embs(ngrams_list, model, tokenizer_embeddings)
         if self.normalize_embs:
             embs = self.normalizer.transform(embs)
 
@@ -203,6 +181,34 @@ class EmbGAM(BaseEstimator):
                for i in range(len(ngrams_list))}
         }
         print('coefs_dict_ len', len(self.coefs_dict_))
+
+    def _get_embs(self, ngrams_list, model, tokenizer_embeddings):
+        """Get embeddings for a list of ngrams (not summed!)
+        """
+        embs = []
+        for i in tqdm(range(len(ngrams_list))):
+            tokens = tokenizer_embeddings(
+                [ngrams_list[i]], padding=True, truncation=True, return_tensors="pt")
+            tokens = tokens.to(model.device)
+            output = model(**tokens)
+            emb = output[self.layer].cpu().detach().numpy()
+            if len(emb.shape) == 3:  # includes seq_len
+                emb = emb.mean(axis=1)
+            embs.append(emb)
+        embs = np.array(embs).squeeze()
+        return embs
+
+        """
+        # Faster version that needs more memory
+        tokens = tokenizer(ngrams_list, padding=args.padding,
+                           truncation=True, return_tensors="pt")
+        tokens = tokens.to(device)
+
+        output = model(**tokens) # this takes a while....
+        embs = output['pooler_output'].cpu().detach().numpy()
+        return embs
+        """
+        
 
     def _get_ngrams_list(self, X):
         all_ngrams = set()
@@ -251,7 +257,7 @@ class EmbGAM(BaseEstimator):
         n_unseen_ngrams = 0
         for x in X:
             pred = 0
-            seqs = imodelsx.embgam.embed.generate_ngrams_list(
+            seqs = imodelsx.embgam.embed.generate_ngraxms_list(
                 x,
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,
