@@ -1,7 +1,7 @@
 <p align="center">  <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="18%"> 
 <img align="center" width=40% src="https://csinva.io/imodelsX/imodelsx_logo.svg?sanitize=True&kill_cache=1"> </img>	<img src="https://csinva.io/emb-gam/embgam_gif.gif" width="18%"></p>
 
-<p align="center">Library to explain <i>a dataset</i> in natural language.
+<p align="center">Library to explain <i>a dataset</i> in natural language. 
 </p>
 <p align="center">
   <a href="https://github.com/csinva/imodelsX/tree/master/demos">📖 demo notebooks</a>
