@@ -143,9 +143,18 @@ class EmbGAM(BaseEstimator):
             embs.append(emb['embs'])
         return np.array(embs).squeeze()  # num_examples x embedding_size
 
-    def cache_linear_coefs(self, X: ArrayLike, model=None, tokenizer_embeddings=None):
+    def cache_linear_coefs(self, X: ArrayLike, model=None,
+                           tokenizer_embeddings=None,
+                           renormalize_embs: bool = False,
+                           verbose: bool = True):
         """Cache linear coefs for ngrams into a dictionary self.coefs_dict_
         If it already exists, only add linear coefs for new ngrams
+
+        Params
+        ------
+        renormalize_embs
+            whether to renormalize embeddings before fitting linear model
+            (useful if getting a test set that is different from the training)
         """
 
         if model is None:
@@ -164,12 +173,14 @@ class EmbGAM(BaseEstimator):
             coefs_dict_old = {}
         ngrams_list = [ngram for ngram in ngrams_list
                        if not ngram in coefs_dict_old]
-        if len(ngrams_list) == 0:
+        if len(ngrams_list) == 0 and verbose:
             print('\tNothing to update!')
             return
 
         embs = self._get_embs(ngrams_list, model, tokenizer_embeddings)
-        if self.normalize_embs:
+        if renormalize_embs:
+            embs = StandardScaler().fit_transform(embs)
+        elif self.normalize_embs:
             embs = self.normalizer.transform(embs)
 
         # save coefs
@@ -180,7 +191,8 @@ class EmbGAM(BaseEstimator):
             **{ngrams_list[i]: linear_coef[i]
                for i in range(len(ngrams_list))}
         }
-        print('coefs_dict_ len', len(self.coefs_dict_))
+        if verbose:
+            print('After caching, coefs_dict_ len', len(self.coefs_dict_))
 
     def _get_embs(self, ngrams_list, model, tokenizer_embeddings):
         """Get embeddings for a list of ngrams (not summed!)
@@ -208,7 +220,6 @@ class EmbGAM(BaseEstimator):
         embs = output['pooler_output'].cpu().detach().numpy()
         return embs
         """
-        
 
     def _get_ngrams_list(self, X):
         all_ngrams = set()

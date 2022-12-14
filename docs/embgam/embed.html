@@ -32,14 +32,14 @@ from os.path import join as oj
 import torch
 
 def generate_ngrams_list(
-    sentence,
+    sentence: str,
     ngrams: int,
     tokenizer_ngrams,
     all_ngrams=False,
     parsing: str=&#39;&#39;,
     nlp_chunks=None,
 ):
-    &#34;&#34;&#34;get list of grams
+    &#34;&#34;&#34;Get list of ngrams from sentence using a tokenizer
 
     Params
     ------
@@ -147,7 +147,7 @@ def embed_and_sum_function(
     tokenizer_embeddings
         tokenizing for the embedding model
     tokenizer_ngrams
-        tokenizing the ngrams (word-based tokenization is probably more interpretable)
+        tokenizing the ngrams (word-based tokenization is more interpretable)
     parsing: str
         whether to use parsing rather than extracting all ngrams
     nlp_chunks
@@ -159,19 +159,17 @@ def embed_and_sum_function(
         sentence = example
     # seqs = sentence
 
-    if isinstance(sentence, str):
-        seqs = generate_ngrams_list(
-            sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
-            parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
-        )
-    elif isinstance(sentence, list):
-        raise Exception(&#39;batched mode not supported&#39;)
-        # seqs = list(map(generate_ngrams_list, sentence))
+    assert isinstance(sentence, str), &#39;sentence must be a string (batched mode not supported)&#39;
+    seqs = generate_ngrams_list(
+        sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
+        parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
+    )
+    # seqs = list(map(generate_ngrams_list, sentence))
 
-    # maybe a smarter way to deal with pooling here?
+
     seq_len = len(seqs)
     if seq_len == 0:
-        seqs = [&#34;dummy&#34;]
+        seqs = [&#34;dummy&#34;] # will multiply embedding by 0 so doesn&#39;t matter
 
     if &#39;bert&#39; in checkpoint.lower():  # has up to two keys, &#39;last_hidden_state&#39;, &#39;pooler_output&#39;
         if not hasattr(tokenizer_embeddings, &#39;pad_token&#39;) or tokenizer_embeddings.pad_token is None:
@@ -225,7 +223,7 @@ str that identifies where data examples are stored, e.g. "sentence" for sst2
 tokenizer_embeddings
 tokenizing for the embedding model
 tokenizer_ngrams
-tokenizing the ngrams (word-based tokenization is probably more interpretable)
+tokenizing the ngrams (word-based tokenization is more interpretable)
 parsing: str
 whether to use parsing rather than extracting all ngrams
 nlp_chunks
@@ -261,7 +259,7 @@ if parsing is not empty string, a parser that extracts specific ngrams</p></div>
     tokenizer_embeddings
         tokenizing for the embedding model
     tokenizer_ngrams
-        tokenizing the ngrams (word-based tokenization is probably more interpretable)
+        tokenizing the ngrams (word-based tokenization is more interpretable)
     parsing: str
         whether to use parsing rather than extracting all ngrams
     nlp_chunks
@@ -273,19 +271,17 @@ if parsing is not empty string, a parser that extracts specific ngrams</p></div>
         sentence = example
     # seqs = sentence
 
-    if isinstance(sentence, str):
-        seqs = generate_ngrams_list(
-            sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
-            parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
-        )
-    elif isinstance(sentence, list):
-        raise Exception(&#39;batched mode not supported&#39;)
-        # seqs = list(map(generate_ngrams_list, sentence))
+    assert isinstance(sentence, str), &#39;sentence must be a string (batched mode not supported)&#39;
+    seqs = generate_ngrams_list(
+        sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
+        parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
+    )
+    # seqs = list(map(generate_ngrams_list, sentence))
 
-    # maybe a smarter way to deal with pooling here?
+
     seq_len = len(seqs)
     if seq_len == 0:
-        seqs = [&#34;dummy&#34;]
+        seqs = [&#34;dummy&#34;] # will multiply embedding by 0 so doesn&#39;t matter
 
     if &#39;bert&#39; in checkpoint.lower():  # has up to two keys, &#39;last_hidden_state&#39;, &#39;pooler_output&#39;
         if not hasattr(tokenizer_embeddings, &#39;pad_token&#39;) or tokenizer_embeddings.pad_token is None:
@@ -319,10 +315,10 @@ if parsing is not empty string, a parser that extracts specific ngrams</p></div>
 </details>
 </dd>
 <dt id="imodelsx.embgam.embed.generate_ngrams_list"><code class="name flex">
-<span>def <span class="ident">generate_ngrams_list</span></span>(<span>sentence, ngrams: int, tokenizer_ngrams, all_ngrams=False, parsing: str = '', nlp_chunks=None)</span>
+<span>def <span class="ident">generate_ngrams_list</span></span>(<span>sentence: str, ngrams: int, tokenizer_ngrams, all_ngrams=False, parsing: str = '', nlp_chunks=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>get list of grams</p>
+<div class="desc"><p>Get list of ngrams from sentence using a tokenizer</p>
 <h2 id="params">Params</h2>
 <p>ngrams: int
 What order of ngrams to use (1 for unigrams, 2 for bigrams, &hellip;)
@@ -334,14 +330,14 @@ parsing</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def generate_ngrams_list(
-    sentence,
+    sentence: str,
     ngrams: int,
     tokenizer_ngrams,
     all_ngrams=False,
     parsing: str=&#39;&#39;,
     nlp_chunks=None,
 ):
-    &#34;&#34;&#34;get list of grams
+    &#34;&#34;&#34;Get list of ngrams from sentence using a tokenizer
 
     Params
     ------
