@@ -14,14 +14,14 @@
 
 | Model                       | Reference                                                    | Description                                                  |
 | :-------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| iPrompt            | [🗂️](http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt), [🔗](https://github.com/csinva/interpretable-autoprompting), [📄](https://arxiv.org/abs/2210.01848) | Generates a human-interpretable prompt that explains patterns <br/> in data (*Official*) |
-| Emb-GAM            | [🗂️](http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Fit better linear model using an LLM to extract embeddings (*Official*) |
-| D3            | [🗂️](http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_datasets_d3), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) |Explain the difference between two distributions |
-| AutoPrompt            | [🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) |Find a natural-language prompt using input-gradients (⌛ In progress)|
+| iPrompt            | [📖](https://github.com/csinva/imodelsX/blob/master/demos/iprompt.ipynb), [🗂️](http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt), [🔗](https://github.com/csinva/interpretable-autoprompting), [📄](https://arxiv.org/abs/2210.01848) | Generates a human-interpretable prompt that explains patterns <br/> in data (*Official*) |
+| Emb-GAM            | [📖](https://github.com/csinva/imodelsX/blob/master/demos/embgam.ipynb), [🗂️](http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Fit better linear model using an LLM to extract embeddings (*Official*) |
+| D3            | [📖](https://github.com/csinva/imodelsX/blob/master/demos/d3.py), [🗂️](http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_datasets_d3), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) |Explain the difference between two distributions |
+| AutoPrompt            | ⠀⠀⠀[🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) |Find a natural-language prompt using input-gradients (⌛ In progress)|
 | (Coming soon!)                 | ⌛                                                            |  We hope to support other interpretable models like [RLPrompt](https://arxiv.org/abs/2205.12548), <br/> [concept bottleneck models](https://arxiv.org/abs/2007.04612), [NAMs](https://proceedings.neurips.cc/paper/2021/hash/251bd0442dfcc53b5a761e050f8022b8-Abstract.html), and [NBDT](https://arxiv.org/abs/2004.00221)  |
 
 <p align="center">
-Docs <a href="https://csinva.io/imodels/">🗂️</a>, Reference code implementation 🔗, Research paper 📄
+Demo <a href="https://github.com/csinva/imodelsX/tree/master/demos">📖</a>, Doc <a href="https://csinva.io/imodels/">🗂️</a>, Reference code implementation 🔗, Research paper 📄
 </br>
 </p>
 
@@ -57,8 +57,6 @@ prompts, metadata = explain_dataset_iprompt(
 --------
 prompts is a list of found natural-language prompt strings
 ```
-[API Doc: 🗂️](http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt)
-
 
 ### D3 (DescribeDistributionalDifferences)
 
@@ -72,8 +70,6 @@ hypotheses, hypothesis_scores = imodelsx.explain_datasets_d3(
     batch_size=64,
 )
 ```
-[API Doc: 🗂️](http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_datasets_d3)
-
 
 ### Emb-GAM
 
@@ -108,8 +104,6 @@ print('Most negative ngrams')
 for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
     print('\t', k, round(v, 2))
 ```
-[API Doc: 🗂️](http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier)
-
 
 # Related work
 - imodels package (JOSS 2021 [github](https://github.com/csinva/imodels)) - interpretable ML package for concise, transparent, and accurate predictive modeling (sklearn-compatible).
