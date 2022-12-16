@@ -4,14 +4,14 @@ from os.path import join as oj
 import torch
 
 def generate_ngrams_list(
-    sentence,
+    sentence: str,
     ngrams: int,
     tokenizer_ngrams,
     all_ngrams=False,
     parsing: str='',
     nlp_chunks=None,
 ):
-    """get list of grams
+    """Get list of ngrams from sentence using a tokenizer
 
     Params
     ------
@@ -119,7 +119,7 @@ def embed_and_sum_function(
     tokenizer_embeddings
         tokenizing for the embedding model
     tokenizer_ngrams
-        tokenizing the ngrams (word-based tokenization is probably more interpretable)
+        tokenizing the ngrams (word-based tokenization is more interpretable)
     parsing: str
         whether to use parsing rather than extracting all ngrams
     nlp_chunks
@@ -131,19 +131,17 @@ def embed_and_sum_function(
         sentence = example
     # seqs = sentence
 
-    if isinstance(sentence, str):
-        seqs = generate_ngrams_list(
-            sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
-            parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
-        )
-    elif isinstance(sentence, list):
-        raise Exception('batched mode not supported')
-        # seqs = list(map(generate_ngrams_list, sentence))
+    assert isinstance(sentence, str), 'sentence must be a string (batched mode not supported)'
+    seqs = generate_ngrams_list(
+        sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
+        parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
+    )
+    # seqs = list(map(generate_ngrams_list, sentence))
 
-    # maybe a smarter way to deal with pooling here?
+
     seq_len = len(seqs)
     if seq_len == 0:
-        seqs = ["dummy"]
+        seqs = ["dummy"] # will multiply embedding by 0 so doesn't matter
 
     if 'bert' in checkpoint.lower():  # has up to two keys, 'last_hidden_state', 'pooler_output'
         if not hasattr(tokenizer_embeddings, 'pad_token') or tokenizer_embeddings.pad_token is None:

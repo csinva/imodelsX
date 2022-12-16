@@ -70,8 +70,8 @@ class EmbGAM(BaseEstimator):
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True,
-            cache_embs_dir: str=None,
-        ):
+            cache_embs_dir: str = None,
+            ):
         '''Extract embeddings then fit linear model
 
         Parameters
@@ -143,9 +143,18 @@ class EmbGAM(BaseEstimator):
             embs.append(emb['embs'])
         return np.array(embs).squeeze()  # num_examples x embedding_size
 
-    def cache_linear_coefs(self, X: ArrayLike, model=None, tokenizer_embeddings=None):
+    def cache_linear_coefs(self, X: ArrayLike, model=None,
+                           tokenizer_embeddings=None,
+                           renormalize_embs: bool = False,
+                           verbose: bool = True):
         """Cache linear coefs for ngrams into a dictionary self.coefs_dict_
         If it already exists, only add linear coefs for new ngrams
+
+        Params
+        ------
+        renormalize_embs
+            whether to renormalize embeddings before fitting linear model
+            (useful if getting a test set that is different from the training)
         """
 
         if model is None:
@@ -164,22 +173,30 @@ class EmbGAM(BaseEstimator):
             coefs_dict_old = {}
         ngrams_list = [ngram for ngram in ngrams_list
                        if not ngram in coefs_dict_old]
-        if len(ngrams_list) == 0:
+        if len(ngrams_list) == 0 and verbose:
             print('\tNothing to update!')
             return
 
-        # compute embeddings
-        """
-        # Faster version that needs more memory
-        tokens = tokenizer(ngrams_list, padding=args.padding,
-                           truncation=True, return_tensors="pt")
-        tokens = tokens.to(device)
+        embs = self._get_embs(ngrams_list, model, tokenizer_embeddings)
+        if renormalize_embs:
+            embs = StandardScaler().fit_transform(embs)
+        elif self.normalize_embs:
+            embs = self.normalizer.transform(embs)
 
-        output = model(**tokens) # this takes a while....
-        embs = output['pooler_output'].cpu().detach().numpy()
-        return embs
+        # save coefs
+        coef_embs = self.linear.coef_.squeeze().transpose()
+        linear_coef = embs @ coef_embs
+        self.coefs_dict_ = {
+            **coefs_dict_old,
+            **{ngrams_list[i]: linear_coef[i]
+               for i in range(len(ngrams_list))}
+        }
+        if verbose:
+            print('After caching, coefs_dict_ len', len(self.coefs_dict_))
+
+    def _get_embs(self, ngrams_list, model, tokenizer_embeddings):
+        """Get embeddings for a list of ngrams (not summed!)
         """
-        # Slower way to run things but won't run out of mem
         embs = []
         for i in tqdm(range(len(ngrams_list))):
             tokens = tokenizer_embeddings(
@@ -191,18 +208,18 @@ class EmbGAM(BaseEstimator):
                 emb = emb.mean(axis=1)
             embs.append(emb)
         embs = np.array(embs).squeeze()
-        if self.normalize_embs:
-            embs = self.normalizer.transform(embs)
+        return embs
 
-        # save coefs
-        coef_embs = self.linear.coef_.squeeze()
-        linear_coef = embs @ coef_embs
-        self.coefs_dict_ = {
-            **coefs_dict_old,
-            **{ngrams_list[i]: linear_coef[i]
-               for i in range(len(ngrams_list))}
-        }
-        print('coefs_dict_ len', len(self.coefs_dict_))
+        """
+        # Faster version that needs more memory
+        tokens = tokenizer(ngrams_list, padding=args.padding,
+                           truncation=True, return_tensors="pt")
+        tokens = tokens.to(device)
+
+        output = model(**tokens) # this takes a while....
+        embs = output['pooler_output'].cpu().detach().numpy()
+        return embs
+        """
 
     def _get_ngrams_list(self, X):
         all_ngrams = set()
@@ -225,7 +242,10 @@ class EmbGAM(BaseEstimator):
         if isinstance(self, RegressorMixin):
             return preds
         elif isinstance(self, ClassifierMixin):
-            return ((preds + self.linear.intercept_) > 0).astype(int)
+            if preds.ndim > 1:  # multiclass classification
+                return np.argmax(preds, axis=1)
+            else:
+                return (preds + self.linear.intercept_ > 0).astype(int)
 
     def predict_proba(self, X, warn=True):
         if not isinstance(self, ClassifierMixin):
@@ -233,8 +253,11 @@ class EmbGAM(BaseEstimator):
                 "predict_proba only available for EmbGAMClassifier")
         check_is_fitted(self)
         preds = self._predict_cached(X, warn=warn)
-        logits = np.vstack(
-            (1 - preds, preds)).transpose()
+        if preds.ndim > 1:  # multiclass classification
+            logits = preds
+        else:
+            logits = np.vstack(
+                (1 - preds, preds)).transpose()
         return softmax(logits, axis=1)
 
     def _predict_cached(self, X, warn):

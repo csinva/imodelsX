@@ -280,7 +280,7 @@ class PrefixModel(nn.Module, abc.ABC):
             return torch.randint(low=0, high=self.tokenizer.vocab_size, size=(num_tokens,))
         else:
             start_word_id = torch.tensor([self.tokenizer.vocab['the']], dtype=int)
-            print(f"start_word_id = {start_word_id}")
+            # print(f"start_word_id = {start_word_id}")
             return start_word_id.repeat((num_tokens,))
 
     def _compute_loss_with_set_prefix(

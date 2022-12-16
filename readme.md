@@ -1,7 +1,7 @@
 <p align="center">  <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="18%"> 
 <img align="center" width=40% src="https://csinva.io/imodelsX/imodelsx_logo.svg?sanitize=True&kill_cache=1"> </img>	<img src="https://csinva.io/emb-gam/embgam_gif.gif" width="18%"></p>
 
-<p align="center">Library to explain <i>a dataset</i> in natural language.
+<p align="center">Library to explain <i>a dataset</i> in natural language. 
 </p>
 <p align="center">
   <a href="https://github.com/csinva/imodelsX/tree/master/demos">📖 demo notebooks</a>
@@ -14,14 +14,14 @@
 
 | Model                       | Reference                                                    | Description                                                  |
 | :-------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| iPrompt            | [🗂️](), [🔗](https://github.com/csinva/interpretable-autoprompting), [📄](https://arxiv.org/abs/2210.01848) | Generates a human-interpretable prompt that explains patterns in data (*Official*) |
-| Emb-GAM            | [🗂️](https://csinva.io/emb-gam/), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Fit better linear model using an LLM to extract embeddings (*Official*) |
-| AutoPrompt            | [🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) |Find a natural-language prompt using input-gradients |
-| D3            | [🗂️](), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) |Explain the difference between two distributions |
-| More models                 | ⌛                                                            | (Coming soon!) Lightweight Rule Induction, MLRules, ... |
+| iPrompt            | [📖](https://github.com/csinva/imodelsX/blob/master/demos/iprompt.ipynb), [🗂️](http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt), [🔗](https://github.com/csinva/interpretable-autoprompting), [📄](https://arxiv.org/abs/2210.01848) | Generates a human-interpretable prompt that explains patterns <br/> in data (*Official*) |
+| Emb-GAM            | [📖](https://github.com/csinva/imodelsX/blob/master/demos/embgam.ipynb), [🗂️](http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Fit better linear model using an LLM to extract embeddings (*Official*) |
+| D3            | [📖](https://github.com/csinva/imodelsX/blob/master/demos/d3.py), [🗂️](http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_datasets_d3), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) |Explain the difference between two distributions |
+| AutoPrompt            | ⠀⠀⠀[🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) |Find a natural-language prompt using input-gradients (⌛ In progress)|
+| (Coming soon!)                 | ⌛                                                            |  We hope to support other interpretable models like [RLPrompt](https://arxiv.org/abs/2205.12548), <br/> [concept bottleneck models](https://arxiv.org/abs/2007.04612), [NAMs](https://proceedings.neurips.cc/paper/2021/hash/251bd0442dfcc53b5a761e050f8022b8-Abstract.html), and [NBDT](https://arxiv.org/abs/2004.00221)  |
 
 <p align="center">
-Docs <a href="https://csinva.io/imodels/">🗂️</a>, Reference code implementation 🔗, Research paper 📄
+Demo <a href="https://github.com/csinva/imodelsX/tree/master/demos">📖</a>, Doc <a href="https://csinva.io/imodels/">🗂️</a>, Reference code implementation 🔗, Research paper 📄
 </br>
 </p>
 
@@ -47,16 +47,31 @@ prompts, metadata = explain_dataset_iprompt(
     input_strings=input_strings,
     output_strings=output_strings,
     checkpoint='EleutherAI/gpt-j-6B', # which language model to use
-    num_learned_tokens=12, # how long of a prompt to learn
+    num_learned_tokens=3, # how long of a prompt to learn
+    n_shots=3, # shots per example
 
     n_epochs=15, # how many epochs to search
     verbose=0, # how much to print
     llm_float16=True, # whether to load the model in float_16
 )
+--------
+prompts is a list of found natural-language prompt strings
+```
+
+### D3 (DescribeDistributionalDifferences)
+
+```python
+import imodelsx
+hypotheses, hypothesis_scores = imodelsx.explain_datasets_d3(
+    pos=positive_samples, # List[str] of positive examples
+    neg=negative_samples, # another List[str]
+    num_steps=100,
+    num_folds=2,
+    batch_size=64,
+)
 ```
 
 ### Emb-GAM
-**[api reference](https://csinva.github.io/emb-gam/)**
 
 ```python
 from imodelsx import EmbGAMClassifier
