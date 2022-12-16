@@ -380,6 +380,7 @@ def explain_dataset_iprompt(
         Dictionary of metadata from fitting
     """
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+    tokenizer.eos_token = tokenizer.eos_token or 0
     tokenizer.pad_token = tokenizer.eos_token
     logger = logging.getLogger()
 

@@ -184,11 +184,23 @@ class PrefixModel(nn.Module, abc.ABC):
     @property
     def _is_gpt_neox(self) -> bool:
         return isinstance(self.model, transformers.GPTNeoXModel) or isinstance(self.model, transformers.GPTNeoXForCausalLM)
+    
+    @property
+    def _is_t5(self) -> bool:
+        return isinstance(self.model, transformers.T5ForConditionalGeneration)
+
+    @property
+    def _is_opt(self) -> bool:
+        return isinstance(self.model, transformers.OPTForCausalLM)
 
     @property
     def transformer(self) -> nn.Module:
         if self._is_gpt_neox:
             return self.model._modules['gpt_neox']
+        elif self._is_t5:
+            return self.model.encoder
+        elif self._is_opt:
+            return self.model._modules['model'].decoder
         else:
             return self.model._modules['transformer']
 
@@ -196,6 +208,8 @@ class PrefixModel(nn.Module, abc.ABC):
     def token_embedding(self) -> nn.Embedding:
         if self._is_gpt_neox:
             return self.transformer.embed_in
+        elif self._is_opt:
+            return self.transformer.embed_tokens
         else:
             return self.transformer.wte
     

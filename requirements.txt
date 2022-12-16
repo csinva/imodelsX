@@ -1,7 +1,7 @@
 pandas
 numpy
-torch
-transformers[torch]
+# torch
+# transformers[torch]
 datasets
 scikit-learn
 spacy
