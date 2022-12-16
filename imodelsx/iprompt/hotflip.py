@@ -46,7 +46,7 @@ class HotFlip(PrefixModel):
         self._tested_prefix_ids = collections.defaultdict(lambda: 0)
         # Sort both a version with a preprefix ("The function to compute is") and a version
         # where the full prefix is discovered by HotFlip without any assistance.
-        preprefix_ids = [self.tokenizer.bos_token_id]
+        preprefix_ids = [self.tokenizer.bos_token_id] if self.tokenizer.bos_token_id else []
         if preprefix:
             preprefix_ids.extend(self.tokenizer.encode(preprefix))
         self.preprefix_ids = torch.tensor(preprefix_ids, dtype=int).to(device)
