@@ -364,6 +364,7 @@ def explain_dataset_iprompt(
     max_length: int = 128,
     n_epochs: int = 100,
     n_shots: int = 1,
+    preprefix: str = '',
     single_shot_loss: bool = True,
     accum_grad_over_epoch: bool = False,
     max_n_datapoints: int = 10**4,
@@ -427,7 +428,6 @@ def explain_dataset_iprompt(
         )
     loss_func = PrefixLoss(gamma=gamma, tokenizer=tokenizer)
 
-    preprefix = ''
     if model_cls == 'iprompt':
         model = iPrompt(
             loss_func=loss_func,
