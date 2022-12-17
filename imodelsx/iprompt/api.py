@@ -349,7 +349,7 @@ def eval_model(
 def explain_dataset_iprompt(
     input_strings: List[str],
     output_strings: List[str],
-    checkpoint: str,
+    checkpoint: str='EleutherAI/gpt-j-6B',
     num_learned_tokens=1,
     save_dir: str = './results',
     lr: float = 0.01,
@@ -372,7 +372,8 @@ def explain_dataset_iprompt(
     epoch_save_interval: int = 1,
     mask_possible_answers: bool = False,
     model_cls: str = 'iprompt',
-    llm_candidate_regeneration_prompt: str = '',
+    lm: transformers.PreTrainedModel = None,
+    llm_candidate_regeneration_prompt: str = 'Prompt:',
     verbose: int = 0,  # verbosity level (0 for minimal)
     seed: int = 42,
 ) -> Tuple[List[str], Dict]:
@@ -396,6 +397,8 @@ def explain_dataset_iprompt(
         number of prompt candidates to evaluate for each iteration of iprompt
     num_mutations: int
         number of mutations to apply to each prompt candidate
+    lm: transformers.PreTrainedModel
+        pre-loaded model (overrides checkpoint)
 
 
     Returns
@@ -408,25 +411,30 @@ def explain_dataset_iprompt(
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
     tokenizer.eos_token = tokenizer.eos_token or 0
     tokenizer.pad_token = tokenizer.eos_token
-    logger = logging.getLogger()
 
-    if llm_float16:
-        if checkpoint == "EleutherAI/gpt-j-6B":
-            lm = AutoModelForCausalLM.from_pretrained(
-                checkpoint, output_hidden_states=False, pad_token_id=tokenizer.eos_token_id,
-                revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True
-            )
+    # load the model (unless already loaded)
+    def load_lm(checkpoint, tokenizer, llm_float16):
+        if llm_float16:
+            if checkpoint == "EleutherAI/gpt-j-6B":
+                lm = AutoModelForCausalLM.from_pretrained(
+                    checkpoint, output_hidden_states=False, pad_token_id=tokenizer.eos_token_id,
+                    revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True
+                )
+            else:
+                # (only certain models are pre-float16ed)
+                print(f"trying to convert {checkpoint} to float16...")
+                lm = transformers.AutoModelForCausalLM.from_pretrained(
+                    checkpoint, torch_dtype=torch.float16
+                )
+                lm = lm.half()
         else:
-            # (only certain models are pre-float16ed)
-            print(f"trying to convert {checkpoint} to float16...")
-            lm = transformers.AutoModelForCausalLM.from_pretrained(
-                checkpoint, torch_dtype=torch.float16
+            lm = AutoModelForCausalLM.from_pretrained(
+                checkpoint, output_hidden_states=False, pad_token_id=tokenizer.eos_token_id
             )
-            lm = lm.half()
-    else:
-        lm = AutoModelForCausalLM.from_pretrained(
-            checkpoint, output_hidden_states=False, pad_token_id=tokenizer.eos_token_id
-        )
+        return lm
+    if lm is None:
+        lm = load_lm(checkpoint, tokenizer, llm_float16)
+        
     loss_func = PrefixLoss(gamma=gamma, tokenizer=tokenizer)
 
     if model_cls == 'iprompt':
@@ -443,6 +451,7 @@ def explain_dataset_iprompt(
             num_learned_tokens=num_learned_tokens,
             max_length=max_length,
             verbose=verbose,
+            llm_candidate_regeneration_prompt=llm_candidate_regeneration_prompt,
         )
     else:
         pass
@@ -452,6 +461,8 @@ def explain_dataset_iprompt(
             loss_func=loss_func, model=lm, tokenizer=tokenizer, preprefix=preprefix
         )
         """
+
+    
     np.random.seed(seed)
     torch.manual_seed(seed)
     random.seed(seed)
