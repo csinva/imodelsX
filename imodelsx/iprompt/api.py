@@ -372,6 +372,7 @@ def explain_dataset_iprompt(
     epoch_save_interval: int = 1,
     mask_possible_answers: bool = False,
     model_cls: str = 'iprompt',
+    llm_candidate_regeneration_prompt: str = '',
     verbose: int = 0,  # verbosity level (0 for minimal)
     seed: int = 42,
 ) -> Tuple[List[str], Dict]:

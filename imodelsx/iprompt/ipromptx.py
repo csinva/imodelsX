@@ -34,6 +34,7 @@ class iPrompt(AutoPrompt):
         num_learned_tokens: int = 1,
         max_length: int = 128,
         verbose: int = 0,
+        llm_candidate_regeneration_prompt: str = 'Prompt:',
     ):
         # super().__init__()
         class fake_args:
@@ -84,7 +85,7 @@ class iPrompt(AutoPrompt):
         self._pre_data_token_ids = self.tokenizer(
             "Data:\n\n", return_tensors='pt').input_ids.to(device)
         self._post_data_token_ids = self.tokenizer(
-            "\n\nPrompt:" + prompt_str, return_tensors='pt').input_ids.to(device)
+            f"\n\n{llm_candidate_regeneration_prompt}" + prompt_str, return_tensors='pt').input_ids.to(device)
         ####################################################################
         self._verbose = verbose
     
