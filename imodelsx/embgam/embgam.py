@@ -266,8 +266,12 @@ class EmbGAM(BaseEstimator):
         assert hasattr(self, 'coefs_dict_'), 'coefs are not cached!'
         preds = []
         n_unseen_ngrams = 0
+        n_classes = len(self.classes_)
         for x in X:
-            pred = 0
+            if n_classes > 2:
+                pred = np.zeros(n_classes)
+            else:
+                pred = 0
             seqs = imodelsx.embgam.embed.generate_ngrams_list(
                 x,
                 ngrams=self.ngrams,
