@@ -34,7 +34,8 @@ class iPrompt(AutoPrompt):
         num_learned_tokens: int = 1,
         max_length: int = 128,
         verbose: int = 0,
-        llm_candidate_regeneration_prompt: str = 'Prompt:',
+        llm_candidate_regeneration_prompt_start: str = 'Data:',
+        llm_candidate_regeneration_prompt_end: str = 'Prompt:',
     ):
         # super().__init__()
         class fake_args:
@@ -83,9 +84,9 @@ class iPrompt(AutoPrompt):
         prompt_str = preprefix_str.lstrip()
         prompt_str = (' ' + prompt_str) if len(prompt_str) else ''
         self._pre_data_token_ids = self.tokenizer(
-            "Data:\n\n", return_tensors='pt').input_ids.to(device)
+            f"{llm_candidate_regeneration_prompt_start}\n\n", return_tensors='pt').input_ids.to(device)
         self._post_data_token_ids = self.tokenizer(
-            f"\n\n{llm_candidate_regeneration_prompt}" + prompt_str, return_tensors='pt').input_ids.to(device)
+            f"\n\n{llm_candidate_regeneration_prompt_end}" + prompt_str, return_tensors='pt').input_ids.to(device)
         ####################################################################
         self._verbose = verbose
     

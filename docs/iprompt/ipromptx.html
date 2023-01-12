@@ -62,6 +62,8 @@ class iPrompt(AutoPrompt):
         num_learned_tokens: int = 1,
         max_length: int = 128,
         verbose: int = 0,
+        llm_candidate_regeneration_prompt_start: str = &#39;Data:&#39;,
+        llm_candidate_regeneration_prompt_end: str = &#39;Prompt:&#39;,
     ):
         # super().__init__()
         class fake_args:
@@ -110,9 +112,9 @@ class iPrompt(AutoPrompt):
         prompt_str = preprefix_str.lstrip()
         prompt_str = (&#39; &#39; + prompt_str) if len(prompt_str) else &#39;&#39;
         self._pre_data_token_ids = self.tokenizer(
-            &#34;Data:\n\n&#34;, return_tensors=&#39;pt&#39;).input_ids.to(device)
+            f&#34;{llm_candidate_regeneration_prompt_start}\n\n&#34;, return_tensors=&#39;pt&#39;).input_ids.to(device)
         self._post_data_token_ids = self.tokenizer(
-            &#34;\n\nPrompt:&#34; + prompt_str, return_tensors=&#39;pt&#39;).input_ids.to(device)
+            f&#34;\n\n{llm_candidate_regeneration_prompt_end}&#34; + prompt_str, return_tensors=&#39;pt&#39;).input_ids.to(device)
         ####################################################################
         self._verbose = verbose
     
@@ -441,7 +443,7 @@ class iPrompt(AutoPrompt):
 <dl>
 <dt id="imodelsx.iprompt.ipromptx.iPrompt"><code class="flex name class">
 <span>class <span class="ident">iPrompt</span></span>
-<span>(</span><span>loss_func: <a title="imodelsx.iprompt.utils.PrefixLoss" href="utils.html#imodelsx.iprompt.utils.PrefixLoss">PrefixLoss</a>, model: transformers.modeling_utils.PreTrainedModel, tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, preprefix_str: str = '', pop_size: int = 8, num_mutations: int = 4, num_random_generations: int = 4, generation_repetition_penalty: float = 2.0, early_stopping_steps: int = -1, num_learned_tokens: int = 1, max_length: int = 128, verbose: int = 0)</span>
+<span>(</span><span>loss_func: <a title="imodelsx.iprompt.utils.PrefixLoss" href="utils.html#imodelsx.iprompt.utils.PrefixLoss">PrefixLoss</a>, model: transformers.modeling_utils.PreTrainedModel, tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, preprefix_str: str = '', pop_size: int = 8, num_mutations: int = 4, num_random_generations: int = 4, generation_repetition_penalty: float = 2.0, early_stopping_steps: int = -1, num_learned_tokens: int = 1, max_length: int = 128, verbose: int = 0, llm_candidate_regeneration_prompt_start: str = 'Data:', llm_candidate_regeneration_prompt_end: str = 'Prompt:')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all neural network modules.</p>
@@ -491,6 +493,8 @@ evaluation mode.
         num_learned_tokens: int = 1,
         max_length: int = 128,
         verbose: int = 0,
+        llm_candidate_regeneration_prompt_start: str = &#39;Data:&#39;,
+        llm_candidate_regeneration_prompt_end: str = &#39;Prompt:&#39;,
     ):
         # super().__init__()
         class fake_args:
@@ -539,9 +543,9 @@ evaluation mode.
         prompt_str = preprefix_str.lstrip()
         prompt_str = (&#39; &#39; + prompt_str) if len(prompt_str) else &#39;&#39;
         self._pre_data_token_ids = self.tokenizer(
-            &#34;Data:\n\n&#34;, return_tensors=&#39;pt&#39;).input_ids.to(device)
+            f&#34;{llm_candidate_regeneration_prompt_start}\n\n&#34;, return_tensors=&#39;pt&#39;).input_ids.to(device)
         self._post_data_token_ids = self.tokenizer(
-            &#34;\n\nPrompt:&#34; + prompt_str, return_tensors=&#39;pt&#39;).input_ids.to(device)
+            f&#34;\n\n{llm_candidate_regeneration_prompt_end}&#34; + prompt_str, return_tensors=&#39;pt&#39;).input_ids.to(device)
         ####################################################################
         self._verbose = verbose
     

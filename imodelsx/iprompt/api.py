@@ -373,7 +373,8 @@ def explain_dataset_iprompt(
     mask_possible_answers: bool = False,
     model_cls: str = 'iprompt',
     lm: transformers.PreTrainedModel = None,
-    llm_candidate_regeneration_prompt: str = 'Prompt:',
+    llm_candidate_regeneration_prompt_start: str = 'Data:',
+    llm_candidate_regeneration_prompt_end: str = 'Prompt:',
     verbose: int = 0,  # verbosity level (0 for minimal)
     seed: int = 42,
 ) -> Tuple[List[str], Dict]:
@@ -399,6 +400,9 @@ def explain_dataset_iprompt(
         number of mutations to apply to each prompt candidate
     lm: transformers.PreTrainedModel
         pre-loaded model (overrides checkpoint)
+    max_n_data_points: int
+        maximum number of data points to use for training
+        if n_shots > 1, this many data_points are created by recombining n_shots number of examples
 
 
     Returns
@@ -451,7 +455,8 @@ def explain_dataset_iprompt(
             num_learned_tokens=num_learned_tokens,
             max_length=max_length,
             verbose=verbose,
-            llm_candidate_regeneration_prompt=llm_candidate_regeneration_prompt,
+            llm_candidate_regeneration_prompt_start=llm_candidate_regeneration_prompt_start,
+            llm_candidate_regeneration_prompt_end=llm_candidate_regeneration_prompt_end,
         )
     else:
         pass

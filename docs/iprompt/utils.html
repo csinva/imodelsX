@@ -212,11 +212,23 @@ class PrefixModel(nn.Module, abc.ABC):
     @property
     def _is_gpt_neox(self) -&gt; bool:
         return isinstance(self.model, transformers.GPTNeoXModel) or isinstance(self.model, transformers.GPTNeoXForCausalLM)
+    
+    @property
+    def _is_t5(self) -&gt; bool:
+        return isinstance(self.model, transformers.T5ForConditionalGeneration)
+
+    @property
+    def _is_opt(self) -&gt; bool:
+        return isinstance(self.model, transformers.OPTForCausalLM)
 
     @property
     def transformer(self) -&gt; nn.Module:
         if self._is_gpt_neox:
             return self.model._modules[&#39;gpt_neox&#39;]
+        elif self._is_t5:
+            return self.model.encoder
+        elif self._is_opt:
+            return self.model._modules[&#39;model&#39;].decoder
         else:
             return self.model._modules[&#39;transformer&#39;]
 
@@ -224,6 +236,8 @@ class PrefixModel(nn.Module, abc.ABC):
     def token_embedding(self) -&gt; nn.Embedding:
         if self._is_gpt_neox:
             return self.transformer.embed_in
+        elif self._is_opt:
+            return self.transformer.embed_tokens
         else:
             return self.transformer.wte
     
@@ -865,11 +879,23 @@ evaluation mode.
     @property
     def _is_gpt_neox(self) -&gt; bool:
         return isinstance(self.model, transformers.GPTNeoXModel) or isinstance(self.model, transformers.GPTNeoXForCausalLM)
+    
+    @property
+    def _is_t5(self) -&gt; bool:
+        return isinstance(self.model, transformers.T5ForConditionalGeneration)
+
+    @property
+    def _is_opt(self) -&gt; bool:
+        return isinstance(self.model, transformers.OPTForCausalLM)
 
     @property
     def transformer(self) -&gt; nn.Module:
         if self._is_gpt_neox:
             return self.model._modules[&#39;gpt_neox&#39;]
+        elif self._is_t5:
+            return self.model.encoder
+        elif self._is_opt:
+            return self.model._modules[&#39;model&#39;].decoder
         else:
             return self.model._modules[&#39;transformer&#39;]
 
@@ -877,6 +903,8 @@ evaluation mode.
     def token_embedding(self) -&gt; nn.Embedding:
         if self._is_gpt_neox:
             return self.transformer.embed_in
+        elif self._is_opt:
+            return self.transformer.embed_tokens
         else:
             return self.transformer.wte
     
@@ -1141,6 +1169,8 @@ def id_to_word(self) -&gt; Dict[int, str]:
 def token_embedding(self) -&gt; nn.Embedding:
     if self._is_gpt_neox:
         return self.transformer.embed_in
+    elif self._is_opt:
+        return self.transformer.embed_tokens
     else:
         return self.transformer.wte</code></pre>
 </details>
@@ -1180,6 +1210,10 @@ def trainable_params(self) -&gt; Iterable[nn.Parameter]:
 def transformer(self) -&gt; nn.Module:
     if self._is_gpt_neox:
         return self.model._modules[&#39;gpt_neox&#39;]
+    elif self._is_t5:
+        return self.model.encoder
+    elif self._is_opt:
+        return self.model._modules[&#39;model&#39;].decoder
     else:
         return self.model._modules[&#39;transformer&#39;]</code></pre>
 </details>
