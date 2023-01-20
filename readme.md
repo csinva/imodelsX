@@ -21,7 +21,7 @@
 | (Coming soon!)                 | ⌛                                                            |  We hope to support other interpretable models like [RLPrompt](https://arxiv.org/abs/2205.12548), <br/> [concept bottleneck models](https://arxiv.org/abs/2007.04612), [NAMs](https://proceedings.neurips.cc/paper/2021/hash/251bd0442dfcc53b5a761e050f8022b8-Abstract.html), and [NBDT](https://arxiv.org/abs/2004.00221)  |
 
 <p align="center">
-Demo <a href="https://github.com/csinva/imodelsX/tree/master/demos">📖</a>, Doc <a href="https://csinva.io/imodels/">🗂️</a>, Reference code implementation 🔗, Research paper 📄
+Demo <a href="https://github.com/csinva/imodelsX/tree/master/demos">📖</a>, Doc <a href="https://csinva.io/imodelsX/">🗂️</a>, Reference code implementation 🔗, Research paper 📄
 </br>
 </p>
 
