@@ -37,6 +37,7 @@ class EmbGAM(BaseEstimator):
         tokenizer_ngrams=None,
         random_state=None,
         normalize_embs=False,
+        fit_with_ngram_decomposition=True,
     ):
         '''Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.
 
@@ -56,6 +57,10 @@ class EmbGAM(BaseEstimator):
             random seed for fitting
         normalize_embs
             whether to normalize embeddings before fitting linear model
+        fit_with_ngram_decomposition
+            whether to fit to emb-gam style (using sum of embeddings of each ngram)
+            if False, fits a typical model and uses ngram decomposition only for prediction / testing
+            Usually, setting this to False will considerably impede performance
         '''
         self.checkpoint = checkpoint
         self.ngrams = ngrams
@@ -67,6 +72,7 @@ class EmbGAM(BaseEstimator):
         self.random_state = random_state
         self.all_ngrams = all_ngrams
         self.normalize_embs = normalize_embs
+        self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True,
@@ -139,6 +145,7 @@ class EmbGAM(BaseEstimator):
                 checkpoint=self.checkpoint,
                 layer=self.layer,
                 all_ngrams=self.all_ngrams,
+                fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
             )
             embs.append(emb['embs'])
         return np.array(embs).squeeze()  # num_examples x embedding_size

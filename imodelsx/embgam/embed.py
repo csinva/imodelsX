@@ -105,6 +105,7 @@ def embed_and_sum_function(
     parsing: str = '',
     nlp_chunks = None,
     all_ngrams: bool=False,
+    fit_with_ngram_decomposition: bool=True,
 ):
     """Get summed embeddings for a single example
     Note: this function gets called many times, so don't want to do things like load a model here
@@ -124,6 +125,8 @@ def embed_and_sum_function(
         whether to use parsing rather than extracting all ngrams
     nlp_chunks
         if parsing is not empty string, a parser that extracts specific ngrams
+    fit_with_ngram_decomposition
+        whether to fit the model with ngram decomposition (if not just use the stsandard sentence)
     """
     if dataset_key_text is not None:
         sentence = example[dataset_key_text]
@@ -132,16 +135,19 @@ def embed_and_sum_function(
     # seqs = sentence
 
     assert isinstance(sentence, str), 'sentence must be a string (batched mode not supported)'
-    seqs = generate_ngrams_list(
-        sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
-        parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
-    )
+    if fit_with_ngram_decomposition:
+        seqs = generate_ngrams_list(
+            sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
+            parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
+        )
+    else:
+        seqs = [sentence]
     # seqs = list(map(generate_ngrams_list, sentence))
 
 
     seq_len = len(seqs)
     if seq_len == 0:
-        seqs = ["dummy"] # will multiply embedding by 0 so doesn't matter
+        seqs = ["dummy"] # will multiply embedding by 0 so doesn't matter, but still want to get the shape
 
     if 'bert' in checkpoint.lower():  # has up to two keys, 'last_hidden_state', 'pooler_output'
         if not hasattr(tokenizer_embeddings, 'pad_token') or tokenizer_embeddings.pad_token is None:

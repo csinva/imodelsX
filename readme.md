@@ -4,7 +4,7 @@
 <p align="center">Library to explain <i>a dataset</i> in natural language. 
 </p>
 <p align="center">
-  <a href="https://github.com/csinva/imodelsX/tree/master/demos">📖 demo notebooks</a>
+  <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖 demo notebooks</a>
 </p>
 <p align="center">
   <img src="https://img.shields.io/badge/license-mit-blue.svg">
@@ -14,14 +14,14 @@
 
 | Model                       | Reference                                                    | Description                                                  |
 | :-------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| iPrompt            | [📖](https://github.com/csinva/imodelsX/blob/master/demos/iprompt.ipynb), [🗂️](http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt), [🔗](https://github.com/csinva/interpretable-autoprompting), [📄](https://arxiv.org/abs/2210.01848) | Generates a human-interpretable prompt that explains patterns <br/> in data (*Official*) |
-| Emb-GAM            | [📖](https://github.com/csinva/imodelsX/blob/master/demos/embgam.ipynb), [🗂️](http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Fit better linear model using an LLM to extract embeddings (*Official*) |
-| D3            | [📖](https://github.com/csinva/imodelsX/blob/master/demos/d3.py), [🗂️](http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_datasets_d3), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) |Explain the difference between two distributions |
+| iPrompt            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/iprompt.ipynb), [🗂️](http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt), [🔗](https://github.com/csinva/interpretable-autoprompting), [📄](https://arxiv.org/abs/2210.01848) | Generates a human-interpretable prompt that explains patterns <br/> in data (*Official*) |
+| Emb-GAM            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/embgam.ipynb), [🗂️](http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Fit better linear model using an LLM to extract embeddings (*Official*) |
+| D3            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/d3.py), [🗂️](http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_datasets_d3), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) |Explain the difference between two distributions |
 | AutoPrompt            | ⠀⠀⠀[🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) |Find a natural-language prompt using input-gradients (⌛ In progress)|
 | (Coming soon!)                 | ⌛                                                            |  We hope to support other interpretable models like [RLPrompt](https://arxiv.org/abs/2205.12548), <br/> [concept bottleneck models](https://arxiv.org/abs/2007.04612), [NAMs](https://proceedings.neurips.cc/paper/2021/hash/251bd0442dfcc53b5a761e050f8022b8-Abstract.html), and [NBDT](https://arxiv.org/abs/2004.00221)  |
 
 <p align="center">
-Demo <a href="https://github.com/csinva/imodelsX/tree/master/demos">📖</a>, Doc <a href="https://csinva.io/imodelsX/">🗂️</a>, Reference code implementation 🔗, Research paper 📄
+Demo notebooks <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖</a>, Doc <a href="https://csinva.io/imodelsX/">🗂️</a>, Reference code implementation 🔗, Research paper 📄
 </br>
 </p>
 
@@ -29,7 +29,7 @@ Demo <a href="https://github.com/csinva/imodelsX/tree/master/demos">📖</a>, Do
 # Quickstart
 **Installation**: `pip install imodelsx` (or, for more control, clone and install from source)
 
-**Demos**: see the [demo notebooks](demos)
+**Demos**: see the [demo notebooks](https://github.com/csinva/imodelsX/tree/master/demo_notebooks)
 
 ### iPrompt
 
