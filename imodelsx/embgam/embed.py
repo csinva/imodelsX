@@ -2,58 +2,7 @@ from transformers import BertModel, DistilBertModel
 from transformers import AutoModelForCausalLM
 from os.path import join as oj
 import torch
-
-def generate_ngrams_list(
-    sentence: str,
-    ngrams: int,
-    tokenizer_ngrams,
-    all_ngrams=False,
-    parsing: str='',
-    nlp_chunks=None,
-):
-    """Get list of ngrams from sentence using a tokenizer
-
-    Params
-    ------
-    ngrams: int
-        What order of ngrams to use (1 for unigrams, 2 for bigrams, ...)
-    all_ngrams: bool
-        whether to include all n-grams up to n or just n
-    parsing
-    """
-
-    seqs = []
-
-    # unigrams
-    if ngrams == 1:
-        seqs += [str(x) for x in tokenizer_ngrams(sentence)]
-
-    # all ngrams in loop
-    else:
-        unigrams_list = [x for x in tokenizer_ngrams(sentence)]
-        if all_ngrams:
-            ngram_lengths = range(1, ngrams + 1)
-    #         seqs = [str(x) for x in simple_tokenizer(sentence)] # precompute length 1
-        else:
-            ngram_lengths = range(ngrams, ngrams + 1)
-
-        for ngram_length in ngram_lengths:
-            for idx_starting in range(0, len(unigrams_list) + 1 - ngram_length):
-                idx_ending = idx_starting + ngram_length
-                seq = ''.join([t.text + t.whitespace_
-                               for t in unigrams_list[idx_starting: idx_ending]]).strip()  # convert the tokens back to text
-                if len(seq) > 0 and not seq.isspace():  # str is not just whitespace
-                    seqs.append(seq)
-
-    # add noun_chunks which at least have a space in them
-    if parsing == 'noun_chunks':
-        doc = nlp_chunks(sentence)
-        seqs += [
-            chunk.text for chunk in doc.noun_chunks
-            if ' ' in chunk.text
-        ]
-    return seqs
-
+import imodelsx.util
 
 def get_model(checkpoint):
     if 'distilbert' in checkpoint.lower():
@@ -76,7 +25,8 @@ def preprocess_gpt_token_batch(seqs, tokenizer_embeddings):
     """
     # batch_size = len(seqs)
 
-    token_ids = [tokenizer_embeddings.encode(s, add_special_tokens=False) for s in seqs]
+    token_ids = [tokenizer_embeddings.encode(
+        s, add_special_tokens=False) for s in seqs]
     prompt_lengths = [len(s) for s in token_ids]
     max_prompt_len = max(prompt_lengths)
 
@@ -103,9 +53,9 @@ def embed_and_sum_function(
     layer: str = 'last_hidden_state',
     padding: bool = True,
     parsing: str = '',
-    nlp_chunks = None,
-    all_ngrams: bool=False,
-    fit_with_ngram_decomposition: bool=True,
+    nlp_chunks=None,
+    all_ngrams: bool = False,
+    fit_with_ngram_decomposition: bool = True,
 ):
     """Get summed embeddings for a single example
     Note: this function gets called many times, so don't want to do things like load a model here
@@ -134,20 +84,21 @@ def embed_and_sum_function(
         sentence = example
     # seqs = sentence
 
-    assert isinstance(sentence, str), 'sentence must be a string (batched mode not supported)'
+    assert isinstance(
+        sentence, str), 'sentence must be a string (batched mode not supported)'
     if fit_with_ngram_decomposition:
-        seqs = generate_ngrams_list(
+        seqs = imodelsx.util.generate_ngrams_list(
             sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
             parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
         )
     else:
         seqs = [sentence]
-    # seqs = list(map(generate_ngrams_list, sentence))
-
+    # seqs = list(map(imodelsx.util.generate_ngrams_list, sentence))
 
     seq_len = len(seqs)
     if seq_len == 0:
-        seqs = ["dummy"] # will multiply embedding by 0 so doesn't matter, but still want to get the shape
+        # will multiply embedding by 0 so doesn't matter, but still want to get the shape
+        seqs = ["dummy"]
 
     if 'bert' in checkpoint.lower():  # has up to two keys, 'last_hidden_state', 'pooler_output'
         if not hasattr(tokenizer_embeddings, 'pad_token') or tokenizer_embeddings.pad_token is None:
