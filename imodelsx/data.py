@@ -1,6 +1,7 @@
 import datasets
 import numpy as np
 from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
 
 def load_huggingface_dataset(dataset_name, subsample_frac=1.0):
     """Load text dataset from huggingface (with train/validation spltis) + return the relevant dataset key
