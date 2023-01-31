@@ -44,8 +44,9 @@ def generate_ngrams_list(
         for ngram_length in ngram_lengths:
             for idx_starting in range(0, len(unigrams_list) + 1 - ngram_length):
                 idx_ending = idx_starting + ngram_length
-                seq = ''.join([t  # t.text + ' ' #t.whitespace_
-                               for t in unigrams_list[idx_starting: idx_ending]]).strip()  # convert the tokens back to text
+                seq = ' '.join(unigrams_list[idx_starting: idx_ending]).strip()
+                # seq = ''.join([t.text + ' ' #t.whitespace_
+                            #    for t in unigrams_list[idx_starting: idx_ending]]).strip()  # convert the tokens back to text
                 if len(seq) > 0 and not seq.isspace():  # str is not just whitespace
                     seqs.append(seq)
 
