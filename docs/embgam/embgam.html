@@ -69,6 +69,7 @@ class EmbGAM(BaseEstimator):
         tokenizer_ngrams=None,
         random_state=None,
         normalize_embs=False,
+        fit_with_ngram_decomposition=True,
     ):
         &#39;&#39;&#39;Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.
 
@@ -88,6 +89,10 @@ class EmbGAM(BaseEstimator):
             random seed for fitting
         normalize_embs
             whether to normalize embeddings before fitting linear model
+        fit_with_ngram_decomposition
+            whether to fit to emb-gam style (using sum of embeddings of each ngram)
+            if False, fits a typical model and uses ngram decomposition only for prediction / testing
+            Usually, setting this to False will considerably impede performance
         &#39;&#39;&#39;
         self.checkpoint = checkpoint
         self.ngrams = ngrams
@@ -99,6 +104,7 @@ class EmbGAM(BaseEstimator):
         self.random_state = random_state
         self.all_ngrams = all_ngrams
         self.normalize_embs = normalize_embs
+        self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True,
@@ -171,6 +177,7 @@ class EmbGAM(BaseEstimator):
                 checkpoint=self.checkpoint,
                 layer=self.layer,
                 all_ngrams=self.all_ngrams,
+                fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
             )
             embs.append(emb[&#39;embs&#39;])
         return np.array(embs).squeeze()  # num_examples x embedding_size
@@ -256,7 +263,7 @@ class EmbGAM(BaseEstimator):
     def _get_ngrams_list(self, X):
         all_ngrams = set()
         for x in X:
-            seqs = imodelsx.embgam.embed.generate_ngrams_list(
+            seqs = imodelsx.util.generate_ngrams_list(
                 x,
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,
@@ -298,9 +305,13 @@ class EmbGAM(BaseEstimator):
         assert hasattr(self, &#39;coefs_dict_&#39;), &#39;coefs are not cached!&#39;
         preds = []
         n_unseen_ngrams = 0
+        n_classes = len(self.classes_)
         for x in X:
-            pred = 0
-            seqs = imodelsx.embgam.embed.generate_ngrams_list(
+            if n_classes &gt; 2:
+                pred = np.zeros(n_classes)
+            else:
+                pred = 0
+            seqs = imodelsx.util.generate_ngrams_list(
                 x,
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,
@@ -339,7 +350,7 @@ class EmbGAMClassifier(EmbGAM, ClassifierMixin):
 <dl>
 <dt id="imodelsx.embgam.embgam.EmbGAM"><code class="flex name class">
 <span>class <span class="ident">EmbGAM</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -364,6 +375,10 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>random seed for fitting</dd>
 <dt><strong><code>normalize_embs</code></strong></dt>
 <dd>whether to normalize embeddings before fitting linear model</dd>
+<dt><strong><code>fit_with_ngram_decomposition</code></strong></dt>
+<dd>whether to fit to emb-gam style (using sum of embeddings of each ngram)
+if False, fits a typical model and uses ngram decomposition only for prediction / testing
+Usually, setting this to False will considerably impede performance</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -379,6 +394,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
         tokenizer_ngrams=None,
         random_state=None,
         normalize_embs=False,
+        fit_with_ngram_decomposition=True,
     ):
         &#39;&#39;&#39;Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.
 
@@ -398,6 +414,10 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
             random seed for fitting
         normalize_embs
             whether to normalize embeddings before fitting linear model
+        fit_with_ngram_decomposition
+            whether to fit to emb-gam style (using sum of embeddings of each ngram)
+            if False, fits a typical model and uses ngram decomposition only for prediction / testing
+            Usually, setting this to False will considerably impede performance
         &#39;&#39;&#39;
         self.checkpoint = checkpoint
         self.ngrams = ngrams
@@ -409,6 +429,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
         self.random_state = random_state
         self.all_ngrams = all_ngrams
         self.normalize_embs = normalize_embs
+        self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True,
@@ -481,6 +502,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
                 checkpoint=self.checkpoint,
                 layer=self.layer,
                 all_ngrams=self.all_ngrams,
+                fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
             )
             embs.append(emb[&#39;embs&#39;])
         return np.array(embs).squeeze()  # num_examples x embedding_size
@@ -566,7 +588,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
     def _get_ngrams_list(self, X):
         all_ngrams = set()
         for x in X:
-            seqs = imodelsx.embgam.embed.generate_ngrams_list(
+            seqs = imodelsx.util.generate_ngrams_list(
                 x,
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,
@@ -608,9 +630,13 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
         assert hasattr(self, &#39;coefs_dict_&#39;), &#39;coefs are not cached!&#39;
         preds = []
         n_unseen_ngrams = 0
+        n_classes = len(self.classes_)
         for x in X:
-            pred = 0
-            seqs = imodelsx.embgam.embed.generate_ngrams_list(
+            if n_classes &gt; 2:
+                pred = np.zeros(n_classes)
+            else:
+                pred = 0
+            seqs = imodelsx.util.generate_ngrams_list(
                 x,
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,
@@ -838,7 +864,7 @@ For classification, returns discrete output.</p></div>
 </dd>
 <dt id="imodelsx.embgam.embgam.EmbGAMClassifier"><code class="flex name class">
 <span>class <span class="ident">EmbGAMClassifier</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -863,6 +889,10 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>random seed for fitting</dd>
 <dt><strong><code>normalize_embs</code></strong></dt>
 <dd>whether to normalize embeddings before fitting linear model</dd>
+<dt><strong><code>fit_with_ngram_decomposition</code></strong></dt>
+<dd>whether to fit to emb-gam style (using sum of embeddings of each ngram)
+if False, fits a typical model and uses ngram decomposition only for prediction / testing
+Usually, setting this to False will considerably impede performance</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -890,7 +920,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 </dd>
 <dt id="imodelsx.embgam.embgam.EmbGAMRegressor"><code class="flex name class">
 <span>class <span class="ident">EmbGAMRegressor</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -915,6 +945,10 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>random seed for fitting</dd>
 <dt><strong><code>normalize_embs</code></strong></dt>
 <dd>whether to normalize embeddings before fitting linear model</dd>
+<dt><strong><code>fit_with_ngram_decomposition</code></strong></dt>
+<dd>whether to fit to emb-gam style (using sum of embeddings of each ngram)
+if False, fits a typical model and uses ngram decomposition only for prediction / testing
+Usually, setting this to False will considerably impede performance</dd>
 </dl></div>
 <details class="source">
 <summary>

@@ -30,58 +30,7 @@
 from transformers import AutoModelForCausalLM
 from os.path import join as oj
 import torch
-
-def generate_ngrams_list(
-    sentence: str,
-    ngrams: int,
-    tokenizer_ngrams,
-    all_ngrams=False,
-    parsing: str=&#39;&#39;,
-    nlp_chunks=None,
-):
-    &#34;&#34;&#34;Get list of ngrams from sentence using a tokenizer
-
-    Params
-    ------
-    ngrams: int
-        What order of ngrams to use (1 for unigrams, 2 for bigrams, ...)
-    all_ngrams: bool
-        whether to include all n-grams up to n or just n
-    parsing
-    &#34;&#34;&#34;
-
-    seqs = []
-
-    # unigrams
-    if ngrams == 1:
-        seqs += [str(x) for x in tokenizer_ngrams(sentence)]
-
-    # all ngrams in loop
-    else:
-        unigrams_list = [x for x in tokenizer_ngrams(sentence)]
-        if all_ngrams:
-            ngram_lengths = range(1, ngrams + 1)
-    #         seqs = [str(x) for x in simple_tokenizer(sentence)] # precompute length 1
-        else:
-            ngram_lengths = range(ngrams, ngrams + 1)
-
-        for ngram_length in ngram_lengths:
-            for idx_starting in range(0, len(unigrams_list) + 1 - ngram_length):
-                idx_ending = idx_starting + ngram_length
-                seq = &#39;&#39;.join([t.text + t.whitespace_
-                               for t in unigrams_list[idx_starting: idx_ending]]).strip()  # convert the tokens back to text
-                if len(seq) &gt; 0 and not seq.isspace():  # str is not just whitespace
-                    seqs.append(seq)
-
-    # add noun_chunks which at least have a space in them
-    if parsing == &#39;noun_chunks&#39;:
-        doc = nlp_chunks(sentence)
-        seqs += [
-            chunk.text for chunk in doc.noun_chunks
-            if &#39; &#39; in chunk.text
-        ]
-    return seqs
-
+import imodelsx.util
 
 def get_model(checkpoint):
     if &#39;distilbert&#39; in checkpoint.lower():
@@ -104,7 +53,8 @@ def preprocess_gpt_token_batch(seqs, tokenizer_embeddings):
     &#34;&#34;&#34;
     # batch_size = len(seqs)
 
-    token_ids = [tokenizer_embeddings.encode(s, add_special_tokens=False) for s in seqs]
+    token_ids = [tokenizer_embeddings.encode(
+        s, add_special_tokens=False) for s in seqs]
     prompt_lengths = [len(s) for s in token_ids]
     max_prompt_len = max(prompt_lengths)
 
@@ -131,8 +81,9 @@ def embed_and_sum_function(
     layer: str = &#39;last_hidden_state&#39;,
     padding: bool = True,
     parsing: str = &#39;&#39;,
-    nlp_chunks = None,
-    all_ngrams: bool=False,
+    nlp_chunks=None,
+    all_ngrams: bool = False,
+    fit_with_ngram_decomposition: bool = True,
 ):
     &#34;&#34;&#34;Get summed embeddings for a single example
     Note: this function gets called many times, so don&#39;t want to do things like load a model here
@@ -152,6 +103,8 @@ def embed_and_sum_function(
         whether to use parsing rather than extracting all ngrams
     nlp_chunks
         if parsing is not empty string, a parser that extracts specific ngrams
+    fit_with_ngram_decomposition
+        whether to fit the model with ngram decomposition (if not just use the stsandard sentence)
     &#34;&#34;&#34;
     if dataset_key_text is not None:
         sentence = example[dataset_key_text]
@@ -159,17 +112,21 @@ def embed_and_sum_function(
         sentence = example
     # seqs = sentence
 
-    assert isinstance(sentence, str), &#39;sentence must be a string (batched mode not supported)&#39;
-    seqs = generate_ngrams_list(
-        sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
-        parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
-    )
-    # seqs = list(map(generate_ngrams_list, sentence))
-
+    assert isinstance(
+        sentence, str), &#39;sentence must be a string (batched mode not supported)&#39;
+    if fit_with_ngram_decomposition:
+        seqs = imodelsx.util.generate_ngrams_list(
+            sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
+            parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
+        )
+    else:
+        seqs = [sentence]
+    # seqs = list(map(imodelsx.util.generate_ngrams_list, sentence))
 
     seq_len = len(seqs)
     if seq_len == 0:
-        seqs = [&#34;dummy&#34;] # will multiply embedding by 0 so doesn&#39;t matter
+        # will multiply embedding by 0 so doesn&#39;t matter, but still want to get the shape
+        seqs = [&#34;dummy&#34;]
 
     if &#39;bert&#39; in checkpoint.lower():  # has up to two keys, &#39;last_hidden_state&#39;, &#39;pooler_output&#39;
         if not hasattr(tokenizer_embeddings, &#39;pad_token&#39;) or tokenizer_embeddings.pad_token is None:
@@ -210,7 +167,7 @@ def embed_and_sum_function(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="imodelsx.embgam.embed.embed_and_sum_function"><code class="name flex">
-<span>def <span class="ident">embed_and_sum_function</span></span>(<span>example, model, ngrams: int, tokenizer_embeddings, tokenizer_ngrams, checkpoint: str, dataset_key_text: str = None, layer: str = 'last_hidden_state', padding: bool = True, parsing: str = '', nlp_chunks=None, all_ngrams: bool = False)</span>
+<span>def <span class="ident">embed_and_sum_function</span></span>(<span>example, model, ngrams: int, tokenizer_embeddings, tokenizer_ngrams, checkpoint: str, dataset_key_text: str = None, layer: str = 'last_hidden_state', padding: bool = True, parsing: str = '', nlp_chunks=None, all_ngrams: bool = False, fit_with_ngram_decomposition: bool = True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Get summed embeddings for a single example
@@ -227,7 +184,9 @@ tokenizing the ngrams (word-based tokenization is more interpretable)
 parsing: str
 whether to use parsing rather than extracting all ngrams
 nlp_chunks
-if parsing is not empty string, a parser that extracts specific ngrams</p></div>
+if parsing is not empty string, a parser that extracts specific ngrams
+fit_with_ngram_decomposition
+whether to fit the model with ngram decomposition (if not just use the stsandard sentence)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -243,8 +202,9 @@ if parsing is not empty string, a parser that extracts specific ngrams</p></div>
     layer: str = &#39;last_hidden_state&#39;,
     padding: bool = True,
     parsing: str = &#39;&#39;,
-    nlp_chunks = None,
-    all_ngrams: bool=False,
+    nlp_chunks=None,
+    all_ngrams: bool = False,
+    fit_with_ngram_decomposition: bool = True,
 ):
     &#34;&#34;&#34;Get summed embeddings for a single example
     Note: this function gets called many times, so don&#39;t want to do things like load a model here
@@ -264,6 +224,8 @@ if parsing is not empty string, a parser that extracts specific ngrams</p></div>
         whether to use parsing rather than extracting all ngrams
     nlp_chunks
         if parsing is not empty string, a parser that extracts specific ngrams
+    fit_with_ngram_decomposition
+        whether to fit the model with ngram decomposition (if not just use the stsandard sentence)
     &#34;&#34;&#34;
     if dataset_key_text is not None:
         sentence = example[dataset_key_text]
@@ -271,17 +233,21 @@ if parsing is not empty string, a parser that extracts specific ngrams</p></div>
         sentence = example
     # seqs = sentence
 
-    assert isinstance(sentence, str), &#39;sentence must be a string (batched mode not supported)&#39;
-    seqs = generate_ngrams_list(
-        sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
-        parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
-    )
-    # seqs = list(map(generate_ngrams_list, sentence))
-
+    assert isinstance(
+        sentence, str), &#39;sentence must be a string (batched mode not supported)&#39;
+    if fit_with_ngram_decomposition:
+        seqs = imodelsx.util.generate_ngrams_list(
+            sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
+            parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
+        )
+    else:
+        seqs = [sentence]
+    # seqs = list(map(imodelsx.util.generate_ngrams_list, sentence))
 
     seq_len = len(seqs)
     if seq_len == 0:
-        seqs = [&#34;dummy&#34;] # will multiply embedding by 0 so doesn&#39;t matter
+        # will multiply embedding by 0 so doesn&#39;t matter, but still want to get the shape
+        seqs = [&#34;dummy&#34;]
 
     if &#39;bert&#39; in checkpoint.lower():  # has up to two keys, &#39;last_hidden_state&#39;, &#39;pooler_output&#39;
         if not hasattr(tokenizer_embeddings, &#39;pad_token&#39;) or tokenizer_embeddings.pad_token is None:
@@ -312,73 +278,6 @@ if parsing is not empty string, a parser that extracts specific ngrams</p></div>
         embs *= 0
 
     return {&#39;embs&#39;: embs, &#39;seq_len&#39;: len(seqs)}</code></pre>
-</details>
-</dd>
-<dt id="imodelsx.embgam.embed.generate_ngrams_list"><code class="name flex">
-<span>def <span class="ident">generate_ngrams_list</span></span>(<span>sentence: str, ngrams: int, tokenizer_ngrams, all_ngrams=False, parsing: str = '', nlp_chunks=None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Get list of ngrams from sentence using a tokenizer</p>
-<h2 id="params">Params</h2>
-<p>ngrams: int
-What order of ngrams to use (1 for unigrams, 2 for bigrams, &hellip;)
-all_ngrams: bool
-whether to include all n-grams up to n or just n
-parsing</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def generate_ngrams_list(
-    sentence: str,
-    ngrams: int,
-    tokenizer_ngrams,
-    all_ngrams=False,
-    parsing: str=&#39;&#39;,
-    nlp_chunks=None,
-):
-    &#34;&#34;&#34;Get list of ngrams from sentence using a tokenizer
-
-    Params
-    ------
-    ngrams: int
-        What order of ngrams to use (1 for unigrams, 2 for bigrams, ...)
-    all_ngrams: bool
-        whether to include all n-grams up to n or just n
-    parsing
-    &#34;&#34;&#34;
-
-    seqs = []
-
-    # unigrams
-    if ngrams == 1:
-        seqs += [str(x) for x in tokenizer_ngrams(sentence)]
-
-    # all ngrams in loop
-    else:
-        unigrams_list = [x for x in tokenizer_ngrams(sentence)]
-        if all_ngrams:
-            ngram_lengths = range(1, ngrams + 1)
-    #         seqs = [str(x) for x in simple_tokenizer(sentence)] # precompute length 1
-        else:
-            ngram_lengths = range(ngrams, ngrams + 1)
-
-        for ngram_length in ngram_lengths:
-            for idx_starting in range(0, len(unigrams_list) + 1 - ngram_length):
-                idx_ending = idx_starting + ngram_length
-                seq = &#39;&#39;.join([t.text + t.whitespace_
-                               for t in unigrams_list[idx_starting: idx_ending]]).strip()  # convert the tokens back to text
-                if len(seq) &gt; 0 and not seq.isspace():  # str is not just whitespace
-                    seqs.append(seq)
-
-    # add noun_chunks which at least have a space in them
-    if parsing == &#39;noun_chunks&#39;:
-        doc = nlp_chunks(sentence)
-        seqs += [
-            chunk.text for chunk in doc.noun_chunks
-            if &#39; &#39; in chunk.text
-        ]
-    return seqs</code></pre>
 </details>
 </dd>
 <dt id="imodelsx.embgam.embed.get_model"><code class="name flex">
@@ -421,7 +320,8 @@ Add attention mask here</p></div>
     &#34;&#34;&#34;
     # batch_size = len(seqs)
 
-    token_ids = [tokenizer_embeddings.encode(s, add_special_tokens=False) for s in seqs]
+    token_ids = [tokenizer_embeddings.encode(
+        s, add_special_tokens=False) for s in seqs]
     prompt_lengths = [len(s) for s in token_ids]
     max_prompt_len = max(prompt_lengths)
 
@@ -456,7 +356,6 @@ Add attention mask here</p></div>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="imodelsx.embgam.embed.embed_and_sum_function" href="#imodelsx.embgam.embed.embed_and_sum_function">embed_and_sum_function</a></code></li>
-<li><code><a title="imodelsx.embgam.embed.generate_ngrams_list" href="#imodelsx.embgam.embed.generate_ngrams_list">generate_ngrams_list</a></code></li>
 <li><code><a title="imodelsx.embgam.embed.get_model" href="#imodelsx.embgam.embed.get_model">get_model</a></code></li>
 <li><code><a title="imodelsx.embgam.embed.preprocess_gpt_token_batch" href="#imodelsx.embgam.embed.preprocess_gpt_token_batch">preprocess_gpt_token_batch</a></code></li>
 </ul>

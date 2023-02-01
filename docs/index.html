@@ -30,7 +30,7 @@
 <p align="center">Library to explain <i>a dataset</i> in natural language.
 </p>
 <p align="center">
-<a href="https://github.com/csinva/imodelsX/tree/master/demos">📖 demo notebooks</a>
+<a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖 demo notebooks</a>
 </p>
 <p align="center">
 <img src="https://img.shields.io/badge/license-mit-blue.svg">
@@ -48,17 +48,17 @@
 <tbody>
 <tr>
 <td style="text-align: left;">iPrompt</td>
-<td><a href="https://github.com/csinva/imodelsX/blob/master/demos/iprompt.ipynb">📖</a>, <a href="http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt">🗂️</a>, <a href="https://github.com/csinva/interpretable-autoprompting">🔗</a>, <a href="https://arxiv.org/abs/2210.01848">📄</a></td>
+<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/iprompt.ipynb">📖</a>, <a href="http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt">🗂️</a>, <a href="https://github.com/csinva/interpretable-autoprompting">🔗</a>, <a href="https://arxiv.org/abs/2210.01848">📄</a></td>
 <td>Generates a human-interpretable prompt that explains patterns <br/> in data (<em>Official</em>)</td>
 </tr>
 <tr>
 <td style="text-align: left;">Emb-GAM</td>
-<td><a href="https://github.com/csinva/imodelsX/blob/master/demos/embgam.ipynb">📖</a>, <a href="http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier">🗂️</a>, <a href="https://github.com/csinva/emb-gam">🔗</a>, <a href="https://arxiv.org/abs/2209.11799">📄</a></td>
+<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/embgam.ipynb">📖</a>, <a href="http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier">🗂️</a>, <a href="https://github.com/csinva/emb-gam">🔗</a>, <a href="https://arxiv.org/abs/2209.11799">📄</a></td>
 <td>Fit better linear model using an LLM to extract embeddings (<em>Official</em>)</td>
 </tr>
 <tr>
 <td style="text-align: left;">D3</td>
-<td><a href="https://github.com/csinva/imodelsX/blob/master/demos/d3.py">📖</a>, <a href="http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_datasets_d3">🗂️</a>, <a href="https://github.com/ruiqi-zhong/DescribeDistributionalDifferences">🔗</a>, <a href="https://arxiv.org/abs/2201.12323">📄</a></td>
+<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/d3.py">📖</a>, <a href="http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_datasets_d3">🗂️</a>, <a href="https://github.com/ruiqi-zhong/DescribeDistributionalDifferences">🔗</a>, <a href="https://arxiv.org/abs/2201.12323">📄</a></td>
 <td>Explain the difference between two distributions</td>
 </tr>
 <tr>
@@ -74,12 +74,12 @@
 </tbody>
 </table>
 <p align="center">
-Demo <a href="https://github.com/csinva/imodelsX/tree/master/demos">📖</a>, Doc <a href="https://csinva.io/imodels/">🗂️</a>, Reference code implementation 🔗, Research paper 📄
+Demo notebooks <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖</a>, Doc <a href="https://csinva.io/imodelsX/">🗂️</a>, Reference code implementation 🔗, Research paper 📄
 </br>
 </p>
 <h1 id="quickstart">Quickstart</h1>
 <p><strong>Installation</strong>: <code>pip install <a title="imodelsx" href="#imodelsx">imodelsx</a></code> (or, for more control, clone and install from source)</p>
-<p><strong>Demos</strong>: see the <a href="demos">demo notebooks</a></p>
+<p><strong>Demos</strong>: see the <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">demo notebooks</a></p>
 <h3 id="iprompt">iPrompt</h3>
 <pre><code class="language-python">from imodelsx import explain_dataset_iprompt, get_add_two_numbers_dataset
 
@@ -175,11 +175,19 @@ from .iprompt.data import get_add_two_numbers_dataset</code></pre>
 <dd>
 <div class="desc"></div>
 </dd>
+<dt><code class="name"><a title="imodelsx.data" href="data.html">imodelsx.data</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt><code class="name"><a title="imodelsx.embgam" href="embgam/index.html">imodelsx.embgam</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="imodelsx.iprompt" href="iprompt/index.html">imodelsx.iprompt</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="imodelsx.util" href="util.html">imodelsx.util</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -209,8 +217,10 @@ from .iprompt.data import get_add_two_numbers_dataset</code></pre>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
 <li><code><a title="imodelsx.d3" href="d3/index.html">imodelsx.d3</a></code></li>
+<li><code><a title="imodelsx.data" href="data.html">imodelsx.data</a></code></li>
 <li><code><a title="imodelsx.embgam" href="embgam/index.html">imodelsx.embgam</a></code></li>
 <li><code><a title="imodelsx.iprompt" href="iprompt/index.html">imodelsx.iprompt</a></code></li>
+<li><code><a title="imodelsx.util" href="util.html">imodelsx.util</a></code></li>
 </ul>
 </li>
 </ul>
