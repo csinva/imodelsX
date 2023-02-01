@@ -6,7 +6,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 def load_huggingface_dataset(
     dataset_name: str, subsample_frac: float = 1.0,
-    binary_classification: bool = False
+    binary_classification: bool = False,
+    return_lists: bool = False,
 ):
     """Load text dataset from huggingface (with train/validation splits) + return the relevant dataset key
     Params
@@ -80,7 +81,14 @@ def load_huggingface_dataset(
         dset['train'] = dset['train'].map(lambda ex: {'label': labels_to_keep_remap[ex['label']]})
         dset['validation'] = dset['validation'].map(lambda ex: {'label': labels_to_keep_remap[ex['label']]})
     
-    return dset, dataset_key_text
+    if return_lists:
+        X_train_text= dset['train'][dataset_key_text]
+        y_train = np.array(dset['train']['label'])
+        X_test_text = dset['validation'][dataset_key_text]
+        y_test = np.array(dset['validation']['label'])
+        return X_train_text, X_test_text, y_train, y_test
+    else:
+        return dset, dataset_key_text
 
 
 def convert_text_data_to_counts_array(dset, dataset_key_text):
