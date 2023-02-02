@@ -59,15 +59,15 @@ def run_args_list(
         for i, param_str in enumerate(param_str_list):
             print(
                 f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n', param_str)
+        return
 
     if n_cpus == 1:
         for i, param_str in enumerate(param_str_list):
             print(
                 f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n', param_str)
             try:
-                if actually_run:
-                    # os.system(param_str)
-                    sts = subprocess.Popen(param_str, shell=True).wait()
+                # os.system(param_str)
+                sts = subprocess.Popen(param_str, shell=True).wait()
             except KeyboardInterrupt:
                 print('Keyboard interrupt, exiting...')
                 exit(0)
@@ -79,9 +79,8 @@ def run_args_list(
             print(
                 f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n', param_str)
             try:
-                if actually_run:
-                    # os.system(param_str)
-                    sts = subprocess.Popen(param_str, shell=True).wait()
+                # os.system(param_str)
+                sts = subprocess.Popen(param_str, shell=True).wait()
             except KeyboardInterrupt:
                 print('Keyboard interrupt, exiting...')
                 exit(0)
