@@ -5,23 +5,30 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 
 def load_huggingface_dataset(
-    dataset_name: str, subsample_frac: float = 1.0,
+    dataset_name: str,
+    subsample_frac: float = 1.0,
     binary_classification: bool = False,
     return_lists: bool = False,
 ):
     """Load text dataset from huggingface (with train/validation splits) + return the relevant dataset key
     Params
     ------
+    subsample_frac: float
+        Only use this fraction of the training data
     binary_classification: bool
         Whether to convert a multiclass task into a binary one
         Unless this function is modified, will take the class number with the lowest to indexes
+    return_lists: bool
+        Whether to return pre-split lists rather than HF dataset
 
-    Some examples       |    n_train     |    n_classes
+    Some examples       |    n_train     |    n_classes |
     rotten_tomatoes     |    ~9k         |    2
     sst2                |    ~68k        |    2
+    imdb                |    ~25k        |    2         | note: these are relatively long
     tweet_eval          |    ~10k        |    2
     financial_phrasebank|    ~2.3k       |    3
     emotion             |    ~18k        |    6
+    ag_news             |    ~120k       |    4
     """
     # load dset
     if dataset_name == 'tweet_eval':
@@ -44,8 +51,10 @@ def load_huggingface_dataset(
     elif dataset_name == 'financial_phrasebank':
         dataset_key_text = 'sentence'
     elif dataset_name == 'imdb':
-        del dset['unsupervised']
         dset['validation'] = dset['test']
+    elif dataset_name == 'ag_news':
+        dset['validation'] = dset['test']
+
 
     # subsample data
     if subsample_frac > 0:
@@ -66,6 +75,12 @@ def load_huggingface_dataset(
             labels_to_keep_remap = {
                 0: 0, # sadness
                 1: 1, # joy
+            }
+        elif dataset_name == 'ag_news':
+            labels_to_keep_remap = {
+                # 1 was "world" and 4 was "sci/tech"
+                2: 0, # 2 was "sports"
+                3: 1, # 3 was "business"
             }
         else:
             labels_to_keep_keys = np.sort(np.unique(dset['train']['label']))[:2]
@@ -101,11 +116,11 @@ def convert_text_data_to_counts_array(dset, dataset_key_text):
     return X_train, X_test, y_train, y_test, feature_names
 
 if __name__ == '__main__':
-    dset, k = load_huggingface_dataset('emotion', 1, binary_classification=False)
+    dset, k = load_huggingface_dataset('ag_news', 1, binary_classification=False)
     print(dset)
     print(dset['train'])
     print(np.unique(dset['train']['label']))
 
-    dset, k = load_huggingface_dataset('emotion', 1, binary_classification=True)
+    dset, k = load_huggingface_dataset('ag_news', 1, binary_classification=True)
     print(dset)
     print(np.unique(dset['train']['label']))
