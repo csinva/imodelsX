@@ -4,7 +4,9 @@ import itertools
 import subprocess
 import random
 from multiprocessing.pool import ThreadPool
+from multiprocessing import Pool, current_process, Queue
 from functools import reduce
+from itertools import repeat
 """Handles utilities for job sweeps,
 with a focus on embarassingly parallel sweeps on a single machine.
 """
@@ -18,6 +20,7 @@ def run_args_list(
     shuffle: bool = False,
     reverse: bool = False,
     n_cpus: int = 1,
+    gpu_ids: List[int] = [],
 ):
     """
     Params
@@ -35,7 +38,12 @@ def run_args_list(
         Whether to reverse the order of the script calls
     n_cpus: int
         Number of cpus to use (if >1, parallelizes over local machine)
+    gpu_ids: List[int]
+        Ids of GPUs to run on (e.g. [0, 1] for 2 gpus)
     """
+    n_gpus = len(gpu_ids)
+    assert not (n_cpus > 1 and n_gpus > 0), 'Cannot parallelize over cpus and gpus'
+
     # adjust order
     if shuffle:
         random.shuffle(args_list)
@@ -58,13 +66,13 @@ def run_args_list(
         print('Not actually running the commands, just printing them.')
         for i, param_str in enumerate(param_str_list):
             print(
-                f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n', param_str)
+                f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n' + param_str)
         return
-
-    if n_cpus == 1:
+            
+    if n_cpus == 1 and n_gpus == 0:
         for i, param_str in enumerate(param_str_list):
             print(
-                f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n', param_str)
+                f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n' + param_str)
             try:
                 # os.system(param_str)
                 sts = subprocess.Popen(param_str, shell=True).wait()
@@ -74,10 +82,10 @@ def run_args_list(
             except Exception as e:
                 print(e)
     
-    elif n_cpus > 1:
+    elif n_cpus > 1 and n_gpus == 0:
         def run_single_job(i, param_str):
             print(
-                f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n', param_str)
+                f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n' + param_str)
             try:
                 # os.system(param_str)
                 sts = subprocess.Popen(param_str, shell=True).wait()
@@ -91,6 +99,37 @@ def run_args_list(
             pool.apply_async(run_single_job, (i, param_str, ))
         pool.close()
         pool.join()
+    
+    elif n_gpus > 0:
+        # initialize the queue with the GPU ids
+        global job_queue_multiprocessing
+        job_queue_multiprocessing = Queue()
+        for gpu_id in gpu_ids:
+            job_queue_multiprocessing.put(gpu_id)
+
+        # call the jobs
+        pool = Pool(processes=n_gpus)
+        n = len(param_str_list)
+        indexes = [i for i in range(n)]
+        for _ in pool.starmap(run_on_gpu, zip(param_str_list, indexes, repeat(n))):
+            pass
+        pool.close()
+        pool.join()
+
+def run_on_gpu(param_str, i, n):
+    gpu_id = job_queue_multiprocessing.get()
+    try:
+        # run on GPU <gpu_id>
+        ident = current_process().ident
+        print(f'{ident}: Starting process on GPU {gpu_id}')
+        prefix = f'CUDA_VISIBLE_DEVICES={gpu_id} '
+        param_str = prefix + param_str
+        print(
+                f'\n\n-------------------{i + 1}/{n}--------------------\n' + param_str)
+        sts = subprocess.Popen(param_str, shell=True).wait()
+        print(f'{ident}: Finished on GPU {gpu_id}')
+    finally:
+        job_queue_multiprocessing.put(gpu_id)
 
 
 
