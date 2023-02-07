@@ -20,7 +20,7 @@ if __name__ == '__main__':
         input_strings=input_strings,
         output_strings=output_strings,
         checkpoint='EleutherAI/gpt-j-6B', # which language model to use
-        num_learned_tokens=12, # how long of a prompt to learn
+        num_learned_tokens=6, # how long of a prompt to learn
         n_shots=5, # number of examples in context
         n_epochs=15, # how many epochs to search
         verbose=1, # how much to print
