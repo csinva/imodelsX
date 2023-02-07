@@ -82,7 +82,7 @@ def train_model(
 
     assert len(input_strs) == len(
         output_strs), "input and output must be same length to create input-output pairs"
-    text_strs = list(map('.\n\n'.join, zip(input_strs, output_strs)))
+    text_strs = list(map(lambda t: f'{t[0]}{t[1]}.', zip(input_strs, output_strs)))
     df = pd.DataFrame.from_dict({
         'input': input_strs,
         'output': output_strs,
@@ -94,7 +94,7 @@ def train_model(
         d2 = defaultdict(list)
         for i in range(max_n_datapoints):
             all_shots = df.sample(n=n_shots, replace=False)
-            d2['text'].append(''.join(all_shots['text'].values))
+            d2['text'].append('\n\n'.join(all_shots['text'].values))
             #
             last_input = all_shots.tail(n=1)['input'].values[0]
             d2['input'].append(
@@ -104,7 +104,6 @@ def train_model(
             last_output = all_shots.tail(n=1)['output'].values[0]
             d2['output'].append(last_output)
             #
-
         df = pd.DataFrame.from_dict(d2)
         # shuffle rows
         df = df.sample(n=max_n_datapoints, replace=False)
@@ -350,13 +349,20 @@ def explain_dataset_iprompt(
     input_strings: List[str],
     output_strings: List[str],
     checkpoint: str='EleutherAI/gpt-j-6B',
+    generation_checkpoint: str = '',
     num_learned_tokens=1,
     save_dir: str = './results',
     lr: float = 0.01,
     pop_size: int = 8,
+    pop_criterion: str = 'loss',
+    pop_topk_strategy: str = 'different_start_token',
     num_mutations: int = 4,
+    prefix_before_input: bool = True,
+    do_final_reranking: bool = False,
     num_random_generations: int = 4,
     generation_repetition_penalty: float = 2.0,
+    generation_temp: float = 1.0,
+    generation_top_p: float = 1.0,
     early_stopping_steps: int = -1,
     llm_float16=False,
     gamma: float = 0.0,
@@ -388,6 +394,19 @@ def explain_dataset_iprompt(
         list of output strings (e.g. "4")
     checkpoint: str
         name of model checkpoint to prompt (e.g. EleutherAI/gpt-j-6B)
+    generation_checkpoint: str
+        name of model to generate prompts, *only if if different from checkpoint
+        used for prompting*. defaults to '' (same model for both).
+    prefix_before_input: bool
+        whether to prompt the LLM with the prefix before or after the input data
+    do_final_reranking: bool
+        optionally rerank top prefixes using a single batch. helps prevent
+        noisy prefixes from being top at the end, especially when run over a
+        small number of iterations or with small batch size.
+    generation_temp: float
+        temperature for sampling from LLM (defaults to 1.0)
+    generation_top_p: float
+        p for sampling from LLM, if using top-p sampling (defaults to 1.0, no sampling)
     num_learned_tokens: int
         number of tokens to learn in prompt
     save_dir: str
@@ -396,6 +415,10 @@ def explain_dataset_iprompt(
         learning rate for prompt tuning
     pop_size: int
         number of prompt candidates to evaluate for each iteration of iprompt
+    pop_criterion: str
+        criterion for getting top prefixes from prefix pool, in ['loss', 'acc']
+    pop_topk_strategy: str
+        strategy for getting new prefixes from prefix pool, in ['different_start_token', 'all']
     num_mutations: int
         number of mutations to apply to each prompt candidate
     lm: transformers.PreTrainedModel
@@ -448,13 +471,21 @@ def explain_dataset_iprompt(
             tokenizer=tokenizer,
             preprefix_str=preprefix,
             pop_size=pop_size,
+            pop_criterion=pop_criterion,
+            pop_topk_strategy=pop_topk_strategy,
             num_mutations=num_mutations,
+            prefix_before_input=prefix_before_input,
+            do_final_reranking=do_final_reranking,
             num_random_generations=num_random_generations,
             generation_repetition_penalty=generation_repetition_penalty,
+            generation_temp=generation_temp,
+            generation_top_p=generation_top_p,
             early_stopping_steps=early_stopping_steps,
             num_learned_tokens=num_learned_tokens,
             max_length=max_length,
             verbose=verbose,
+            llm_float16=llm_float16,
+            generation_checkpoint=generation_checkpoint,
             llm_candidate_regeneration_prompt_start=llm_candidate_regeneration_prompt_start,
             llm_candidate_regeneration_prompt_end=llm_candidate_regeneration_prompt_end,
         )

@@ -7,11 +7,14 @@ import dataclasses
 import functools
 import heapq
 import random
+
+import pandas as pd
 import transformers
 import torch
 from torch.utils.data import DataLoader
 from torch import nn
 import tqdm
+
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 DEBUG_VERBOSE = False
@@ -19,7 +22,8 @@ DEBUG_VERBOSE = False
 
 def get_token_replacements_single_mask(
     dataloader: DataLoader, model: transformers.AutoModelForMaskedLM,
-    tokenizer: transformers.AutoTokenizer, init_prefix_template: str, num_candidates: int)-> List[str]:
+    tokenizer: transformers.AutoTokenizer, init_prefix_template: str, num_candidates: int
+    )-> List[str]:
     """Given a template like `{mask} the numbers`, returns the `num_candidates` most likely
     single-token replacements for `{mask}` given `model`.
     """
@@ -208,6 +212,8 @@ class PrefixModel(nn.Module, abc.ABC):
     def token_embedding(self) -> nn.Embedding:
         if self._is_gpt_neox:
             return self.transformer.embed_in
+        elif self._is_t5:
+            return self.model.encoder.embed_tokens
         elif self._is_opt:
             return self.transformer.embed_tokens
         else:
@@ -224,28 +230,21 @@ class PrefixModel(nn.Module, abc.ABC):
     def prepare_batch(self, batch: Dict[str, str]) -> Tuple[str, str]:
         """Preprocesses text from `batch['input']` and `batch['output']` for inputting into prefix model.
         """
-        x_text = [f'. {prompt}' for prompt in batch['input']]
-        y_text = [answer.rstrip().rstrip('.') for answer in batch['output']] # strip whitespace at the end.
+        if self.prefix_before_input:
+            x_text = [f'. {prompt}' for prompt in batch['input']]
+            y_text = [answer for answer in batch['output']] # strip whitespace at the end.
+        else:
+            x_text = [prompt for prompt in batch['input']]
+            y_text = [answer.rstrip().rstrip('.') for answer in batch['output']] # strip whitespace at the end.
         return x_text, y_text
 
     def forward(
             self,
             input_ids: torch.Tensor,
             prefix_ids: Optional[torch.Tensor],
-        ) -> torch.Tensor:
-        new_input_ids, embeddings = self.embed_input_ids(
-            input_ids=input_ids, prefix_ids=prefix_ids
-        )
+        ) -> Tuple[torch.Tensor, torch.Tensor]:
+        raise NotImplementedError()
 
-        # Automatically set attention mask and position-ids
-        attention_mask = ~(new_input_ids == self.tokenizer.pad_token_id)
-
-        assert new_input_ids.shape == embeddings.shape[0:2]
-        return new_input_ids, self.model(
-            inputs_embeds=embeddings,
-            attention_mask=attention_mask,
-        )
-    
     def pre_epoch(self) -> None:
         return
     
@@ -255,7 +254,7 @@ class PrefixModel(nn.Module, abc.ABC):
     def compute_metrics(self) -> Dict[str, Any]:
         return {}
     
-    def serialize(self) -> Dict[str, Any]:
+    def serialize(self, eval_dataloader: torch.utils.data.DataLoader, possible_answer_mask: torch.Tensor) -> Dict[str, Any]:
         """Writes stuff to disk after training."""
         return {}
 
@@ -280,7 +279,7 @@ class PrefixModel(nn.Module, abc.ABC):
             return torch.randint(low=0, high=self.tokenizer.vocab_size, size=(num_tokens,))
         else:
             start_word_id = torch.tensor([self.tokenizer.vocab['the']], dtype=int)
-            # print(f"start_word_id = {start_word_id}")
+            print(f"start_word_id = {start_word_id}")
             return start_word_id.repeat((num_tokens,))
 
     def _compute_loss_with_set_prefix(
@@ -290,94 +289,73 @@ class PrefixModel(nn.Module, abc.ABC):
             possible_answer_mask: torch.Tensor,
             prefix_ids: Optional[torch.Tensor] = None
         ) -> torch.Tensor:
-        # roll tensors together to put padding at the end. slow but I know it's right. (TODO: tensorize)
-        input_ids = []
-        num_pad_tokens = (original_input_ids == self.tokenizer.eos_token_id).sum(dim=1)
-        for i in range(len(original_input_ids)):
-            if num_pad_tokens[i] == 0:
-                next_tensor = torch.cat((original_input_ids[i], next_token_ids[i]), dim=0)
-            else:
-                num_non_pad_tokens = original_input_ids.shape[1] - num_pad_tokens[i]
-                padding = torch.full(size=(num_pad_tokens[i], ), fill_value=self.tokenizer.eos_token_id).to(device)
-                next_tensor = torch.cat((original_input_ids[i][:num_non_pad_tokens], next_token_ids[i], padding), dim=0)
-            input_ids.append(
-                next_tensor
-            )
-
-        input_ids = torch.stack(input_ids)
-        assert input_ids.shape == (original_input_ids.shape[0], original_input_ids.shape[1] + next_token_ids.shape[1])
-
         # feed into the model. prefix-handling is implemented in PrefixModel::forward.
-        full_input_ids, outputs = self.forward(
-            input_ids=input_ids,
-            prefix_ids=prefix_ids,
-        )
-        # make sure we have same number of predictions as tokens
-        assert full_input_ids.shape == outputs.logits.shape[:2]
-
-        # get first predicted token logits
-        next_token_idx = (~(full_input_ids == self.tokenizer.eos_token_id)).cumsum(dim=1).argmax(dim=1)
-        next_token_logits = outputs.logits[torch.arange(len(original_input_ids)), next_token_idx-1]
-
-        # compute first-token acc
-        if possible_answer_mask is None:
-            n_correct = (
-                next_token_logits.argmax(dim=-1) == next_token_ids[:, 0]
-            ).int().sum()
+        # and huggingface LM automatically computes language modeling loss.
+        if self._is_t5:
+            assert possible_answer_mask is None, "not implemented with t5 yet"
+            blank_next_token_ids = torch.zeros(
+                (len(original_input_ids), 0), dtype=torch.long, device=device)
+            new_input_ids, embeddings = self.embed_input_ids(
+                input_ids=original_input_ids,
+                next_token_ids=blank_next_token_ids,
+                prefix_ids=prefix_ids, 
+            )
+            attention_mask = ~(new_input_ids == self.tokenizer.pad_token_id)
+            outputs = self.model(
+                inputs_embeds=embeddings,
+                attention_mask=attention_mask,
+                labels=next_token_ids
+            )
+            next_token_logits = outputs.logits
+            loss = outputs.loss
         else:
-            # apply possible answer mask for single-token
-            next_token_logits = torch.where(
-                possible_answer_mask[None],
-                next_token_logits, torch.tensor(float('-inf')).to(device)
+            new_input_ids, embeddings = self.embed_input_ids(
+                input_ids=original_input_ids,
+                next_token_ids=next_token_ids,
+                prefix_ids=prefix_ids, 
             )
-            n_correct = (
-                (next_token_logits.exp() * possible_answer_mask).argmax(dim=-1)
-                    ==
-                next_token_ids[:, 0]
-            ).int().sum()
+            attention_mask = ~(new_input_ids == self.tokenizer.pad_token_id)
 
-        # compute loss from first token
-        original_losses = torch.nn.functional.cross_entropy(
-            input=next_token_logits,
-            target=next_token_ids[:, 0],
-            ignore_index=self.tokenizer.pad_token_id,
-            reduction='none'
-        )
+            # mask labels before feeding into model
+            # huggingface supports labels of -100.
+            # see huggingface.co/docs/transformers/model_doc/gpt2#transformers.GPT2DoubleHeadsModel.forward.labels
+            S = new_input_ids.shape[1]
+            LS = next_token_ids.shape[1]
+            labels = torch.where(
+                torch.arange(S, device=device) < (S - LS), -100, new_input_ids
+            )
+            labels = torch.where(
+                labels == self.tokenizer.pad_token_id, -100, labels
+            )
+            outputs = self.model(
+                inputs_embeds=embeddings,
+                attention_mask=attention_mask,
+                labels=labels,
+            )
+            next_token_logits = outputs.logits[:, -LS-1:-1]
 
-        # add loss from other tokens
-        b, label_sequence_length = next_token_ids.shape
-        if label_sequence_length > 1:
-            other_next_token_logits = (
-                outputs.logits[:, -label_sequence_length:-1]
-                    .reshape((b * (label_sequence_length-1), -1))
-            )
-            other_next_token_ids = (
-                next_token_ids[:, 1:]
-                    .reshape((b * (label_sequence_length-1),))
-            )
-            other_losses = torch.nn.functional.cross_entropy(
-                input=other_next_token_logits,
-                target=other_next_token_ids,
+            if possible_answer_mask is not None:
+                BIG_NEGATIVE_NUMBER = torch.tensor(-10**10, dtype=next_token_logits.dtype, device=device)
+                next_token_logits = torch.where(possible_answer_mask, next_token_logits, BIG_NEGATIVE_NUMBER)
+            B, S, _V = next_token_logits.shape
+            loss = torch.nn.functional.cross_entropy(
+                input=next_token_logits.reshape((B * S, -1)),
+                target=next_token_ids.reshape((B * S),),
                 ignore_index=self.tokenizer.pad_token_id,
-                reduction='none'
+                # reduction=None
             )
-            # take the mean of losses on the batch level, and normalize for length
-            all_losses = torch.cat(
-                (original_losses[:, None], other_losses.reshape((b, -1))), dim=1
-            )
-            num_tokens_per_output = (
-                ~(next_token_ids == self.tokenizer.bos_token_id)).sum(dim=1)
-            all_losses = all_losses.sum(dim=1) / num_tokens_per_output
-            assert all_losses.shape == (b,)
-            loss = all_losses.mean()
-        else:
-            loss = original_losses.mean()
+            
+        n_correct = (
+            (next_token_logits.argmax(dim=-1) == next_token_ids)
+            |
+            (self.tokenizer.pad_token_id == next_token_ids)
+        ).all(dim=1).sum()
         
         if DEBUG_VERBOSE: 
-            print(f">> loss for input string: {self.tokenizer.decode(full_input_ids[0])}")
-            print(f"\tLoss = {loss:.3f}")
+            print(f">> loss for input string: {self.tokenizer.decode(new_input_ids[0])}")
+            print(f"\tLoss = {outputs.loss:.3f}")
 
-        return full_input_ids, loss, n_correct
+        return new_input_ids, loss, n_correct
     
     def compute_loss_and_call_backward(
             self,
@@ -423,6 +401,54 @@ def mean(_list: List[Union[int, float]]) -> float:
     return sum(_list) / len(_list)
 
 
+def get_preprefix_from_args(args: argparse.Namespace) -> str:
+    preprefix = ''
+    if args.use_preprefix or not args.iprompt_preprefix_str == '':
+        if args.iprompt_preprefix_str == '':
+            preprefix = data.get_init_suffix(
+                args.task_name, args.use_generic_query, args.template_num_init_string)
+        else:
+            preprefix = args.iprompt_preprefix_str
+    return preprefix
+
+
+def load_lm_from_checkpoint(
+    checkpoint: str, float16: bool) -> transformers.AutoModel:
+
+    print(f"loading lm '{checkpoint}'")
+
+    tokenizer = transformers.AutoTokenizer.from_pretrained(checkpoint)
+    llm_cls = transformers.AutoModelForSeq2SeqLM if 't5' in checkpoint else transformers.AutoModelForCausalLM
+
+    if float16:
+        if checkpoint == "EleutherAI/gpt-j-6B":
+            print(f"loading {checkpoint} in float16...")
+            lm = llm_cls.from_pretrained(
+                checkpoint, output_hidden_states=False, pad_token_id=tokenizer.eos_token_id,
+                revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True
+            )
+        else:
+            # (only certain models are pre-float16ed)
+            print(f"trying to convert {checkpoint} to float16...")
+            lm = llm_cls.from_pretrained(
+                checkpoint,
+                torch_dtype=torch.float16,
+                device_map="auto", 
+                low_cpu_mem_usage=True
+            )
+            # lm = lm.half()
+    else:
+        lm = llm_cls.from_pretrained(
+            checkpoint,
+            output_hidden_states=False,
+            pad_token_id=tokenizer.eos_token_id,
+            device_map="auto",
+            # low_cpu_mem_usage=True
+        )
+    
+    return lm
+
+
 class PrefixPool:
     """Tracks a pool of candidate prefixes and their associated metrics over time."""
     criterion: str
@@ -434,7 +460,8 @@ class PrefixPool:
     _avg_accuracy: Dict[Tuple[int], float]
     _best_prefix_by_start_token: Dict[int, Tuple[Tuple[int], float]]
 
-    def __init__(self, tokenizer: transformers.PreTrainedTokenizer, criterion: str):
+    def __init__(self, tokenizer: transformers.PreTrainedTokenizer, criterion: str,
+        topk_strategy: str = 'different_start_token'):
         self.tokenizer = tokenizer
         self.criterion = criterion
         # tuple (input_ids) -> float (loss)
@@ -446,7 +473,7 @@ class PrefixPool:
         # 
         self._best_prefix_by_start_token = {}
         # 
-        self._topk_strategy = 'different_start_token' # ['different_start_token', 'all']
+        self._topk_strategy = topk_strategy # ['different_start_token', 'all']
     
     @property
     def prefixes(self) -> List[Tuple[int]]:
@@ -457,7 +484,7 @@ class PrefixPool:
         """Number of different start tokens seen across all prefixes."""
         return len(self._best_prefix_by_start_token.keys())
     
-    def print(self, topk: int, min_occurrences: int = 2) -> None:
+    def print(self, topk: int, min_occurrences: int = 2) -> pd.DataFrame:
         top_token_ids = self.topk(k=topk, min_occurrences=min_occurrences)
         ########################### Debugging code ##########################
         # import pandas as pd
@@ -469,12 +496,18 @@ class PrefixPool:
         #####################################################################
         if not len(top_token_ids): return
         print((" " * 45), ("*" * 20), "Population", ("*" * 20))
-        for token_ids in top_token_ids:
-            prefix_str = "{:>65}".format(self.tokenizer.decode(list(token_ids)).replace("\n", "\\\\n"))
-            loss_str = f"{self._avg_loss[token_ids]:.3f}"
-            acc_str = f"{self._avg_accuracy[token_ids]*100:.1f}"
+        output_rows = []
+        for idx, token_ids in enumerate(top_token_ids):
+            prefix = self.tokenizer.decode(list(token_ids))
+            loss = self._avg_loss[token_ids]
+            acc = self._avg_accuracy[token_ids]
+            prefix_str = "{:>65}".format(prefix.replace("\n", "\\\\n"))
+            loss_str = f"{loss:.3f}"
+            acc_str = f"{acc*100:.1f}"
             print(prefix_str, "\t\t", loss_str, "\t\t", acc_str)
+            output_rows.append([idx, prefix, loss, acc])
         print()
+        return pd.DataFrame(output_rows, columns=['idx', 'prefix', 'loss', 'accuracy'])
     
     def initialize_prefix(self, prefix: torch.Tensor):
         prefix = tuple(prefix.cpu().tolist())

@@ -11,7 +11,7 @@ import torch.nn as nn
 import tqdm
 import transformers
 
-from imodelsx.iprompt.utils import device, PrefixLoss, PrefixModel
+from .utils import device, PrefixLoss, PrefixModel
 
 
 VERBOSE = False # whether to print grads, etc.
@@ -54,7 +54,7 @@ class HotFlip(PrefixModel):
         self._set_prefix_ids(
             self.init_discrete_prefix(num_tokens=self._num_tokens)
         )
-        # print(f"preprefix: '{preprefix}'")
+        print(f"preprefix: '{preprefix}'")
 
         # disable grads to model
         for p in self.model.parameters(): p.requires_grad = False
@@ -62,9 +62,9 @@ class HotFlip(PrefixModel):
         # track data specific to HotFlip
         self._epoch = 0
         self._data = []
-        # TODO use some kind of fixed-size data structure
-        # if number of tested candidates is growing unboundedly
         self._loss_for_prefix = {}
+        # 
+        self.prefix_before_input = args.prefix_before_input
 
     def check_early_stop(self) -> bool:
         """Allow prefix models to stop early."""
@@ -76,6 +76,8 @@ class HotFlip(PrefixModel):
         assert new_ids.ndim == 1, "cannot set prefix with more than 1 dim (need list of IDs)"
 
         # Track steps since new prefix to enable early stopping
+        print('self.prefix_ids:', self.prefix_ids)
+        print('new_ids:', new_ids)
         if (self.prefix_ids is not None) and (self.prefix_ids == new_ids).all():
             self._steps_since_new_prefix += 1
         else:
@@ -184,9 +186,7 @@ class HotFlip(PrefixModel):
         # Evaluate each prefix.
         for batch in tqdm.tqdm(dataloader, desc='evaluating HotFlip candidates', colour='red', leave=False):
             # Loop in this order so we only tokenize each thing once.
-            x_text = [f'. {prompt}' for prompt in batch['input']]
-            y_text = [answer.replace('.', '').rstrip() for answer in batch['output']] # strip newlines and periods.
-            #
+            x_text, y_text = self.prepare_batch(batch=batch)
             input_ids = self.tokenizer(x_text, return_tensors='pt', padding='longest')['input_ids'].to(device)
             next_token_ids = self.tokenizer(y_text, return_tensors='pt', padding='longest')['input_ids'].to(device)
             # only evaluate on single next-token
@@ -265,7 +265,8 @@ class HotFlip(PrefixModel):
     def trainable_params(self) -> Iterable[nn.Parameter]:
         return [self.prefix_embedding]
 
-    def embed_input_ids(self, input_ids: torch.Tensor, prefix_ids: Optional[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
+    def embed_input_ids(
+        self, input_ids: torch.Tensor, next_token_ids: torch.Tensor, prefix_ids: Optional[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
         """Gets token embeddings for tokens given by `input_ids` prefixed by `prefix_ids`.
 
         If not provided, `prefix_ids` is replaced with `self.prefix_ids`
@@ -292,16 +293,29 @@ class HotFlip(PrefixModel):
         # concatenate preprefix (fixed) + prefix (learned) + example
         prefix_ids = prefix_ids[None].to(device).repeat((batch_size, 1)).to(device)
         preprefix_ids = self.preprefix_ids[None].to(device).repeat((batch_size, 1)).to(device)
-        full_input_ids = torch.cat(
-            (preprefix_ids, prefix_ids, input_ids), dim=1
-        )
-        outputs = torch.cat(
-            (
-                self.token_embedding.forward(preprefix_ids),
-                prefix_embedding[None].repeat((batch_size, 1, 1)),
-                self.token_embedding.forward(input_ids)
-            ), dim=1
-        )
+
+        if self.prefix_before_input:
+            full_input_ids = torch.cat(
+                (preprefix_ids, prefix_ids, input_ids, next_token_ids), dim=1
+            )
+            outputs = torch.cat(
+                (
+                    self.token_embedding.forward(preprefix_ids),
+                    prefix_embedding[None].repeat((batch_size, 1, 1)),
+                    self.token_embedding.forward(input_ids),
+                    self.token_embedding.forward(next_token_ids),
+                ), dim=1
+            )
+        else:
+            full_input_ids = torch.cat(
+                (input_ids, preprefix_ids, prefix_ids, next_token_ids), dim=1
+            )
+            outputs = torch.cat(
+                (
+                    self.token_embedding.forward(input_ids),
+                    self.token_embedding.forward(preprefix_ids),
+                    prefix_embedding[None].repeat((batch_size, 1, 1)),
+                    self.token_embedding.forward(next_token_ids),
+                ), dim=1
+            )
         return full_input_ids, outputs
-
-
