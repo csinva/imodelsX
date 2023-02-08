@@ -11,3 +11,8 @@ def get_add_two_numbers_dataset(num_examples: int= None):
         df = df.sample(n=num_examples)
     inputs, outputs = df['input_strings'].values, [v.replace('\\n', '\n') for v in df['output_strings'].values]
     return inputs, outputs
+
+if __name__ == '__main__':
+    inputs, outputs = get_add_two_numbers_dataset()
+    print(inputs[:5])
+    print(outputs[:5])

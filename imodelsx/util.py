@@ -84,3 +84,23 @@ def get_embs_llm(X: List[str], checkpoint: str):
     for i in tqdm(range(num_examples)):
         embs[i] = np.mean(out_list[i], axis=1)  # avg over seq_len dim
     return embs
+
+def get_spacy_tokenizer(convert_output=True, convert_lower=True):
+    from spacy.lang.en import English
+    nlp = English()
+    if convert_output:
+        class LLMTreeTokenizer:
+            def __init__(self):
+                self.tok = nlp
+
+            # written kind of weirdly to optimize the speed of the tokenizer
+            if convert_lower:
+                def __call__(self, s):
+                    s = s.lower()
+                    return [str(x) for x in self.tok(s)]
+            else:
+                def __call__(self, s):
+                    return [str(x) for x in self.tok(s)]
+        return LLMTreeTokenizer()
+    else:
+        return nlp
