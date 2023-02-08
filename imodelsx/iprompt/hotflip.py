@@ -98,7 +98,7 @@ class HotFlip(PrefixModel):
             print(f"Epoch {epoch}. Closest tokens to '{prefix_str}':")
             word_distances =  ((self.token_embedding.weight - self.prefix_embedding.reshape(1, emb_dim))**2).sum(1)
             assert word_distances.shape == (50_257,)
-            topk_closest_words = distances = word_distances.topk(k=TOP_K, largest=False)
+            topk_closest_words = word_distances.topk(k=TOP_K, largest=False)
             for _id, _dist in zip(topk_closest_words.indices.cpu().tolist(), topk_closest_words.values.cpu().tolist()):
                 print(f'\t{self.id_to_word[_id]} ({_id}): {_dist:.3f}')
             print("*" * 30)

@@ -237,8 +237,8 @@ class AutoPrompt(HotFlip):
             all_candidate_losses[i] = cand_loss
             all_n_correct[i] = cand_n_correct
 
-            self._autoprompt_verbose: print(
-                f'** \t{self.tokenizer.decode(candidate_prefix_ids[i])}: {cand_loss:.2f}')
+            # self._autoprompt_verbose: print(
+                # f'** \t{self.tokenizer.decode(candidate_prefix_ids[i])}: {cand_loss:.2f}')
 
             self._prefix_pool.update(
                 prefix=candidate_prefix_ids[i],

@@ -168,7 +168,7 @@ class iPrompt(AutoPrompt):
         else:
             output_length = self._num_tokens + num_conditional_tokens
         
-        print("iPrompt._generate", input_ids.shape, "//", self.tokenizer.decode(input_ids[0]))
+        # print("iPrompt._generate", input_ids.shape, "//", self.tokenizer.decode(input_ids[0]))
         
         g = self._generation_model.generate(
             input_ids=input_ids,
@@ -197,7 +197,7 @@ class iPrompt(AutoPrompt):
             #     (attention_mask[idx], torch.ones(self._num_tokens).to(device)), dim=0
             # ).bool()
             random_sentence_ids = g[idx]
-            print(">>", self.tokenizer.decode(random_sentence_ids).replace('\n', '\\n'))
+            # print(">>", self.tokenizer.decode(random_sentence_ids).replace('\n', '\\n'))
         
         return g
     

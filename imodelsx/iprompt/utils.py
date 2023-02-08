@@ -495,7 +495,7 @@ class PrefixPool:
         # vd.sort_values(by=['n', 'loss'], ascending=[False, True])[["n", "prefix_str"]].iloc[:25]
         #####################################################################
         if not len(top_token_ids): return
-        print((" " * 45), ("*" * 20), "Population", ("*" * 20))
+        # print((" " * 45), ("*" * 20), "Population", ("*" * 20))
         output_rows = []
         for idx, token_ids in enumerate(top_token_ids):
             prefix = self.tokenizer.decode(list(token_ids))
@@ -504,9 +504,9 @@ class PrefixPool:
             prefix_str = "{:>65}".format(prefix.replace("\n", "\\\\n"))
             loss_str = f"{loss:.3f}"
             acc_str = f"{acc*100:.1f}"
-            print(prefix_str, "\t\t", loss_str, "\t\t", acc_str)
+            # print(prefix_str, "\t\t", loss_str, "\t\t", acc_str)
             output_rows.append([idx, prefix, loss, acc])
-        print()
+        # print()
         return pd.DataFrame(output_rows, columns=['idx', 'prefix', 'loss', 'accuracy'])
     
     def initialize_prefix(self, prefix: torch.Tensor):
