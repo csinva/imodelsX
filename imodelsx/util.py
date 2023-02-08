@@ -7,6 +7,7 @@ from transformers import pipeline
 import datasets
 import numpy as np
 
+
 def generate_ngrams_list(
     sentence: str,
     ngrams: int,
@@ -46,7 +47,7 @@ def generate_ngrams_list(
                 idx_ending = idx_starting + ngram_length
                 seq = ' '.join(unigrams_list[idx_starting: idx_ending]).strip()
                 # seq = ''.join([t.text + ' ' #t.whitespace_
-                            #    for t in unigrams_list[idx_starting: idx_ending]]).strip()  # convert the tokens back to text
+                #    for t in unigrams_list[idx_starting: idx_ending]]).strip()  # convert the tokens back to text
                 if len(seq) > 0 and not seq.isspace():  # str is not just whitespace
                     seqs.append(seq)
 
@@ -58,6 +59,7 @@ def generate_ngrams_list(
             if ' ' in chunk.text
         ]
     return seqs
+
 
 def get_embs_llm(X: List[str], checkpoint: str):
     """Return embeddings from HF model given checkpoint name
@@ -85,6 +87,7 @@ def get_embs_llm(X: List[str], checkpoint: str):
         embs[i] = np.mean(out_list[i], axis=1)  # avg over seq_len dim
     return embs
 
+
 def get_spacy_tokenizer(convert_output=True, convert_lower=True):
     from spacy.lang.en import English
     nlp = English()
@@ -104,3 +107,24 @@ def get_spacy_tokenizer(convert_output=True, convert_lower=True):
         return LLMTreeTokenizer()
     else:
         return nlp
+
+
+STOPWORDS = {
+    'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', "you're",
+    "you've", "you'll", "you'd", 'your', 'yours', 'yourself', 'yourselves', 'he',
+    'him', 'his', 'himself', 'she', "she's", 'her', 'hers', 'herself', 'it', "it's",
+    'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which',
+    'who', 'whom', 'this', 'that', "that'll", 'these', 'those', 'am', 'is', 'are', 'was',
+    'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did',
+    'doing', 'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while',
+    'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through',
+    'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out',
+    'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when',
+    'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other',
+    'some', 'such', 'nor', 'only', 'own', 'so', 'than', 'too', 'very',
+    'can', 'will', 'just', 'don', "don't", 'should', "should've", 'now',
+    'ain', 'aren', "aren't", 'couldn', "couldn't", 'didn', "didn't",
+    'doesn', "doesn't", 'hadn', "hadn't", 'hasn', "hasn't", 'haven', "haven't", 'isn', "isn't",
+    'ma', 'mightn', "mightn't", 'mustn', "mustn't", 'needn', "needn't", 'shan', "shan't",
+    'shouldn', "shouldn't", 'wasn', "wasn't", 'weren', "weren't", 'won', "won't", 'wouldn', "wouldn't"
+}
