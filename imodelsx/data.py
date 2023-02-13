@@ -75,7 +75,9 @@ def load_huggingface_dataset(
         ))
 
     # convert to binary classifications
-    if binary_classification and len(np.unique(dset['train']['label'])) > 2:
+    if binary_classification and \
+        len(np.unique(dset['train']['label'])) > 2 and \
+            not dataset_name == 'csinva/fmri_language_responses':
         if dataset_name == 'financial_phrasebank':
             labels_to_keep_remap = {
                 0: 1, # negative
