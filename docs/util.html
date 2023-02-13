@@ -33,6 +33,7 @@ from transformers import pipeline
 import datasets
 import numpy as np
 
+
 def generate_ngrams_list(
     sentence: str,
     ngrams: int,
@@ -72,7 +73,7 @@ def generate_ngrams_list(
                 idx_ending = idx_starting + ngram_length
                 seq = &#39; &#39;.join(unigrams_list[idx_starting: idx_ending]).strip()
                 # seq = &#39;&#39;.join([t.text + &#39; &#39; #t.whitespace_
-                            #    for t in unigrams_list[idx_starting: idx_ending]]).strip()  # convert the tokens back to text
+                #    for t in unigrams_list[idx_starting: idx_ending]]).strip()  # convert the tokens back to text
                 if len(seq) &gt; 0 and not seq.isspace():  # str is not just whitespace
                     seqs.append(seq)
 
@@ -84,6 +85,7 @@ def generate_ngrams_list(
             if &#39; &#39; in chunk.text
         ]
     return seqs
+
 
 def get_embs_llm(X: List[str], checkpoint: str):
     &#34;&#34;&#34;Return embeddings from HF model given checkpoint name
@@ -109,7 +111,49 @@ def get_embs_llm(X: List[str], checkpoint: str):
     logging.info(&#39;extract embs HF...&#39;)
     for i in tqdm(range(num_examples)):
         embs[i] = np.mean(out_list[i], axis=1)  # avg over seq_len dim
-    return embs</code></pre>
+    return embs
+
+
+def get_spacy_tokenizer(convert_output=True, convert_lower=True):
+    from spacy.lang.en import English
+    nlp = English()
+    if convert_output:
+        class LLMTreeTokenizer:
+            def __init__(self):
+                self.tok = nlp
+
+            # written kind of weirdly to optimize the speed of the tokenizer
+            if convert_lower:
+                def __call__(self, s):
+                    s = s.lower()
+                    return [str(x) for x in self.tok(s)]
+            else:
+                def __call__(self, s):
+                    return [str(x) for x in self.tok(s)]
+        return LLMTreeTokenizer()
+    else:
+        return nlp
+
+
+STOPWORDS = {
+    &#39;i&#39;, &#39;me&#39;, &#39;my&#39;, &#39;myself&#39;, &#39;we&#39;, &#39;our&#39;, &#39;ours&#39;, &#39;ourselves&#39;, &#39;you&#39;, &#34;you&#39;re&#34;,
+    &#34;you&#39;ve&#34;, &#34;you&#39;ll&#34;, &#34;you&#39;d&#34;, &#39;your&#39;, &#39;yours&#39;, &#39;yourself&#39;, &#39;yourselves&#39;, &#39;he&#39;,
+    &#39;him&#39;, &#39;his&#39;, &#39;himself&#39;, &#39;she&#39;, &#34;she&#39;s&#34;, &#39;her&#39;, &#39;hers&#39;, &#39;herself&#39;, &#39;it&#39;, &#34;it&#39;s&#34;,
+    &#39;its&#39;, &#39;itself&#39;, &#39;they&#39;, &#39;them&#39;, &#39;their&#39;, &#39;theirs&#39;, &#39;themselves&#39;, &#39;what&#39;, &#39;which&#39;,
+    &#39;who&#39;, &#39;whom&#39;, &#39;this&#39;, &#39;that&#39;, &#34;that&#39;ll&#34;, &#39;these&#39;, &#39;those&#39;, &#39;am&#39;, &#39;is&#39;, &#39;are&#39;, &#39;was&#39;,
+    &#39;were&#39;, &#39;be&#39;, &#39;been&#39;, &#39;being&#39;, &#39;have&#39;, &#39;has&#39;, &#39;had&#39;, &#39;having&#39;, &#39;do&#39;, &#39;does&#39;, &#39;did&#39;,
+    &#39;doing&#39;, &#39;a&#39;, &#39;an&#39;, &#39;the&#39;, &#39;and&#39;, &#39;but&#39;, &#39;if&#39;, &#39;or&#39;, &#39;because&#39;, &#39;as&#39;, &#39;until&#39;, &#39;while&#39;,
+    &#39;of&#39;, &#39;at&#39;, &#39;by&#39;, &#39;for&#39;, &#39;with&#39;, &#39;about&#39;, &#39;against&#39;, &#39;between&#39;, &#39;into&#39;, &#39;through&#39;,
+    &#39;during&#39;, &#39;before&#39;, &#39;after&#39;, &#39;above&#39;, &#39;below&#39;, &#39;to&#39;, &#39;from&#39;, &#39;up&#39;, &#39;down&#39;, &#39;in&#39;, &#39;out&#39;,
+    &#39;on&#39;, &#39;off&#39;, &#39;over&#39;, &#39;under&#39;, &#39;again&#39;, &#39;further&#39;, &#39;then&#39;, &#39;once&#39;, &#39;here&#39;, &#39;there&#39;, &#39;when&#39;,
+    &#39;where&#39;, &#39;why&#39;, &#39;how&#39;, &#39;all&#39;, &#39;any&#39;, &#39;both&#39;, &#39;each&#39;, &#39;few&#39;, &#39;more&#39;, &#39;most&#39;, &#39;other&#39;,
+    &#39;some&#39;, &#39;such&#39;, &#39;nor&#39;, &#39;only&#39;, &#39;own&#39;, &#39;so&#39;, &#39;than&#39;, &#39;too&#39;, &#39;very&#39;,
+    &#39;can&#39;, &#39;will&#39;, &#39;just&#39;, &#39;don&#39;, &#34;don&#39;t&#34;, &#39;should&#39;, &#34;should&#39;ve&#34;, &#39;now&#39;,
+    &#39;ain&#39;, &#39;aren&#39;, &#34;aren&#39;t&#34;, &#39;couldn&#39;, &#34;couldn&#39;t&#34;, &#39;didn&#39;, &#34;didn&#39;t&#34;,
+    &#39;doesn&#39;, &#34;doesn&#39;t&#34;, &#39;hadn&#39;, &#34;hadn&#39;t&#34;, &#39;hasn&#39;, &#34;hasn&#39;t&#34;, &#39;haven&#39;, &#34;haven&#39;t&#34;, &#39;isn&#39;, &#34;isn&#39;t&#34;,
+    &#39;ma&#39;, &#39;mightn&#39;, &#34;mightn&#39;t&#34;, &#39;mustn&#39;, &#34;mustn&#39;t&#34;, &#39;needn&#39;, &#34;needn&#39;t&#34;, &#39;shan&#39;, &#34;shan&#39;t&#34;,
+    &#39;shouldn&#39;, &#34;shouldn&#39;t&#34;, &#39;wasn&#39;, &#34;wasn&#39;t&#34;, &#39;weren&#39;, &#34;weren&#39;t&#34;, &#39;won&#39;, &#34;won&#39;t&#34;, &#39;wouldn&#39;, &#34;wouldn&#39;t&#34;
+}</code></pre>
 </details>
 </section>
 <section>
@@ -173,7 +217,7 @@ parsing</p></div>
                 idx_ending = idx_starting + ngram_length
                 seq = &#39; &#39;.join(unigrams_list[idx_starting: idx_ending]).strip()
                 # seq = &#39;&#39;.join([t.text + &#39; &#39; #t.whitespace_
-                            #    for t in unigrams_list[idx_starting: idx_ending]]).strip()  # convert the tokens back to text
+                #    for t in unigrams_list[idx_starting: idx_ending]]).strip()  # convert the tokens back to text
                 if len(seq) &gt; 0 and not seq.isspace():  # str is not just whitespace
                     seqs.append(seq)
 
@@ -224,6 +268,36 @@ parsing</p></div>
     return embs</code></pre>
 </details>
 </dd>
+<dt id="imodelsx.util.get_spacy_tokenizer"><code class="name flex">
+<span>def <span class="ident">get_spacy_tokenizer</span></span>(<span>convert_output=True, convert_lower=True)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_spacy_tokenizer(convert_output=True, convert_lower=True):
+    from spacy.lang.en import English
+    nlp = English()
+    if convert_output:
+        class LLMTreeTokenizer:
+            def __init__(self):
+                self.tok = nlp
+
+            # written kind of weirdly to optimize the speed of the tokenizer
+            if convert_lower:
+                def __call__(self, s):
+                    s = s.lower()
+                    return [str(x) for x in self.tok(s)]
+            else:
+                def __call__(self, s):
+                    return [str(x) for x in self.tok(s)]
+        return LLMTreeTokenizer()
+    else:
+        return nlp</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -244,6 +318,7 @@ parsing</p></div>
 <ul class="">
 <li><code><a title="imodelsx.util.generate_ngrams_list" href="#imodelsx.util.generate_ngrams_list">generate_ngrams_list</a></code></li>
 <li><code><a title="imodelsx.util.get_embs_llm" href="#imodelsx.util.get_embs_llm">get_embs_llm</a></code></li>
+<li><code><a title="imodelsx.util.get_spacy_tokenizer" href="#imodelsx.util.get_spacy_tokenizer">get_spacy_tokenizer</a></code></li>
 </ul>
 </li>
 </ul>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>imodelsx.iprompt.data API documentation</title>
+<title>imodelsx.metrics API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,31 +19,53 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>imodelsx.iprompt.data</code></h1>
+<h1 class="title">Module <code>imodelsx.metrics</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import os
-import pandas as pd
+<pre><code class="python">import numpy as np
+from sklearn.metrics import accuracy_score, mean_squared_error, r2_score, roc_auc_score, \
+    precision_score, recall_score, balanced_accuracy_score, \
+        brier_score_loss
+from functools import partial
 
-def get_add_two_numbers_dataset(num_examples: int= None):
-    df = pd.read_csv(os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        &#39;add_two.csv&#39;
-    ), delimiter=&#39;,&#39;)
-    df[&#39;output_strings&#39;] = df[&#39;output_strings&#39;].str.replace(&#34;&#39;&#34;, &#34;&#34;)
-    if num_examples is not None:
-        df = df.sample(n=num_examples)
-    inputs, outputs = df[&#39;input_strings&#39;].values, [v.replace(&#39;\\n&#39;, &#39;\n&#39;) for v in df[&#39;output_strings&#39;].values]
-    return inputs, outputs
+def gini_score(y_true, y_pred):
+    &#34;&#34;&#34;Purer (more accurate) is better
+    &#34;&#34;&#34;
+    y_pred = y_pred.astype(bool)
+    y_pred_sum = y_pred.sum()
+    if y_pred_sum == 0 or y_pred_sum == y_pred.size:
+        y_mean = y_true.mean()
+    else:
+        y_mean = y_true[y_pred].mean()
+    return gini_binary(y_mean)
 
-if __name__ == &#39;__main__&#39;:
-    inputs, outputs = get_add_two_numbers_dataset()
-    print(inputs[:5])
-    print(outputs[:5])</code></pre>
+def gini_binary(y_mean: float) -&gt; float:
+    &#34;&#34;&#34;{0, 1} -&gt; 1
+    {0.5} -&gt; 0.5
+    &#34;&#34;&#34;
+    return y_mean**2 + (1 - y_mean)**2
+
+def entropy_binary(y_mean: float) -&gt; float:
+    return -y_mean * np.log2(y_mean) - (1 - y_mean) * np.log2(1 - y_mean)
+
+metrics_classification_discrete = {
+    &#39;accuracy&#39;: accuracy_score,
+    &#39;precision&#39;: partial(precision_score, zero_division=0),
+    &#39;recall&#39;: partial(recall_score, zero_division=0),
+    &#39;balanced_accuracy&#39;: balanced_accuracy_score,
+}
+metrics_classification_proba = {
+    &#39;roc_auc&#39;: roc_auc_score,
+    &#39;brier_score_loss&#39;: brier_score_loss,
+}
+metrics_regression = {
+    &#39;r2&#39;: r2_score,
+    &#39;mse&#39;: mean_squared_error,
+}</code></pre>
 </details>
 </section>
 <section>
@@ -53,8 +75,8 @@ if __name__ == &#39;__main__&#39;:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="imodelsx.iprompt.data.get_add_two_numbers_dataset"><code class="name flex">
-<span>def <span class="ident">get_add_two_numbers_dataset</span></span>(<span>num_examples: int = None)</span>
+<dt id="imodelsx.metrics.entropy_binary"><code class="name flex">
+<span>def <span class="ident">entropy_binary</span></span>(<span>y_mean: float) ‑> float</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -62,16 +84,46 @@ if __name__ == &#39;__main__&#39;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_add_two_numbers_dataset(num_examples: int= None):
-    df = pd.read_csv(os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        &#39;add_two.csv&#39;
-    ), delimiter=&#39;,&#39;)
-    df[&#39;output_strings&#39;] = df[&#39;output_strings&#39;].str.replace(&#34;&#39;&#34;, &#34;&#34;)
-    if num_examples is not None:
-        df = df.sample(n=num_examples)
-    inputs, outputs = df[&#39;input_strings&#39;].values, [v.replace(&#39;\\n&#39;, &#39;\n&#39;) for v in df[&#39;output_strings&#39;].values]
-    return inputs, outputs</code></pre>
+<pre><code class="python">def entropy_binary(y_mean: float) -&gt; float:
+    return -y_mean * np.log2(y_mean) - (1 - y_mean) * np.log2(1 - y_mean)</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.metrics.gini_binary"><code class="name flex">
+<span>def <span class="ident">gini_binary</span></span>(<span>y_mean: float) ‑> float</span>
+</code></dt>
+<dd>
+<div class="desc"><p>{0, 1} -&gt; 1
+{0.5} -&gt; 0.5</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gini_binary(y_mean: float) -&gt; float:
+    &#34;&#34;&#34;{0, 1} -&gt; 1
+    {0.5} -&gt; 0.5
+    &#34;&#34;&#34;
+    return y_mean**2 + (1 - y_mean)**2</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.metrics.gini_score"><code class="name flex">
+<span>def <span class="ident">gini_score</span></span>(<span>y_true, y_pred)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Purer (more accurate) is better</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gini_score(y_true, y_pred):
+    &#34;&#34;&#34;Purer (more accurate) is better
+    &#34;&#34;&#34;
+    y_pred = y_pred.astype(bool)
+    y_pred_sum = y_pred.sum()
+    if y_pred_sum == 0 or y_pred_sum == y_pred.size:
+        y_mean = y_true.mean()
+    else:
+        y_mean = y_true[y_pred].mean()
+    return gini_binary(y_mean)</code></pre>
 </details>
 </dd>
 </dl>
@@ -87,12 +139,14 @@ if __name__ == &#39;__main__&#39;:
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="imodelsx.iprompt" href="index.html">imodelsx.iprompt</a></code></li>
+<li><code><a title="imodelsx" href="index.html">imodelsx</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="imodelsx.iprompt.data.get_add_two_numbers_dataset" href="#imodelsx.iprompt.data.get_add_two_numbers_dataset">get_add_two_numbers_dataset</a></code></li>
+<li><code><a title="imodelsx.metrics.entropy_binary" href="#imodelsx.metrics.entropy_binary">entropy_binary</a></code></li>
+<li><code><a title="imodelsx.metrics.gini_binary" href="#imodelsx.metrics.gini_binary">gini_binary</a></code></li>
+<li><code><a title="imodelsx.metrics.gini_score" href="#imodelsx.metrics.gini_score">gini_score</a></code></li>
 </ul>
 </li>
 </ul>
