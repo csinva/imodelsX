@@ -9,6 +9,7 @@ def load_huggingface_dataset(
     subsample_frac: float = 1.0,
     binary_classification: bool = False,
     return_lists: bool = False,
+    label_name: str = 'label',
 ):
     """Load text dataset from huggingface (with train/validation splits) + return the relevant dataset key
     Params
@@ -21,7 +22,8 @@ def load_huggingface_dataset(
     return_lists: bool
         Whether to return pre-split lists rather than HF dataset
 
-    Some examples       |    n_train     |    n_classes |
+    Dataset name        |    n_train     |    n_classes |
+    -----------------------------------------------------
     rotten_tomatoes     |    ~9k         |    2
     sst2                |    ~68k        |    2
     imdb                |    ~25k        |    2         | note: these are relatively long
@@ -29,6 +31,8 @@ def load_huggingface_dataset(
     financial_phrasebank|    ~2.3k       |    3
     emotion             |    ~18k        |    6
     ag_news             |    ~120k       |    4
+    -----------------------------------------------------
+    csinva/fmri_language_responses | ~10k | 250 regression voxels
     """
     # load dset
     if dataset_name == 'tweet_eval':
@@ -54,7 +58,13 @@ def load_huggingface_dataset(
         dset['validation'] = dset['test']
     elif dataset_name == 'ag_news':
         dset['validation'] = dset['test']
+    elif dataset_name == 'csinva/fmri_language_responses':
+        dset['validation'] = dset['test']
 
+    # set up label key
+    if not label_name == 'label':
+        dset['train'] = dset['train'].add_column('label', dset['train'][label_name])
+        dset['validation'] = dset['validation'].add_column('label', dset['validation'][label_name])
 
     # subsample data
     if subsample_frac > 0:
@@ -65,7 +75,9 @@ def load_huggingface_dataset(
         ))
 
     # convert to binary classifications
-    if binary_classification and len(np.unique(dset['train']['label'])) > 2:
+    if binary_classification and \
+        len(np.unique(dset['train']['label'])) > 2 and \
+            not dataset_name == 'csinva/fmri_language_responses':
         if dataset_name == 'financial_phrasebank':
             labels_to_keep_remap = {
                 0: 1, # negative

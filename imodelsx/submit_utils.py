@@ -1,5 +1,4 @@
 from typing import Any, Dict, List, Tuple
-
 import itertools
 import subprocess
 import random
@@ -7,8 +6,11 @@ from multiprocessing.pool import ThreadPool
 from multiprocessing import Pool, current_process, Queue
 from functools import reduce
 from itertools import repeat
+import traceback
+from os.path import dirname, join
+submit_utils_dir = dirname(__file__)
 """Handles utilities for job sweeps,
-with a focus on embarassingly parallel sweeps on a single machine.
+focused on embarassingly parallel sweeps on a single machine.
 """
 
 
@@ -21,6 +23,7 @@ def run_args_list(
     reverse: bool = False,
     n_cpus: int = 1,
     gpu_ids: List[int] = [],
+    repeat_failed_jobs: bool = False,
 ):
     """
     Params
@@ -40,9 +43,12 @@ def run_args_list(
         Number of cpus to use (if >1, parallelizes over local machine)
     gpu_ids: List[int]
         Ids of GPUs to run on (e.g. [0, 1] for 2 gpus)
+    repeat_failed_jobs: bool
+        Whether to repeatedly run failed jobs
     """
     n_gpus = len(gpu_ids)
-    assert not (n_cpus > 1 and n_gpus > 0), 'Cannot parallelize over cpus and gpus'
+    assert not (n_cpus > 1 and n_gpus >
+                0), 'Cannot parallelize over cpus and gpus'
 
     # adjust order
     if shuffle:
@@ -68,27 +74,38 @@ def run_args_list(
             print(
                 f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n' + param_str)
         return
-            
+
+    # run serial
+    failed_jobs = []
     if n_cpus == 1 and n_gpus == 0:
         for i, param_str in enumerate(param_str_list):
             print(
                 f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n' + param_str)
             try:
-                # os.system(param_str)
-                sts = subprocess.Popen(param_str, shell=True).wait()
+                output = subprocess.check_output(
+                    param_str, shell=True,
+                )
             except KeyboardInterrupt:
                 print('Keyboard interrupt, exiting...')
                 exit(0)
+            except subprocess.CalledProcessError as e:
+                print('CalledProcessError', e)
+                failed_jobs.append((i, param_str))
             except Exception as e:
                 print(e)
-    
+
+    # run parallel
     elif n_cpus > 1 and n_gpus == 0:
         def run_single_job(i, param_str):
             print(
                 f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n' + param_str)
             try:
-                # os.system(param_str)
-                sts = subprocess.Popen(param_str, shell=True).wait()
+                output = subprocess.check_output(
+                    param_str, shell=True,
+                )
+            except subprocess.CalledProcessError as e:
+                print('CalledProcessError', e)
+                failed_jobs.append((i, param_str))
             except KeyboardInterrupt:
                 print('Keyboard interrupt, exiting...')
                 exit(0)
@@ -99,7 +116,8 @@ def run_args_list(
             pool.apply_async(run_single_job, (i, param_str, ))
         pool.close()
         pool.join()
-    
+
+    # run parallel on GPUs
     elif n_gpus > 0:
         # initialize the queue with the GPU ids
         global job_queue_multiprocessing
@@ -111,13 +129,43 @@ def run_args_list(
         pool = Pool(processes=n_gpus)
         n = len(param_str_list)
         indexes = [i for i in range(n)]
-        for _ in pool.starmap(run_on_gpu, zip(param_str_list, indexes, repeat(n))):
-            pass
+        for failed_job in pool.starmap(run_on_gpu, zip(param_str_list, indexes, repeat(n))):
+            failed_jobs.append(failed_job)
+        failed_jobs = [x for x in failed_jobs if x is not None]
         pool.close()
         pool.join()
+        print('failed_jobs', failed_jobs)
+
+    # final printing
+    print('\n\n\n*********************Done*********************')
+    if len(failed_jobs) == 0:
+        print('All jobs succeeded!')
+    else:
+        print(len(failed_jobs), 'Failed jobs\n\n')
+        for (i, param_str) in failed_jobs:
+            print('\t', param_str)
+            # print('\t', repr(e))
+        failed_args_list = [args_list[i] for (i, _) in failed_jobs]
+
+        if repeat_failed_jobs:
+            print('Repeating failed jobs...')
+            run_args_list(
+                failed_args_list,
+                cmd_python=cmd_python,
+                script_name=script_name,
+                actually_run=actually_run,
+                shuffle=shuffle,
+                reverse=reverse,
+                n_cpus=n_cpus,
+                gpu_ids=gpu_ids,
+                repeat_failed_jobs=repeat_failed_jobs,
+            )
+        
+
 
 def run_on_gpu(param_str, i, n):
     gpu_id = job_queue_multiprocessing.get()
+    failed_job = None
     try:
         # run on GPU <gpu_id>
         ident = current_process().ident
@@ -125,12 +173,21 @@ def run_on_gpu(param_str, i, n):
         prefix = f'CUDA_VISIBLE_DEVICES={gpu_id} '
         param_str = prefix + param_str
         print(
-                f'\n\n-------------------{i + 1}/{n}--------------------\n' + param_str)
-        sts = subprocess.Popen(param_str, shell=True).wait()
+            f'\n\n-------------------{i + 1}/{n}--------------------\n' + param_str)
+        # sts = subprocess.Popen(param_str, shell=True).wait()
+        output = subprocess.check_output(
+            param_str, shell=True,
+        )
+    except KeyboardInterrupt:
+        print('Keyboard interrupt, exiting...')
+        exit(0)
+    except subprocess.CalledProcessError as e:
+        print('CalledProcessError', e)
         print(f'{ident}: Finished on GPU {gpu_id}')
+        failed_job = (i, param_str)
     finally:
         job_queue_multiprocessing.put(gpu_id)
-
+        return failed_job
 
 
 def get_args_list(
@@ -194,3 +251,29 @@ def _validate_arguments(
         for k in k_tup:
             assert not k in params_shared_dict, f"params_coupled_dict key {k} should not be in params_shared_dict"
 
+
+if __name__ == '__main__':
+    params_shared_dict = {
+        'name': ['chandan', 'roli', 'alice', 'albert', 'jessica', 'felicia',],
+    }
+
+    # Single-tree sweep
+    params_coupled_dict = {
+        ('dataset_name',): [
+            ('llm_tree',)
+        ],
+    }
+
+    # Args list is a list of dictionaries
+    args_list = get_args_list(
+        params_shared_dict=params_shared_dict,
+        params_coupled_dict=params_coupled_dict,
+    )
+    run_args_list(
+        args_list,
+        script_name=join(submit_utils_dir, 'dummy_script.py'),
+        actually_run=True,
+        # n_cpus=3,
+        gpu_ids=[0, 1],
+        repeat_failed_jobs=True,
+    )

@@ -110,7 +110,7 @@ def train_model(
 
     assert len(input_strs) == len(
         output_strs), &#34;input and output must be same length to create input-output pairs&#34;
-    text_strs = list(map(&#39;.\n\n&#39;.join, zip(input_strs, output_strs)))
+    text_strs = list(map(lambda t: f&#39;{t[0]}{t[1]}.&#39;, zip(input_strs, output_strs)))
     df = pd.DataFrame.from_dict({
         &#39;input&#39;: input_strs,
         &#39;output&#39;: output_strs,
@@ -122,7 +122,7 @@ def train_model(
         d2 = defaultdict(list)
         for i in range(max_n_datapoints):
             all_shots = df.sample(n=n_shots, replace=False)
-            d2[&#39;text&#39;].append(&#39;&#39;.join(all_shots[&#39;text&#39;].values))
+            d2[&#39;text&#39;].append(&#39;\n\n&#39;.join(all_shots[&#39;text&#39;].values))
             #
             last_input = all_shots.tail(n=1)[&#39;input&#39;].values[0]
             d2[&#39;input&#39;].append(
@@ -132,7 +132,6 @@ def train_model(
             last_output = all_shots.tail(n=1)[&#39;output&#39;].values[0]
             d2[&#39;output&#39;].append(last_output)
             #
-
         df = pd.DataFrame.from_dict(d2)
         # shuffle rows
         df = df.sample(n=max_n_datapoints, replace=False)
@@ -378,13 +377,20 @@ def explain_dataset_iprompt(
     input_strings: List[str],
     output_strings: List[str],
     checkpoint: str=&#39;EleutherAI/gpt-j-6B&#39;,
+    generation_checkpoint: str = &#39;&#39;,
     num_learned_tokens=1,
     save_dir: str = &#39;./results&#39;,
     lr: float = 0.01,
     pop_size: int = 8,
+    pop_criterion: str = &#39;loss&#39;,
+    pop_topk_strategy: str = &#39;different_start_token&#39;,
     num_mutations: int = 4,
+    prefix_before_input: bool = True,
+    do_final_reranking: bool = False,
     num_random_generations: int = 4,
     generation_repetition_penalty: float = 2.0,
+    generation_temp: float = 1.0,
+    generation_top_p: float = 1.0,
     early_stopping_steps: int = -1,
     llm_float16=False,
     gamma: float = 0.0,
@@ -416,6 +422,19 @@ def explain_dataset_iprompt(
         list of output strings (e.g. &#34;4&#34;)
     checkpoint: str
         name of model checkpoint to prompt (e.g. EleutherAI/gpt-j-6B)
+    generation_checkpoint: str
+        name of model to generate prompts, *only if if different from checkpoint
+        used for prompting*. defaults to &#39;&#39; (same model for both).
+    prefix_before_input: bool
+        whether to prompt the LLM with the prefix before or after the input data
+    do_final_reranking: bool
+        optionally rerank top prefixes using a single batch. helps prevent
+        noisy prefixes from being top at the end, especially when run over a
+        small number of iterations or with small batch size.
+    generation_temp: float
+        temperature for sampling from LLM (defaults to 1.0)
+    generation_top_p: float
+        p for sampling from LLM, if using top-p sampling (defaults to 1.0, no sampling)
     num_learned_tokens: int
         number of tokens to learn in prompt
     save_dir: str
@@ -424,6 +443,10 @@ def explain_dataset_iprompt(
         learning rate for prompt tuning
     pop_size: int
         number of prompt candidates to evaluate for each iteration of iprompt
+    pop_criterion: str
+        criterion for getting top prefixes from prefix pool, in [&#39;loss&#39;, &#39;acc&#39;]
+    pop_topk_strategy: str
+        strategy for getting new prefixes from prefix pool, in [&#39;different_start_token&#39;, &#39;all&#39;]
     num_mutations: int
         number of mutations to apply to each prompt candidate
     lm: transformers.PreTrainedModel
@@ -476,13 +499,21 @@ def explain_dataset_iprompt(
             tokenizer=tokenizer,
             preprefix_str=preprefix,
             pop_size=pop_size,
+            pop_criterion=pop_criterion,
+            pop_topk_strategy=pop_topk_strategy,
             num_mutations=num_mutations,
+            prefix_before_input=prefix_before_input,
+            do_final_reranking=do_final_reranking,
             num_random_generations=num_random_generations,
             generation_repetition_penalty=generation_repetition_penalty,
+            generation_temp=generation_temp,
+            generation_top_p=generation_top_p,
             early_stopping_steps=early_stopping_steps,
             num_learned_tokens=num_learned_tokens,
             max_length=max_length,
             verbose=verbose,
+            llm_float16=llm_float16,
+            generation_checkpoint=generation_checkpoint,
             llm_candidate_regeneration_prompt_start=llm_candidate_regeneration_prompt_start,
             llm_candidate_regeneration_prompt_end=llm_candidate_regeneration_prompt_end,
         )
@@ -703,7 +734,7 @@ if __name__ == &#39;__main__&#39;:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="imodelsx.iprompt.api.eval_model"><code class="name flex">
-<span>def <span class="ident">eval_model</span></span>(<span>r: Dict[str, List[~T]], dset: datasets.arrow_dataset.Dataset, model: <a title="imodelsx.iprompt.utils.PrefixModel" href="utils.html#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a>, batch_size: int = 500, save_dir: str = 'results')</span>
+<span>def <span class="ident">eval_model</span></span>(<span>r: Dict[str, List], dset: datasets.arrow_dataset.Dataset, model: <a title="imodelsx.iprompt.utils.PrefixModel" href="utils.html#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a>, batch_size: int = 500, save_dir: str = 'results')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Evaluates a model based on the learned prefix(es).</p>
@@ -820,7 +851,7 @@ average loss, accuracy per sample over eval dataset</p></div>
 </details>
 </dd>
 <dt id="imodelsx.iprompt.api.explain_dataset_iprompt"><code class="name flex">
-<span>def <span class="ident">explain_dataset_iprompt</span></span>(<span>input_strings: List[str], output_strings: List[str], checkpoint: str = 'EleutherAI/gpt-j-6B', num_learned_tokens=1, save_dir: str = './results', lr: float = 0.01, pop_size: int = 8, num_mutations: int = 4, num_random_generations: int = 4, generation_repetition_penalty: float = 2.0, early_stopping_steps: int = -1, llm_float16=False, gamma: float = 0.0, batch_size: int = 64, max_length: int = 128, n_epochs: int = 100, n_shots: int = 1, preprefix: str = '', single_shot_loss: bool = True, accum_grad_over_epoch: bool = False, max_n_datapoints: int = 10000, max_n_steps: int = 10000, epoch_save_interval: int = 1, mask_possible_answers: bool = False, model_cls: str = 'iprompt', lm: transformers.modeling_utils.PreTrainedModel = None, llm_candidate_regeneration_prompt_start: str = 'Data:', llm_candidate_regeneration_prompt_end: str = 'Prompt:', verbose: int = 0, seed: int = 42) ‑> Tuple[List[str], Dict[~KT, ~VT]]</span>
+<span>def <span class="ident">explain_dataset_iprompt</span></span>(<span>input_strings: List[str], output_strings: List[str], checkpoint: str = 'EleutherAI/gpt-j-6B', generation_checkpoint: str = '', num_learned_tokens=1, save_dir: str = './results', lr: float = 0.01, pop_size: int = 8, pop_criterion: str = 'loss', pop_topk_strategy: str = 'different_start_token', num_mutations: int = 4, prefix_before_input: bool = True, do_final_reranking: bool = False, num_random_generations: int = 4, generation_repetition_penalty: float = 2.0, generation_temp: float = 1.0, generation_top_p: float = 1.0, early_stopping_steps: int = -1, llm_float16=False, gamma: float = 0.0, batch_size: int = 64, max_length: int = 128, n_epochs: int = 100, n_shots: int = 1, preprefix: str = '', single_shot_loss: bool = True, accum_grad_over_epoch: bool = False, max_n_datapoints: int = 10000, max_n_steps: int = 10000, epoch_save_interval: int = 1, mask_possible_answers: bool = False, model_cls: str = 'iprompt', lm: transformers.modeling_utils.PreTrainedModel = None, llm_candidate_regeneration_prompt_start: str = 'Data:', llm_candidate_regeneration_prompt_end: str = 'Prompt:', verbose: int = 0, seed: int = 42) ‑> Tuple[List[str], Dict]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Explain the relationship between the input strings and the output strings</p>
@@ -832,6 +863,19 @@ average loss, accuracy per sample over eval dataset</p></div>
 <dd>list of output strings (e.g. "4")</dd>
 <dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
 <dd>name of model checkpoint to prompt (e.g. EleutherAI/gpt-j-6B)</dd>
+<dt><strong><code>generation_checkpoint</code></strong> :&ensp;<code>str</code></dt>
+<dd>name of model to generate prompts, <em>only if if different from checkpoint
+used for prompting</em>. defaults to '' (same model for both).</dd>
+<dt><strong><code>prefix_before_input</code></strong> :&ensp;<code>bool</code></dt>
+<dd>whether to prompt the LLM with the prefix before or after the input data</dd>
+<dt><strong><code>do_final_reranking</code></strong> :&ensp;<code>bool</code></dt>
+<dd>optionally rerank top prefixes using a single batch. helps prevent
+noisy prefixes from being top at the end, especially when run over a
+small number of iterations or with small batch size.</dd>
+<dt><strong><code>generation_temp</code></strong> :&ensp;<code>float</code></dt>
+<dd>temperature for sampling from LLM (defaults to 1.0)</dd>
+<dt><strong><code>generation_top_p</code></strong> :&ensp;<code>float</code></dt>
+<dd>p for sampling from LLM, if using top-p sampling (defaults to 1.0, no sampling)</dd>
 <dt><strong><code>num_learned_tokens</code></strong> :&ensp;<code>int</code></dt>
 <dd>number of tokens to learn in prompt</dd>
 <dt><strong><code>save_dir</code></strong> :&ensp;<code>str</code></dt>
@@ -840,6 +884,10 @@ average loss, accuracy per sample over eval dataset</p></div>
 <dd>learning rate for prompt tuning</dd>
 <dt><strong><code>pop_size</code></strong> :&ensp;<code>int</code></dt>
 <dd>number of prompt candidates to evaluate for each iteration of iprompt</dd>
+<dt><strong><code>pop_criterion</code></strong> :&ensp;<code>str</code></dt>
+<dd>criterion for getting top prefixes from prefix pool, in ['loss', 'acc']</dd>
+<dt><strong><code>pop_topk_strategy</code></strong> :&ensp;<code>str</code></dt>
+<dd>strategy for getting new prefixes from prefix pool, in ['different_start_token', 'all']</dd>
 <dt><strong><code>num_mutations</code></strong> :&ensp;<code>int</code></dt>
 <dd>number of mutations to apply to each prompt candidate</dd>
 <dt><strong><code>lm</code></strong> :&ensp;<code>transformers.PreTrainedModel</code></dt>
@@ -863,13 +911,20 @@ if n_shots &gt; 1, this many data_points are created by recombining n_shots numb
     input_strings: List[str],
     output_strings: List[str],
     checkpoint: str=&#39;EleutherAI/gpt-j-6B&#39;,
+    generation_checkpoint: str = &#39;&#39;,
     num_learned_tokens=1,
     save_dir: str = &#39;./results&#39;,
     lr: float = 0.01,
     pop_size: int = 8,
+    pop_criterion: str = &#39;loss&#39;,
+    pop_topk_strategy: str = &#39;different_start_token&#39;,
     num_mutations: int = 4,
+    prefix_before_input: bool = True,
+    do_final_reranking: bool = False,
     num_random_generations: int = 4,
     generation_repetition_penalty: float = 2.0,
+    generation_temp: float = 1.0,
+    generation_top_p: float = 1.0,
     early_stopping_steps: int = -1,
     llm_float16=False,
     gamma: float = 0.0,
@@ -901,6 +956,19 @@ if n_shots &gt; 1, this many data_points are created by recombining n_shots numb
         list of output strings (e.g. &#34;4&#34;)
     checkpoint: str
         name of model checkpoint to prompt (e.g. EleutherAI/gpt-j-6B)
+    generation_checkpoint: str
+        name of model to generate prompts, *only if if different from checkpoint
+        used for prompting*. defaults to &#39;&#39; (same model for both).
+    prefix_before_input: bool
+        whether to prompt the LLM with the prefix before or after the input data
+    do_final_reranking: bool
+        optionally rerank top prefixes using a single batch. helps prevent
+        noisy prefixes from being top at the end, especially when run over a
+        small number of iterations or with small batch size.
+    generation_temp: float
+        temperature for sampling from LLM (defaults to 1.0)
+    generation_top_p: float
+        p for sampling from LLM, if using top-p sampling (defaults to 1.0, no sampling)
     num_learned_tokens: int
         number of tokens to learn in prompt
     save_dir: str
@@ -909,6 +977,10 @@ if n_shots &gt; 1, this many data_points are created by recombining n_shots numb
         learning rate for prompt tuning
     pop_size: int
         number of prompt candidates to evaluate for each iteration of iprompt
+    pop_criterion: str
+        criterion for getting top prefixes from prefix pool, in [&#39;loss&#39;, &#39;acc&#39;]
+    pop_topk_strategy: str
+        strategy for getting new prefixes from prefix pool, in [&#39;different_start_token&#39;, &#39;all&#39;]
     num_mutations: int
         number of mutations to apply to each prompt candidate
     lm: transformers.PreTrainedModel
@@ -961,13 +1033,21 @@ if n_shots &gt; 1, this many data_points are created by recombining n_shots numb
             tokenizer=tokenizer,
             preprefix_str=preprefix,
             pop_size=pop_size,
+            pop_criterion=pop_criterion,
+            pop_topk_strategy=pop_topk_strategy,
             num_mutations=num_mutations,
+            prefix_before_input=prefix_before_input,
+            do_final_reranking=do_final_reranking,
             num_random_generations=num_random_generations,
             generation_repetition_penalty=generation_repetition_penalty,
+            generation_temp=generation_temp,
+            generation_top_p=generation_top_p,
             early_stopping_steps=early_stopping_steps,
             num_learned_tokens=num_learned_tokens,
             max_length=max_length,
             verbose=verbose,
+            llm_float16=llm_float16,
+            generation_checkpoint=generation_checkpoint,
             llm_candidate_regeneration_prompt_start=llm_candidate_regeneration_prompt_start,
             llm_candidate_regeneration_prompt_end=llm_candidate_regeneration_prompt_end,
         )
@@ -1011,7 +1091,7 @@ if n_shots &gt; 1, this many data_points are created by recombining n_shots numb
 </details>
 </dd>
 <dt id="imodelsx.iprompt.api.train_model"><code class="name flex">
-<span>def <span class="ident">train_model</span></span>(<span>r: Dict[str, List[~T]], input_strs: List[str], output_strs: List[str], model: <a title="imodelsx.iprompt.utils.PrefixModel" href="utils.html#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a>, tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, save_dir: str = 'results', lr: float = 0.0001, batch_size: int = 64, max_length: int = 128, n_epochs: int = 100, n_shots: int = 1, single_shot_loss: bool = True, accum_grad_over_epoch: bool = False, max_n_datapoints: int = 10000, max_n_steps: int = 10000, epoch_save_interval: int = 1, mask_possible_answers: bool = False, verbose: int = 0)</span>
+<span>def <span class="ident">train_model</span></span>(<span>r: Dict[str, List], input_strs: List[str], output_strs: List[str], model: <a title="imodelsx.iprompt.utils.PrefixModel" href="utils.html#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a>, tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, save_dir: str = 'results', lr: float = 0.0001, batch_size: int = 64, max_length: int = 128, n_epochs: int = 100, n_shots: int = 1, single_shot_loss: bool = True, accum_grad_over_epoch: bool = False, max_n_datapoints: int = 10000, max_n_steps: int = 10000, epoch_save_interval: int = 1, mask_possible_answers: bool = False, verbose: int = 0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Trains a model, either by optimizing continuous embeddings or finding an optimal discrete embedding.</p>
@@ -1060,7 +1140,7 @@ dictionary of things to save</p></div>
 
     assert len(input_strs) == len(
         output_strs), &#34;input and output must be same length to create input-output pairs&#34;
-    text_strs = list(map(&#39;.\n\n&#39;.join, zip(input_strs, output_strs)))
+    text_strs = list(map(lambda t: f&#39;{t[0]}{t[1]}.&#39;, zip(input_strs, output_strs)))
     df = pd.DataFrame.from_dict({
         &#39;input&#39;: input_strs,
         &#39;output&#39;: output_strs,
@@ -1072,7 +1152,7 @@ dictionary of things to save</p></div>
         d2 = defaultdict(list)
         for i in range(max_n_datapoints):
             all_shots = df.sample(n=n_shots, replace=False)
-            d2[&#39;text&#39;].append(&#39;&#39;.join(all_shots[&#39;text&#39;].values))
+            d2[&#39;text&#39;].append(&#39;\n\n&#39;.join(all_shots[&#39;text&#39;].values))
             #
             last_input = all_shots.tail(n=1)[&#39;input&#39;].values[0]
             d2[&#39;input&#39;].append(
@@ -1082,7 +1162,6 @@ dictionary of things to save</p></div>
             last_output = all_shots.tail(n=1)[&#39;output&#39;].values[0]
             d2[&#39;output&#39;].append(last_output)
             #
-
         df = pd.DataFrame.from_dict(d2)
         # shuffle rows
         df = df.sample(n=max_n_datapoints, replace=False)
