@@ -453,6 +453,7 @@ class PrefixPool:
     """Tracks a pool of candidate prefixes and their associated metrics over time."""
     criterion: str
     tokenizer: transformers.PreTrainedTokenizer
+    verbose: bool
     # 
     _all_losses: Dict[Tuple[int], List[float]]
     _avg_loss: Dict[Tuple[int], float]
@@ -461,7 +462,7 @@ class PrefixPool:
     _best_prefix_by_start_token: Dict[int, Tuple[Tuple[int], float]]
 
     def __init__(self, tokenizer: transformers.PreTrainedTokenizer, criterion: str,
-        topk_strategy: str = 'different_start_token'):
+        topk_strategy: str = 'different_start_token', verbose: bool = False):
         self.tokenizer = tokenizer
         self.criterion = criterion
         # tuple (input_ids) -> float (loss)
@@ -474,6 +475,7 @@ class PrefixPool:
         self._best_prefix_by_start_token = {}
         # 
         self._topk_strategy = topk_strategy # ['different_start_token', 'all']
+        self.verbose = verbose
     
     @property
     def prefixes(self) -> List[Tuple[int]]:
@@ -495,7 +497,7 @@ class PrefixPool:
         # vd.sort_values(by=['n', 'loss'], ascending=[False, True])[["n", "prefix_str"]].iloc[:25]
         #####################################################################
         if not len(top_token_ids): return
-        # print((" " * 45), ("*" * 20), "Population", ("*" * 20))
+        print_str = " ".join(((" " * 45), ("*" * 20), "Population", ("*" * 20))) + "\n"
         output_rows = []
         for idx, token_ids in enumerate(top_token_ids):
             prefix = self.tokenizer.decode(list(token_ids))
@@ -504,9 +506,11 @@ class PrefixPool:
             prefix_str = "{:>65}".format(prefix.replace("\n", "\\\\n"))
             loss_str = f"{loss:.3f}"
             acc_str = f"{acc*100:.1f}"
-            # print(prefix_str, "\t\t", loss_str, "\t\t", acc_str)
+            print_str += " ".join((prefix_str, "\t\t", loss_str, "\t\t", acc_str)) + "\n"
             output_rows.append([idx, prefix, loss, acc])
-        # print()
+        
+        if self.verbose:
+            print(print_str)
         return pd.DataFrame(output_rows, columns=['idx', 'prefix', 'loss', 'accuracy'])
     
     def initialize_prefix(self, prefix: torch.Tensor):

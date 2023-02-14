@@ -88,6 +88,7 @@ class iPrompt(AutoPrompt):
             tokenizer=self.tokenizer,
             criterion=pop_criterion, # 'loss'  # in ['loss', 'acc', 'combined']
             topk_strategy=pop_topk_strategy,
+            verbose=verbose,
         )
         # Suff to track for early stopping
         self._early_stopping_steps = early_stopping_steps
