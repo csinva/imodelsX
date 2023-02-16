@@ -47,8 +47,7 @@ def run_args_list(
         Whether to repeatedly run failed jobs
     """
     n_gpus = len(gpu_ids)
-    assert not (n_cpus > 1 and n_gpus >
-                0), 'Cannot parallelize over cpus and gpus'
+    _validate_run_arguments(n_cpus, gpu_ids)
 
     # adjust order
     if shuffle:
@@ -160,7 +159,6 @@ def run_args_list(
                 gpu_ids=gpu_ids,
                 repeat_failed_jobs=repeat_failed_jobs,
             )
-        
 
 
 def run_on_gpu(param_str, i, n):
@@ -250,17 +248,35 @@ def _validate_arguments(
             k_tup) == x for x in v_tup_list], f"params_coupled_dict k and v must have same length but got {len(k_tup)} and {len(v_tup_list)} for {k_tup} and {v_tup_list} respectively"
         for k in k_tup:
             assert not k in params_shared_dict, f"params_coupled_dict key {k} should not be in params_shared_dict"
+        for v_tup in v_tup_list:
+            assert len(k_tup) == len(
+                v_tup), f"params_coupled_dict k and v must have same length but got {len(k_tup)} and {len(v_tup)} for {k_tup} and {v_tup} respectively"
+
+
+def _validate_run_arguments(
+    n_cpus: int,
+    gpu_ids: List[int],
+):
+    assert n_cpus > 0, f"n_cpus must be greater than 0, got {n_cpus}"
+    assert not (n_cpus > 1 and len(gpu_ids) >
+                0), 'Cannot parallelize over cpus and gpus'
+    if len(gpu_ids) > 0:
+        import torch.cuda
+        available_gpus = [torch.cuda.device(
+            i) for i in range(torch.cuda.device_count())]
+        assert all([x in available_gpus for x in gpu_ids]
+                   ), f'gpu_ids {gpu_ids} must be a subset of available gpus {available_gpus}'
 
 
 if __name__ == '__main__':
     params_shared_dict = {
-        'name': ['chandan', 'roli', 'alice', 'albert', 'jessica', 'felicia',],
+        'name': ['chandan', 'roli', 'alice', 'albert', 'jessica', 'felicia', ],
     }
 
     # Single-tree sweep
     params_coupled_dict = {
         ('dataset_name',): [
-            ('llm_tree',)
+            ('llm_tree', )
         ],
     }
 
@@ -273,7 +289,7 @@ if __name__ == '__main__':
         args_list,
         script_name=join(submit_utils_dir, 'dummy_script.py'),
         actually_run=True,
-        # n_cpus=3,
-        gpu_ids=[0, 1],
+        n_cpus=3,
+        # gpu_ids=[0],
         repeat_failed_jobs=True,
     )
