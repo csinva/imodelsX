@@ -81,8 +81,8 @@ def run_args_list(
             print(
                 f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n' + param_str)
             try:
-                output = subprocess.check_output(
-                    param_str, shell=True,
+                output = subprocess.run(
+                    param_str, shell=True, check=True,
                 )
             except KeyboardInterrupt:
                 print('Keyboard interrupt, exiting...')
@@ -93,14 +93,15 @@ def run_args_list(
             except Exception as e:
                 print(e)
 
+
     # run parallel
     elif n_cpus > 1 and n_gpus == 0:
         def run_single_job(i, param_str):
             print(
                 f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n' + param_str)
             try:
-                output = subprocess.check_output(
-                    param_str, shell=True,
+                output = subprocess.run(
+                    param_str, shell=True, check=True,
                 )
             except subprocess.CalledProcessError as e:
                 print('CalledProcessError', e)
@@ -172,9 +173,8 @@ def run_on_gpu(param_str, i, n):
         param_str = prefix + param_str
         print(
             f'\n\n-------------------{i + 1}/{n}--------------------\n' + param_str)
-        # sts = subprocess.Popen(param_str, shell=True).wait()
-        output = subprocess.check_output(
-            param_str, shell=True,
+        output = subprocess.run(
+            param_str, shell=True, check=True,
         )
     except KeyboardInterrupt:
         print('Keyboard interrupt, exiting...')
@@ -258,14 +258,12 @@ def _validate_run_arguments(
     gpu_ids: List[int],
 ):
     assert n_cpus > 0, f"n_cpus must be greater than 0, got {n_cpus}"
-    assert not (n_cpus > 1 and len(gpu_ids) >
-                0), 'Cannot parallelize over cpus and gpus'
+    assert not (n_cpus > 1 and len(gpu_ids) > 0), 'Cannot parallelize over cpus and gpus'
     if len(gpu_ids) > 0:
         import torch.cuda
-        available_gpus = [torch.cuda.device(
-            i) for i in range(torch.cuda.device_count())]
-        assert all([x in available_gpus for x in gpu_ids]
-                   ), f'gpu_ids {gpu_ids} must be a subset of available gpus {available_gpus}'
+        num_gpus = torch.cuda.device_count()
+        assert all([x >= 0 and x < num_gpus for x in gpu_ids]
+                   ), f'gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}'
 
 
 if __name__ == '__main__':
@@ -289,7 +287,7 @@ if __name__ == '__main__':
         args_list,
         script_name=join(submit_utils_dir, 'dummy_script.py'),
         actually_run=True,
-        n_cpus=3,
-        # gpu_ids=[0],
+        # n_cpus=3,
+        gpu_ids=[0],
         repeat_failed_jobs=True,
     )
