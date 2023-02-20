@@ -98,15 +98,15 @@ class AutoPrompt(HotFlip):
         # os.makedirs(save_dir, exist_ok=True)
         # pickle.dump(self._prefix_pool, open(os.path.join(save_dir, 'prefix_pool.p'), 'wb'))
 
+        all_prefixes = self._prefix_pool.topk_all(
+            k=self._num_prefixes_to_test, min_occurrences=2)
+
+        if not len(all_prefixes):
+            # In the case where we get no prefixes here (i.e. prompt generation
+            # only ran for a single step) just take anything from prefix pool.
+            all_prefixes = random.choices(self._prefix_pool.prefixes, k=self._num_prefixes_to_test)
+
         if self._do_final_reranking:
-            all_prefixes = self._prefix_pool.topk_all(
-                k=self._num_prefixes_to_test, min_occurrences=1)
-
-            if not len(all_prefixes):
-                # In the case where we get no prefixes here (i.e. prompt generation
-                # only ran for a single step) just take anything from prefix pool.
-                all_prefixes = list(self._prefix_pool.prefixes)
-
             all_losses, all_accuracies = self._test_prefixes(
                 prefixes=all_prefixes,
                 eval_dataloader=eval_dataloader,
@@ -120,14 +120,14 @@ class AutoPrompt(HotFlip):
                                 False, True]).reset_index()
         else:
             all_prefixes = list(self._prefix_pool.prefixes)
-            all_losses = [-1] * len(all_prefixes)
-            all_accuracies = [-1] * len(all_prefixes)
+            all_losses = [self._prefix_pool._avg_loss.get(p, -1) for p in all_prefixes]
+            all_accuracies = [self._prefix_pool._avg_accuracy.get(p, -1) for p in all_prefixes]
 
             df = pd.DataFrame(
                 zip(*[all_prefixes, all_losses, all_accuracies]),
                 columns=['prefix', 'loss', 'accuracy']
             )
-        # df = df.sort_values(by='loss', ascending=True).reset_index()
+        df = df.sort_values(by='accuracy', ascending=False).reset_index()
 
         df['prefix_str'] = df['prefix'].map(self.tokenizer.decode)
         df['n_queries'] = df['prefix'].map(

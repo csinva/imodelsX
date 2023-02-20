@@ -88,9 +88,7 @@ def train_model(
         'output': output_strs,
         'text': text_strs,
     })
-    if n_shots == 1:
-        dset = datasets.Dataset.from_pandas(df)
-    else:
+    if n_shots > 1:
         d2 = defaultdict(list)
         for i in range(max_n_datapoints):
             all_shots = df.sample(n=n_shots, replace=False)
@@ -105,10 +103,11 @@ def train_model(
             d2['output'].append(last_output)
             #
         df = pd.DataFrame.from_dict(d2)
-        # shuffle rows
+    # shuffle rows
+    if max_n_datapoints < len(df):
         df = df.sample(n=max_n_datapoints, replace=False)
-        dset = datasets.Dataset.from_pandas(df)
-    print('loading model...')
+    dset = datasets.Dataset.from_pandas(df)
+    print(f'iPrompt got {len(dset)} datapoints, now loading model...')
 
     model = model.to(device)
     dataloader = DataLoader(
