@@ -522,6 +522,7 @@ def explain_dataset_iprompt(
         epoch_save_interval=epoch_save_interval,
         verbose=verbose,
     )
+    model = model.cpu()
     return r['prefixes'], r
 
     # r = eval_model(args=args, r=r, dset=Dataset.from_dict(dset_test[:128]), model=model, tokenizer=tokenizer)

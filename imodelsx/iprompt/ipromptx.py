@@ -227,8 +227,8 @@ class iPrompt(AutoPrompt):
     
     def _get_population_and_random_generations(self, full_text_ids: torch.Tensor) -> torch.Tensor:
         population_pool = self._select_pop_topk(k=self._topk_pop_sample)
-        if self._iprompt_verbose:
-            print("population_pool:", [self.tokenizer.decode(p) for p in population_pool])
+        # if self._iprompt_verbose:
+            # print("population_pool:", [self.tokenizer.decode(p) for p in population_pool])
         population = random.sample(population_pool, self._pop_size)
         population = torch.tensor(population).to(device)
 
