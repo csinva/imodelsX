@@ -67,3 +67,19 @@ def fill_missing_args_with_default(df, experiment_filename='01_train_model.py'):
             df[k] = v
         df[k] = df[k].fillna(v)
     return df
+
+def delete_runs_in_dataframe(df: pd.DataFrame, actually_delete=False, directory_key='save_dir_unique'):
+    '''Deletes stored results for all runs in the dataframe r.
+    '''
+    if not actually_delete:
+        print(f'Not actually deleting {df.shape[0]} directories. Set actually_delete=True to actually delete the directories.')
+        return
+    
+    num_deleted = 0
+    for i in tqdm(range(df.shape[0])):
+        try:
+            os.system(f'rm -rf {df.iloc[i][directory_key]}')
+            num_deleted += 1
+        except:
+            pass
+    print(f'Deleted {num_deleted}/{df.shape[0]} directories.')
