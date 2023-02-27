@@ -7,6 +7,9 @@ from tqdm import tqdm
 import pandas as pd
 import pickle as pkl
 import sys
+import warnings
+import scipy.stats
+import numpy as np
 repo_dir = dirname(dirname(os.path.abspath(__file__)))
 
 def get_results_df(results_dir, use_cached=False) -> pd.DataFrame:
@@ -35,7 +38,7 @@ def get_main_args_list(experiment_filename='01_train_model.py'):
 
     Params
     ------
-    fname: str
+    experiment_filename: str
         Full path + name of the experiments script, e.g. /home/user/tree-prompt/experiments/01_train_model.py
     """
     if experiment_filename.endswith('.py'):
@@ -51,7 +54,7 @@ def fill_missing_args_with_default(df, experiment_filename='01_train_model.py'):
     Params
     ------
 
-    fname: str
+    experiment_filename: str
         Full path + name of the experiments script, e.g. /home/user/tree-prompt/experiments/01_train_model.py
     """
     if experiment_filename.endswith('.py'):
@@ -83,3 +86,38 @@ def delete_runs_in_dataframe(df: pd.DataFrame, actually_delete=False, directory_
         except:
             pass
     print(f'Deleted {num_deleted}/{df.shape[0]} directories.')
+
+
+def average_over_seeds(df: pd.DataFrame, experiment_filename='01_train_model.py', key_to_average_over='seed'):
+    """Returns values averaged over seed.
+    Standard errors of the mean are added with columns suffixed with _err
+    For example, 'accuracy_test' yields two columns
+        'accuracy_test' now holds the mean value
+        'accuracy_test_err' now holds the standard error of the mean
+
+    Params
+    ------
+    experiment_filename: str
+        Full path + name of the experiments script, e.g. /home/user/tree-prompt/experiments/01_train_model.py
+        This is used to get the names of the arguments to aggregate over
+    """
+    def sem(x):
+        '''Compute standard error of the mean, ignoring NaNs
+        '''
+        with warnings.catch_warnings():
+            return scipy.stats.sem(x, ddof=0)
+    
+    group_keys = [
+        k for k in get_main_args_list(experiment_filename)
+        if not k == key_to_average_over
+    ]
+
+    df_avg = (
+        df
+        .groupby(by=group_keys)
+        .aggregate([np.mean, sem], numeric_only=True)
+        # .mean(numeric_only=True)
+        .reset_index()
+    )
+    df_avg.columns = [x[0]+'_err' if x[1] == 'sem' else x[0] for x in df_avg.columns]
+    return df_avg
