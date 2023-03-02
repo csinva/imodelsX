@@ -53,6 +53,9 @@ class LinearFinetune(BaseEstimator):
         self.layer = layer
         self.random_state = random_state
         self.normalize_embs = normalize_embs
+        self._initialize_checkpoint_and_tokenizer()
+
+    def _initialize_checkpoint_and_tokenizer(self):
         self.model = transformers.AutoModel.from_pretrained(
             self.checkpoint).to(device)
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(

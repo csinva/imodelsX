@@ -2,7 +2,7 @@ import datasets
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
-
+datasets.logging.set_verbosity_error()
 
 def load_huggingface_dataset(
     dataset_name: str,
