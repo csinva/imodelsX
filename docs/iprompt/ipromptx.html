@@ -116,6 +116,7 @@ class iPrompt(AutoPrompt):
             tokenizer=self.tokenizer,
             criterion=pop_criterion, # &#39;loss&#39;  # in [&#39;loss&#39;, &#39;acc&#39;, &#39;combined&#39;]
             topk_strategy=pop_topk_strategy,
+            verbose=verbose,
         )
         # Suff to track for early stopping
         self._early_stopping_steps = early_stopping_steps
@@ -254,8 +255,8 @@ class iPrompt(AutoPrompt):
     
     def _get_population_and_random_generations(self, full_text_ids: torch.Tensor) -&gt; torch.Tensor:
         population_pool = self._select_pop_topk(k=self._topk_pop_sample)
-        if self._iprompt_verbose:
-            print(&#34;population_pool:&#34;, [self.tokenizer.decode(p) for p in population_pool])
+        # if self._iprompt_verbose:
+            # print(&#34;population_pool:&#34;, [self.tokenizer.decode(p) for p in population_pool])
         population = random.sample(population_pool, self._pop_size)
         population = torch.tensor(population).to(device)
 
@@ -569,6 +570,7 @@ evaluation mode.
             tokenizer=self.tokenizer,
             criterion=pop_criterion, # &#39;loss&#39;  # in [&#39;loss&#39;, &#39;acc&#39;, &#39;combined&#39;]
             topk_strategy=pop_topk_strategy,
+            verbose=verbose,
         )
         # Suff to track for early stopping
         self._early_stopping_steps = early_stopping_steps
@@ -707,8 +709,8 @@ evaluation mode.
     
     def _get_population_and_random_generations(self, full_text_ids: torch.Tensor) -&gt; torch.Tensor:
         population_pool = self._select_pop_topk(k=self._topk_pop_sample)
-        if self._iprompt_verbose:
-            print(&#34;population_pool:&#34;, [self.tokenizer.decode(p) for p in population_pool])
+        # if self._iprompt_verbose:
+            # print(&#34;population_pool:&#34;, [self.tokenizer.decode(p) for p in population_pool])
         population = random.sample(population_pool, self._pop_size)
         population = torch.tensor(population).to(device)
 

@@ -116,9 +116,7 @@ def train_model(
         &#39;output&#39;: output_strs,
         &#39;text&#39;: text_strs,
     })
-    if n_shots == 1:
-        dset = datasets.Dataset.from_pandas(df)
-    else:
+    if n_shots &gt; 1:
         d2 = defaultdict(list)
         for i in range(max_n_datapoints):
             all_shots = df.sample(n=n_shots, replace=False)
@@ -133,10 +131,11 @@ def train_model(
             d2[&#39;output&#39;].append(last_output)
             #
         df = pd.DataFrame.from_dict(d2)
-        # shuffle rows
+    # shuffle rows
+    if max_n_datapoints &lt; len(df):
         df = df.sample(n=max_n_datapoints, replace=False)
-        dset = datasets.Dataset.from_pandas(df)
-    print(&#39;loading model...&#39;)
+    dset = datasets.Dataset.from_pandas(df)
+    print(f&#39;iPrompt got {len(dset)} datapoints, now loading model...&#39;)
 
     model = model.to(device)
     dataloader = DataLoader(
@@ -551,6 +550,7 @@ def explain_dataset_iprompt(
         epoch_save_interval=epoch_save_interval,
         verbose=verbose,
     )
+    model = model.cpu()
     return r[&#39;prefixes&#39;], r
 
     # r = eval_model(args=args, r=r, dset=Dataset.from_dict(dset_test[:128]), model=model, tokenizer=tokenizer)
@@ -1085,6 +1085,7 @@ if n_shots &gt; 1, this many data_points are created by recombining n_shots numb
         epoch_save_interval=epoch_save_interval,
         verbose=verbose,
     )
+    model = model.cpu()
     return r[&#39;prefixes&#39;], r
 
     # r = eval_model(args=args, r=r, dset=Dataset.from_dict(dset_test[:128]), model=model, tokenizer=tokenizer)</code></pre>
@@ -1146,9 +1147,7 @@ dictionary of things to save</p></div>
         &#39;output&#39;: output_strs,
         &#39;text&#39;: text_strs,
     })
-    if n_shots == 1:
-        dset = datasets.Dataset.from_pandas(df)
-    else:
+    if n_shots &gt; 1:
         d2 = defaultdict(list)
         for i in range(max_n_datapoints):
             all_shots = df.sample(n=n_shots, replace=False)
@@ -1163,10 +1162,11 @@ dictionary of things to save</p></div>
             d2[&#39;output&#39;].append(last_output)
             #
         df = pd.DataFrame.from_dict(d2)
-        # shuffle rows
+    # shuffle rows
+    if max_n_datapoints &lt; len(df):
         df = df.sample(n=max_n_datapoints, replace=False)
-        dset = datasets.Dataset.from_pandas(df)
-    print(&#39;loading model...&#39;)
+    dset = datasets.Dataset.from_pandas(df)
+    print(f&#39;iPrompt got {len(dset)} datapoints, now loading model...&#39;)
 
     model = model.to(device)
     dataloader = DataLoader(

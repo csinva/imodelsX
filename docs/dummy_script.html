@@ -34,7 +34,8 @@ def hello(name=&#34;World&#34;, dataset_name=&#39;&#39;):
   if name == &#39;chandan&#39; and random.random() &gt;= 0.1:
     raise ValueError(&#39;chandan is not a valid name&#39;)
   time.sleep(1)
-  return f&#34;Hello {name}!&#34;
+  print(f&#34;Hello {name}!&#34;)
+  return
 
 
 if __name__ == &#39;__main__&#39;:
@@ -61,7 +62,8 @@ if __name__ == &#39;__main__&#39;:
   if name == &#39;chandan&#39; and random.random() &gt;= 0.1:
     raise ValueError(&#39;chandan is not a valid name&#39;)
   time.sleep(1)
-  return f&#34;Hello {name}!&#34;</code></pre>
+  print(f&#34;Hello {name}!&#34;)
+  return</code></pre>
 </details>
 </dd>
 </dl>

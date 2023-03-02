@@ -75,8 +75,7 @@ def run_args_list(
         Whether to repeatedly run failed jobs
     &#34;&#34;&#34;
     n_gpus = len(gpu_ids)
-    assert not (n_cpus &gt; 1 and n_gpus &gt;
-                0), &#39;Cannot parallelize over cpus and gpus&#39;
+    _validate_run_arguments(n_cpus, gpu_ids)
 
     # adjust order
     if shuffle:
@@ -110,8 +109,8 @@ def run_args_list(
             print(
                 f&#39;\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n&#39; + param_str)
             try:
-                output = subprocess.check_output(
-                    param_str, shell=True,
+                output = subprocess.run(
+                    param_str, shell=True, check=True,
                 )
             except KeyboardInterrupt:
                 print(&#39;Keyboard interrupt, exiting...&#39;)
@@ -122,14 +121,15 @@ def run_args_list(
             except Exception as e:
                 print(e)
 
+
     # run parallel
     elif n_cpus &gt; 1 and n_gpus == 0:
         def run_single_job(i, param_str):
             print(
                 f&#39;\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n&#39; + param_str)
             try:
-                output = subprocess.check_output(
-                    param_str, shell=True,
+                output = subprocess.run(
+                    param_str, shell=True, check=True,
                 )
             except subprocess.CalledProcessError as e:
                 print(&#39;CalledProcessError&#39;, e)
@@ -188,7 +188,6 @@ def run_args_list(
                 gpu_ids=gpu_ids,
                 repeat_failed_jobs=repeat_failed_jobs,
             )
-        
 
 
 def run_on_gpu(param_str, i, n):
@@ -202,9 +201,8 @@ def run_on_gpu(param_str, i, n):
         param_str = prefix + param_str
         print(
             f&#39;\n\n-------------------{i + 1}/{n}--------------------\n&#39; + param_str)
-        # sts = subprocess.Popen(param_str, shell=True).wait()
-        output = subprocess.check_output(
-            param_str, shell=True,
+        output = subprocess.run(
+            param_str, shell=True, check=True,
         )
     except KeyboardInterrupt:
         print(&#39;Keyboard interrupt, exiting...&#39;)
@@ -278,17 +276,33 @@ def _validate_arguments(
             k_tup) == x for x in v_tup_list], f&#34;params_coupled_dict k and v must have same length but got {len(k_tup)} and {len(v_tup_list)} for {k_tup} and {v_tup_list} respectively&#34;
         for k in k_tup:
             assert not k in params_shared_dict, f&#34;params_coupled_dict key {k} should not be in params_shared_dict&#34;
+        for v_tup in v_tup_list:
+            assert len(k_tup) == len(
+                v_tup), f&#34;params_coupled_dict k and v must have same length but got {len(k_tup)} and {len(v_tup)} for {k_tup} and {v_tup} respectively&#34;
+
+
+def _validate_run_arguments(
+    n_cpus: int,
+    gpu_ids: List[int],
+):
+    assert n_cpus &gt; 0, f&#34;n_cpus must be greater than 0, got {n_cpus}&#34;
+    assert not (n_cpus &gt; 1 and len(gpu_ids) &gt; 0), &#39;Cannot parallelize over cpus and gpus&#39;
+    if len(gpu_ids) &gt; 0:
+        import torch.cuda
+        num_gpus = torch.cuda.device_count()
+        assert all([x &gt;= 0 and x &lt; num_gpus for x in gpu_ids]
+                   ), f&#39;gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}&#39;
 
 
 if __name__ == &#39;__main__&#39;:
     params_shared_dict = {
-        &#39;name&#39;: [&#39;chandan&#39;, &#39;roli&#39;, &#39;alice&#39;, &#39;albert&#39;, &#39;jessica&#39;, &#39;felicia&#39;,],
+        &#39;name&#39;: [&#39;chandan&#39;, &#39;roli&#39;, &#39;alice&#39;, &#39;albert&#39;, &#39;jessica&#39;, &#39;felicia&#39;, ],
     }
 
     # Single-tree sweep
     params_coupled_dict = {
         (&#39;dataset_name&#39;,): [
-            (&#39;llm_tree&#39;,)
+            (&#39;llm_tree&#39;, )
         ],
     }
 
@@ -302,7 +316,7 @@ if __name__ == &#39;__main__&#39;:
         script_name=join(submit_utils_dir, &#39;dummy_script.py&#39;),
         actually_run=True,
         # n_cpus=3,
-        gpu_ids=[0, 1],
+        gpu_ids=[0],
         repeat_failed_jobs=True,
     )</code></pre>
 </details>
@@ -430,8 +444,7 @@ Whether to repeatedly run failed jobs</p></div>
         Whether to repeatedly run failed jobs
     &#34;&#34;&#34;
     n_gpus = len(gpu_ids)
-    assert not (n_cpus &gt; 1 and n_gpus &gt;
-                0), &#39;Cannot parallelize over cpus and gpus&#39;
+    _validate_run_arguments(n_cpus, gpu_ids)
 
     # adjust order
     if shuffle:
@@ -465,8 +478,8 @@ Whether to repeatedly run failed jobs</p></div>
             print(
                 f&#39;\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n&#39; + param_str)
             try:
-                output = subprocess.check_output(
-                    param_str, shell=True,
+                output = subprocess.run(
+                    param_str, shell=True, check=True,
                 )
             except KeyboardInterrupt:
                 print(&#39;Keyboard interrupt, exiting...&#39;)
@@ -477,14 +490,15 @@ Whether to repeatedly run failed jobs</p></div>
             except Exception as e:
                 print(e)
 
+
     # run parallel
     elif n_cpus &gt; 1 and n_gpus == 0:
         def run_single_job(i, param_str):
             print(
                 f&#39;\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n&#39; + param_str)
             try:
-                output = subprocess.check_output(
-                    param_str, shell=True,
+                output = subprocess.run(
+                    param_str, shell=True, check=True,
                 )
             except subprocess.CalledProcessError as e:
                 print(&#39;CalledProcessError&#39;, e)
@@ -565,9 +579,8 @@ Whether to repeatedly run failed jobs</p></div>
         param_str = prefix + param_str
         print(
             f&#39;\n\n-------------------{i + 1}/{n}--------------------\n&#39; + param_str)
-        # sts = subprocess.Popen(param_str, shell=True).wait()
-        output = subprocess.check_output(
-            param_str, shell=True,
+        output = subprocess.run(
+            param_str, shell=True, check=True,
         )
     except KeyboardInterrupt:
         print(&#39;Keyboard interrupt, exiting...&#39;)

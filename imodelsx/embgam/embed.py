@@ -58,8 +58,6 @@ def embed_and_sum_function(
     fit_with_ngram_decomposition: bool = True,
 ):
     """Get summed embeddings for a single example
-    Note: this function gets called many times, so don't want to do things like load a model here
-
 
     Params
     ------
@@ -76,7 +74,7 @@ def embed_and_sum_function(
     nlp_chunks
         if parsing is not empty string, a parser that extracts specific ngrams
     fit_with_ngram_decomposition
-        whether to fit the model with ngram decomposition (if not just use the stsandard sentence)
+        whether to fit the model with ngram decomposition (if not just use the standard sentence)
     """
     if dataset_key_text is not None:
         sentence = example[dataset_key_text]

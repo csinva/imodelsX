@@ -65,6 +65,7 @@ metrics_classification_proba = {
 metrics_regression = {
     &#39;r2&#39;: r2_score,
     &#39;mse&#39;: mean_squared_error,
+    &#39;corr&#39;: lambda y_true, y_pred: np.corrcoef(y_true, y_pred)[0, 1],
 }</code></pre>
 </details>
 </section>

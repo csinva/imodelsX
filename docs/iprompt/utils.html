@@ -481,6 +481,7 @@ class PrefixPool:
     &#34;&#34;&#34;Tracks a pool of candidate prefixes and their associated metrics over time.&#34;&#34;&#34;
     criterion: str
     tokenizer: transformers.PreTrainedTokenizer
+    verbose: bool
     # 
     _all_losses: Dict[Tuple[int], List[float]]
     _avg_loss: Dict[Tuple[int], float]
@@ -489,7 +490,7 @@ class PrefixPool:
     _best_prefix_by_start_token: Dict[int, Tuple[Tuple[int], float]]
 
     def __init__(self, tokenizer: transformers.PreTrainedTokenizer, criterion: str,
-        topk_strategy: str = &#39;different_start_token&#39;):
+        topk_strategy: str = &#39;different_start_token&#39;, verbose: bool = False):
         self.tokenizer = tokenizer
         self.criterion = criterion
         # tuple (input_ids) -&gt; float (loss)
@@ -502,6 +503,7 @@ class PrefixPool:
         self._best_prefix_by_start_token = {}
         # 
         self._topk_strategy = topk_strategy # [&#39;different_start_token&#39;, &#39;all&#39;]
+        self.verbose = verbose
     
     @property
     def prefixes(self) -&gt; List[Tuple[int]]:
@@ -523,7 +525,7 @@ class PrefixPool:
         # vd.sort_values(by=[&#39;n&#39;, &#39;loss&#39;], ascending=[False, True])[[&#34;n&#34;, &#34;prefix_str&#34;]].iloc[:25]
         #####################################################################
         if not len(top_token_ids): return
-        # print((&#34; &#34; * 45), (&#34;*&#34; * 20), &#34;Population&#34;, (&#34;*&#34; * 20))
+        print_str = &#34; &#34;.join(((&#34; &#34; * 45), (&#34;*&#34; * 20), &#34;Population&#34;, (&#34;*&#34; * 20))) + &#34;\n&#34;
         output_rows = []
         for idx, token_ids in enumerate(top_token_ids):
             prefix = self.tokenizer.decode(list(token_ids))
@@ -532,9 +534,11 @@ class PrefixPool:
             prefix_str = &#34;{:&gt;65}&#34;.format(prefix.replace(&#34;\n&#34;, &#34;\\\\n&#34;))
             loss_str = f&#34;{loss:.3f}&#34;
             acc_str = f&#34;{acc*100:.1f}&#34;
-            # print(prefix_str, &#34;\t\t&#34;, loss_str, &#34;\t\t&#34;, acc_str)
+            print_str += &#34; &#34;.join((prefix_str, &#34;\t\t&#34;, loss_str, &#34;\t\t&#34;, acc_str)) + &#34;\n&#34;
             output_rows.append([idx, prefix, loss, acc])
-        # print()
+        
+        if self.verbose:
+            print(print_str)
         return pd.DataFrame(output_rows, columns=[&#39;idx&#39;, &#39;prefix&#39;, &#39;loss&#39;, &#39;accuracy&#39;])
     
     def initialize_prefix(self, prefix: torch.Tensor):
@@ -1526,7 +1530,7 @@ registered hooks while the latter silently ignores them.</p>
 </dd>
 <dt id="imodelsx.iprompt.utils.PrefixPool"><code class="flex name class">
 <span>class <span class="ident">PrefixPool</span></span>
-<span>(</span><span>tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, criterion: str, topk_strategy: str = 'different_start_token')</span>
+<span>(</span><span>tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, criterion: str, topk_strategy: str = 'different_start_token', verbose: bool = False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Tracks a pool of candidate prefixes and their associated metrics over time.</p></div>
@@ -1538,6 +1542,7 @@ registered hooks while the latter silently ignores them.</p>
     &#34;&#34;&#34;Tracks a pool of candidate prefixes and their associated metrics over time.&#34;&#34;&#34;
     criterion: str
     tokenizer: transformers.PreTrainedTokenizer
+    verbose: bool
     # 
     _all_losses: Dict[Tuple[int], List[float]]
     _avg_loss: Dict[Tuple[int], float]
@@ -1546,7 +1551,7 @@ registered hooks while the latter silently ignores them.</p>
     _best_prefix_by_start_token: Dict[int, Tuple[Tuple[int], float]]
 
     def __init__(self, tokenizer: transformers.PreTrainedTokenizer, criterion: str,
-        topk_strategy: str = &#39;different_start_token&#39;):
+        topk_strategy: str = &#39;different_start_token&#39;, verbose: bool = False):
         self.tokenizer = tokenizer
         self.criterion = criterion
         # tuple (input_ids) -&gt; float (loss)
@@ -1559,6 +1564,7 @@ registered hooks while the latter silently ignores them.</p>
         self._best_prefix_by_start_token = {}
         # 
         self._topk_strategy = topk_strategy # [&#39;different_start_token&#39;, &#39;all&#39;]
+        self.verbose = verbose
     
     @property
     def prefixes(self) -&gt; List[Tuple[int]]:
@@ -1580,7 +1586,7 @@ registered hooks while the latter silently ignores them.</p>
         # vd.sort_values(by=[&#39;n&#39;, &#39;loss&#39;], ascending=[False, True])[[&#34;n&#34;, &#34;prefix_str&#34;]].iloc[:25]
         #####################################################################
         if not len(top_token_ids): return
-        # print((&#34; &#34; * 45), (&#34;*&#34; * 20), &#34;Population&#34;, (&#34;*&#34; * 20))
+        print_str = &#34; &#34;.join(((&#34; &#34; * 45), (&#34;*&#34; * 20), &#34;Population&#34;, (&#34;*&#34; * 20))) + &#34;\n&#34;
         output_rows = []
         for idx, token_ids in enumerate(top_token_ids):
             prefix = self.tokenizer.decode(list(token_ids))
@@ -1589,9 +1595,11 @@ registered hooks while the latter silently ignores them.</p>
             prefix_str = &#34;{:&gt;65}&#34;.format(prefix.replace(&#34;\n&#34;, &#34;\\\\n&#34;))
             loss_str = f&#34;{loss:.3f}&#34;
             acc_str = f&#34;{acc*100:.1f}&#34;
-            # print(prefix_str, &#34;\t\t&#34;, loss_str, &#34;\t\t&#34;, acc_str)
+            print_str += &#34; &#34;.join((prefix_str, &#34;\t\t&#34;, loss_str, &#34;\t\t&#34;, acc_str)) + &#34;\n&#34;
             output_rows.append([idx, prefix, loss, acc])
-        # print()
+        
+        if self.verbose:
+            print(print_str)
         return pd.DataFrame(output_rows, columns=[&#39;idx&#39;, &#39;prefix&#39;, &#39;loss&#39;, &#39;accuracy&#39;])
     
     def initialize_prefix(self, prefix: torch.Tensor):
@@ -1699,6 +1707,10 @@ registered hooks while the latter silently ignores them.</p>
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="imodelsx.iprompt.utils.PrefixPool.verbose"><code class="name">var <span class="ident">verbose</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 </dl>
 <h3>Instance variables</h3>
 <dl>
@@ -1766,7 +1778,7 @@ def prefixes(self) -&gt; List[Tuple[int]]:
     # vd.sort_values(by=[&#39;n&#39;, &#39;loss&#39;], ascending=[False, True])[[&#34;n&#34;, &#34;prefix_str&#34;]].iloc[:25]
     #####################################################################
     if not len(top_token_ids): return
-    # print((&#34; &#34; * 45), (&#34;*&#34; * 20), &#34;Population&#34;, (&#34;*&#34; * 20))
+    print_str = &#34; &#34;.join(((&#34; &#34; * 45), (&#34;*&#34; * 20), &#34;Population&#34;, (&#34;*&#34; * 20))) + &#34;\n&#34;
     output_rows = []
     for idx, token_ids in enumerate(top_token_ids):
         prefix = self.tokenizer.decode(list(token_ids))
@@ -1775,9 +1787,11 @@ def prefixes(self) -&gt; List[Tuple[int]]:
         prefix_str = &#34;{:&gt;65}&#34;.format(prefix.replace(&#34;\n&#34;, &#34;\\\\n&#34;))
         loss_str = f&#34;{loss:.3f}&#34;
         acc_str = f&#34;{acc*100:.1f}&#34;
-        # print(prefix_str, &#34;\t\t&#34;, loss_str, &#34;\t\t&#34;, acc_str)
+        print_str += &#34; &#34;.join((prefix_str, &#34;\t\t&#34;, loss_str, &#34;\t\t&#34;, acc_str)) + &#34;\n&#34;
         output_rows.append([idx, prefix, loss, acc])
-    # print()
+    
+    if self.verbose:
+        print(print_str)
     return pd.DataFrame(output_rows, columns=[&#39;idx&#39;, &#39;prefix&#39;, &#39;loss&#39;, &#39;accuracy&#39;])</code></pre>
 </details>
 </dd>
@@ -1954,6 +1968,7 @@ def prefixes(self) -&gt; List[Tuple[int]]:
 <li><code><a title="imodelsx.iprompt.utils.PrefixPool.topk_all" href="#imodelsx.iprompt.utils.PrefixPool.topk_all">topk_all</a></code></li>
 <li><code><a title="imodelsx.iprompt.utils.PrefixPool.topk_with_different_start_token" href="#imodelsx.iprompt.utils.PrefixPool.topk_with_different_start_token">topk_with_different_start_token</a></code></li>
 <li><code><a title="imodelsx.iprompt.utils.PrefixPool.update" href="#imodelsx.iprompt.utils.PrefixPool.update">update</a></code></li>
+<li><code><a title="imodelsx.iprompt.utils.PrefixPool.verbose" href="#imodelsx.iprompt.utils.PrefixPool.verbose">verbose</a></code></li>
 </ul>
 </li>
 </ul>
