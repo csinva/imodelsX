@@ -46,6 +46,7 @@ from sklearn.linear_model import LogisticRegressionCV, RidgeCV
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
 from spacy.lang.en import English
+from scipy.sparse import issparse
 from sklearn.preprocessing import StandardScaler
 import transformers
 import imodelsx.embgam.embed
@@ -91,7 +92,7 @@ class LinearFinetune(BaseEstimator):
 
     def fit(
         self,
-        X: ArrayLike,
+        X_text: ArrayLike,
         y: ArrayLike,
         verbose=True,
         cache_embs_dir: str = None,
@@ -100,7 +101,7 @@ class LinearFinetune(BaseEstimator):
 
         Parameters
         ----------
-        X: ArrayLike[str]
+        X_text: ArrayLike[str]
         y: ArrayLike[str]
         cache_embs_dir, optional
             if not None, directory to save embeddings into
@@ -119,7 +120,7 @@ class LinearFinetune(BaseEstimator):
         # get embs
         if verbose:
             print(&#39;calculating embeddings...&#39;)
-        embs = self._get_embs(X)
+        embs = self._get_embs(X_text)
         if self.normalize_embs:
             self.normalizer = StandardScaler()
             embs = self.normalizer.fit_transform(embs)
@@ -139,62 +140,36 @@ class LinearFinetune(BaseEstimator):
 
         return self
 
-    def _get_embs(self, X):
+    def _get_embs(self, X_text: ArrayLike):
         embs = []
-        for i in tqdm(range(len(X))):
+        if isinstance(X_text, list):
+            n = len(X_text)
+        else:
+            n = X_text.shape[0]
+        for i in tqdm(range(n)):
             inputs = self.tokenizer(
-                [X[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;)
+                [X_text[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;)
             inputs = inputs.to(self.model.device)
             output = self.model(**inputs)
             emb = output[self.layer].cpu().detach().numpy()
             if len(emb.shape) == 3:  # includes seq_len
                 emb = emb.mean(axis=1)
             embs.append(emb)
-            # emb = imodelsx.embgam.embed.embed_and_sum_function(
-            #     x,
-            #     model=self.model,
-            #     tokenizer_embeddings=self.tokenizer,
-            #     checkpoint=self.checkpoint,
-            #     layer=self.layer,
-            #     fit_with_ngram_decomposition=False,
-            # )
-            # embs.append(emb[&#39;embs&#39;])
         return np.array(embs).squeeze()  # num_examples x embedding_size
 
-    # def _get_embs(self, ngrams_list, model, tokenizer_embeddings):
-    #     &#34;&#34;&#34;Get embeddings for a list of ngrams (not summed!)
-    #     &#34;&#34;&#34;
-    #     embs = []
-    #     for i in tqdm(range(len(ngrams_list))):
-
-    #     embs = np.array(embs).squeeze()
-    #     return embs
-
-        &#34;&#34;&#34;
-        # Faster version that needs more memory
-        tokens = tokenizer(ngrams_list, padding=args.padding,
-                           truncation=True, return_tensors=&#34;pt&#34;)
-        tokens = tokens.to(device)
-
-        output = model(**tokens) # this takes a while....
-        embs = output[&#39;pooler_output&#39;].cpu().detach().numpy()
-        return embs
-        &#34;&#34;&#34;
-
-
-    def predict(self, X):
+    def predict(self, X_text):
         &#39;&#39;&#39;For regression returns continuous output.
         For classification, returns discrete output.
         &#39;&#39;&#39;
         check_is_fitted(self)
-        embs = self._get_embs(X)
+        embs = self._get_embs(X_text)
         if self.normalize_embs:
             embs = self.normalizer.transform(embs)
         return self.linear.predict(embs)
 
-    def predict_proba(self, X, warn=True):
+    def predict_proba(self, X_text):
         check_is_fitted(self)
-        embs = self._get_embs(X)
+        embs = self._get_embs(X_text)
         if self.normalize_embs:
             embs = self.normalizer.transform(embs)
         return self.linear.predict_proba(embs)
@@ -296,7 +271,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 
     def fit(
         self,
-        X: ArrayLike,
+        X_text: ArrayLike,
         y: ArrayLike,
         verbose=True,
         cache_embs_dir: str = None,
@@ -305,7 +280,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 
         Parameters
         ----------
-        X: ArrayLike[str]
+        X_text: ArrayLike[str]
         y: ArrayLike[str]
         cache_embs_dir, optional
             if not None, directory to save embeddings into
@@ -324,7 +299,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
         # get embs
         if verbose:
             print(&#39;calculating embeddings...&#39;)
-        embs = self._get_embs(X)
+        embs = self._get_embs(X_text)
         if self.normalize_embs:
             self.normalizer = StandardScaler()
             embs = self.normalizer.fit_transform(embs)
@@ -344,62 +319,36 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 
         return self
 
-    def _get_embs(self, X):
+    def _get_embs(self, X_text: ArrayLike):
         embs = []
-        for i in tqdm(range(len(X))):
+        if isinstance(X_text, list):
+            n = len(X_text)
+        else:
+            n = X_text.shape[0]
+        for i in tqdm(range(n)):
             inputs = self.tokenizer(
-                [X[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;)
+                [X_text[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;)
             inputs = inputs.to(self.model.device)
             output = self.model(**inputs)
             emb = output[self.layer].cpu().detach().numpy()
             if len(emb.shape) == 3:  # includes seq_len
                 emb = emb.mean(axis=1)
             embs.append(emb)
-            # emb = imodelsx.embgam.embed.embed_and_sum_function(
-            #     x,
-            #     model=self.model,
-            #     tokenizer_embeddings=self.tokenizer,
-            #     checkpoint=self.checkpoint,
-            #     layer=self.layer,
-            #     fit_with_ngram_decomposition=False,
-            # )
-            # embs.append(emb[&#39;embs&#39;])
         return np.array(embs).squeeze()  # num_examples x embedding_size
 
-    # def _get_embs(self, ngrams_list, model, tokenizer_embeddings):
-    #     &#34;&#34;&#34;Get embeddings for a list of ngrams (not summed!)
-    #     &#34;&#34;&#34;
-    #     embs = []
-    #     for i in tqdm(range(len(ngrams_list))):
-
-    #     embs = np.array(embs).squeeze()
-    #     return embs
-
-        &#34;&#34;&#34;
-        # Faster version that needs more memory
-        tokens = tokenizer(ngrams_list, padding=args.padding,
-                           truncation=True, return_tensors=&#34;pt&#34;)
-        tokens = tokens.to(device)
-
-        output = model(**tokens) # this takes a while....
-        embs = output[&#39;pooler_output&#39;].cpu().detach().numpy()
-        return embs
-        &#34;&#34;&#34;
-
-
-    def predict(self, X):
+    def predict(self, X_text):
         &#39;&#39;&#39;For regression returns continuous output.
         For classification, returns discrete output.
         &#39;&#39;&#39;
         check_is_fitted(self)
-        embs = self._get_embs(X)
+        embs = self._get_embs(X_text)
         if self.normalize_embs:
             embs = self.normalizer.transform(embs)
         return self.linear.predict(embs)
 
-    def predict_proba(self, X, warn=True):
+    def predict_proba(self, X_text):
         check_is_fitted(self)
-        embs = self._get_embs(X)
+        embs = self._get_embs(X_text)
         if self.normalize_embs:
             embs = self.normalizer.transform(embs)
         return self.linear.predict_proba(embs)</code></pre>
@@ -416,13 +365,13 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.linear_finetune.LinearFinetune.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, X: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_embs_dir: str = None)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, X_text: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_embs_dir: str = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Extract embeddings then fit linear model</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>X</code></strong> :&ensp;<code>ArrayLike[str]</code></dt>
+<dt><strong><code>X_text</code></strong> :&ensp;<code>ArrayLike[str]</code></dt>
 <dd>&nbsp;</dd>
 <dt><strong><code>y</code></strong> :&ensp;<code>ArrayLike[str]</code></dt>
 <dd>&nbsp;</dd>
@@ -435,7 +384,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 </summary>
 <pre><code class="python">def fit(
     self,
-    X: ArrayLike,
+    X_text: ArrayLike,
     y: ArrayLike,
     verbose=True,
     cache_embs_dir: str = None,
@@ -444,7 +393,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 
     Parameters
     ----------
-    X: ArrayLike[str]
+    X_text: ArrayLike[str]
     y: ArrayLike[str]
     cache_embs_dir, optional
         if not None, directory to save embeddings into
@@ -463,7 +412,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
     # get embs
     if verbose:
         print(&#39;calculating embeddings...&#39;)
-    embs = self._get_embs(X)
+    embs = self._get_embs(X_text)
     if self.normalize_embs:
         self.normalizer = StandardScaler()
         embs = self.normalizer.fit_transform(embs)
@@ -485,7 +434,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 </details>
 </dd>
 <dt id="imodelsx.linear_finetune.LinearFinetune.predict"><code class="name flex">
-<span>def <span class="ident">predict</span></span>(<span>self, X)</span>
+<span>def <span class="ident">predict</span></span>(<span>self, X_text)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>For regression returns continuous output.
@@ -494,19 +443,19 @@ For classification, returns discrete output.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def predict(self, X):
+<pre><code class="python">def predict(self, X_text):
     &#39;&#39;&#39;For regression returns continuous output.
     For classification, returns discrete output.
     &#39;&#39;&#39;
     check_is_fitted(self)
-    embs = self._get_embs(X)
+    embs = self._get_embs(X_text)
     if self.normalize_embs:
         embs = self.normalizer.transform(embs)
     return self.linear.predict(embs)</code></pre>
 </details>
 </dd>
 <dt id="imodelsx.linear_finetune.LinearFinetune.predict_proba"><code class="name flex">
-<span>def <span class="ident">predict_proba</span></span>(<span>self, X, warn=True)</span>
+<span>def <span class="ident">predict_proba</span></span>(<span>self, X_text)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -514,9 +463,9 @@ For classification, returns discrete output.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def predict_proba(self, X, warn=True):
+<pre><code class="python">def predict_proba(self, X_text):
     check_is_fitted(self)
-    embs = self._get_embs(X)
+    embs = self._get_embs(X_text)
     if self.normalize_embs:
         embs = self.normalizer.transform(embs)
     return self.linear.predict_proba(embs)</code></pre>

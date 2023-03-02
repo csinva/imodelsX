@@ -14,6 +14,7 @@ from sklearn.linear_model import LogisticRegressionCV, RidgeCV
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
 from spacy.lang.en import English
+from scipy.sparse import issparse
 from sklearn.preprocessing import StandardScaler
 import transformers
 import imodelsx.embgam.embed
@@ -59,7 +60,7 @@ class LinearFinetune(BaseEstimator):
 
     def fit(
         self,
-        X: ArrayLike,
+        X_text: ArrayLike,
         y: ArrayLike,
         verbose=True,
         cache_embs_dir: str = None,
@@ -68,7 +69,7 @@ class LinearFinetune(BaseEstimator):
 
         Parameters
         ----------
-        X: ArrayLike[str]
+        X_text: ArrayLike[str]
         y: ArrayLike[str]
         cache_embs_dir, optional
             if not None, directory to save embeddings into
@@ -87,7 +88,7 @@ class LinearFinetune(BaseEstimator):
         # get embs
         if verbose:
             print('calculating embeddings...')
-        embs = self._get_embs(X)
+        embs = self._get_embs(X_text)
         if self.normalize_embs:
             self.normalizer = StandardScaler()
             embs = self.normalizer.fit_transform(embs)
@@ -107,62 +108,36 @@ class LinearFinetune(BaseEstimator):
 
         return self
 
-    def _get_embs(self, X):
+    def _get_embs(self, X_text: ArrayLike):
         embs = []
-        for i in tqdm(range(len(X))):
+        if isinstance(X_text, list):
+            n = len(X_text)
+        else:
+            n = X_text.shape[0]
+        for i in tqdm(range(n)):
             inputs = self.tokenizer(
-                [X[i]], padding=True, truncation=True, return_tensors="pt")
+                [X_text[i]], padding=True, truncation=True, return_tensors="pt")
             inputs = inputs.to(self.model.device)
             output = self.model(**inputs)
             emb = output[self.layer].cpu().detach().numpy()
             if len(emb.shape) == 3:  # includes seq_len
                 emb = emb.mean(axis=1)
             embs.append(emb)
-            # emb = imodelsx.embgam.embed.embed_and_sum_function(
-            #     x,
-            #     model=self.model,
-            #     tokenizer_embeddings=self.tokenizer,
-            #     checkpoint=self.checkpoint,
-            #     layer=self.layer,
-            #     fit_with_ngram_decomposition=False,
-            # )
-            # embs.append(emb['embs'])
         return np.array(embs).squeeze()  # num_examples x embedding_size
 
-    # def _get_embs(self, ngrams_list, model, tokenizer_embeddings):
-    #     """Get embeddings for a list of ngrams (not summed!)
-    #     """
-    #     embs = []
-    #     for i in tqdm(range(len(ngrams_list))):
-
-    #     embs = np.array(embs).squeeze()
-    #     return embs
-
-        """
-        # Faster version that needs more memory
-        tokens = tokenizer(ngrams_list, padding=args.padding,
-                           truncation=True, return_tensors="pt")
-        tokens = tokens.to(device)
-
-        output = model(**tokens) # this takes a while....
-        embs = output['pooler_output'].cpu().detach().numpy()
-        return embs
-        """
-
-
-    def predict(self, X):
+    def predict(self, X_text):
         '''For regression returns continuous output.
         For classification, returns discrete output.
         '''
         check_is_fitted(self)
-        embs = self._get_embs(X)
+        embs = self._get_embs(X_text)
         if self.normalize_embs:
             embs = self.normalizer.transform(embs)
         return self.linear.predict(embs)
 
-    def predict_proba(self, X, warn=True):
+    def predict_proba(self, X_text):
         check_is_fitted(self)
-        embs = self._get_embs(X)
+        embs = self._get_embs(X_text)
         if self.normalize_embs:
             embs = self.normalizer.transform(embs)
         return self.linear.predict_proba(embs)
