@@ -11,7 +11,7 @@ import numpy as np
 def generate_ngrams_list(
     sentence: str,
     ngrams: int,
-    tokenizer_ngrams,
+    tokenizer_ngrams=None,
     all_ngrams=False,
     parsing: str = '',
     nlp_chunks=None,
@@ -28,6 +28,9 @@ def generate_ngrams_list(
     """
 
     seqs = []
+
+    if tokenizer_ngrams is None:
+        tokenizer_ngrams = lambda x: x.split()
 
     # unigrams
     if ngrams == 1:
