@@ -120,6 +120,9 @@ def embed_and_sum_function(
         # (batch_size, seq_len, hidden_size)
         embs = h[0].cpu().detach().numpy()
         embs = embs.mean(axis=1)  # (batch_size, hidden_size)
+    elif checkpoint.startswith('hkunlp/instructor'):
+         INSTRUCTION = "Represent the short phrase for sentiment classification: "
+         embs = model.encode([[INSTRUCTION, x_i] for x_i in seqs], batch_size=32)
 
     # sum over the embeddings
     embs = embs.sum(axis=0).reshape(1, -1)

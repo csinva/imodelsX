@@ -99,10 +99,7 @@ class EmbGAM(BaseEstimator):
         # set up model
         if verbose:
             print('initializing model...')
-        model = transformers.AutoModel.from_pretrained(
-            self.checkpoint).to(device)
-        tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
-            self.checkpoint)
+        model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
         # get embs
         if verbose:
@@ -150,6 +147,19 @@ class EmbGAM(BaseEstimator):
             embs.append(emb['embs'])
         return np.array(embs).squeeze()  # num_examples x embedding_size
 
+    def _get_model_and_tokenizer(self):
+        if self.checkpoint.startswith('hkunlp/instructor-xl'):
+            from InstructorEmbedding import INSTRUCTOR
+            model = INSTRUCTOR(self.checkpoint).to(device)
+            tokenizer_embeddings = None
+        else:
+            model = transformers.AutoModel.from_pretrained(
+                self.checkpoint).to(device)
+            tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
+                self.checkpoint)
+        return model, tokenizer_embeddings
+
+
     def cache_linear_coefs(self, X: ArrayLike, model=None,
                            tokenizer_embeddings=None,
                            renormalize_embs: bool = False,
@@ -163,13 +173,7 @@ class EmbGAM(BaseEstimator):
             whether to renormalize embeddings before fitting linear model
             (useful if getting a test set that is different from the training)
         """
-
-        if model is None:
-            model = transformers.AutoModel.from_pretrained(
-                self.checkpoint).to(device)
-        if tokenizer_embeddings is None:
-            tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
-                self.checkpoint)
+        model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
         ngrams_list = self._get_ngrams_list(X)
 
@@ -199,22 +203,35 @@ class EmbGAM(BaseEstimator):
                for i in range(len(ngrams_list))}
         }
         if verbose:
-            print('After caching, coefs_dict_ len', len(self.coefs_dict_))
+            print('\tAfter caching, coefs_dict_ len', len(self.coefs_dict_))
 
     def _get_embs(self, ngrams_list, model, tokenizer_embeddings):
         """Get embeddings for a list of ngrams (not summed!)
         """
         embs = []
-        for i in tqdm(range(len(ngrams_list))):
-            tokens = tokenizer_embeddings(
-                [ngrams_list[i]], padding=True, truncation=True, return_tensors="pt")
-            tokens = tokens.to(model.device)
-            output = model(**tokens)
-            emb = output[self.layer].cpu().detach().numpy()
-            if len(emb.shape) == 3:  # includes seq_len
-                emb = emb.mean(axis=1)
-            embs.append(emb)
-        embs = np.array(embs).squeeze()
+        if self.checkpoint.startswith('hkunlp/instructor-xl'):
+            INSTRUCTION = "Represent the short phrase for sentiment classification: "
+            # embs = model.encode([[INSTRUCTION, x_i] for x_i in ngrams_list], batch_size=32)
+            embs = []
+            batch_size = 32
+            for i in tqdm(range(0, len(ngrams_list), batch_size)):
+                # ngram = ngrams_list[i]
+                # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
+                ngram_batch = ngrams_list[i: i + batch_size]
+                embs_batch = model.encode([[INSTRUCTION, ngram] for ngram in ngram_batch])
+                embs.append(embs_batch)
+            embs = np.vstack(embs).squeeze()
+        else:
+            for i in tqdm(range(len(ngrams_list))):
+                tokens = tokenizer_embeddings(
+                    [ngrams_list[i]], padding=True, truncation=True, return_tensors="pt")
+                tokens = tokens.to(model.device)
+                output = model(**tokens)
+                emb = output[self.layer].cpu().detach().numpy()
+                if len(emb.shape) == 3:  # includes seq_len
+                    emb = emb.mean(axis=1)
+                embs.append(emb)
+            embs = np.array(embs).squeeze()
         return embs
 
         """

@@ -17,6 +17,9 @@ required_pypi = [
     'torch',
     'tqdm',
     'transformers[torch] >= 4.23.1',
+
+    # 'InstructorEmbedding', # embeddings for emb_diff_module
+    # 'sentence-transformers', # embeddings for emb_diff_module
 ]
 
 setuptools.setup(
