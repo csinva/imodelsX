@@ -38,6 +38,7 @@ class EmbGAM(BaseEstimator):
         random_state=None,
         normalize_embs=False,
         fit_with_ngram_decomposition=True,
+        instructor_prompt=None,
     ):
         '''Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.
 
@@ -61,6 +62,8 @@ class EmbGAM(BaseEstimator):
             whether to fit to emb-gam style (using sum of embeddings of each ngram)
             if False, fits a typical model and uses ngram decomposition only for prediction / testing
             Usually, setting this to False will considerably impede performance
+        instructor_prompt
+            if not None, use instructor-xl with this prompt
         '''
         self.checkpoint = checkpoint
         self.ngrams = ngrams
@@ -73,6 +76,7 @@ class EmbGAM(BaseEstimator):
         self.all_ngrams = all_ngrams
         self.normalize_embs = normalize_embs
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
+        self.instructor_prompt = instructor_prompt
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True,
@@ -143,6 +147,7 @@ class EmbGAM(BaseEstimator):
                 layer=self.layer,
                 all_ngrams=self.all_ngrams,
                 fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
+                instructor_prompt=self.instructor_prompt,
             )
             embs.append(emb['embs'])
         return np.array(embs).squeeze()  # num_examples x embedding_size
@@ -210,7 +215,7 @@ class EmbGAM(BaseEstimator):
         """
         embs = []
         if self.checkpoint.startswith('hkunlp/instructor-xl'):
-            INSTRUCTION = "Represent the short phrase for sentiment classification: "
+            # INSTRUCTION = "Represent the short phrase for sentiment classification: "
             # embs = model.encode([[INSTRUCTION, x_i] for x_i in ngrams_list], batch_size=32)
             embs = []
             batch_size = 32
@@ -218,7 +223,7 @@ class EmbGAM(BaseEstimator):
                 # ngram = ngrams_list[i]
                 # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
                 ngram_batch = ngrams_list[i: i + batch_size]
-                embs_batch = model.encode([[INSTRUCTION, ngram] for ngram in ngram_batch])
+                embs_batch = model.encode([[self.instructor_prompt, ngram] for ngram in ngram_batch])
                 embs.append(embs_batch)
             embs = np.vstack(embs).squeeze()
         else:

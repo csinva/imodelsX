@@ -56,6 +56,7 @@ def embed_and_sum_function(
     nlp_chunks=None,
     all_ngrams: bool = False,
     fit_with_ngram_decomposition: bool = True,
+    instructor_prompt: str = None,
 ):
     """Get summed embeddings for a single example
 
@@ -75,6 +76,8 @@ def embed_and_sum_function(
         if parsing is not empty string, a parser that extracts specific ngrams
     fit_with_ngram_decomposition
         whether to fit the model with ngram decomposition (if not just use the standard sentence)
+    instructor_prompt: str
+        if using instructor, the prompt to use
     """
     if dataset_key_text is not None:
         sentence = example[dataset_key_text]
@@ -121,8 +124,9 @@ def embed_and_sum_function(
         embs = h[0].cpu().detach().numpy()
         embs = embs.mean(axis=1)  # (batch_size, hidden_size)
     elif checkpoint.startswith('hkunlp/instructor'):
-         INSTRUCTION = "Represent the short phrase for sentiment classification: "
-         embs = model.encode([[INSTRUCTION, x_i] for x_i in seqs], batch_size=32)
+        if instructor_prompt is None:
+            instructor_prompt = "Represent the short phrase for sentiment classification: "
+        embs = model.encode([[instructor_prompt, x_i] for x_i in seqs], batch_size=32)
 
     # sum over the embeddings
     embs = embs.sum(axis=0).reshape(1, -1)
