@@ -9,8 +9,6 @@ import pandas as pd
 import pickle as pkl
 import sys
 import numpy as np
-import llm_tree.data
-import numpy as np
 import pandas as pd
 from collections import namedtuple
 from sklearn.tree._tree import Tree
