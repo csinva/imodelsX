@@ -15,6 +15,7 @@ def generate_ngrams_list(
     all_ngrams=False,
     parsing: str = '',
     nlp_chunks=None,
+    pad_starting_ngrams=False,
 ):
     """Get list of ngrams from sentence using a tokenizer
 
@@ -24,7 +25,10 @@ def generate_ngrams_list(
         What order of ngrams to use (1 for unigrams, 2 for bigrams, ...)
     all_ngrams: bool
         whether to include all n-grams up to n or just n
-    parsing
+    pad_starting_ngrams: bool
+        if all_ngrams=False, then pad starting ngrams with shorter length ngrams
+        so that length of ngrams_list is the same as the initial sequence
+        e.g. for ngrams=3 ["the", "the quick", "the quick brown", "quick brown fox", "brown fox jumps", ...]
     """
 
     seqs = []
@@ -33,12 +37,12 @@ def generate_ngrams_list(
         tokenizer_ngrams = lambda x: x.split()
 
     # unigrams
+    unigrams_list = [str(x) for x in tokenizer_ngrams(sentence)]
     if ngrams == 1:
-        seqs += [str(x) for x in tokenizer_ngrams(sentence)]
+        seqs += unigrams_list
 
     # all ngrams in loop
     else:
-        unigrams_list = [str(x) for x in tokenizer_ngrams(sentence)]
         if all_ngrams:
             ngram_lengths = range(1, ngrams + 1)
     #         seqs = [str(x) for x in simple_tokenizer(sentence)] # precompute length 1
@@ -61,6 +65,12 @@ def generate_ngrams_list(
             chunk.text for chunk in doc.noun_chunks
             if ' ' in chunk.text
         ]
+
+    if pad_starting_ngrams:
+        assert all_ngrams is False, "pad_starting_ngrams only works when all_ngrams=False"
+        seqs_init = [' '.join(unigrams_list[:ngram_length]) for ngram_length in range(1, ngrams)]
+        seqs = seqs_init + seqs
+
     return seqs
 
 

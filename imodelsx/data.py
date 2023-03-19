@@ -80,6 +80,7 @@ def load_huggingface_dataset(
             not dataset_name == 'csinva/fmri_language_responses':
         if dataset_name == 'financial_phrasebank':
             labels_to_keep_remap = {
+                # dropping 1=neutral
                 0: 1, # negative
                 2: 0, # positive
             }
