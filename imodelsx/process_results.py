@@ -119,5 +119,5 @@ def average_over_seeds(df: pd.DataFrame, experiment_filename='01_train_model.py'
         # .mean(numeric_only=True)
         .reset_index()
     )
-    df_avg.columns = [x[0]+'_err' if x[1] == 'sem' else x[0] for x in df_avg.columns]
+    df_avg.columns = [x[0] + '_err' if x[1] == 'sem' else x[0] for x in df_avg.columns]
     return df_avg
