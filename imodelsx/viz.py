@@ -14,6 +14,37 @@ from collections import namedtuple
 from sklearn.tree._tree import Tree
 from sklearn import __version__
 
+DSETS_RENAME_DICT = {
+    'emotion': 'Emotion',
+    'sst2': 'SST2',
+    'tweet_eval': 'Tweet (Hate)',
+    'imdb': 'IMDB',
+    'rotten_tomatoes': 'Rotten tomatoes',
+    'financial_phrasebank': 'Financial phrasebank',
+}
+
+DSETS_ABBR_RENAME_DICT = {
+    'emotion': 'Emotion',
+    'sst2': 'SST2',
+    'tweet_eval': 'Tweet (Hate)',
+    'imdb': 'IMDB',
+    'rotten_tomatoes': 'RT',
+    'financial_phrasebank': 'FPB',
+}
+
+MODELS_RENAME_DICT = {
+    'decision_tree': 'CART',
+    'manual_tree': 'TreePrompt',
+    'manual_ensemble': 'Ensemble (best-first)',
+    'manual_boosting': 'Ensemble (boosting)',
+    'manual_gbdt': 'TreePrompt (GBDT)'
+}
+
+CHECKPOINTS_RENAME_DICT = {
+    'EleutherAI/gpt-j-6B': 'GPT-J (6B)',
+    'gpt2': 'GPT-2 (117M)',
+}
+
 def _extract_arrays_from_llm_tree(llm_tree, dtreeviz_dummies):
     """Takes in an LLM tree and recursively converts it to arrays
     that we can later use to build a sklearn decision tree object

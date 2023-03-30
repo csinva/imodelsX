@@ -29,7 +29,7 @@ def load_huggingface_dataset(
     imdb                |    ~25k        |    2         | note: these are relatively long
     tweet_eval          |    ~10k        |    2
     financial_phrasebank|    ~2.3k       |    3
-    emotion             |    ~18k        |    6
+    emotion             |    ~18k        |    6         | note: this was removed, now has clones like dair-ai/emotion
     ag_news             |    ~120k       |    4
     -----------------------------------------------------
     csinva/fmri_language_responses | ~10k | 250 regression voxels
