@@ -1,0 +1,1 @@
+Files in this directory and subdirectories are part of a package: they should all contain an `__init__.py` file and import from the top-level package. For example, `from project_name.model import DecisionTreeClassifier`
