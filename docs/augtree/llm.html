@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>imodelsx.metrics API documentation</title>
+<title>imodelsx.augtree.llm API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,66 +19,86 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>imodelsx.metrics</code></h1>
+<h1 class="title">Module <code>imodelsx.augtree.llm</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from functools import partial
-
+<pre><code class="python">import re
+from typing import List
 import numpy as np
-from sklearn.metrics import (accuracy_score, auc, balanced_accuracy_score,
-                             brier_score_loss, mean_squared_error,
-                             precision_recall_curve, precision_score, r2_score,
-                             recall_score, roc_auc_score)
+import os.path
+from os.path import join
+import pickle as pkl
+    
 
-
-def gini_score(y_true, y_pred):
-    &#34;&#34;&#34;Purer (more accurate) is better&#34;&#34;&#34;
-    y_pred = y_pred.astype(bool)
-    y_pred_sum = y_pred.sum()
-    if y_pred_sum == 0 or y_pred_sum == y_pred.size:
-        y_mean = y_true.mean()
-    else:
-        y_mean = y_true[y_pred].mean()
-    return gini_binary(y_mean)
-
-
-def gini_binary(y_mean: float) -&gt; float:
-    &#34;&#34;&#34;{0, 1} -&gt; 1
-    {0.5} -&gt; 0.5
+def expand_keyword(
+    keyphrase_str: str = &#39;bad&#39;,
+    llm_prompt_context: str = &#39;&#39;, # &#39; in the context of movie reviews&#39;,
+    cache_dir: str=&#39;/home/chansingh/llm-tree/experiments/gpt3_cache/&#39;,
+    seed: int=0,
+):
+    &#34;&#34;&#34;Refine a keyphrase by making a call to gpt-3
     &#34;&#34;&#34;
-    return y_mean ** 2 + (1 - y_mean) ** 2
+    
+    # check cache
+    if llm_prompt_context == &#39;&#39;:
+        cache_dir = join(cache_dir, &#39;base&#39;)
+    else:
+        cache_dir = join(cache_dir, &#39;&#39;.join(llm_prompt_context.split()))
+    os.makedirs(cache_dir, exist_ok=True)
+    keyphrase_str = keyphrase_str.replace(&#39;/&#39;, &#39; &#39;)
+    cache_file = join(cache_dir, f&#39;_{keyphrase_str}___{seed}.pkl&#39;)
+    cache_raw_file = join(cache_dir, f&#39;raw_{keyphrase_str}___{seed}.pkl&#39;)
+    if os.path.exists(cache_file):
+        return pkl.load(open(cache_file, &#39;rb&#39;))
+
+    prompt = f&#39;Generate 100 concise phrases that are very similar to the keyphrase{llm_prompt_context}:\n&#39;
+    prompt += f&#39;Keyphrase: &#34;{keyphrase_str}&#34;\n&#39;
+    prompt += &#39;1.&#39;
+
+    import openai    
+    response = openai.Completion.create(
+        engine=&#34;text-davinci-003&#34;,
+        prompt=prompt,
+        max_tokens=1000,
+        temperature=0.1,
+        top_p=1,
+        frequency_penalty=0.25,  # maximum is 2
+        presence_penalty=0,
+        stop=[&#34;101&#34;]
+)
+    response_text = response[&#39;choices&#39;][0][&#39;text&#39;]
+    ks = convert_response_to_keywords(response_text)
+    pkl.dump(response_text, open(cache_raw_file, &#39;wb&#39;))
+    pkl.dump(ks, open(cache_file, &#39;wb&#39;))
+    return ks
 
 
-def entropy_binary(y_mean: float) -&gt; float:
-    return -y_mean * np.log2(y_mean) - (1 - y_mean) * np.log2(1 - y_mean)
+def convert_response_to_keywords(response_text: str, remove_duplicates=True) -&gt; List[str]:
+    # clean up the keyphrases
+    # (split the string s on any numeric character)
+    ks = [
+        k.replace(&#39;.&#39;, &#39;&#39;).replace(&#39;&#34;&#39;, &#39;&#39;).strip()
+        for k in re.split(r&#39;\d&#39;, response_text) if k.strip()
+    ]
 
+    # lowercase &amp; len &gt; 2
+    ks = [k.lower() for k in ks if len(k) &gt; 2]
 
-def auprc_score(y_true, y_pred):
-    &#34;&#34;&#34;area under precision recall curve&#34;&#34;&#34;
-    precision, recall, _ = precision_recall_curve(y_true, y_pred)
-    return auc(recall, precision)
+    if remove_duplicates:
+        ks = list(set(ks))
+    return ks
 
-
-metrics_classification_discrete = {
-    &#34;accuracy&#34;: accuracy_score,
-    &#34;precision&#34;: partial(precision_score, zero_division=0),
-    &#34;recall&#34;: partial(recall_score, zero_division=0),
-    &#34;balanced_accuracy&#34;: balanced_accuracy_score,
-}
-metrics_classification_proba = {
-    &#34;roc_auc&#34;: roc_auc_score,
-    &#34;brier_score_loss&#34;: brier_score_loss,
-    &#34;auprc&#34;: auprc_score,
-}
-metrics_regression = {
-    &#34;r2&#34;: r2_score,
-    &#34;mse&#34;: mean_squared_error,
-    &#34;corr&#34;: lambda y_true, y_pred: np.corrcoef(y_true, y_pred)[0, 1],
-}</code></pre>
+if __name__ == &#39;__main__&#39;:
+    refined_keyphrase = expand_keyword(
+        keyphrase_str=&#39;koala&#39;,
+        # task_context_str=&#39; about movie reviews&#39;
+        )
+    
+    print(&#39;Refined keyphrase:&#39;, refined_keyphrase)</code></pre>
 </details>
 </section>
 <section>
@@ -88,23 +108,8 @@ metrics_regression = {
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="imodelsx.metrics.auprc_score"><code class="name flex">
-<span>def <span class="ident">auprc_score</span></span>(<span>y_true, y_pred)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>area under precision recall curve</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def auprc_score(y_true, y_pred):
-    &#34;&#34;&#34;area under precision recall curve&#34;&#34;&#34;
-    precision, recall, _ = precision_recall_curve(y_true, y_pred)
-    return auc(recall, precision)</code></pre>
-</details>
-</dd>
-<dt id="imodelsx.metrics.entropy_binary"><code class="name flex">
-<span>def <span class="ident">entropy_binary</span></span>(<span>y_mean: float) ‑> float</span>
+<dt id="imodelsx.augtree.llm.convert_response_to_keywords"><code class="name flex">
+<span>def <span class="ident">convert_response_to_keywords</span></span>(<span>response_text: str, remove_duplicates=True) ‑> List[str]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -112,45 +117,72 @@ metrics_regression = {
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def entropy_binary(y_mean: float) -&gt; float:
-    return -y_mean * np.log2(y_mean) - (1 - y_mean) * np.log2(1 - y_mean)</code></pre>
+<pre><code class="python">def convert_response_to_keywords(response_text: str, remove_duplicates=True) -&gt; List[str]:
+    # clean up the keyphrases
+    # (split the string s on any numeric character)
+    ks = [
+        k.replace(&#39;.&#39;, &#39;&#39;).replace(&#39;&#34;&#39;, &#39;&#39;).strip()
+        for k in re.split(r&#39;\d&#39;, response_text) if k.strip()
+    ]
+
+    # lowercase &amp; len &gt; 2
+    ks = [k.lower() for k in ks if len(k) &gt; 2]
+
+    if remove_duplicates:
+        ks = list(set(ks))
+    return ks</code></pre>
 </details>
 </dd>
-<dt id="imodelsx.metrics.gini_binary"><code class="name flex">
-<span>def <span class="ident">gini_binary</span></span>(<span>y_mean: float) ‑> float</span>
+<dt id="imodelsx.augtree.llm.expand_keyword"><code class="name flex">
+<span>def <span class="ident">expand_keyword</span></span>(<span>keyphrase_str: str = 'bad', llm_prompt_context: str = '', cache_dir: str = '/home/chansingh/llm-tree/experiments/gpt3_cache/', seed: int = 0)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>{0, 1} -&gt; 1
-{0.5} -&gt; 0.5</p></div>
+<div class="desc"><p>Refine a keyphrase by making a call to gpt-3</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def gini_binary(y_mean: float) -&gt; float:
-    &#34;&#34;&#34;{0, 1} -&gt; 1
-    {0.5} -&gt; 0.5
+<pre><code class="python">def expand_keyword(
+    keyphrase_str: str = &#39;bad&#39;,
+    llm_prompt_context: str = &#39;&#39;, # &#39; in the context of movie reviews&#39;,
+    cache_dir: str=&#39;/home/chansingh/llm-tree/experiments/gpt3_cache/&#39;,
+    seed: int=0,
+):
+    &#34;&#34;&#34;Refine a keyphrase by making a call to gpt-3
     &#34;&#34;&#34;
-    return y_mean ** 2 + (1 - y_mean) ** 2</code></pre>
-</details>
-</dd>
-<dt id="imodelsx.metrics.gini_score"><code class="name flex">
-<span>def <span class="ident">gini_score</span></span>(<span>y_true, y_pred)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Purer (more accurate) is better</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def gini_score(y_true, y_pred):
-    &#34;&#34;&#34;Purer (more accurate) is better&#34;&#34;&#34;
-    y_pred = y_pred.astype(bool)
-    y_pred_sum = y_pred.sum()
-    if y_pred_sum == 0 or y_pred_sum == y_pred.size:
-        y_mean = y_true.mean()
+    
+    # check cache
+    if llm_prompt_context == &#39;&#39;:
+        cache_dir = join(cache_dir, &#39;base&#39;)
     else:
-        y_mean = y_true[y_pred].mean()
-    return gini_binary(y_mean)</code></pre>
+        cache_dir = join(cache_dir, &#39;&#39;.join(llm_prompt_context.split()))
+    os.makedirs(cache_dir, exist_ok=True)
+    keyphrase_str = keyphrase_str.replace(&#39;/&#39;, &#39; &#39;)
+    cache_file = join(cache_dir, f&#39;_{keyphrase_str}___{seed}.pkl&#39;)
+    cache_raw_file = join(cache_dir, f&#39;raw_{keyphrase_str}___{seed}.pkl&#39;)
+    if os.path.exists(cache_file):
+        return pkl.load(open(cache_file, &#39;rb&#39;))
+
+    prompt = f&#39;Generate 100 concise phrases that are very similar to the keyphrase{llm_prompt_context}:\n&#39;
+    prompt += f&#39;Keyphrase: &#34;{keyphrase_str}&#34;\n&#39;
+    prompt += &#39;1.&#39;
+
+    import openai    
+    response = openai.Completion.create(
+        engine=&#34;text-davinci-003&#34;,
+        prompt=prompt,
+        max_tokens=1000,
+        temperature=0.1,
+        top_p=1,
+        frequency_penalty=0.25,  # maximum is 2
+        presence_penalty=0,
+        stop=[&#34;101&#34;]
+)
+    response_text = response[&#39;choices&#39;][0][&#39;text&#39;]
+    ks = convert_response_to_keywords(response_text)
+    pkl.dump(response_text, open(cache_raw_file, &#39;wb&#39;))
+    pkl.dump(ks, open(cache_file, &#39;wb&#39;))
+    return ks</code></pre>
 </details>
 </dd>
 </dl>
@@ -166,15 +198,13 @@ metrics_regression = {
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="imodelsx" href="index.html">imodelsx</a></code></li>
+<li><code><a title="imodelsx.augtree" href="index.html">imodelsx.augtree</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="imodelsx.metrics.auprc_score" href="#imodelsx.metrics.auprc_score">auprc_score</a></code></li>
-<li><code><a title="imodelsx.metrics.entropy_binary" href="#imodelsx.metrics.entropy_binary">entropy_binary</a></code></li>
-<li><code><a title="imodelsx.metrics.gini_binary" href="#imodelsx.metrics.gini_binary">gini_binary</a></code></li>
-<li><code><a title="imodelsx.metrics.gini_score" href="#imodelsx.metrics.gini_score">gini_score</a></code></li>
+<li><code><a title="imodelsx.augtree.llm.convert_response_to_keywords" href="#imodelsx.augtree.llm.convert_response_to_keywords">convert_response_to_keywords</a></code></li>
+<li><code><a title="imodelsx.augtree.llm.expand_keyword" href="#imodelsx.augtree.llm.expand_keyword">expand_keyword</a></code></li>
 </ul>
 </li>
 </ul>

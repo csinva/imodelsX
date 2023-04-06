@@ -2,7 +2,7 @@
 Simple scikit-learn interface for Emb-GAM.
 
 
-Emb-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models
+Aug-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models
 Chandan Singh & Jianfeng Gao
 https://arxiv.org/abs/2209.11799
 """
@@ -16,7 +16,7 @@ from sklearn.utils.validation import check_is_fitted
 from spacy.lang.en import English
 from sklearn.preprocessing import StandardScaler
 import transformers
-import imodelsx.embgam.embed
+import imodelsx.auggam.embed
 from tqdm import tqdm
 import os
 import os.path
@@ -27,7 +27,7 @@ from sklearn.exceptions import ConvergenceWarning
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
-class EmbGAM(BaseEstimator):
+class AugGAM(BaseEstimator):
     def __init__(
         self,
         checkpoint: str = 'bert-base-uncased',
@@ -40,7 +40,7 @@ class EmbGAM(BaseEstimator):
         fit_with_ngram_decomposition=True,
         instructor_prompt=None,
     ):
-        '''Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.
+        '''AugGAM-GAM Class - use either AugGAMClassifier or AugGAMRegressor rather than initializing this class directly.
 
         Parameters
         ----------
@@ -321,9 +321,9 @@ before calling predict.')
         return np.array(preds)
 
 
-class EmbGAMRegressor(EmbGAM, RegressorMixin):
+class AugGAMRegressor(AugGAM, RegressorMixin):
     ...
 
 
-class EmbGAMClassifier(EmbGAM, ClassifierMixin):
+class AugGAMClassifier(AugGAM, ClassifierMixin):
     ...

@@ -17,7 +17,6 @@ from spacy.lang.en import English
 from scipy.sparse import issparse
 from sklearn.preprocessing import StandardScaler
 import transformers
-import imodelsx.embgam.embed
 from tqdm import tqdm
 import os
 import os.path

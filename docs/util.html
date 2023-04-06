@@ -37,10 +37,11 @@ import numpy as np
 def generate_ngrams_list(
     sentence: str,
     ngrams: int,
-    tokenizer_ngrams,
+    tokenizer_ngrams=None,
     all_ngrams=False,
     parsing: str = &#39;&#39;,
     nlp_chunks=None,
+    pad_starting_ngrams=False,
 ):
     &#34;&#34;&#34;Get list of ngrams from sentence using a tokenizer
 
@@ -50,18 +51,24 @@ def generate_ngrams_list(
         What order of ngrams to use (1 for unigrams, 2 for bigrams, ...)
     all_ngrams: bool
         whether to include all n-grams up to n or just n
-    parsing
+    pad_starting_ngrams: bool
+        if all_ngrams=False, then pad starting ngrams with shorter length ngrams
+        so that length of ngrams_list is the same as the initial sequence
+        e.g. for ngrams=3 [&#34;the&#34;, &#34;the quick&#34;, &#34;the quick brown&#34;, &#34;quick brown fox&#34;, &#34;brown fox jumps&#34;, ...]
     &#34;&#34;&#34;
 
     seqs = []
 
+    if tokenizer_ngrams is None:
+        tokenizer_ngrams = lambda x: x.split()
+
     # unigrams
+    unigrams_list = [str(x) for x in tokenizer_ngrams(sentence)]
     if ngrams == 1:
-        seqs += [str(x) for x in tokenizer_ngrams(sentence)]
+        seqs += unigrams_list
 
     # all ngrams in loop
     else:
-        unigrams_list = [str(x) for x in tokenizer_ngrams(sentence)]
         if all_ngrams:
             ngram_lengths = range(1, ngrams + 1)
     #         seqs = [str(x) for x in simple_tokenizer(sentence)] # precompute length 1
@@ -84,6 +91,12 @@ def generate_ngrams_list(
             chunk.text for chunk in doc.noun_chunks
             if &#39; &#39; in chunk.text
         ]
+
+    if pad_starting_ngrams:
+        assert all_ngrams is False, &#34;pad_starting_ngrams only works when all_ngrams=False&#34;
+        seqs_init = [&#39; &#39;.join(unigrams_list[:ngram_length]) for ngram_length in range(1, ngrams)]
+        seqs = seqs_init + seqs
+
     return seqs
 
 
@@ -164,7 +177,7 @@ STOPWORDS = {
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="imodelsx.util.generate_ngrams_list"><code class="name flex">
-<span>def <span class="ident">generate_ngrams_list</span></span>(<span>sentence: str, ngrams: int, tokenizer_ngrams, all_ngrams=False, parsing: str = '', nlp_chunks=None)</span>
+<span>def <span class="ident">generate_ngrams_list</span></span>(<span>sentence: str, ngrams: int, tokenizer_ngrams=None, all_ngrams=False, parsing: str = '', nlp_chunks=None, pad_starting_ngrams=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Get list of ngrams from sentence using a tokenizer</p>
@@ -173,7 +186,10 @@ STOPWORDS = {
 What order of ngrams to use (1 for unigrams, 2 for bigrams, &hellip;)
 all_ngrams: bool
 whether to include all n-grams up to n or just n
-parsing</p></div>
+pad_starting_ngrams: bool
+if all_ngrams=False, then pad starting ngrams with shorter length ngrams
+so that length of ngrams_list is the same as the initial sequence
+e.g. for ngrams=3 ["the", "the quick", "the quick brown", "quick brown fox", "brown fox jumps", &hellip;]</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -181,10 +197,11 @@ parsing</p></div>
 <pre><code class="python">def generate_ngrams_list(
     sentence: str,
     ngrams: int,
-    tokenizer_ngrams,
+    tokenizer_ngrams=None,
     all_ngrams=False,
     parsing: str = &#39;&#39;,
     nlp_chunks=None,
+    pad_starting_ngrams=False,
 ):
     &#34;&#34;&#34;Get list of ngrams from sentence using a tokenizer
 
@@ -194,18 +211,24 @@ parsing</p></div>
         What order of ngrams to use (1 for unigrams, 2 for bigrams, ...)
     all_ngrams: bool
         whether to include all n-grams up to n or just n
-    parsing
+    pad_starting_ngrams: bool
+        if all_ngrams=False, then pad starting ngrams with shorter length ngrams
+        so that length of ngrams_list is the same as the initial sequence
+        e.g. for ngrams=3 [&#34;the&#34;, &#34;the quick&#34;, &#34;the quick brown&#34;, &#34;quick brown fox&#34;, &#34;brown fox jumps&#34;, ...]
     &#34;&#34;&#34;
 
     seqs = []
 
+    if tokenizer_ngrams is None:
+        tokenizer_ngrams = lambda x: x.split()
+
     # unigrams
+    unigrams_list = [str(x) for x in tokenizer_ngrams(sentence)]
     if ngrams == 1:
-        seqs += [str(x) for x in tokenizer_ngrams(sentence)]
+        seqs += unigrams_list
 
     # all ngrams in loop
     else:
-        unigrams_list = [str(x) for x in tokenizer_ngrams(sentence)]
         if all_ngrams:
             ngram_lengths = range(1, ngrams + 1)
     #         seqs = [str(x) for x in simple_tokenizer(sentence)] # precompute length 1
@@ -228,6 +251,12 @@ parsing</p></div>
             chunk.text for chunk in doc.noun_chunks
             if &#39; &#39; in chunk.text
         ]
+
+    if pad_starting_ngrams:
+        assert all_ngrams is False, &#34;pad_starting_ngrams only works when all_ngrams=False&#34;
+        seqs_init = [&#39; &#39;.join(unigrams_list[:ngram_length]) for ngram_length in range(1, ngrams)]
+        seqs = seqs_init + seqs
+
     return seqs</code></pre>
 </details>
 </dd>

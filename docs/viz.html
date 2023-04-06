@@ -37,12 +37,41 @@ import pandas as pd
 import pickle as pkl
 import sys
 import numpy as np
-import llm_tree.data
-import numpy as np
 import pandas as pd
 from collections import namedtuple
 from sklearn.tree._tree import Tree
 from sklearn import __version__
+
+DSETS_RENAME_DICT = {
+    &#39;emotion&#39;: &#39;Emotion&#39;,
+    &#39;sst2&#39;: &#39;SST2&#39;,
+    &#39;tweet_eval&#39;: &#39;Tweet (Hate)&#39;,
+    &#39;imdb&#39;: &#39;IMDB&#39;,
+    &#39;rotten_tomatoes&#39;: &#39;Rotten tomatoes&#39;,
+    &#39;financial_phrasebank&#39;: &#39;Financial phrasebank&#39;,
+}
+
+DSETS_ABBR_RENAME_DICT = {
+    &#39;emotion&#39;: &#39;Emotion&#39;,
+    &#39;sst2&#39;: &#39;SST2&#39;,
+    &#39;tweet_eval&#39;: &#39;Tweet (Hate)&#39;,
+    &#39;imdb&#39;: &#39;IMDB&#39;,
+    &#39;rotten_tomatoes&#39;: &#39;RT&#39;,
+    &#39;financial_phrasebank&#39;: &#39;FPB&#39;,
+}
+
+MODELS_RENAME_DICT = {
+    &#39;decision_tree&#39;: &#39;CART&#39;,
+    &#39;manual_tree&#39;: &#39;TreePrompt&#39;,
+    &#39;manual_ensemble&#39;: &#39;Ensemble (best-first)&#39;,
+    &#39;manual_boosting&#39;: &#39;Ensemble (boosting)&#39;,
+    &#39;manual_gbdt&#39;: &#39;TreePrompt (GBDT)&#39;
+}
+
+CHECKPOINTS_RENAME_DICT = {
+    &#39;EleutherAI/gpt-j-6B&#39;: &#39;GPT-J (6B)&#39;,
+    &#39;gpt2&#39;: &#39;GPT-2 (117M)&#39;,
+}
 
 def _extract_arrays_from_llm_tree(llm_tree, dtreeviz_dummies):
     &#34;&#34;&#34;Takes in an LLM tree and recursively converts it to arrays

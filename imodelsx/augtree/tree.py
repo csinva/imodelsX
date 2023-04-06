@@ -8,7 +8,7 @@ import logging
 import warnings
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 
-class Tree:
+class AugTree:
     def __init__(
         self,
         max_depth: int = 3,
@@ -235,8 +235,6 @@ class Tree:
                 stumps_queue.append((stump.child_right, stump_id + "1"))
         return tree_dict
 
-    
-
     def __str__(self):
         s = f'> Tree(max_depth={self.max_depth} max_features={self.max_features} refine={self.refinement_strategy})\n> ------------------------------------------------------\n'
         return s + self.viz_tree()
@@ -255,9 +253,9 @@ class Tree:
             s += '   ' * (depth + 1) + f'Pos n={stump.n_samples[1]} val={stump.value[1]:0.3f}' + '\n'
         return s
 
-class TreeRegressor(Tree, RegressorMixin):
+class AugTreeRegressor(AugTree, RegressorMixin):
     ...
 
 
-class TreeClassifier(Tree, ClassifierMixin):
+class AugTreeClassifier(AugTree, ClassifierMixin):
     ...

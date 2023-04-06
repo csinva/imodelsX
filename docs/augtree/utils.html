@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>imodelsx.augtree.utils API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>imodelsx.augtree.utils</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from sklearn.tree import DecisionTreeClassifier
+import numpy as np
+from spacy.lang.en import English
+from sklearn.metrics import mean_squared_error
+from nltk.stem.porter import PorterStemmer
+ROOT = 0
+LEFT = 1
+RIGHT = 2
+NEG = 0
+POS = 1
+
+def clean_str(s):
+    return s.lower().replace(&#39;/&#39;, &#39;___&#39;).strip()
+
+def impurity_mse(y):
+    &#34;&#34;&#34;Lower impurity (closer to 0) is better
+    &#34;&#34;&#34;
+    y_mean = np.mean(y)
+    return np.mean((y - y_mean)**2)
+
+def impurity_gini(y):
+    &#34;&#34;&#34;Lower impurity (closer to 0) is better
+    &#34;&#34;&#34;
+    return 1 - gini_binary(np.mean(y))
+
+def impurity_entropy(y):
+    &#34;&#34;&#34;Lower impurity (closer to 0) is better
+    &#34;&#34;&#34;
+    return 1 - entropy_binary(np.mean(y))
+
+def mse_score(y_true, y_pred):
+    &#34;&#34;&#34;Lower is better
+    &#34;&#34;&#34;
+    return -mean_squared_error(y_true, y_pred)
+
+def gini_score(y_true, y_pred):
+    &#34;&#34;&#34;Purer (more accurate) is better
+    &#34;&#34;&#34;
+    y_pred = y_pred.astype(bool)
+    y_pred_sum = y_pred.sum()
+    if y_pred_sum == 0 or y_pred_sum == y_pred.size:
+        y_mean = y_true.mean()
+    else:
+        y_mean = y_true[y_pred].mean()
+    return gini_binary(y_mean)
+
+def entropy_score(y_true, y_pred):
+    &#34;&#34;&#34;Purer (more accurate) is better
+    &#34;&#34;&#34;
+    y_pred = y_pred.astype(bool)
+    y_pred_sum = y_pred.sum()
+    if y_pred_sum == 0 or y_pred_sum == y_pred.size:
+        y_mean = y_true.mean()
+    else:
+        y_mean = y_true[y_pred].mean()
+    return entropy_binary(y_mean)
+
+def gini_binary(y_mean: float) -&gt; float:
+    &#34;&#34;&#34;Higher is better
+    {0, 1} -&gt; 1
+    {0.5} -&gt; 0.5
+    &#34;&#34;&#34;
+    return y_mean**2 + (1 - y_mean)**2
+
+def entropy_binary(y_mean: float) -&gt; float:
+    &#34;&#34;&#34;Lower is better
+    &#34;&#34;&#34;
+    return -y_mean * np.log2(y_mean) - (1 - y_mean) * np.log2(1 - y_mean)
+
+def get_gini_impurity_reduction_from_sklearn_stump(m: DecisionTreeClassifier):
+    &#34;&#34;&#34;Calculate gini impurity reduction in first split of model m
+    &#34;&#34;&#34;
+    gini_orig = m.tree_.impurity[ROOT]
+    gini_left = m.tree_.impurity[LEFT]
+    gini_right = m.tree_.impurity[RIGHT]
+    frac_samples_left = m.tree_.n_node_samples[LEFT] / m.tree_.n_node_samples[ROOT]
+    frac_samples_right = m.tree_.n_node_samples[RIGHT] / m.tree_.n_node_samples[ROOT]
+    gini_reduction = gini_orig - \
+        (frac_samples_left * gini_left + frac_samples_right * gini_right)
+    return gini_reduction
+
+
+def check_if_feature_contributes_positively_from_sklearn_stump(m: DecisionTreeClassifier):
+    &#34;&#34;&#34;Check if having the feature being positive makes the value increase or decrease
+    &#34;&#34;&#34;
+    # look at value for first split of model
+    return m.tree_.value[RIGHT][0, NEG] &gt; m.tree_.value[LEFT][0, POS]
+
+def get_spacy_tokenizer(convert_lower=True, use_stemming=False):
+    return LLMTreeTokenizer(convert_lower, use_stemming)
+
+class LLMTreeTokenizer:
+    def __init__(self, convert_lower, use_stemming):
+        self.tok = English()
+        self.convert_lower = convert_lower
+        self.use_stemming = use_stemming
+        if self.use_stemming:
+            self.stemmer = PorterStemmer()
+
+    def __call__(self, s):
+        if self.convert_lower:
+            s = s.lower()
+        strs = [str(x) for x in self.tok(s)]
+        if self.use_stemming:
+            strs = [self.stemmer.stem(x) for x in strs]
+        return strs</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="imodelsx.augtree.utils.check_if_feature_contributes_positively_from_sklearn_stump"><code class="name flex">
+<span>def <span class="ident">check_if_feature_contributes_positively_from_sklearn_stump</span></span>(<span>m: sklearn.tree._classes.DecisionTreeClassifier)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Check if having the feature being positive makes the value increase or decrease</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_if_feature_contributes_positively_from_sklearn_stump(m: DecisionTreeClassifier):
+    &#34;&#34;&#34;Check if having the feature being positive makes the value increase or decrease
+    &#34;&#34;&#34;
+    # look at value for first split of model
+    return m.tree_.value[RIGHT][0, NEG] &gt; m.tree_.value[LEFT][0, POS]</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.utils.clean_str"><code class="name flex">
+<span>def <span class="ident">clean_str</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clean_str(s):
+    return s.lower().replace(&#39;/&#39;, &#39;___&#39;).strip()</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.utils.entropy_binary"><code class="name flex">
+<span>def <span class="ident">entropy_binary</span></span>(<span>y_mean: float) ‑> float</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lower is better</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def entropy_binary(y_mean: float) -&gt; float:
+    &#34;&#34;&#34;Lower is better
+    &#34;&#34;&#34;
+    return -y_mean * np.log2(y_mean) - (1 - y_mean) * np.log2(1 - y_mean)</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.utils.entropy_score"><code class="name flex">
+<span>def <span class="ident">entropy_score</span></span>(<span>y_true, y_pred)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Purer (more accurate) is better</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def entropy_score(y_true, y_pred):
+    &#34;&#34;&#34;Purer (more accurate) is better
+    &#34;&#34;&#34;
+    y_pred = y_pred.astype(bool)
+    y_pred_sum = y_pred.sum()
+    if y_pred_sum == 0 or y_pred_sum == y_pred.size:
+        y_mean = y_true.mean()
+    else:
+        y_mean = y_true[y_pred].mean()
+    return entropy_binary(y_mean)</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.utils.get_gini_impurity_reduction_from_sklearn_stump"><code class="name flex">
+<span>def <span class="ident">get_gini_impurity_reduction_from_sklearn_stump</span></span>(<span>m: sklearn.tree._classes.DecisionTreeClassifier)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate gini impurity reduction in first split of model m</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_gini_impurity_reduction_from_sklearn_stump(m: DecisionTreeClassifier):
+    &#34;&#34;&#34;Calculate gini impurity reduction in first split of model m
+    &#34;&#34;&#34;
+    gini_orig = m.tree_.impurity[ROOT]
+    gini_left = m.tree_.impurity[LEFT]
+    gini_right = m.tree_.impurity[RIGHT]
+    frac_samples_left = m.tree_.n_node_samples[LEFT] / m.tree_.n_node_samples[ROOT]
+    frac_samples_right = m.tree_.n_node_samples[RIGHT] / m.tree_.n_node_samples[ROOT]
+    gini_reduction = gini_orig - \
+        (frac_samples_left * gini_left + frac_samples_right * gini_right)
+    return gini_reduction</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.utils.get_spacy_tokenizer"><code class="name flex">
+<span>def <span class="ident">get_spacy_tokenizer</span></span>(<span>convert_lower=True, use_stemming=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_spacy_tokenizer(convert_lower=True, use_stemming=False):
+    return LLMTreeTokenizer(convert_lower, use_stemming)</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.utils.gini_binary"><code class="name flex">
+<span>def <span class="ident">gini_binary</span></span>(<span>y_mean: float) ‑> float</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Higher is better
+{0, 1} -&gt; 1
+{0.5} -&gt; 0.5</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gini_binary(y_mean: float) -&gt; float:
+    &#34;&#34;&#34;Higher is better
+    {0, 1} -&gt; 1
+    {0.5} -&gt; 0.5
+    &#34;&#34;&#34;
+    return y_mean**2 + (1 - y_mean)**2</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.utils.gini_score"><code class="name flex">
+<span>def <span class="ident">gini_score</span></span>(<span>y_true, y_pred)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Purer (more accurate) is better</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gini_score(y_true, y_pred):
+    &#34;&#34;&#34;Purer (more accurate) is better
+    &#34;&#34;&#34;
+    y_pred = y_pred.astype(bool)
+    y_pred_sum = y_pred.sum()
+    if y_pred_sum == 0 or y_pred_sum == y_pred.size:
+        y_mean = y_true.mean()
+    else:
+        y_mean = y_true[y_pred].mean()
+    return gini_binary(y_mean)</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.utils.impurity_entropy"><code class="name flex">
+<span>def <span class="ident">impurity_entropy</span></span>(<span>y)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lower impurity (closer to 0) is better</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def impurity_entropy(y):
+    &#34;&#34;&#34;Lower impurity (closer to 0) is better
+    &#34;&#34;&#34;
+    return 1 - entropy_binary(np.mean(y))</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.utils.impurity_gini"><code class="name flex">
+<span>def <span class="ident">impurity_gini</span></span>(<span>y)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lower impurity (closer to 0) is better</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def impurity_gini(y):
+    &#34;&#34;&#34;Lower impurity (closer to 0) is better
+    &#34;&#34;&#34;
+    return 1 - gini_binary(np.mean(y))</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.utils.impurity_mse"><code class="name flex">
+<span>def <span class="ident">impurity_mse</span></span>(<span>y)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lower impurity (closer to 0) is better</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def impurity_mse(y):
+    &#34;&#34;&#34;Lower impurity (closer to 0) is better
+    &#34;&#34;&#34;
+    y_mean = np.mean(y)
+    return np.mean((y - y_mean)**2)</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.utils.mse_score"><code class="name flex">
+<span>def <span class="ident">mse_score</span></span>(<span>y_true, y_pred)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Lower is better</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mse_score(y_true, y_pred):
+    &#34;&#34;&#34;Lower is better
+    &#34;&#34;&#34;
+    return -mean_squared_error(y_true, y_pred)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="imodelsx.augtree.utils.LLMTreeTokenizer"><code class="flex name class">
+<span>class <span class="ident">LLMTreeTokenizer</span></span>
+<span>(</span><span>convert_lower, use_stemming)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LLMTreeTokenizer:
+    def __init__(self, convert_lower, use_stemming):
+        self.tok = English()
+        self.convert_lower = convert_lower
+        self.use_stemming = use_stemming
+        if self.use_stemming:
+            self.stemmer = PorterStemmer()
+
+    def __call__(self, s):
+        if self.convert_lower:
+            s = s.lower()
+        strs = [str(x) for x in self.tok(s)]
+        if self.use_stemming:
+            strs = [self.stemmer.stem(x) for x in strs]
+        return strs</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="imodelsx.augtree" href="index.html">imodelsx.augtree</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="imodelsx.augtree.utils.check_if_feature_contributes_positively_from_sklearn_stump" href="#imodelsx.augtree.utils.check_if_feature_contributes_positively_from_sklearn_stump">check_if_feature_contributes_positively_from_sklearn_stump</a></code></li>
+<li><code><a title="imodelsx.augtree.utils.clean_str" href="#imodelsx.augtree.utils.clean_str">clean_str</a></code></li>
+<li><code><a title="imodelsx.augtree.utils.entropy_binary" href="#imodelsx.augtree.utils.entropy_binary">entropy_binary</a></code></li>
+<li><code><a title="imodelsx.augtree.utils.entropy_score" href="#imodelsx.augtree.utils.entropy_score">entropy_score</a></code></li>
+<li><code><a title="imodelsx.augtree.utils.get_gini_impurity_reduction_from_sklearn_stump" href="#imodelsx.augtree.utils.get_gini_impurity_reduction_from_sklearn_stump">get_gini_impurity_reduction_from_sklearn_stump</a></code></li>
+<li><code><a title="imodelsx.augtree.utils.get_spacy_tokenizer" href="#imodelsx.augtree.utils.get_spacy_tokenizer">get_spacy_tokenizer</a></code></li>
+<li><code><a title="imodelsx.augtree.utils.gini_binary" href="#imodelsx.augtree.utils.gini_binary">gini_binary</a></code></li>
+<li><code><a title="imodelsx.augtree.utils.gini_score" href="#imodelsx.augtree.utils.gini_score">gini_score</a></code></li>
+<li><code><a title="imodelsx.augtree.utils.impurity_entropy" href="#imodelsx.augtree.utils.impurity_entropy">impurity_entropy</a></code></li>
+<li><code><a title="imodelsx.augtree.utils.impurity_gini" href="#imodelsx.augtree.utils.impurity_gini">impurity_gini</a></code></li>
+<li><code><a title="imodelsx.augtree.utils.impurity_mse" href="#imodelsx.augtree.utils.impurity_mse">impurity_mse</a></code></li>
+<li><code><a title="imodelsx.augtree.utils.mse_score" href="#imodelsx.augtree.utils.mse_score">mse_score</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="imodelsx.augtree.utils.LLMTreeTokenizer" href="#imodelsx.augtree.utils.LLMTreeTokenizer">LLMTreeTokenizer</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

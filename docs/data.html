@@ -30,7 +30,7 @@
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
-
+datasets.logging.set_verbosity_error()
 
 def load_huggingface_dataset(
     dataset_name: str,
@@ -57,7 +57,7 @@ def load_huggingface_dataset(
     imdb                |    ~25k        |    2         | note: these are relatively long
     tweet_eval          |    ~10k        |    2
     financial_phrasebank|    ~2.3k       |    3
-    emotion             |    ~18k        |    6
+    emotion             |    ~18k        |    6         | note: this was removed, now has clones like dair-ai/emotion
     ag_news             |    ~120k       |    4
     -----------------------------------------------------
     csinva/fmri_language_responses | ~10k | 250 regression voxels
@@ -108,6 +108,7 @@ def load_huggingface_dataset(
             not dataset_name == &#39;csinva/fmri_language_responses&#39;:
         if dataset_name == &#39;financial_phrasebank&#39;:
             labels_to_keep_remap = {
+                # dropping 1=neutral
                 0: 1, # negative
                 2: 0, # positive
             }
@@ -241,6 +242,7 @@ emotion
 ~18k
 |
 6
+| note: this was removed, now has clones like dair-ai/emotion
 ag_news
 |
 ~120k
@@ -277,7 +279,7 @@ ag_news
     imdb                |    ~25k        |    2         | note: these are relatively long
     tweet_eval          |    ~10k        |    2
     financial_phrasebank|    ~2.3k       |    3
-    emotion             |    ~18k        |    6
+    emotion             |    ~18k        |    6         | note: this was removed, now has clones like dair-ai/emotion
     ag_news             |    ~120k       |    4
     -----------------------------------------------------
     csinva/fmri_language_responses | ~10k | 250 regression voxels
@@ -328,6 +330,7 @@ ag_news
             not dataset_name == &#39;csinva/fmri_language_responses&#39;:
         if dataset_name == &#39;financial_phrasebank&#39;:
             labels_to_keep_remap = {
+                # dropping 1=neutral
                 0: 1, # negative
                 2: 0, # positive
             }

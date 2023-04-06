@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>imodelsx.embgam.embgam API documentation</title>
+<title>imodelsx.auggam.auggam API documentation</title>
 <meta name="description" content="Simple scikit-learn interface for Emb-GAM …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,11 +19,11 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>imodelsx.embgam.embgam</code></h1>
+<h1 class="title">Module <code>imodelsx.auggam.auggam</code></h1>
 </header>
 <section id="section-intro">
 <p>Simple scikit-learn interface for Emb-GAM.</p>
-<p>Emb-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models
+<p>Aug-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models
 Chandan Singh &amp; Jianfeng Gao
 <a href="https://arxiv.org/abs/2209.11799">https://arxiv.org/abs/2209.11799</a></p>
 <details class="source">
@@ -34,7 +34,7 @@ Chandan Singh &amp; Jianfeng Gao
 Simple scikit-learn interface for Emb-GAM.
 
 
-Emb-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models
+Aug-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models
 Chandan Singh &amp; Jianfeng Gao
 https://arxiv.org/abs/2209.11799
 &#34;&#34;&#34;
@@ -48,7 +48,7 @@ from sklearn.utils.validation import check_is_fitted
 from spacy.lang.en import English
 from sklearn.preprocessing import StandardScaler
 import transformers
-import imodelsx.embgam.embed
+import imodelsx.auggam.embed
 from tqdm import tqdm
 import os
 import os.path
@@ -59,7 +59,7 @@ from sklearn.exceptions import ConvergenceWarning
 device = &#39;cuda&#39; if torch.cuda.is_available() else &#39;cpu&#39;
 
 
-class EmbGAM(BaseEstimator):
+class AugGAM(BaseEstimator):
     def __init__(
         self,
         checkpoint: str = &#39;bert-base-uncased&#39;,
@@ -70,8 +70,9 @@ class EmbGAM(BaseEstimator):
         random_state=None,
         normalize_embs=False,
         fit_with_ngram_decomposition=True,
+        instructor_prompt=None,
     ):
-        &#39;&#39;&#39;Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.
+        &#39;&#39;&#39;AugGAM-GAM Class - use either AugGAMClassifier or AugGAMRegressor rather than initializing this class directly.
 
         Parameters
         ----------
@@ -93,6 +94,8 @@ class EmbGAM(BaseEstimator):
             whether to fit to emb-gam style (using sum of embeddings of each ngram)
             if False, fits a typical model and uses ngram decomposition only for prediction / testing
             Usually, setting this to False will considerably impede performance
+        instructor_prompt
+            if not None, use instructor-xl with this prompt
         &#39;&#39;&#39;
         self.checkpoint = checkpoint
         self.ngrams = ngrams
@@ -105,6 +108,7 @@ class EmbGAM(BaseEstimator):
         self.all_ngrams = all_ngrams
         self.normalize_embs = normalize_embs
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
+        self.instructor_prompt = instructor_prompt
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True,
@@ -131,10 +135,7 @@ class EmbGAM(BaseEstimator):
         # set up model
         if verbose:
             print(&#39;initializing model...&#39;)
-        model = transformers.AutoModel.from_pretrained(
-            self.checkpoint).to(device)
-        tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
-            self.checkpoint)
+        model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
         # get embs
         if verbose:
@@ -178,9 +179,23 @@ class EmbGAM(BaseEstimator):
                 layer=self.layer,
                 all_ngrams=self.all_ngrams,
                 fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
+                instructor_prompt=self.instructor_prompt,
             )
             embs.append(emb[&#39;embs&#39;])
         return np.array(embs).squeeze()  # num_examples x embedding_size
+
+    def _get_model_and_tokenizer(self):
+        if self.checkpoint.startswith(&#39;hkunlp/instructor-xl&#39;):
+            from InstructorEmbedding import INSTRUCTOR
+            model = INSTRUCTOR(self.checkpoint).to(device)
+            tokenizer_embeddings = None
+        else:
+            model = transformers.AutoModel.from_pretrained(
+                self.checkpoint).to(device)
+            tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
+                self.checkpoint)
+        return model, tokenizer_embeddings
+
 
     def cache_linear_coefs(self, X: ArrayLike, model=None,
                            tokenizer_embeddings=None,
@@ -195,13 +210,7 @@ class EmbGAM(BaseEstimator):
             whether to renormalize embeddings before fitting linear model
             (useful if getting a test set that is different from the training)
         &#34;&#34;&#34;
-
-        if model is None:
-            model = transformers.AutoModel.from_pretrained(
-                self.checkpoint).to(device)
-        if tokenizer_embeddings is None:
-            tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
-                self.checkpoint)
+        model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
         ngrams_list = self._get_ngrams_list(X)
 
@@ -231,22 +240,35 @@ class EmbGAM(BaseEstimator):
                for i in range(len(ngrams_list))}
         }
         if verbose:
-            print(&#39;After caching, coefs_dict_ len&#39;, len(self.coefs_dict_))
+            print(&#39;\tAfter caching, coefs_dict_ len&#39;, len(self.coefs_dict_))
 
     def _get_embs(self, ngrams_list, model, tokenizer_embeddings):
         &#34;&#34;&#34;Get embeddings for a list of ngrams (not summed!)
         &#34;&#34;&#34;
         embs = []
-        for i in tqdm(range(len(ngrams_list))):
-            tokens = tokenizer_embeddings(
-                [ngrams_list[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;)
-            tokens = tokens.to(model.device)
-            output = model(**tokens)
-            emb = output[self.layer].cpu().detach().numpy()
-            if len(emb.shape) == 3:  # includes seq_len
-                emb = emb.mean(axis=1)
-            embs.append(emb)
-        embs = np.array(embs).squeeze()
+        if self.checkpoint.startswith(&#39;hkunlp/instructor-xl&#39;):
+            # INSTRUCTION = &#34;Represent the short phrase for sentiment classification: &#34;
+            # embs = model.encode([[INSTRUCTION, x_i] for x_i in ngrams_list], batch_size=32)
+            embs = []
+            batch_size = 32
+            for i in tqdm(range(0, len(ngrams_list), batch_size)):
+                # ngram = ngrams_list[i]
+                # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
+                ngram_batch = ngrams_list[i: i + batch_size]
+                embs_batch = model.encode([[self.instructor_prompt, ngram] for ngram in ngram_batch])
+                embs.append(embs_batch)
+            embs = np.vstack(embs).squeeze()
+        else:
+            for i in tqdm(range(len(ngrams_list))):
+                tokens = tokenizer_embeddings(
+                    [ngrams_list[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;)
+                tokens = tokens.to(model.device)
+                output = model(**tokens)
+                emb = output[self.layer].cpu().detach().numpy()
+                if len(emb.shape) == 3:  # includes seq_len
+                    emb = emb.mean(axis=1)
+                embs.append(emb)
+            embs = np.array(embs).squeeze()
         return embs
 
         &#34;&#34;&#34;
@@ -331,11 +353,11 @@ before calling predict.&#39;)
         return np.array(preds)
 
 
-class EmbGAMRegressor(EmbGAM, RegressorMixin):
+class AugGAMRegressor(AugGAM, RegressorMixin):
     ...
 
 
-class EmbGAMClassifier(EmbGAM, ClassifierMixin):
+class AugGAMClassifier(AugGAM, ClassifierMixin):
     ...</code></pre>
 </details>
 </section>
@@ -348,9 +370,9 @@ class EmbGAMClassifier(EmbGAM, ClassifierMixin):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="imodelsx.embgam.embgam.EmbGAM"><code class="flex name class">
-<span>class <span class="ident">EmbGAM</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True)</span>
+<dt id="imodelsx.auggam.auggam.AugGAM"><code class="flex name class">
+<span>class <span class="ident">AugGAM</span></span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -358,7 +380,7 @@ class EmbGAMClassifier(EmbGAM, ClassifierMixin):
 <p>All estimators should specify all the parameters that can be set
 at the class level in their <code>__init__</code> as explicit keyword
 arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
-<p>Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.</p>
+<p>AugGAM-GAM Class - use either AugGAMClassifier or AugGAMRegressor rather than initializing this class directly.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
@@ -379,12 +401,14 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>whether to fit to emb-gam style (using sum of embeddings of each ngram)
 if False, fits a typical model and uses ngram decomposition only for prediction / testing
 Usually, setting this to False will considerably impede performance</dd>
+<dt><strong><code>instructor_prompt</code></strong></dt>
+<dd>if not None, use instructor-xl with this prompt</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class EmbGAM(BaseEstimator):
+<pre><code class="python">class AugGAM(BaseEstimator):
     def __init__(
         self,
         checkpoint: str = &#39;bert-base-uncased&#39;,
@@ -395,8 +419,9 @@ Usually, setting this to False will considerably impede performance</dd>
         random_state=None,
         normalize_embs=False,
         fit_with_ngram_decomposition=True,
+        instructor_prompt=None,
     ):
-        &#39;&#39;&#39;Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.
+        &#39;&#39;&#39;AugGAM-GAM Class - use either AugGAMClassifier or AugGAMRegressor rather than initializing this class directly.
 
         Parameters
         ----------
@@ -418,6 +443,8 @@ Usually, setting this to False will considerably impede performance</dd>
             whether to fit to emb-gam style (using sum of embeddings of each ngram)
             if False, fits a typical model and uses ngram decomposition only for prediction / testing
             Usually, setting this to False will considerably impede performance
+        instructor_prompt
+            if not None, use instructor-xl with this prompt
         &#39;&#39;&#39;
         self.checkpoint = checkpoint
         self.ngrams = ngrams
@@ -430,6 +457,7 @@ Usually, setting this to False will considerably impede performance</dd>
         self.all_ngrams = all_ngrams
         self.normalize_embs = normalize_embs
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
+        self.instructor_prompt = instructor_prompt
 
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True,
@@ -456,10 +484,7 @@ Usually, setting this to False will considerably impede performance</dd>
         # set up model
         if verbose:
             print(&#39;initializing model...&#39;)
-        model = transformers.AutoModel.from_pretrained(
-            self.checkpoint).to(device)
-        tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
-            self.checkpoint)
+        model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
         # get embs
         if verbose:
@@ -503,9 +528,23 @@ Usually, setting this to False will considerably impede performance</dd>
                 layer=self.layer,
                 all_ngrams=self.all_ngrams,
                 fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
+                instructor_prompt=self.instructor_prompt,
             )
             embs.append(emb[&#39;embs&#39;])
         return np.array(embs).squeeze()  # num_examples x embedding_size
+
+    def _get_model_and_tokenizer(self):
+        if self.checkpoint.startswith(&#39;hkunlp/instructor-xl&#39;):
+            from InstructorEmbedding import INSTRUCTOR
+            model = INSTRUCTOR(self.checkpoint).to(device)
+            tokenizer_embeddings = None
+        else:
+            model = transformers.AutoModel.from_pretrained(
+                self.checkpoint).to(device)
+            tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
+                self.checkpoint)
+        return model, tokenizer_embeddings
+
 
     def cache_linear_coefs(self, X: ArrayLike, model=None,
                            tokenizer_embeddings=None,
@@ -520,13 +559,7 @@ Usually, setting this to False will considerably impede performance</dd>
             whether to renormalize embeddings before fitting linear model
             (useful if getting a test set that is different from the training)
         &#34;&#34;&#34;
-
-        if model is None:
-            model = transformers.AutoModel.from_pretrained(
-                self.checkpoint).to(device)
-        if tokenizer_embeddings is None:
-            tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
-                self.checkpoint)
+        model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
         ngrams_list = self._get_ngrams_list(X)
 
@@ -556,22 +589,35 @@ Usually, setting this to False will considerably impede performance</dd>
                for i in range(len(ngrams_list))}
         }
         if verbose:
-            print(&#39;After caching, coefs_dict_ len&#39;, len(self.coefs_dict_))
+            print(&#39;\tAfter caching, coefs_dict_ len&#39;, len(self.coefs_dict_))
 
     def _get_embs(self, ngrams_list, model, tokenizer_embeddings):
         &#34;&#34;&#34;Get embeddings for a list of ngrams (not summed!)
         &#34;&#34;&#34;
         embs = []
-        for i in tqdm(range(len(ngrams_list))):
-            tokens = tokenizer_embeddings(
-                [ngrams_list[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;)
-            tokens = tokens.to(model.device)
-            output = model(**tokens)
-            emb = output[self.layer].cpu().detach().numpy()
-            if len(emb.shape) == 3:  # includes seq_len
-                emb = emb.mean(axis=1)
-            embs.append(emb)
-        embs = np.array(embs).squeeze()
+        if self.checkpoint.startswith(&#39;hkunlp/instructor-xl&#39;):
+            # INSTRUCTION = &#34;Represent the short phrase for sentiment classification: &#34;
+            # embs = model.encode([[INSTRUCTION, x_i] for x_i in ngrams_list], batch_size=32)
+            embs = []
+            batch_size = 32
+            for i in tqdm(range(0, len(ngrams_list), batch_size)):
+                # ngram = ngrams_list[i]
+                # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
+                ngram_batch = ngrams_list[i: i + batch_size]
+                embs_batch = model.encode([[self.instructor_prompt, ngram] for ngram in ngram_batch])
+                embs.append(embs_batch)
+            embs = np.vstack(embs).squeeze()
+        else:
+            for i in tqdm(range(len(ngrams_list))):
+                tokens = tokenizer_embeddings(
+                    [ngrams_list[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;)
+                tokens = tokens.to(model.device)
+                output = model(**tokens)
+                emb = output[self.layer].cpu().detach().numpy()
+                if len(emb.shape) == 3:  # includes seq_len
+                    emb = emb.mean(axis=1)
+                embs.append(emb)
+            embs = np.array(embs).squeeze()
         return embs
 
         &#34;&#34;&#34;
@@ -661,12 +707,12 @@ before calling predict.&#39;)
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="imodelsx.embgam.embgam.EmbGAMClassifier" href="#imodelsx.embgam.embgam.EmbGAMClassifier">EmbGAMClassifier</a></li>
-<li><a title="imodelsx.embgam.embgam.EmbGAMRegressor" href="#imodelsx.embgam.embgam.EmbGAMRegressor">EmbGAMRegressor</a></li>
+<li><a title="imodelsx.auggam.auggam.AugGAMClassifier" href="#imodelsx.auggam.auggam.AugGAMClassifier">AugGAMClassifier</a></li>
+<li><a title="imodelsx.auggam.auggam.AugGAMRegressor" href="#imodelsx.auggam.auggam.AugGAMRegressor">AugGAMRegressor</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="imodelsx.embgam.embgam.EmbGAM.cache_linear_coefs"><code class="name flex">
+<dt id="imodelsx.auggam.auggam.AugGAM.cache_linear_coefs"><code class="name flex">
 <span>def <span class="ident">cache_linear_coefs</span></span>(<span>self, X: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], model=None, tokenizer_embeddings=None, renormalize_embs: bool = False, verbose: bool = True)</span>
 </code></dt>
 <dd>
@@ -693,13 +739,7 @@ whether to renormalize embeddings before fitting linear model
         whether to renormalize embeddings before fitting linear model
         (useful if getting a test set that is different from the training)
     &#34;&#34;&#34;
-
-    if model is None:
-        model = transformers.AutoModel.from_pretrained(
-            self.checkpoint).to(device)
-    if tokenizer_embeddings is None:
-        tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
-            self.checkpoint)
+    model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
     ngrams_list = self._get_ngrams_list(X)
 
@@ -729,10 +769,10 @@ whether to renormalize embeddings before fitting linear model
            for i in range(len(ngrams_list))}
     }
     if verbose:
-        print(&#39;After caching, coefs_dict_ len&#39;, len(self.coefs_dict_))</code></pre>
+        print(&#39;\tAfter caching, coefs_dict_ len&#39;, len(self.coefs_dict_))</code></pre>
 </details>
 </dd>
-<dt id="imodelsx.embgam.embgam.EmbGAM.fit"><code class="name flex">
+<dt id="imodelsx.auggam.auggam.AugGAM.fit"><code class="name flex">
 <span>def <span class="ident">fit</span></span>(<span>self, X: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_linear_coefs: bool = True, cache_embs_dir: str = None)</span>
 </code></dt>
 <dd>
@@ -777,10 +817,7 @@ whether to renormalize embeddings before fitting linear model
     # set up model
     if verbose:
         print(&#39;initializing model...&#39;)
-    model = transformers.AutoModel.from_pretrained(
-        self.checkpoint).to(device)
-    tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
-        self.checkpoint)
+    model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
     # get embs
     if verbose:
@@ -812,7 +849,7 @@ whether to renormalize embeddings before fitting linear model
     return self</code></pre>
 </details>
 </dd>
-<dt id="imodelsx.embgam.embgam.EmbGAM.predict"><code class="name flex">
+<dt id="imodelsx.auggam.auggam.AugGAM.predict"><code class="name flex">
 <span>def <span class="ident">predict</span></span>(<span>self, X, warn=True)</span>
 </code></dt>
 <dd>
@@ -837,7 +874,7 @@ For classification, returns discrete output.</p></div>
             return (preds + self.linear.intercept_ &gt; 0).astype(int)</code></pre>
 </details>
 </dd>
-<dt id="imodelsx.embgam.embgam.EmbGAM.predict_proba"><code class="name flex">
+<dt id="imodelsx.auggam.auggam.AugGAM.predict_proba"><code class="name flex">
 <span>def <span class="ident">predict_proba</span></span>(<span>self, X, warn=True)</span>
 </code></dt>
 <dd>
@@ -862,9 +899,9 @@ For classification, returns discrete output.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="imodelsx.embgam.embgam.EmbGAMClassifier"><code class="flex name class">
-<span>class <span class="ident">EmbGAMClassifier</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True)</span>
+<dt id="imodelsx.auggam.auggam.AugGAMClassifier"><code class="flex name class">
+<span>class <span class="ident">AugGAMClassifier</span></span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -872,7 +909,7 @@ For classification, returns discrete output.</p></div>
 <p>All estimators should specify all the parameters that can be set
 at the class level in their <code>__init__</code> as explicit keyword
 arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
-<p>Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.</p>
+<p>AugGAM-GAM Class - use either AugGAMClassifier or AugGAMRegressor rather than initializing this class directly.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
@@ -893,34 +930,36 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>whether to fit to emb-gam style (using sum of embeddings of each ngram)
 if False, fits a typical model and uses ngram decomposition only for prediction / testing
 Usually, setting this to False will considerably impede performance</dd>
+<dt><strong><code>instructor_prompt</code></strong></dt>
+<dd>if not None, use instructor-xl with this prompt</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class EmbGAMClassifier(EmbGAM, ClassifierMixin):
+<pre><code class="python">class AugGAMClassifier(AugGAM, ClassifierMixin):
     ...</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="imodelsx.embgam.embgam.EmbGAM" href="#imodelsx.embgam.embgam.EmbGAM">EmbGAM</a></li>
+<li><a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a></li>
 <li>sklearn.base.BaseEstimator</li>
 <li>sklearn.base.ClassifierMixin</li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="imodelsx.embgam.embgam.EmbGAM" href="#imodelsx.embgam.embgam.EmbGAM">EmbGAM</a></b></code>:
+<li><code><b><a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a></b></code>:
 <ul class="hlist">
-<li><code><a title="imodelsx.embgam.embgam.EmbGAM.cache_linear_coefs" href="#imodelsx.embgam.embgam.EmbGAM.cache_linear_coefs">cache_linear_coefs</a></code></li>
-<li><code><a title="imodelsx.embgam.embgam.EmbGAM.fit" href="#imodelsx.embgam.embgam.EmbGAM.fit">fit</a></code></li>
-<li><code><a title="imodelsx.embgam.embgam.EmbGAM.predict" href="#imodelsx.embgam.embgam.EmbGAM.predict">predict</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.cache_linear_coefs" href="#imodelsx.auggam.auggam.AugGAM.cache_linear_coefs">cache_linear_coefs</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.fit" href="#imodelsx.auggam.auggam.AugGAM.fit">fit</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.predict" href="#imodelsx.auggam.auggam.AugGAM.predict">predict</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
-<dt id="imodelsx.embgam.embgam.EmbGAMRegressor"><code class="flex name class">
-<span>class <span class="ident">EmbGAMRegressor</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True)</span>
+<dt id="imodelsx.auggam.auggam.AugGAMRegressor"><code class="flex name class">
+<span>class <span class="ident">AugGAMRegressor</span></span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -928,7 +967,7 @@ Usually, setting this to False will considerably impede performance</dd>
 <p>All estimators should specify all the parameters that can be set
 at the class level in their <code>__init__</code> as explicit keyword
 arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
-<p>Emb-GAM Class - use either EmbGAMClassifier or EmbGAMRegressor rather than initializing this class directly.</p>
+<p>AugGAM-GAM Class - use either AugGAMClassifier or AugGAMRegressor rather than initializing this class directly.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
@@ -949,27 +988,29 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>whether to fit to emb-gam style (using sum of embeddings of each ngram)
 if False, fits a typical model and uses ngram decomposition only for prediction / testing
 Usually, setting this to False will considerably impede performance</dd>
+<dt><strong><code>instructor_prompt</code></strong></dt>
+<dd>if not None, use instructor-xl with this prompt</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class EmbGAMRegressor(EmbGAM, RegressorMixin):
+<pre><code class="python">class AugGAMRegressor(AugGAM, RegressorMixin):
     ...</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="imodelsx.embgam.embgam.EmbGAM" href="#imodelsx.embgam.embgam.EmbGAM">EmbGAM</a></li>
+<li><a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a></li>
 <li>sklearn.base.BaseEstimator</li>
 <li>sklearn.base.RegressorMixin</li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="imodelsx.embgam.embgam.EmbGAM" href="#imodelsx.embgam.embgam.EmbGAM">EmbGAM</a></b></code>:
+<li><code><b><a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a></b></code>:
 <ul class="hlist">
-<li><code><a title="imodelsx.embgam.embgam.EmbGAM.cache_linear_coefs" href="#imodelsx.embgam.embgam.EmbGAM.cache_linear_coefs">cache_linear_coefs</a></code></li>
-<li><code><a title="imodelsx.embgam.embgam.EmbGAM.fit" href="#imodelsx.embgam.embgam.EmbGAM.fit">fit</a></code></li>
-<li><code><a title="imodelsx.embgam.embgam.EmbGAM.predict" href="#imodelsx.embgam.embgam.EmbGAM.predict">predict</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.cache_linear_coefs" href="#imodelsx.auggam.auggam.AugGAM.cache_linear_coefs">cache_linear_coefs</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.fit" href="#imodelsx.auggam.auggam.AugGAM.fit">fit</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.predict" href="#imodelsx.auggam.auggam.AugGAM.predict">predict</a></code></li>
 </ul>
 </li>
 </ul>
@@ -985,25 +1026,25 @@ Usually, setting this to False will considerably impede performance</dd>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="imodelsx.embgam" href="index.html">imodelsx.embgam</a></code></li>
+<li><code><a title="imodelsx.auggam" href="index.html">imodelsx.auggam</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="imodelsx.embgam.embgam.EmbGAM" href="#imodelsx.embgam.embgam.EmbGAM">EmbGAM</a></code></h4>
+<h4><code><a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a></code></h4>
 <ul class="">
-<li><code><a title="imodelsx.embgam.embgam.EmbGAM.cache_linear_coefs" href="#imodelsx.embgam.embgam.EmbGAM.cache_linear_coefs">cache_linear_coefs</a></code></li>
-<li><code><a title="imodelsx.embgam.embgam.EmbGAM.fit" href="#imodelsx.embgam.embgam.EmbGAM.fit">fit</a></code></li>
-<li><code><a title="imodelsx.embgam.embgam.EmbGAM.predict" href="#imodelsx.embgam.embgam.EmbGAM.predict">predict</a></code></li>
-<li><code><a title="imodelsx.embgam.embgam.EmbGAM.predict_proba" href="#imodelsx.embgam.embgam.EmbGAM.predict_proba">predict_proba</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.cache_linear_coefs" href="#imodelsx.auggam.auggam.AugGAM.cache_linear_coefs">cache_linear_coefs</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.fit" href="#imodelsx.auggam.auggam.AugGAM.fit">fit</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.predict" href="#imodelsx.auggam.auggam.AugGAM.predict">predict</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.predict_proba" href="#imodelsx.auggam.auggam.AugGAM.predict_proba">predict_proba</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="imodelsx.embgam.embgam.EmbGAMClassifier" href="#imodelsx.embgam.embgam.EmbGAMClassifier">EmbGAMClassifier</a></code></h4>
+<h4><code><a title="imodelsx.auggam.auggam.AugGAMClassifier" href="#imodelsx.auggam.auggam.AugGAMClassifier">AugGAMClassifier</a></code></h4>
 </li>
 <li>
-<h4><code><a title="imodelsx.embgam.embgam.EmbGAMRegressor" href="#imodelsx.embgam.embgam.EmbGAMRegressor">EmbGAMRegressor</a></code></h4>
+<h4><code><a title="imodelsx.auggam.auggam.AugGAMRegressor" href="#imodelsx.auggam.auggam.AugGAMRegressor">AugGAMRegressor</a></code></h4>
 </li>
 </ul>
 </li>

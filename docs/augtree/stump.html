@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>imodelsx.augtree.stump API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>imodelsx.augtree.stump</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from typing import List
+import numpy as np
+from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression, RidgeClassifier
+import imodels
+from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+import imodelsx.augtree.data
+import imodelsx.augtree.llm
+import imodelsx.augtree.tree
+import imodelsx.augtree.utils
+from imodelsx.augtree.embed import EmbsManager
+import imodelsx.util
+from imodelsx.metrics import gini_score, gini_binary
+import logging
+
+STOPWORDS = {
+    &#39;i&#39;, &#39;me&#39;, &#39;my&#39;, &#39;myself&#39;, &#39;we&#39;, &#39;our&#39;, &#39;ours&#39;, &#39;ourselves&#39;, &#39;you&#39;, &#34;you&#39;re&#34;,
+    &#34;you&#39;ve&#34;, &#34;you&#39;ll&#34;, &#34;you&#39;d&#34;, &#39;your&#39;, &#39;yours&#39;, &#39;yourself&#39;, &#39;yourselves&#39;, &#39;he&#39;,
+    &#39;him&#39;, &#39;his&#39;, &#39;himself&#39;, &#39;she&#39;, &#34;she&#39;s&#34;, &#39;her&#39;, &#39;hers&#39;, &#39;herself&#39;, &#39;it&#39;, &#34;it&#39;s&#34;,
+    &#39;its&#39;, &#39;itself&#39;, &#39;they&#39;, &#39;them&#39;, &#39;their&#39;, &#39;theirs&#39;, &#39;themselves&#39;, &#39;what&#39;, &#39;which&#39;,
+    &#39;who&#39;, &#39;whom&#39;, &#39;this&#39;, &#39;that&#39;, &#34;that&#39;ll&#34;, &#39;these&#39;, &#39;those&#39;, &#39;am&#39;, &#39;is&#39;, &#39;are&#39;, &#39;was&#39;,
+    &#39;were&#39;, &#39;be&#39;, &#39;been&#39;, &#39;being&#39;, &#39;have&#39;, &#39;has&#39;, &#39;had&#39;, &#39;having&#39;, &#39;do&#39;, &#39;does&#39;, &#39;did&#39;,
+    &#39;doing&#39;, &#39;a&#39;, &#39;an&#39;, &#39;the&#39;, &#39;and&#39;, &#39;but&#39;, &#39;if&#39;, &#39;or&#39;, &#39;because&#39;, &#39;as&#39;, &#39;until&#39;, &#39;while&#39;,
+    &#39;of&#39;, &#39;at&#39;, &#39;by&#39;, &#39;for&#39;, &#39;with&#39;, &#39;about&#39;, &#39;against&#39;, &#39;between&#39;, &#39;into&#39;, &#39;through&#39;,
+    &#39;during&#39;, &#39;before&#39;, &#39;after&#39;, &#39;above&#39;, &#39;below&#39;, &#39;to&#39;, &#39;from&#39;, &#39;up&#39;, &#39;down&#39;, &#39;in&#39;, &#39;out&#39;,
+    &#39;on&#39;, &#39;off&#39;, &#39;over&#39;, &#39;under&#39;, &#39;again&#39;, &#39;further&#39;, &#39;then&#39;, &#39;once&#39;, &#39;here&#39;, &#39;there&#39;, &#39;when&#39;,
+    &#39;where&#39;, &#39;why&#39;, &#39;how&#39;, &#39;all&#39;, &#39;any&#39;, &#39;both&#39;, &#39;each&#39;, &#39;few&#39;, &#39;more&#39;, &#39;most&#39;, &#39;other&#39;,
+    &#39;some&#39;, &#39;such&#39;, &#39;nor&#39;, &#39;only&#39;, &#39;own&#39;, &#39;so&#39;, &#39;than&#39;, &#39;too&#39;, &#39;very&#39;,
+    &#39;can&#39;, &#39;will&#39;, &#39;just&#39;, &#39;don&#39;, &#34;don&#39;t&#34;, &#39;should&#39;, &#34;should&#39;ve&#34;, &#39;now&#39;,
+    &#39;ain&#39;, &#39;aren&#39;, &#34;aren&#39;t&#34;, &#39;couldn&#39;, &#34;couldn&#39;t&#34;, &#39;didn&#39;, &#34;didn&#39;t&#34;,
+    &#39;doesn&#39;, &#34;doesn&#39;t&#34;, &#39;hadn&#39;, &#34;hadn&#39;t&#34;, &#39;hasn&#39;, &#34;hasn&#39;t&#34;, &#39;haven&#39;, &#34;haven&#39;t&#34;, &#39;isn&#39;, &#34;isn&#39;t&#34;,
+    &#39;ma&#39;, &#39;mightn&#39;, &#34;mightn&#39;t&#34;, &#39;mustn&#39;, &#34;mustn&#39;t&#34;, &#39;needn&#39;, &#34;needn&#39;t&#34;, &#39;shan&#39;, &#34;shan&#39;t&#34;,
+    &#39;shouldn&#39;, &#34;shouldn&#39;t&#34;, &#39;wasn&#39;, &#34;wasn&#39;t&#34;, &#39;weren&#39;, &#34;weren&#39;t&#34;, &#39;won&#39;, &#34;won&#39;t&#34;, &#39;wouldn&#39;, &#34;wouldn&#39;t&#34;
+}
+
+
+class Stump():
+    def __init__(
+        self,
+        max_features=5,
+        split_strategy=&#39;cart&#39;,
+        tokenizer=None,
+        refinement_strategy=&#39;None&#39;,
+        use_refine_ties: bool=False,
+        assert_checks: bool=False,
+        llm_prompt_context: str=&#39;&#39;,
+        embs_manager: EmbsManager=None,
+        verbose: bool=True,
+        use_stemming: bool=False,
+    ):
+        &#34;&#34;&#34;Fit a single stump.
+        Currently only supports binary classification with binary features.
+        &#34;&#34;&#34;
+        self.max_features = max_features
+        self.split_strategy = split_strategy
+        self.use_refine_ties = use_refine_ties
+        self.child_left = None
+        self.child_right = None
+        self.assert_checks = assert_checks
+        self.llm_prompt_context = llm_prompt_context
+        self.refinement_strategy = refinement_strategy
+        self.verbose = verbose
+        self.embs_manager = embs_manager
+        self.use_stemming = use_stemming
+        if tokenizer is None:
+            self.tokenizer = imodelsx.augtree.utils.get_spacy_tokenizer(use_stemming=use_stemming)
+        else:
+            self.tokenizer = tokenizer
+        if self.split_strategy == &#39;cart&#39;:
+            self.criterion = &#39;gini&#39;
+        elif self.split_strategy == &#39;id3&#39;:
+            self.criterion = &#39;entropy&#39;
+        elif self.split_strategy == &#39;mse&#39;:
+            self.criterion = &#39;mse&#39;
+            
+
+
+    def fit(self, X, y, feature_names=None, X_text=None):
+        # check input and set some attributes
+        assert len(np.unique(y)) &gt; 1, &#39;y should have more than 1 unique value&#39;
+        if not isinstance(self, RegressorMixin):
+            assert len(np.unique(y)) &lt;= 2, &#39;only binary classification is supported&#39;
+        X, y, _ = imodels.util.arguments.check_fit_arguments(
+            self, X, y, feature_names)
+        self.feature_names = feature_names
+        if isinstance(self.feature_names, list):
+            self.feature_names = np.array(self.feature_names).flatten()
+
+        # fit stump
+        if self.split_strategy == &#39;linear&#39;:
+            if isinstance(self, RegressorMixin):
+                raise NotImplementedError(&#39;linear split strategy not implemented for regression&#39;)
+            self.stump_keywords_idxs  = self._get_stump_keywords_linear(X, y)
+        else:
+            self.stump_keywords_idxs = self._get_stump_keywords_cart(X, y)
+        self.stump_keywords = self.feature_names[self.stump_keywords_idxs]
+
+        # set value
+        self._set_value_acc_samples(X_text, y)
+        if self.failed_to_split:
+            return self
+
+        # checks
+        if self.assert_checks:
+            preds_text = self.predict(X_text=X_text, predict_strategy=&#39;text&#39;)
+            preds_tab = self.predict(X=X, predict_strategy=&#39;tabular&#39;)
+            assert np.all(
+                preds_text == preds_tab), &#39;predicting with text and tabular should give same results&#39;
+            assert self.value[1] &gt; self.value[0], &#39;right child should have greater val than left but value=&#39; + \
+                str(self.value)
+            assert self.value[1] &gt; self.value_mean, &#39;right child should have greater val than parent &#39; + \
+                str(self.value)
+
+        # refine llm keywords
+        if not self.refinement_strategy == &#39;None&#39;:
+            if self.verbose:
+                logging.debug(f&#39;\t\tbefore refining acc {self.acc:0.4f}&#39;)
+            self.stump_keywords_refined = self._refine_keywords(
+                self.stump_keywords, X_text, y, tokenizer=self.tokenizer,
+                )
+            self._set_value_acc_samples(X_text, y)
+            if self.verbose:
+                logging.debug(f&#39;\t\trefined acc {self.acc:.4f} {self.stump_keywords_refined[0]} -&gt; {self.stump_keywords_refined[:5]}...&#39;)
+        
+        return self
+
+
+    def predict(self, X=None, X_text: List[str] = None,
+                predict_strategy=&#39;text&#39;, keywords=None) -&gt; np.ndarray[int]:
+        &#34;&#34;&#34;Returns prediction 1 for positive and 0 for negative.
+        &#34;&#34;&#34;
+
+        assert not (predict_strategy == &#39;tabular&#39; and X is None)
+        assert not (predict_strategy == &#39;text&#39; and X_text is None)
+
+        if predict_strategy == &#39;tabular&#39;:
+            X = imodels.util.arguments.check_fit_X(X)
+            # predict whether input has any of the features in stump_keywords_idxs
+            X_feats = X[:, self.stump_keywords_idxs]
+            pred = np.any(X_feats, axis=1)
+            if self.pos_or_neg == &#39;pos&#39;:
+                return pred.astype(int)
+            else:
+                return 1 - pred
+        elif predict_strategy == &#39;text&#39;:
+            if not keywords:
+                if hasattr(self, &#39;stump_keywords_refined&#39;):
+                    keywords = self.stump_keywords_refined
+                else:
+                    keywords = self.stump_keywords
+            ngrams_used_to_predict = max(
+                    [len(keyword.split(&#39; &#39;)) for keyword in keywords])
+
+            def contains_any_of_keywords(text):
+                text = text.lower()
+                text = imodelsx.util.generate_ngrams_list(
+                    text,
+                    ngrams=ngrams_used_to_predict,
+                    tokenizer_ngrams=self.tokenizer,
+                    all_ngrams=True
+                )
+                for keyword in keywords:
+                    if keyword in text:
+                        return 1
+                return 0
+            contains_keywords = 1 * \
+                np.array([contains_any_of_keywords(x) for x in X_text])
+            if self.pos_or_neg == &#39;pos&#39;:
+                return contains_keywords
+            else:
+                return 1 - contains_keywords
+
+    def predict_regression(self, X_text, **kwargs):
+        preds_binary = self.predict(X_text=X_text, **kwargs)
+        return preds_binary * self.value[1] + (1 - preds_binary) * self.value[0]
+
+    def _get_stump_keywords_cart(self, X, y):
+        &#39;&#39;&#39;iteratively select the feature selected by DecisionTreeClassifier
+        removes that feature, and repeats
+        &#39;&#39;&#39;
+
+        if self.criterion == &#39;gini&#39;:
+            criterion_func = imodelsx.augtree.utils.impurity_gini
+        elif self.criterion == &#39;entropy&#39;:
+            criterion_func = imodelsx.augtree.utils.impurity_entropy
+        elif self.criterion == &#39;mse&#39;:
+            criterion_func = imodelsx.augtree.utils.impurity_mse
+        
+
+        # Calculate the gini impurity reduction for each (binary) feature in X
+        impurity_reductions = []
+
+        # whether the feature increases the likelihood of the positive class
+        feature_positive = []
+        n = y.size
+        gini_impurity = criterion_func(y)
+        # assert gini_impurity_1 == gini_impurity, &#39;gini impurity should be the same&#39;
+        for i in range(X.shape[1]):
+            x = X[:, i]
+            idxs_r = x &gt; 0.5
+            idxs_l = x &lt;= 0.5
+            if idxs_r.sum() == 0 or idxs_l.sum() == 0:
+                impurity_reductions.append(0)
+                feature_positive.append(True)
+            else:
+                gini_impurity_l = criterion_func(y[idxs_l])
+                gini_impurity_r = criterion_func(y[idxs_r])
+                # print(&#39;l&#39;, indexes_l.sum(), &#39;r&#39;, indexes_r.sum(), &#39;n&#39;, n)
+                impurity_reductions.append(
+                    gini_impurity
+                    - (idxs_l.sum() / n) * gini_impurity_l
+                    - (idxs_r.sum() / n) * gini_impurity_r
+                )
+                feature_positive.append(np.mean(y[idxs_r]) &gt; np.mean(y[idxs_l]))
+
+        impurity_reductions = np.array(impurity_reductions)
+        feature_positive = np.arange(X.shape[1])[np.array(feature_positive)]
+
+        # find the top self.max_features with the largest impurity reductions
+        args_largest_reduction_first = np.argsort(impurity_reductions)[::-1]
+        self.impurity_reductions = impurity_reductions[args_largest_reduction_first][:self.max_features]
+        # print(&#39;\ttop_impurity_reductions&#39;, impurity_reductions[args_largest_reduction_first][:5],
+        #   &#39;max&#39;, max(impurity_reductions))
+        # print(f&#39;\t{X.shape=}&#39;)
+        imp_pos_top = [
+            k for k in args_largest_reduction_first
+            if k in feature_positive
+            and not k in STOPWORDS
+        ][:self.max_features]
+        imp_neg_top = [
+            k for k in args_largest_reduction_first
+            if not k in feature_positive
+            and not k in STOPWORDS
+        ][:self.max_features]
+
+        # feat = DecisionTreeClassifier(max_depth=1).fit(X, y).tree_.feature[0]
+        if np.sum(imp_pos_top) &gt; np.sum(imp_neg_top):
+            self.pos_or_neg = &#39;pos&#39;
+            return imp_pos_top
+        else:
+            self.pos_or_neg = &#39;neg&#39;
+            return imp_neg_top
+
+    def _refine_keywords(
+        self,
+        keywords: List[str], X_text: List[str],
+        y, tokenizer,
+        max_words_in_single_keyword=4,
+    ) -&gt; List[str]:
+        &#34;&#34;&#34;Refine each keyword using LLM.
+        Greedily add extra keywords based on whether they improve acc (should change to impurity).
+        Return list corresponding to the candidates from the single best keyword
+        &#34;&#34;&#34;
+        
+        if isinstance(self, RegressorMixin):
+            criterion_func = imodelsx.augtree.utils.mse_score
+            predict_func = self.predict_regression
+        else:
+            criterion_func = imodelsx.augtree.utils.gini_score
+            predict_func = self.predict
+
+
+        criterions_keyword = []
+        candidates_list_keyword = []
+        for i in range(len(keywords)):
+
+            # get keyword
+            keyword = keywords[i]
+
+            # get refined_keywords
+            if self.refinement_strategy == &#39;llm&#39;:
+                keywords_refined = imodelsx.augtree.llm.expand_keyword(keyword, self.llm_prompt_context)
+            elif self.refinement_strategy == &#39;embs&#39;:
+                keywords_refined = self.embs_manager.expand_keyword(keyword)
+
+            # filter out keywords that are too long
+            keywords_refined = [
+                k for k in keywords_refined
+                if len(k.split()) &lt;= max_words_in_single_keyword
+            ]
+
+            if self.use_stemming:
+                # apply tokenizer to each unigram and combine
+                keywords_refined = [
+                    &#39; &#39;.join([str(tok) for tok in tokenizer(str(word))])
+                    for word in keywords_refined
+                ]
+
+                # drop things that end up too short
+                keywords_refined = [
+                    k for k in keywords_refined if len(k) &gt; 2
+                ]
+
+            # greedily grow words one at a time, testing acc with each new word
+            words = [keyword]
+            criterion_max = criterion_func(y, predict_func(X_text=X_text, keywords=words))
+            for keyword_refined in keywords_refined:
+                preds_check = predict_func(
+                    X_text=X_text, keywords=words + [keyword_refined])
+
+                # if acc improved, add the refined_keyword
+                crit = criterion_func(y, preds_check)
+                if self.use_refine_ties:
+                    check_crit = crit &gt;= criterion_max
+                else:
+                    check_crit = crit &gt; criterion_max
+                if check_crit:
+                    words.append(keyword_refined)
+                    criterion_max = crit
+                    logging.debug(f&#39;\t\t\tadded {repr(keyword_refined)}&#39;)
+
+            # append the results
+            criterions_keyword.append(criterion_max)
+            candidates_list_keyword.append(words)
+            # print(f&#39;\t\t {i} refined acc {acc_max:.4f}&#39;,
+                #   keyword, &#39;-&gt;&#39;, words[:5], &#39;...&#39;)
+
+        idx_best = np.argmax(criterions_keyword)
+        keywords_best = [
+            &#39; &#39;.join([str(tok) for tok in tokenizer(str(word))])  # clean up word
+            for word in candidates_list_keyword[idx_best]
+        ]
+        # print(f&#39;\trefined acc {criterion_max:.4f}&#39;, keywords[idx_best], &#39;-&gt;&#39;, keywords_best[:5], &#39;...&#39;) 
+
+        return keywords_best
+
+    def _set_value_acc_samples(self, X_text, y):
+        &#34;&#34;&#34;Set value and accuracy of stump.
+        &#34;&#34;&#34;
+        idxs_right = self.predict(X_text=X_text).astype(bool)
+        n_right = idxs_right.sum()
+        if n_right == 0 or n_right == y.size:
+            self.failed_to_split = True
+            return
+        else:
+            self.failed_to_split = False
+        self.n_samples = [y.size - n_right, n_right]
+        self.value = [np.mean(y[~idxs_right]), np.mean(y[idxs_right])]
+        self.value_mean = np.mean(y)
+        if isinstance(self, RegressorMixin):
+            preds = self.value[1] * idxs_right + self.value[0] * ~idxs_right
+            self.acc = imodelsx.augtree.utils.mse_score(y, preds)
+        else:
+            preds = 1 * idxs_right
+            self.acc = accuracy_score(y, preds)
+        # self.impurity_reduction = gini_binary(y.mean()) - \
+            # gini_binary(self.value[1]) / self.n_samples[1] * y.size - \
+            # gini_binary(self.value[0]) / self.n_samples[0] * y.size
+
+    def __str__(self):
+        if hasattr(self, &#39;stump_keywords_refined&#39;):
+            keywords = self.stump_keywords_refined
+        else:
+            keywords = self.stump_keywords
+        keywords_str = &#34;, &#34;.join(keywords[:5])
+        if len(keywords) &gt; 5:
+            keywords_str += f&#39;...({len(keywords) - 5} more)&#39;
+        sign = {&#39;pos&#39;: &#39;+&#39;, &#39;neg&#39;: &#39;--&#39;}[self.pos_or_neg]
+        return f&#39;Stump(val={self.value_mean:0.2f} n={self.n_samples}) {sign} {keywords_str}&#39;
+
+    def get_str_simple(self):
+        if hasattr(self, &#39;stump_keywords_refined&#39;):
+            keywords = self.stump_keywords_refined
+        else:
+            keywords = self.stump_keywords
+        keywords_str = &#34;, &#34;.join(keywords[:5])
+        if len(keywords) &gt; 5:
+            keywords_str += f&#39;...({len(keywords) - 5} more)&#39;
+        sign = {&#39;pos&#39;: &#39;+&#39;, &#39;neg&#39;: &#39;--&#39;}[self.pos_or_neg]
+        return f&#39;{sign} {keywords_str}&#39;
+    
+    def _get_stump_keywords_linear(self, X, y):
+        # fit a linear model
+        m = LogisticRegression().fit(X, y)
+        m.fit(X, y)
+
+        # find the largest magnitude coefs
+        abs_feature_idxs = m.coef_.argsort().flatten()
+        bot_feature_idxs = abs_feature_idxs[:self.max_features]
+        top_feature_idxs = abs_feature_idxs[-self.max_features:][::-1]
+
+        # return the features with the largest magnitude coefs
+        if np.sum(abs(bot_feature_idxs)) &gt; np.sum(abs(top_feature_idxs)):
+            self.pos_or_neg = &#39;neg&#39;
+            return bot_feature_idxs
+        else:
+            self.pos_or_neg = &#39;pos&#39;
+            return top_feature_idxs
+
+class StumpRegressor(Stump, RegressorMixin):
+    ...
+
+
+class StumpClassifier(Stump, ClassifierMixin):
+    ...</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="imodelsx.augtree.stump.Stump"><code class="flex name class">
+<span>class <span class="ident">Stump</span></span>
+<span>(</span><span>max_features=5, split_strategy='cart', tokenizer=None, refinement_strategy='None', use_refine_ties: bool = False, assert_checks: bool = False, llm_prompt_context: str = '', embs_manager: <a title="imodelsx.augtree.embed.EmbsManager" href="embed.html#imodelsx.augtree.embed.EmbsManager">EmbsManager</a> = None, verbose: bool = True, use_stemming: bool = False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fit a single stump.
+Currently only supports binary classification with binary features.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Stump():
+    def __init__(
+        self,
+        max_features=5,
+        split_strategy=&#39;cart&#39;,
+        tokenizer=None,
+        refinement_strategy=&#39;None&#39;,
+        use_refine_ties: bool=False,
+        assert_checks: bool=False,
+        llm_prompt_context: str=&#39;&#39;,
+        embs_manager: EmbsManager=None,
+        verbose: bool=True,
+        use_stemming: bool=False,
+    ):
+        &#34;&#34;&#34;Fit a single stump.
+        Currently only supports binary classification with binary features.
+        &#34;&#34;&#34;
+        self.max_features = max_features
+        self.split_strategy = split_strategy
+        self.use_refine_ties = use_refine_ties
+        self.child_left = None
+        self.child_right = None
+        self.assert_checks = assert_checks
+        self.llm_prompt_context = llm_prompt_context
+        self.refinement_strategy = refinement_strategy
+        self.verbose = verbose
+        self.embs_manager = embs_manager
+        self.use_stemming = use_stemming
+        if tokenizer is None:
+            self.tokenizer = imodelsx.augtree.utils.get_spacy_tokenizer(use_stemming=use_stemming)
+        else:
+            self.tokenizer = tokenizer
+        if self.split_strategy == &#39;cart&#39;:
+            self.criterion = &#39;gini&#39;
+        elif self.split_strategy == &#39;id3&#39;:
+            self.criterion = &#39;entropy&#39;
+        elif self.split_strategy == &#39;mse&#39;:
+            self.criterion = &#39;mse&#39;
+            
+
+
+    def fit(self, X, y, feature_names=None, X_text=None):
+        # check input and set some attributes
+        assert len(np.unique(y)) &gt; 1, &#39;y should have more than 1 unique value&#39;
+        if not isinstance(self, RegressorMixin):
+            assert len(np.unique(y)) &lt;= 2, &#39;only binary classification is supported&#39;
+        X, y, _ = imodels.util.arguments.check_fit_arguments(
+            self, X, y, feature_names)
+        self.feature_names = feature_names
+        if isinstance(self.feature_names, list):
+            self.feature_names = np.array(self.feature_names).flatten()
+
+        # fit stump
+        if self.split_strategy == &#39;linear&#39;:
+            if isinstance(self, RegressorMixin):
+                raise NotImplementedError(&#39;linear split strategy not implemented for regression&#39;)
+            self.stump_keywords_idxs  = self._get_stump_keywords_linear(X, y)
+        else:
+            self.stump_keywords_idxs = self._get_stump_keywords_cart(X, y)
+        self.stump_keywords = self.feature_names[self.stump_keywords_idxs]
+
+        # set value
+        self._set_value_acc_samples(X_text, y)
+        if self.failed_to_split:
+            return self
+
+        # checks
+        if self.assert_checks:
+            preds_text = self.predict(X_text=X_text, predict_strategy=&#39;text&#39;)
+            preds_tab = self.predict(X=X, predict_strategy=&#39;tabular&#39;)
+            assert np.all(
+                preds_text == preds_tab), &#39;predicting with text and tabular should give same results&#39;
+            assert self.value[1] &gt; self.value[0], &#39;right child should have greater val than left but value=&#39; + \
+                str(self.value)
+            assert self.value[1] &gt; self.value_mean, &#39;right child should have greater val than parent &#39; + \
+                str(self.value)
+
+        # refine llm keywords
+        if not self.refinement_strategy == &#39;None&#39;:
+            if self.verbose:
+                logging.debug(f&#39;\t\tbefore refining acc {self.acc:0.4f}&#39;)
+            self.stump_keywords_refined = self._refine_keywords(
+                self.stump_keywords, X_text, y, tokenizer=self.tokenizer,
+                )
+            self._set_value_acc_samples(X_text, y)
+            if self.verbose:
+                logging.debug(f&#39;\t\trefined acc {self.acc:.4f} {self.stump_keywords_refined[0]} -&gt; {self.stump_keywords_refined[:5]}...&#39;)
+        
+        return self
+
+
+    def predict(self, X=None, X_text: List[str] = None,
+                predict_strategy=&#39;text&#39;, keywords=None) -&gt; np.ndarray[int]:
+        &#34;&#34;&#34;Returns prediction 1 for positive and 0 for negative.
+        &#34;&#34;&#34;
+
+        assert not (predict_strategy == &#39;tabular&#39; and X is None)
+        assert not (predict_strategy == &#39;text&#39; and X_text is None)
+
+        if predict_strategy == &#39;tabular&#39;:
+            X = imodels.util.arguments.check_fit_X(X)
+            # predict whether input has any of the features in stump_keywords_idxs
+            X_feats = X[:, self.stump_keywords_idxs]
+            pred = np.any(X_feats, axis=1)
+            if self.pos_or_neg == &#39;pos&#39;:
+                return pred.astype(int)
+            else:
+                return 1 - pred
+        elif predict_strategy == &#39;text&#39;:
+            if not keywords:
+                if hasattr(self, &#39;stump_keywords_refined&#39;):
+                    keywords = self.stump_keywords_refined
+                else:
+                    keywords = self.stump_keywords
+            ngrams_used_to_predict = max(
+                    [len(keyword.split(&#39; &#39;)) for keyword in keywords])
+
+            def contains_any_of_keywords(text):
+                text = text.lower()
+                text = imodelsx.util.generate_ngrams_list(
+                    text,
+                    ngrams=ngrams_used_to_predict,
+                    tokenizer_ngrams=self.tokenizer,
+                    all_ngrams=True
+                )
+                for keyword in keywords:
+                    if keyword in text:
+                        return 1
+                return 0
+            contains_keywords = 1 * \
+                np.array([contains_any_of_keywords(x) for x in X_text])
+            if self.pos_or_neg == &#39;pos&#39;:
+                return contains_keywords
+            else:
+                return 1 - contains_keywords
+
+    def predict_regression(self, X_text, **kwargs):
+        preds_binary = self.predict(X_text=X_text, **kwargs)
+        return preds_binary * self.value[1] + (1 - preds_binary) * self.value[0]
+
+    def _get_stump_keywords_cart(self, X, y):
+        &#39;&#39;&#39;iteratively select the feature selected by DecisionTreeClassifier
+        removes that feature, and repeats
+        &#39;&#39;&#39;
+
+        if self.criterion == &#39;gini&#39;:
+            criterion_func = imodelsx.augtree.utils.impurity_gini
+        elif self.criterion == &#39;entropy&#39;:
+            criterion_func = imodelsx.augtree.utils.impurity_entropy
+        elif self.criterion == &#39;mse&#39;:
+            criterion_func = imodelsx.augtree.utils.impurity_mse
+        
+
+        # Calculate the gini impurity reduction for each (binary) feature in X
+        impurity_reductions = []
+
+        # whether the feature increases the likelihood of the positive class
+        feature_positive = []
+        n = y.size
+        gini_impurity = criterion_func(y)
+        # assert gini_impurity_1 == gini_impurity, &#39;gini impurity should be the same&#39;
+        for i in range(X.shape[1]):
+            x = X[:, i]
+            idxs_r = x &gt; 0.5
+            idxs_l = x &lt;= 0.5
+            if idxs_r.sum() == 0 or idxs_l.sum() == 0:
+                impurity_reductions.append(0)
+                feature_positive.append(True)
+            else:
+                gini_impurity_l = criterion_func(y[idxs_l])
+                gini_impurity_r = criterion_func(y[idxs_r])
+                # print(&#39;l&#39;, indexes_l.sum(), &#39;r&#39;, indexes_r.sum(), &#39;n&#39;, n)
+                impurity_reductions.append(
+                    gini_impurity
+                    - (idxs_l.sum() / n) * gini_impurity_l
+                    - (idxs_r.sum() / n) * gini_impurity_r
+                )
+                feature_positive.append(np.mean(y[idxs_r]) &gt; np.mean(y[idxs_l]))
+
+        impurity_reductions = np.array(impurity_reductions)
+        feature_positive = np.arange(X.shape[1])[np.array(feature_positive)]
+
+        # find the top self.max_features with the largest impurity reductions
+        args_largest_reduction_first = np.argsort(impurity_reductions)[::-1]
+        self.impurity_reductions = impurity_reductions[args_largest_reduction_first][:self.max_features]
+        # print(&#39;\ttop_impurity_reductions&#39;, impurity_reductions[args_largest_reduction_first][:5],
+        #   &#39;max&#39;, max(impurity_reductions))
+        # print(f&#39;\t{X.shape=}&#39;)
+        imp_pos_top = [
+            k for k in args_largest_reduction_first
+            if k in feature_positive
+            and not k in STOPWORDS
+        ][:self.max_features]
+        imp_neg_top = [
+            k for k in args_largest_reduction_first
+            if not k in feature_positive
+            and not k in STOPWORDS
+        ][:self.max_features]
+
+        # feat = DecisionTreeClassifier(max_depth=1).fit(X, y).tree_.feature[0]
+        if np.sum(imp_pos_top) &gt; np.sum(imp_neg_top):
+            self.pos_or_neg = &#39;pos&#39;
+            return imp_pos_top
+        else:
+            self.pos_or_neg = &#39;neg&#39;
+            return imp_neg_top
+
+    def _refine_keywords(
+        self,
+        keywords: List[str], X_text: List[str],
+        y, tokenizer,
+        max_words_in_single_keyword=4,
+    ) -&gt; List[str]:
+        &#34;&#34;&#34;Refine each keyword using LLM.
+        Greedily add extra keywords based on whether they improve acc (should change to impurity).
+        Return list corresponding to the candidates from the single best keyword
+        &#34;&#34;&#34;
+        
+        if isinstance(self, RegressorMixin):
+            criterion_func = imodelsx.augtree.utils.mse_score
+            predict_func = self.predict_regression
+        else:
+            criterion_func = imodelsx.augtree.utils.gini_score
+            predict_func = self.predict
+
+
+        criterions_keyword = []
+        candidates_list_keyword = []
+        for i in range(len(keywords)):
+
+            # get keyword
+            keyword = keywords[i]
+
+            # get refined_keywords
+            if self.refinement_strategy == &#39;llm&#39;:
+                keywords_refined = imodelsx.augtree.llm.expand_keyword(keyword, self.llm_prompt_context)
+            elif self.refinement_strategy == &#39;embs&#39;:
+                keywords_refined = self.embs_manager.expand_keyword(keyword)
+
+            # filter out keywords that are too long
+            keywords_refined = [
+                k for k in keywords_refined
+                if len(k.split()) &lt;= max_words_in_single_keyword
+            ]
+
+            if self.use_stemming:
+                # apply tokenizer to each unigram and combine
+                keywords_refined = [
+                    &#39; &#39;.join([str(tok) for tok in tokenizer(str(word))])
+                    for word in keywords_refined
+                ]
+
+                # drop things that end up too short
+                keywords_refined = [
+                    k for k in keywords_refined if len(k) &gt; 2
+                ]
+
+            # greedily grow words one at a time, testing acc with each new word
+            words = [keyword]
+            criterion_max = criterion_func(y, predict_func(X_text=X_text, keywords=words))
+            for keyword_refined in keywords_refined:
+                preds_check = predict_func(
+                    X_text=X_text, keywords=words + [keyword_refined])
+
+                # if acc improved, add the refined_keyword
+                crit = criterion_func(y, preds_check)
+                if self.use_refine_ties:
+                    check_crit = crit &gt;= criterion_max
+                else:
+                    check_crit = crit &gt; criterion_max
+                if check_crit:
+                    words.append(keyword_refined)
+                    criterion_max = crit
+                    logging.debug(f&#39;\t\t\tadded {repr(keyword_refined)}&#39;)
+
+            # append the results
+            criterions_keyword.append(criterion_max)
+            candidates_list_keyword.append(words)
+            # print(f&#39;\t\t {i} refined acc {acc_max:.4f}&#39;,
+                #   keyword, &#39;-&gt;&#39;, words[:5], &#39;...&#39;)
+
+        idx_best = np.argmax(criterions_keyword)
+        keywords_best = [
+            &#39; &#39;.join([str(tok) for tok in tokenizer(str(word))])  # clean up word
+            for word in candidates_list_keyword[idx_best]
+        ]
+        # print(f&#39;\trefined acc {criterion_max:.4f}&#39;, keywords[idx_best], &#39;-&gt;&#39;, keywords_best[:5], &#39;...&#39;) 
+
+        return keywords_best
+
+    def _set_value_acc_samples(self, X_text, y):
+        &#34;&#34;&#34;Set value and accuracy of stump.
+        &#34;&#34;&#34;
+        idxs_right = self.predict(X_text=X_text).astype(bool)
+        n_right = idxs_right.sum()
+        if n_right == 0 or n_right == y.size:
+            self.failed_to_split = True
+            return
+        else:
+            self.failed_to_split = False
+        self.n_samples = [y.size - n_right, n_right]
+        self.value = [np.mean(y[~idxs_right]), np.mean(y[idxs_right])]
+        self.value_mean = np.mean(y)
+        if isinstance(self, RegressorMixin):
+            preds = self.value[1] * idxs_right + self.value[0] * ~idxs_right
+            self.acc = imodelsx.augtree.utils.mse_score(y, preds)
+        else:
+            preds = 1 * idxs_right
+            self.acc = accuracy_score(y, preds)
+        # self.impurity_reduction = gini_binary(y.mean()) - \
+            # gini_binary(self.value[1]) / self.n_samples[1] * y.size - \
+            # gini_binary(self.value[0]) / self.n_samples[0] * y.size
+
+    def __str__(self):
+        if hasattr(self, &#39;stump_keywords_refined&#39;):
+            keywords = self.stump_keywords_refined
+        else:
+            keywords = self.stump_keywords
+        keywords_str = &#34;, &#34;.join(keywords[:5])
+        if len(keywords) &gt; 5:
+            keywords_str += f&#39;...({len(keywords) - 5} more)&#39;
+        sign = {&#39;pos&#39;: &#39;+&#39;, &#39;neg&#39;: &#39;--&#39;}[self.pos_or_neg]
+        return f&#39;Stump(val={self.value_mean:0.2f} n={self.n_samples}) {sign} {keywords_str}&#39;
+
+    def get_str_simple(self):
+        if hasattr(self, &#39;stump_keywords_refined&#39;):
+            keywords = self.stump_keywords_refined
+        else:
+            keywords = self.stump_keywords
+        keywords_str = &#34;, &#34;.join(keywords[:5])
+        if len(keywords) &gt; 5:
+            keywords_str += f&#39;...({len(keywords) - 5} more)&#39;
+        sign = {&#39;pos&#39;: &#39;+&#39;, &#39;neg&#39;: &#39;--&#39;}[self.pos_or_neg]
+        return f&#39;{sign} {keywords_str}&#39;
+    
+    def _get_stump_keywords_linear(self, X, y):
+        # fit a linear model
+        m = LogisticRegression().fit(X, y)
+        m.fit(X, y)
+
+        # find the largest magnitude coefs
+        abs_feature_idxs = m.coef_.argsort().flatten()
+        bot_feature_idxs = abs_feature_idxs[:self.max_features]
+        top_feature_idxs = abs_feature_idxs[-self.max_features:][::-1]
+
+        # return the features with the largest magnitude coefs
+        if np.sum(abs(bot_feature_idxs)) &gt; np.sum(abs(top_feature_idxs)):
+            self.pos_or_neg = &#39;neg&#39;
+            return bot_feature_idxs
+        else:
+            self.pos_or_neg = &#39;pos&#39;
+            return top_feature_idxs</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="imodelsx.augtree.stump.StumpClassifier" href="#imodelsx.augtree.stump.StumpClassifier">StumpClassifier</a></li>
+<li><a title="imodelsx.augtree.stump.StumpRegressor" href="#imodelsx.augtree.stump.StumpRegressor">StumpRegressor</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="imodelsx.augtree.stump.Stump.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, X, y, feature_names=None, X_text=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, X, y, feature_names=None, X_text=None):
+    # check input and set some attributes
+    assert len(np.unique(y)) &gt; 1, &#39;y should have more than 1 unique value&#39;
+    if not isinstance(self, RegressorMixin):
+        assert len(np.unique(y)) &lt;= 2, &#39;only binary classification is supported&#39;
+    X, y, _ = imodels.util.arguments.check_fit_arguments(
+        self, X, y, feature_names)
+    self.feature_names = feature_names
+    if isinstance(self.feature_names, list):
+        self.feature_names = np.array(self.feature_names).flatten()
+
+    # fit stump
+    if self.split_strategy == &#39;linear&#39;:
+        if isinstance(self, RegressorMixin):
+            raise NotImplementedError(&#39;linear split strategy not implemented for regression&#39;)
+        self.stump_keywords_idxs  = self._get_stump_keywords_linear(X, y)
+    else:
+        self.stump_keywords_idxs = self._get_stump_keywords_cart(X, y)
+    self.stump_keywords = self.feature_names[self.stump_keywords_idxs]
+
+    # set value
+    self._set_value_acc_samples(X_text, y)
+    if self.failed_to_split:
+        return self
+
+    # checks
+    if self.assert_checks:
+        preds_text = self.predict(X_text=X_text, predict_strategy=&#39;text&#39;)
+        preds_tab = self.predict(X=X, predict_strategy=&#39;tabular&#39;)
+        assert np.all(
+            preds_text == preds_tab), &#39;predicting with text and tabular should give same results&#39;
+        assert self.value[1] &gt; self.value[0], &#39;right child should have greater val than left but value=&#39; + \
+            str(self.value)
+        assert self.value[1] &gt; self.value_mean, &#39;right child should have greater val than parent &#39; + \
+            str(self.value)
+
+    # refine llm keywords
+    if not self.refinement_strategy == &#39;None&#39;:
+        if self.verbose:
+            logging.debug(f&#39;\t\tbefore refining acc {self.acc:0.4f}&#39;)
+        self.stump_keywords_refined = self._refine_keywords(
+            self.stump_keywords, X_text, y, tokenizer=self.tokenizer,
+            )
+        self._set_value_acc_samples(X_text, y)
+        if self.verbose:
+            logging.debug(f&#39;\t\trefined acc {self.acc:.4f} {self.stump_keywords_refined[0]} -&gt; {self.stump_keywords_refined[:5]}...&#39;)
+    
+    return self</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.stump.Stump.get_str_simple"><code class="name flex">
+<span>def <span class="ident">get_str_simple</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_str_simple(self):
+    if hasattr(self, &#39;stump_keywords_refined&#39;):
+        keywords = self.stump_keywords_refined
+    else:
+        keywords = self.stump_keywords
+    keywords_str = &#34;, &#34;.join(keywords[:5])
+    if len(keywords) &gt; 5:
+        keywords_str += f&#39;...({len(keywords) - 5} more)&#39;
+    sign = {&#39;pos&#39;: &#39;+&#39;, &#39;neg&#39;: &#39;--&#39;}[self.pos_or_neg]
+    return f&#39;{sign} {keywords_str}&#39;</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.stump.Stump.predict"><code class="name flex">
+<span>def <span class="ident">predict</span></span>(<span>self, X=None, X_text: List[str] = None, predict_strategy='text', keywords=None) ‑> numpy.ndarray[int]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns prediction 1 for positive and 0 for negative.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def predict(self, X=None, X_text: List[str] = None,
+            predict_strategy=&#39;text&#39;, keywords=None) -&gt; np.ndarray[int]:
+    &#34;&#34;&#34;Returns prediction 1 for positive and 0 for negative.
+    &#34;&#34;&#34;
+
+    assert not (predict_strategy == &#39;tabular&#39; and X is None)
+    assert not (predict_strategy == &#39;text&#39; and X_text is None)
+
+    if predict_strategy == &#39;tabular&#39;:
+        X = imodels.util.arguments.check_fit_X(X)
+        # predict whether input has any of the features in stump_keywords_idxs
+        X_feats = X[:, self.stump_keywords_idxs]
+        pred = np.any(X_feats, axis=1)
+        if self.pos_or_neg == &#39;pos&#39;:
+            return pred.astype(int)
+        else:
+            return 1 - pred
+    elif predict_strategy == &#39;text&#39;:
+        if not keywords:
+            if hasattr(self, &#39;stump_keywords_refined&#39;):
+                keywords = self.stump_keywords_refined
+            else:
+                keywords = self.stump_keywords
+        ngrams_used_to_predict = max(
+                [len(keyword.split(&#39; &#39;)) for keyword in keywords])
+
+        def contains_any_of_keywords(text):
+            text = text.lower()
+            text = imodelsx.util.generate_ngrams_list(
+                text,
+                ngrams=ngrams_used_to_predict,
+                tokenizer_ngrams=self.tokenizer,
+                all_ngrams=True
+            )
+            for keyword in keywords:
+                if keyword in text:
+                    return 1
+            return 0
+        contains_keywords = 1 * \
+            np.array([contains_any_of_keywords(x) for x in X_text])
+        if self.pos_or_neg == &#39;pos&#39;:
+            return contains_keywords
+        else:
+            return 1 - contains_keywords</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.stump.Stump.predict_regression"><code class="name flex">
+<span>def <span class="ident">predict_regression</span></span>(<span>self, X_text, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def predict_regression(self, X_text, **kwargs):
+    preds_binary = self.predict(X_text=X_text, **kwargs)
+    return preds_binary * self.value[1] + (1 - preds_binary) * self.value[0]</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="imodelsx.augtree.stump.StumpClassifier"><code class="flex name class">
+<span>class <span class="ident">StumpClassifier</span></span>
+<span>(</span><span>max_features=5, split_strategy='cart', tokenizer=None, refinement_strategy='None', use_refine_ties: bool = False, assert_checks: bool = False, llm_prompt_context: str = '', embs_manager: <a title="imodelsx.augtree.embed.EmbsManager" href="embed.html#imodelsx.augtree.embed.EmbsManager">EmbsManager</a> = None, verbose: bool = True, use_stemming: bool = False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Mixin class for all classifiers in scikit-learn.</p>
+<p>Fit a single stump.
+Currently only supports binary classification with binary features.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class StumpClassifier(Stump, ClassifierMixin):
+    ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="imodelsx.augtree.stump.Stump" href="#imodelsx.augtree.stump.Stump">Stump</a></li>
+<li>sklearn.base.ClassifierMixin</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="imodelsx.augtree.stump.Stump" href="#imodelsx.augtree.stump.Stump">Stump</a></b></code>:
+<ul class="hlist">
+<li><code><a title="imodelsx.augtree.stump.Stump.predict" href="#imodelsx.augtree.stump.Stump.predict">predict</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="imodelsx.augtree.stump.StumpRegressor"><code class="flex name class">
+<span>class <span class="ident">StumpRegressor</span></span>
+<span>(</span><span>max_features=5, split_strategy='cart', tokenizer=None, refinement_strategy='None', use_refine_ties: bool = False, assert_checks: bool = False, llm_prompt_context: str = '', embs_manager: <a title="imodelsx.augtree.embed.EmbsManager" href="embed.html#imodelsx.augtree.embed.EmbsManager">EmbsManager</a> = None, verbose: bool = True, use_stemming: bool = False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Mixin class for all regression estimators in scikit-learn.</p>
+<p>Fit a single stump.
+Currently only supports binary classification with binary features.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class StumpRegressor(Stump, RegressorMixin):
+    ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="imodelsx.augtree.stump.Stump" href="#imodelsx.augtree.stump.Stump">Stump</a></li>
+<li>sklearn.base.RegressorMixin</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="imodelsx.augtree.stump.Stump" href="#imodelsx.augtree.stump.Stump">Stump</a></b></code>:
+<ul class="hlist">
+<li><code><a title="imodelsx.augtree.stump.Stump.predict" href="#imodelsx.augtree.stump.Stump.predict">predict</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="imodelsx.augtree" href="index.html">imodelsx.augtree</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="imodelsx.augtree.stump.Stump" href="#imodelsx.augtree.stump.Stump">Stump</a></code></h4>
+<ul class="">
+<li><code><a title="imodelsx.augtree.stump.Stump.fit" href="#imodelsx.augtree.stump.Stump.fit">fit</a></code></li>
+<li><code><a title="imodelsx.augtree.stump.Stump.get_str_simple" href="#imodelsx.augtree.stump.Stump.get_str_simple">get_str_simple</a></code></li>
+<li><code><a title="imodelsx.augtree.stump.Stump.predict" href="#imodelsx.augtree.stump.Stump.predict">predict</a></code></li>
+<li><code><a title="imodelsx.augtree.stump.Stump.predict_regression" href="#imodelsx.augtree.stump.Stump.predict_regression">predict_regression</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="imodelsx.augtree.stump.StumpClassifier" href="#imodelsx.augtree.stump.StumpClassifier">StumpClassifier</a></code></h4>
+</li>
+<li>
+<h4><code><a title="imodelsx.augtree.stump.StumpRegressor" href="#imodelsx.augtree.stump.StumpRegressor">StumpRegressor</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

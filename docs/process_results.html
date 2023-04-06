@@ -147,7 +147,7 @@ def average_over_seeds(df: pd.DataFrame, experiment_filename=&#39;01_train_model
         # .mean(numeric_only=True)
         .reset_index()
     )
-    df_avg.columns = [x[0]+&#39;_err&#39; if x[1] == &#39;sem&#39; else x[0] for x in df_avg.columns]
+    df_avg.columns = [x[0] + &#39;_err&#39; if x[1] == &#39;sem&#39; else x[0] for x in df_avg.columns]
     return df_avg</code></pre>
 </details>
 </section>
@@ -206,7 +206,7 @@ This is used to get the names of the arguments to aggregate over</p></div>
         # .mean(numeric_only=True)
         .reset_index()
     )
-    df_avg.columns = [x[0]+&#39;_err&#39; if x[1] == &#39;sem&#39; else x[0] for x in df_avg.columns]
+    df_avg.columns = [x[0] + &#39;_err&#39; if x[1] == &#39;sem&#39; else x[0] for x in df_avg.columns]
     return df_avg</code></pre>
 </details>
 </dd>

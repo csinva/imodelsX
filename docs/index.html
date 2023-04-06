@@ -6,7 +6,7 @@
 <meta name="generator" content="pdoc 0.10.0" />
 <title>imodelsx API documentation</title>
 <meta name="description" content="&lt;p align=&#34;center&#34;&gt;
-&lt;img src=&#34;https://csinva.io/emb-gam/embgam_gif.gif&#34; width=&#34;18%&#34;&gt;
+&lt;img src=&#34;https://microsoft.github.io/aug-models/embgam_gif.gif&#34; width=&#34;18%&#34;&gt;
 &lt;img align=&#34;center&#34; width=40% …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -25,8 +25,8 @@
 </header>
 <section id="section-intro">
 <p align="center">
-<img src="https://csinva.io/emb-gam/embgam_gif.gif" width="18%">
-<img align="center" width=40% src="https://csinva.io/imodelsX/imodelsx_logo.svg?sanitize=True&kill_cache=1"> </img> <img src="https://csinva.io/emb-gam/embgam_gif.gif" width="18%"></p>
+<img src="https://microsoft.github.io/aug-models/embgam_gif.gif" width="18%">
+<img align="center" width=40% src="https://csinva.io/imodelsX/imodelsx_logo.svg?sanitize=True&kill_cache=1"> </img> <img src="https://microsoft.github.io/aug-models/embgam_gif.gif" width="18%"></p>
 <p align="center">Library to explain <i>a dataset</i> in natural language.
 </p>
 <p align="center">
@@ -42,6 +42,7 @@
 <tr>
 <th style="text-align: left;">Model</th>
 <th>Reference</th>
+<th>Output</th>
 <th>Description</th>
 </tr>
 </thead>
@@ -49,32 +50,44 @@
 <tr>
 <td style="text-align: left;">iPrompt</td>
 <td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/iprompt.ipynb">📖</a>, <a href="http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt">🗂️</a>, <a href="https://github.com/csinva/interpretable-autoprompting">🔗</a>, <a href="https://arxiv.org/abs/2210.01848">📄</a></td>
-<td>Generates a human-interpretable prompt that explains patterns <br/> in data (<em>Official</em>)</td>
-</tr>
-<tr>
-<td style="text-align: left;">Emb-GAM</td>
-<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/embgam.ipynb">📖</a>, <a href="http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier">🗂️</a>, <a href="https://github.com/csinva/emb-gam">🔗</a>, <a href="https://arxiv.org/abs/2209.11799">📄</a></td>
-<td>Fit better linear model using an LLM to extract embeddings (<em>Official</em>)</td>
+<td>Explanation</td>
+<td>Generates a human-interpretable prompt that<br/>explains patterns in data (<em>Official</em>)</td>
 </tr>
 <tr>
 <td style="text-align: left;">D3</td>
 <td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/d3.py">📖</a>, <a href="http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_datasets_d3">🗂️</a>, <a href="https://github.com/ruiqi-zhong/DescribeDistributionalDifferences">🔗</a>, <a href="https://arxiv.org/abs/2201.12323">📄</a></td>
+<td>Explanation</td>
 <td>Explain the difference between two distributions</td>
-</tr>
-<tr>
-<td style="text-align: left;">Linear Finetune</td>
-<td><a href="http://csinva.io/imodelsX/linear_finetune.html">🗂️</a></td>
-<td>Scikit-learn interface to finetune a single linear layer on top of embeddings from an LLM for classification/regression</td>
 </tr>
 <tr>
 <td style="text-align: left;">AutoPrompt</td>
 <td>⠀⠀⠀<a href="">🗂️</a>, <a href="https://github.com/ucinlp/autoprompt">🔗</a>, <a href="https://arxiv.org/abs/2010.15980">📄</a></td>
+<td>Explanation</td>
 <td>Find a natural-language prompt using input-gradients (⌛ In progress)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Aug-GAM</td>
+<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/embgam.ipynb">📖</a>, <a href="http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier">🗂️</a>, <a href="https://github.com/csinva/emb-gam">🔗</a>, <a href="https://arxiv.org/abs/2209.11799">📄</a></td>
+<td>Linear model</td>
+<td>Fit better linear model using an LLM to extract embeddings (<em>Official</em>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Aug-Tree</td>
+<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/embgam.ipynb">📖</a>, <a href="http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier">🗂️</a>, <a href="https://github.com/csinva/emb-gam">🔗</a>, <a href="https://arxiv.org/abs/2209.11799">📄</a></td>
+<td>Decision tree</td>
+<td>Fit better decision tree using an LLM to expand features (⌛ In progress)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Linear Finetune</td>
+<td>⠀⠀⠀<a href="http://csinva.io/imodelsX/linear_finetune.html">🗂️</a></td>
+<td>Black-box model</td>
+<td>Scikit-learn interface to finetune a single linear layer<br/>on top of LLM embeddings for classification/regression</td>
 </tr>
 <tr>
 <td style="text-align: left;">(Coming soon!)</td>
 <td>⌛</td>
-<td>We hope to support other interpretable models like <a href="https://arxiv.org/abs/2205.12548">RLPrompt</a>, <br/> <a href="https://arxiv.org/abs/2007.04612">concept bottleneck models</a>, <a href="https://proceedings.neurips.cc/paper/2021/hash/251bd0442dfcc53b5a761e050f8022b8-Abstract.html">NAMs</a>, and <a href="https://arxiv.org/abs/2004.00221">NBDT</a></td>
+<td></td>
+<td>We plan to support other interpretable models like <a href="https://arxiv.org/abs/2205.12548">RLPrompt</a>, <br/> <a href="https://arxiv.org/abs/2007.04612">concept bottleneck models</a>, <a href="https://proceedings.neurips.cc/paper/2021/hash/251bd0442dfcc53b5a761e050f8022b8-Abstract.html">NAMs</a>, and <a href="https://arxiv.org/abs/2004.00221">NBDT</a></td>
 </tr>
 </tbody>
 </table>
@@ -120,7 +133,7 @@ hypotheses, hypothesis_scores = imodelsx.explain_datasets_d3(
 )
 </code></pre>
 <h3 id="emb-gam">Emb-GAM</h3>
-<pre><code class="language-python">from imodelsx import EmbGAMClassifier
+<pre><code class="language-python">from imodelsx import AugGAMClassifier
 import datasets
 import numpy as np
 
@@ -131,7 +144,7 @@ dset_val = datasets.load_dataset('rotten_tomatoes')['validation']
 dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
 
 # fit model
-m = EmbGAMClassifier(
+m = AugGAMClassifier(
     checkpoint='textattack/distilbert-base-uncased-rotten-tomatoes',
     ngrams=2, # use bigrams
 )
@@ -167,7 +180,8 @@ for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
 .. include:: ../readme.md
 &#34;&#34;&#34;
 
-from .embgam.embgam import EmbGAMClassifier, EmbGAMRegressor
+from .auggam.auggam import AugGAMClassifier, AugGAMRegressor
+from .augtree.tree import AugTreeClassifier, AugTreeRegressor
 from .linear_finetune import LinearFinetuneClassifier, LinearFinetuneRegressor
 from .d3.d3 import explain_datasets_d3
 from .iprompt.api import explain_dataset_iprompt
@@ -177,6 +191,14 @@ from .iprompt.data import get_add_two_numbers_dataset</code></pre>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
+<dt><code class="name"><a title="imodelsx.auggam" href="auggam/index.html">imodelsx.auggam</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="imodelsx.augtree" href="augtree/index.html">imodelsx.augtree</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt><code class="name"><a title="imodelsx.cache_save_utils" href="cache_save_utils.html">imodelsx.cache_save_utils</a></code></dt>
 <dd>
 <div class="desc"></div>
@@ -190,10 +212,6 @@ from .iprompt.data import get_add_two_numbers_dataset</code></pre>
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="imodelsx.dummy_script" href="dummy_script.html">imodelsx.dummy_script</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="imodelsx.embgam" href="embgam/index.html">imodelsx.embgam</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -250,11 +268,12 @@ from .iprompt.data import get_add_two_numbers_dataset</code></pre>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
+<li><code><a title="imodelsx.auggam" href="auggam/index.html">imodelsx.auggam</a></code></li>
+<li><code><a title="imodelsx.augtree" href="augtree/index.html">imodelsx.augtree</a></code></li>
 <li><code><a title="imodelsx.cache_save_utils" href="cache_save_utils.html">imodelsx.cache_save_utils</a></code></li>
 <li><code><a title="imodelsx.d3" href="d3/index.html">imodelsx.d3</a></code></li>
 <li><code><a title="imodelsx.data" href="data.html">imodelsx.data</a></code></li>
 <li><code><a title="imodelsx.dummy_script" href="dummy_script.html">imodelsx.dummy_script</a></code></li>
-<li><code><a title="imodelsx.embgam" href="embgam/index.html">imodelsx.embgam</a></code></li>
 <li><code><a title="imodelsx.iprompt" href="iprompt/index.html">imodelsx.iprompt</a></code></li>
 <li><code><a title="imodelsx.linear_finetune" href="linear_finetune.html">imodelsx.linear_finetune</a></code></li>
 <li><code><a title="imodelsx.metrics" href="metrics.html">imodelsx.metrics</a></code></li>

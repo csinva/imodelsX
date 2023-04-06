@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>imodelsx.metrics API documentation</title>
+<title>imodelsx.augtree API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,141 +19,46 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>imodelsx.metrics</code></h1>
+<h1 class="title">Module <code>imodelsx.augtree</code></h1>
 </header>
 <section id="section-intro">
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">from functools import partial
-
-import numpy as np
-from sklearn.metrics import (accuracy_score, auc, balanced_accuracy_score,
-                             brier_score_loss, mean_squared_error,
-                             precision_recall_curve, precision_score, r2_score,
-                             recall_score, roc_auc_score)
-
-
-def gini_score(y_true, y_pred):
-    &#34;&#34;&#34;Purer (more accurate) is better&#34;&#34;&#34;
-    y_pred = y_pred.astype(bool)
-    y_pred_sum = y_pred.sum()
-    if y_pred_sum == 0 or y_pred_sum == y_pred.size:
-        y_mean = y_true.mean()
-    else:
-        y_mean = y_true[y_pred].mean()
-    return gini_binary(y_mean)
-
-
-def gini_binary(y_mean: float) -&gt; float:
-    &#34;&#34;&#34;{0, 1} -&gt; 1
-    {0.5} -&gt; 0.5
-    &#34;&#34;&#34;
-    return y_mean ** 2 + (1 - y_mean) ** 2
-
-
-def entropy_binary(y_mean: float) -&gt; float:
-    return -y_mean * np.log2(y_mean) - (1 - y_mean) * np.log2(1 - y_mean)
-
-
-def auprc_score(y_true, y_pred):
-    &#34;&#34;&#34;area under precision recall curve&#34;&#34;&#34;
-    precision, recall, _ = precision_recall_curve(y_true, y_pred)
-    return auc(recall, precision)
-
-
-metrics_classification_discrete = {
-    &#34;accuracy&#34;: accuracy_score,
-    &#34;precision&#34;: partial(precision_score, zero_division=0),
-    &#34;recall&#34;: partial(recall_score, zero_division=0),
-    &#34;balanced_accuracy&#34;: balanced_accuracy_score,
-}
-metrics_classification_proba = {
-    &#34;roc_auc&#34;: roc_auc_score,
-    &#34;brier_score_loss&#34;: brier_score_loss,
-    &#34;auprc&#34;: auprc_score,
-}
-metrics_regression = {
-    &#34;r2&#34;: r2_score,
-    &#34;mse&#34;: mean_squared_error,
-    &#34;corr&#34;: lambda y_true, y_pred: np.corrcoef(y_true, y_pred)[0, 1],
-}</code></pre>
-</details>
 </section>
 <section>
-</section>
-<section>
-</section>
-<section>
-<h2 class="section-title" id="header-functions">Functions</h2>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt id="imodelsx.metrics.auprc_score"><code class="name flex">
-<span>def <span class="ident">auprc_score</span></span>(<span>y_true, y_pred)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>area under precision recall curve</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def auprc_score(y_true, y_pred):
-    &#34;&#34;&#34;area under precision recall curve&#34;&#34;&#34;
-    precision, recall, _ = precision_recall_curve(y_true, y_pred)
-    return auc(recall, precision)</code></pre>
-</details>
-</dd>
-<dt id="imodelsx.metrics.entropy_binary"><code class="name flex">
-<span>def <span class="ident">entropy_binary</span></span>(<span>y_mean: float) ‑> float</span>
-</code></dt>
+<dt><code class="name"><a title="imodelsx.augtree.data" href="data.html">imodelsx.augtree.data</a></code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def entropy_binary(y_mean: float) -&gt; float:
-    return -y_mean * np.log2(y_mean) - (1 - y_mean) * np.log2(1 - y_mean)</code></pre>
-</details>
 </dd>
-<dt id="imodelsx.metrics.gini_binary"><code class="name flex">
-<span>def <span class="ident">gini_binary</span></span>(<span>y_mean: float) ‑> float</span>
-</code></dt>
+<dt><code class="name"><a title="imodelsx.augtree.embed" href="embed.html">imodelsx.augtree.embed</a></code></dt>
 <dd>
-<div class="desc"><p>{0, 1} -&gt; 1
-{0.5} -&gt; 0.5</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def gini_binary(y_mean: float) -&gt; float:
-    &#34;&#34;&#34;{0, 1} -&gt; 1
-    {0.5} -&gt; 0.5
-    &#34;&#34;&#34;
-    return y_mean ** 2 + (1 - y_mean) ** 2</code></pre>
-</details>
+<div class="desc"></div>
 </dd>
-<dt id="imodelsx.metrics.gini_score"><code class="name flex">
-<span>def <span class="ident">gini_score</span></span>(<span>y_true, y_pred)</span>
-</code></dt>
+<dt><code class="name"><a title="imodelsx.augtree.ensemble" href="ensemble.html">imodelsx.augtree.ensemble</a></code></dt>
 <dd>
-<div class="desc"><p>Purer (more accurate) is better</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def gini_score(y_true, y_pred):
-    &#34;&#34;&#34;Purer (more accurate) is better&#34;&#34;&#34;
-    y_pred = y_pred.astype(bool)
-    y_pred_sum = y_pred.sum()
-    if y_pred_sum == 0 or y_pred_sum == y_pred.size:
-        y_mean = y_true.mean()
-    else:
-        y_mean = y_true[y_pred].mean()
-    return gini_binary(y_mean)</code></pre>
-</details>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="imodelsx.augtree.llm" href="llm.html">imodelsx.augtree.llm</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="imodelsx.augtree.stump" href="stump.html">imodelsx.augtree.stump</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="imodelsx.augtree.tree" href="tree.html">imodelsx.augtree.tree</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="imodelsx.augtree.utils" href="utils.html">imodelsx.augtree.utils</a></code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
+</section>
+<section>
+</section>
+<section>
 </section>
 <section>
 </section>
@@ -166,15 +71,18 @@ metrics_regression = {
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="imodelsx" href="index.html">imodelsx</a></code></li>
+<li><code><a title="imodelsx" href="../index.html">imodelsx</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="imodelsx.metrics.auprc_score" href="#imodelsx.metrics.auprc_score">auprc_score</a></code></li>
-<li><code><a title="imodelsx.metrics.entropy_binary" href="#imodelsx.metrics.entropy_binary">entropy_binary</a></code></li>
-<li><code><a title="imodelsx.metrics.gini_binary" href="#imodelsx.metrics.gini_binary">gini_binary</a></code></li>
-<li><code><a title="imodelsx.metrics.gini_score" href="#imodelsx.metrics.gini_score">gini_score</a></code></li>
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="imodelsx.augtree.data" href="data.html">imodelsx.augtree.data</a></code></li>
+<li><code><a title="imodelsx.augtree.embed" href="embed.html">imodelsx.augtree.embed</a></code></li>
+<li><code><a title="imodelsx.augtree.ensemble" href="ensemble.html">imodelsx.augtree.ensemble</a></code></li>
+<li><code><a title="imodelsx.augtree.llm" href="llm.html">imodelsx.augtree.llm</a></code></li>
+<li><code><a title="imodelsx.augtree.stump" href="stump.html">imodelsx.augtree.stump</a></code></li>
+<li><code><a title="imodelsx.augtree.tree" href="tree.html">imodelsx.augtree.tree</a></code></li>
+<li><code><a title="imodelsx.augtree.utils" href="utils.html">imodelsx.augtree.utils</a></code></li>
 </ul>
 </li>
 </ul>
