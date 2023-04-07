@@ -67,19 +67,19 @@
 </tr>
 <tr>
 <td style="text-align: left;">Aug-GAM</td>
-<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/augmodels.ipynb">📖</a>, <a href="http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier">🗂️</a>, <a href="https://github.com/csinva/emb-gam">🔗</a>, <a href="https://arxiv.org/abs/2209.11799">📄</a></td>
+<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/augmodels.ipynb">📖</a>, <a href="https://csinva.io/imodelsX/auggam/auggam.html">🗂️</a>, <a href="https://github.com/microsoft/aug-models">🔗</a>, <a href="https://arxiv.org/abs/2209.11799">📄</a></td>
 <td>Linear model</td>
-<td>Fit better linear model using an LLM to extract embeddings (<em>Official</em>)</td>
+<td>Fit better linear model using an LLM<br/>to extract embeddings (<em>Official</em>)</td>
 </tr>
 <tr>
 <td style="text-align: left;">Aug-Tree</td>
-<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/augmodels.ipynb">📖</a>, <a href="http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier">🗂️</a>, <a href="https://github.com/csinva/emb-gam">🔗</a>, <a href="https://arxiv.org/abs/2209.11799">📄</a></td>
+<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/augmodels.ipynb">📖</a>, <a href="https://csinva.io/imodelsX/augtree/augtree.html">🗂️</a>, <a href="https://github.com/microsoft/aug-models">🔗</a>, <a href="https://arxiv.org/abs/2209.11799">📄</a></td>
 <td>Decision tree</td>
-<td>Fit better decision tree using an LLM to expand features (⌛ In progress)</td>
+<td>Fit better decision tree using an LLM<br/>to expand features (⌛ In progress)</td>
 </tr>
 <tr>
 <td style="text-align: left;">Linear Finetune</td>
-<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/linearfinetune.ipynb">📖</a>, <a href="https://csinva.io/imodelsX/linear_finetune.html">🗂️</a>, ⠀⠀<a href="http://csinva.io/imodelsX/linear_finetune.html">🗂️</a></td>
+<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/linearfinetune.ipynb">📖</a>, <a href="https://csinva.io/imodelsX/linear_finetune.html">🗂️</a>, ⠀⠀</td>
 <td>Black-box model</td>
 <td>Finetune a single linear layer<br/>on top of LLM embeddings</td>
 </tr>
@@ -87,7 +87,7 @@
 <td style="text-align: left;">(Coming soon!)</td>
 <td>⌛</td>
 <td></td>
-<td>We plan to support other interpretable models like <a href="https://arxiv.org/abs/2205.12548">RLPrompt</a>, <br/> <a href="https://arxiv.org/abs/2007.04612">CBMs</a>, <a href="https://proceedings.neurips.cc/paper/2021/hash/251bd0442dfcc53b5a761e050f8022b8-Abstract.html">NAMs</a>, and <a href="https://arxiv.org/abs/2004.00221">NBDT</a></td>
+<td>We plan to support other interpretable models like <a href="https://arxiv.org/abs/2205.12548">RLPrompt</a>, <a href="https://arxiv.org/abs/2007.04612">CBMs</a>, <a href="https://proceedings.neurips.cc/paper/2021/hash/251bd0442dfcc53b5a761e050f8022b8-Abstract.html">NAMs</a>, and <a href="https://arxiv.org/abs/2004.00221">NBDT</a></td>
 </tr>
 </tbody>
 </table>
@@ -162,6 +162,17 @@ for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1], reverse=True
 print('Most negative ngrams')
 for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
     print('\t', k, round(v, 2))
+</code></pre>
+<h3 id="linear-finetune">Linear finetune</h3>
+<p>An easy-to-fit baseline that follows the same API.</p>
+<pre><code class="language-python"># fit a simple one-layer finetune
+m = LinearFinetuneClassifier(
+    checkpoint='distilbert-base-uncased',
+)
+m.fit(dset['text'], dset['label'])
+preds = m.predict(dset_val['text'])
+acc = (preds == dset_val['label']).mean()
+print('validation acc', acc)
 </code></pre>
 <h1 id="related-work">Related work</h1>
 <ul>
@@ -260,6 +271,7 @@ from .iprompt.data import get_add_two_numbers_dataset</code></pre>
 <li><a href="#iprompt">iPrompt</a></li>
 <li><a href="#d3-describedistributionaldifferences">D3 (DescribeDistributionalDifferences)</a></li>
 <li><a href="#aug-models">Aug-models</a></li>
+<li><a href="#linear-finetune">Linear finetune</a></li>
 </ul>
 </li>
 <li><a href="#related-work">Related work</a></li>
