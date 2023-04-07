@@ -94,7 +94,7 @@ class EmbsManager:
         ngrams_list = sum(ngrams_list, [])
         ngrams_list = sorted(list(set(ngrams_list)))
         # ngrams_list = ngrams_list[:5]
-        print(f'ngrams_list {len(ngrams_list)=} {ngrams_list[:5]=}')
+        print(f'ngrams_list {len(ngrams_list)} {ngrams_list[:5]}')
 
         # compute embeddings
         print('computing embeddings...')
