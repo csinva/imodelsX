@@ -11,6 +11,7 @@ def expand_keyword(
     llm_prompt_context: str = '', # ' in the context of movie reviews',
     cache_dir: str=None,
     seed: int=0,
+    verbose: bool=False,
 ):
     """Refine a keyphrase by making a call to gpt-3
     """
@@ -26,6 +27,8 @@ def expand_keyword(
         cache_file = join(cache_dir, f'_{keyphrase_str}___{seed}.pkl')
         cache_raw_file = join(cache_dir, f'raw_{keyphrase_str}___{seed}.pkl')
         if os.path.exists(cache_file):
+            if verbose:
+                print('cached!')
             return pkl.load(open(cache_file, 'rb'))
 
     prompt = f'Generate 100 concise phrases that are very similar to the keyphrase{llm_prompt_context}:\n'
