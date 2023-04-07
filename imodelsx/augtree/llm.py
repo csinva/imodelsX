@@ -9,23 +9,24 @@ import pickle as pkl
 def expand_keyword(
     keyphrase_str: str = 'bad',
     llm_prompt_context: str = '', # ' in the context of movie reviews',
-    cache_dir: str='/home/chansingh/llm-tree/experiments/gpt3_cache/',
+    cache_dir: str=None,
     seed: int=0,
 ):
     """Refine a keyphrase by making a call to gpt-3
     """
     
     # check cache
-    if llm_prompt_context == '':
-        cache_dir = join(cache_dir, 'base')
-    else:
-        cache_dir = join(cache_dir, ''.join(llm_prompt_context.split()))
-    os.makedirs(cache_dir, exist_ok=True)
-    keyphrase_str = keyphrase_str.replace('/', ' ')
-    cache_file = join(cache_dir, f'_{keyphrase_str}___{seed}.pkl')
-    cache_raw_file = join(cache_dir, f'raw_{keyphrase_str}___{seed}.pkl')
-    if os.path.exists(cache_file):
-        return pkl.load(open(cache_file, 'rb'))
+    if cache_dir is not None:
+        if llm_prompt_context == '':
+            cache_dir = join(cache_dir, 'base')
+        else:
+            cache_dir = join(cache_dir, ''.join(llm_prompt_context.split()))
+        os.makedirs(cache_dir, exist_ok=True)
+        keyphrase_str = keyphrase_str.replace('/', ' ')
+        cache_file = join(cache_dir, f'_{keyphrase_str}___{seed}.pkl')
+        cache_raw_file = join(cache_dir, f'raw_{keyphrase_str}___{seed}.pkl')
+        if os.path.exists(cache_file):
+            return pkl.load(open(cache_file, 'rb'))
 
     prompt = f'Generate 100 concise phrases that are very similar to the keyphrase{llm_prompt_context}:\n'
     prompt += f'Keyphrase: "{keyphrase_str}"\n'
@@ -44,8 +45,9 @@ def expand_keyword(
 )
     response_text = response['choices'][0]['text']
     ks = convert_response_to_keywords(response_text)
-    pkl.dump(response_text, open(cache_raw_file, 'wb'))
-    pkl.dump(ks, open(cache_file, 'wb'))
+    if cache_dir is not None:
+        pkl.dump(response_text, open(cache_raw_file, 'wb'))
+        pkl.dump(ks, open(cache_file, 'wb'))
     return ks
 
 

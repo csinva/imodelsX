@@ -6,7 +6,7 @@ import imodels
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 import imodelsx.augtree.data
 import imodelsx.augtree.llm
-import imodelsx.augtree.tree
+import imodelsx.augtree.augtree
 import imodelsx.augtree.utils
 from imodelsx.augtree.embed import EmbsManager
 import imodelsx.util
@@ -47,6 +47,7 @@ class Stump():
         embs_manager: EmbsManager=None,
         verbose: bool=True,
         use_stemming: bool=False,
+        cache_expansions_dir: str=None,
     ):
         """Fit a single stump.
         Currently only supports binary classification with binary features.
@@ -62,6 +63,7 @@ class Stump():
         self.verbose = verbose
         self.embs_manager = embs_manager
         self.use_stemming = use_stemming
+        self.cache_expansions_dir = cache_expansions_dir
         if tokenizer is None:
             self.tokenizer = imodelsx.augtree.utils.get_spacy_tokenizer(use_stemming=use_stemming)
         else:
@@ -269,7 +271,7 @@ class Stump():
 
             # get refined_keywords
             if self.refinement_strategy == 'llm':
-                keywords_refined = imodelsx.augtree.llm.expand_keyword(keyword, self.llm_prompt_context)
+                keywords_refined = imodelsx.augtree.llm.expand_keyword(keyword, self.llm_prompt_context, cache_dir=self.cache_expansions_dir)
             elif self.refinement_strategy == 'embs':
                 keywords_refined = self.embs_manager.expand_keyword(keyword)
 

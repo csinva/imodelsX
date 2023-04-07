@@ -1,4 +1,4 @@
-from imodelsx import EmbGAMClassifier
+from imodelsx import AugGAMClassifier
 import datasets
 import numpy as np
 
@@ -10,7 +10,7 @@ if __name__ == '__main__':
     dset_val = dset_val.select(np.random.choice(len(dset_val), size=10, replace=False))
 
     # fit model
-    m = EmbGAMClassifier(
+    m = AugGAMClassifier(
         checkpoint='textattack/distilbert-base-uncased-rotten-tomatoes',
         ngrams=2,
         all_ngrams=True, # also use lower-order ngrams

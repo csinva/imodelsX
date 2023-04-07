@@ -22,6 +22,7 @@ class AugTree:
         llm_prompt_context: str='',
         use_stemming=False,
         embs_manager: EmbsManager=None,
+        cache_expansions_dir: str=None,
     ):
         '''
         Params
@@ -44,6 +45,8 @@ class AugTree:
             Extra context string provided llm_refine (if refinement_strategy=llm)
         embs_manager
             Class that provides function to query for keywords from closest embeddings
+        cache_expansions_dir: str
+            Directory to cache keyphrase expansions
         '''
         self.max_depth = max_depth
         self.max_features = max_features
@@ -55,6 +58,7 @@ class AugTree:
         self.refinement_strategy = refinement_strategy
         self.use_stemming = use_stemming
         self.embs_manager = embs_manager
+        self.cache_expansions_dir = cache_expansions_dir
         if tokenizer is None:
             self.tokenizer = imodelsx.augtree.utils.get_spacy_tokenizer(use_stemming=use_stemming)
         else:
@@ -89,6 +93,7 @@ class AugTree:
             embs_manager = self.embs_manager,
             verbose=self.verbose,
             use_stemming=self.use_stemming,
+            cache_expansions_dir=self.cache_expansions_dir,
         )
 
         # assume that the initial split finds a feature that provides some benefit
