@@ -36,7 +36,9 @@ class AugTree:
         refinement_strategy: str
             'None', 'llm', or 'embs'
         verbose: bool
+            Whether to print debug statements
         tokenizer
+            Tokenizer to use for splitting text into tokens
         use_refine_ties: bool
             Whether to include expanded keywords that don't improve or decrease performance
         assert_checks: bool

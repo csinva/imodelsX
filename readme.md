@@ -15,10 +15,10 @@
 | Model                       | Reference                                                    | Output  | Description                                                  |
 | :-------------------------- | ------------------------------------------------------------ | ------- | ------------------------------------------------------------ |
 | iPrompt            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/iprompt.ipynb), [🗂️](http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt), [🔗](https://github.com/csinva/interpretable-autoprompting), [📄](https://arxiv.org/abs/2210.01848) | Explanation | Generates a human-interpretable prompt that<br/>explains patterns in data (*Official*) |
-| D3            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/d3.py), [🗂️](http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_datasets_d3), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) | Explanation | Explain the difference between two distributions |
+| D3            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/d3.ipynb), [🗂️](http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_dataset_d3), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) | Explanation | Explain the difference between two distributions |
 | AutoPrompt            | ⠀⠀⠀[🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) | Explanation | Find a natural-language prompt using input-gradients (⌛ In progress)|
-| Aug-GAM            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/embgam.ipynb), [🗂️](http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Linear model | Fit better linear model using an LLM to extract embeddings (*Official*) |
-| Aug-Tree            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/embgam.ipynb), [🗂️](http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Decision tree | Fit better decision tree using an LLM to expand features (⌛ In progress) |
+| Aug-GAM            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/augmodels.ipynb), [🗂️](http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Linear model | Fit better linear model using an LLM to extract embeddings (*Official*) |
+| Aug-Tree            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/augmodels.ipynb), [🗂️](http://csinva.io/imodelsX/embgam/embgam.html#imodelsx.embgam.embgam.EmbGAMClassifier), [🔗](https://github.com/csinva/emb-gam), [📄](https://arxiv.org/abs/2209.11799) | Decision tree | Fit better decision tree using an LLM to expand features (⌛ In progress) |
 | Linear Finetune  | ⠀⠀⠀[🗂️](http://csinva.io/imodelsX/linear_finetune.html) | Black-box model | Scikit-learn interface to finetune a single linear layer<br/>on top of LLM embeddings for classification/regression |
 | (Coming soon!)                 | ⌛                                        |                    |  We plan to support other interpretable models like [RLPrompt](https://arxiv.org/abs/2205.12548), <br/> [concept bottleneck models](https://arxiv.org/abs/2007.04612), [NAMs](https://proceedings.neurips.cc/paper/2021/hash/251bd0442dfcc53b5a761e050f8022b8-Abstract.html), and [NBDT](https://arxiv.org/abs/2004.00221)  
 
@@ -72,10 +72,11 @@ hypotheses, hypothesis_scores = imodelsx.explain_dataset_d3(
 )
 ```
 
-### Aug-GAM
+### Aug-models
+Use these just a like a scikit-learn model. During training, they fit better features via LLMs, but at test-time they are extremely fast and completely transparent.
 
 ```python
-from imodelsx import AugGAMClassifier
+from imodelsx import AugGAMClassifier, AugTreeClassifier, AugGAMRegressor, AugTreeRegressor
 import datasets
 import numpy as np
 

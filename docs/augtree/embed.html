@@ -39,7 +39,7 @@ from imodelsx.augtree.utils import clean_str
 from os.path import join
 import pickle as pkl
 import sklearn.metrics
-import fire
+# import fire
 import torch.cuda
 from scipy.spatial import distance
 # from numba import jit
@@ -122,7 +122,7 @@ class EmbsManager:
         ngrams_list = sum(ngrams_list, [])
         ngrams_list = sorted(list(set(ngrams_list)))
         # ngrams_list = ngrams_list[:5]
-        print(f&#39;ngrams_list {len(ngrams_list)=} {ngrams_list[:5]=}&#39;)
+        print(f&#39;ngrams_list {len(ngrams_list)} {ngrams_list[:5]}&#39;)
 
         # compute embeddings
         print(&#39;computing embeddings...&#39;)
@@ -197,10 +197,10 @@ def test_dists():
     assert np.allclose(dists_eucl, dists_eucl_ref)
     
 
-if __name__ == &#39;__main__&#39;:
+# if __name__ == &#39;__main__&#39;:
     # test_dists()
     # allows calling wth args, e.g. python embed.py --dataset_name sst2
-    fire.Fire(EmbsManager)
+    # fire.Fire(EmbsManager)
 
     # embs = EmbsManager(
     #     dataset_name=&#39;financial_phrasebank&#39;,
@@ -258,7 +258,18 @@ if __name__ == &#39;__main__&#39;:
     dists_eucl_ref = sklearn.metrics.pairwise_distances(X, metric=&#39;euclidean&#39;).round(2)
     print(&#39;dists_eucl&#39;, dists_eucl)
     print(&#39;dists_eucl_ref&#39;, dists_eucl_ref)
-    assert np.allclose(dists_eucl, dists_eucl_ref)</code></pre>
+    assert np.allclose(dists_eucl, dists_eucl_ref)
+    
+
+# if __name__ == &#39;__main__&#39;:
+    # test_dists()
+    # allows calling wth args, e.g. python embed.py --dataset_name sst2
+    # fire.Fire(EmbsManager)
+
+    # embs = EmbsManager(
+    #     dataset_name=&#39;financial_phrasebank&#39;,
+    #     checkpoint=&#39;ahmedrachid/FinancialBERT-Sentiment-Analysis&#39;
+    # ).expand_keyword(&#39;great&#39;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -338,7 +349,7 @@ Number of cpus for computing pairwise distances</p></div>
         ngrams_list = sum(ngrams_list, [])
         ngrams_list = sorted(list(set(ngrams_list)))
         # ngrams_list = ngrams_list[:5]
-        print(f&#39;ngrams_list {len(ngrams_list)=} {ngrams_list[:5]=}&#39;)
+        print(f&#39;ngrams_list {len(ngrams_list)} {ngrams_list[:5]}&#39;)
 
         # compute embeddings
         print(&#39;computing embeddings...&#39;)

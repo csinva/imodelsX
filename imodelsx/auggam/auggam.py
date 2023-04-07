@@ -137,7 +137,7 @@ class AugGAM(BaseEstimator):
     def _get_embs_summed(self, X, model, tokenizer_embeddings):
         embs = []
         for x in tqdm(X):
-            emb = imodelsx.embgam.embed.embed_and_sum_function(
+            emb = imodelsx.auggam.embed.embed_and_sum_function(
                 x,
                 model=model,
                 ngrams=self.ngrams,

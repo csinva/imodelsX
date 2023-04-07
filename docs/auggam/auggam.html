@@ -169,7 +169,7 @@ class AugGAM(BaseEstimator):
     def _get_embs_summed(self, X, model, tokenizer_embeddings):
         embs = []
         for x in tqdm(X):
-            emb = imodelsx.embgam.embed.embed_and_sum_function(
+            emb = imodelsx.auggam.embed.embed_and_sum_function(
                 x,
                 model=model,
                 ngrams=self.ngrams,
@@ -518,7 +518,7 @@ Usually, setting this to False will considerably impede performance</dd>
     def _get_embs_summed(self, X, model, tokenizer_embeddings):
         embs = []
         for x in tqdm(X):
-            emb = imodelsx.embgam.embed.embed_and_sum_function(
+            emb = imodelsx.auggam.embed.embed_and_sum_function(
                 x,
                 model=model,
                 ngrams=self.ngrams,
@@ -713,7 +713,7 @@ before calling predict.&#39;)
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.auggam.auggam.AugGAM.cache_linear_coefs"><code class="name flex">
-<span>def <span class="ident">cache_linear_coefs</span></span>(<span>self, X: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], model=None, tokenizer_embeddings=None, renormalize_embs: bool = False, verbose: bool = True)</span>
+<span>def <span class="ident">cache_linear_coefs</span></span>(<span>self, X: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], model=None, tokenizer_embeddings=None, renormalize_embs: bool = False, verbose: bool = True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Cache linear coefs for ngrams into a dictionary self.coefs_dict_
@@ -773,7 +773,7 @@ whether to renormalize embeddings before fitting linear model
 </details>
 </dd>
 <dt id="imodelsx.auggam.auggam.AugGAM.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, X: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy.__array_like._SupportsArray[numpy.dtype], numpy.__nested_sequence._NestedSequence[numpy.__array_like._SupportsArray[numpy.dtype]], bool, int, float, complex, str, bytes, numpy.__nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_linear_coefs: bool = True, cache_embs_dir: str = None)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, X: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_linear_coefs: bool = True, cache_embs_dir: str = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Extract embeddings then fit linear model</p>

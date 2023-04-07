@@ -48,7 +48,7 @@ https://arxiv.org/abs/2201.12323
 &#34;&#34;&#34;
 
 
-def explain_datasets_d3(
+def explain_dataset_d3(
     pos: List[str],
     neg: List[str],
     proposer_name: str = &#39;t5ruiqi-zhong/t5proposer_0514&#39;,
@@ -143,8 +143,8 @@ def explain_datasets_d3(
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="imodelsx.d3.d3.explain_datasets_d3"><code class="name flex">
-<span>def <span class="ident">explain_datasets_d3</span></span>(<span>pos: List[str], neg: List[str], proposer_name: str = 't5ruiqi-zhong/t5proposer_0514', verifier_name: str = 'ruiqi-zhong/t5verifier_0514', save_folder: str = 'results', num_steps: int = 500, num_folds: int = 2, batch_size: int = 32, verbose: bool = True) ‑> Tuple[numpy.ndarray, numpy.ndarray]</span>
+<dt id="imodelsx.d3.d3.explain_dataset_d3"><code class="name flex">
+<span>def <span class="ident">explain_dataset_d3</span></span>(<span>pos: List[str], neg: List[str], proposer_name: str = 't5ruiqi-zhong/t5proposer_0514', verifier_name: str = 'ruiqi-zhong/t5verifier_0514', save_folder: str = 'results', num_steps: int = 500, num_folds: int = 2, batch_size: int = 32, verbose: bool = True) ‑> Tuple[numpy.ndarray, numpy.ndarray]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>This function returns hypothesis that describe the difference between
@@ -181,7 +181,7 @@ the distributions present in two lists of strings</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def explain_datasets_d3(
+<pre><code class="python">def explain_dataset_d3(
     pos: List[str],
     neg: List[str],
     proposer_name: str = &#39;t5ruiqi-zhong/t5proposer_0514&#39;,
@@ -287,7 +287,7 @@ the distributions present in two lists of strings</p>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="imodelsx.d3.d3.explain_datasets_d3" href="#imodelsx.d3.d3.explain_datasets_d3">explain_datasets_d3</a></code></li>
+<li><code><a title="imodelsx.d3.d3.explain_dataset_d3" href="#imodelsx.d3.d3.explain_dataset_d3">explain_dataset_d3</a></code></li>
 </ul>
 </li>
 </ul>

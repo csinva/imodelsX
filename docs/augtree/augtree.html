@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>imodelsx.augtree.augtree API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>imodelsx.augtree.augtree</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from typing import Dict, List
+import numpy as np
+import imodels
+import imodelsx.augtree.llm
+from imodelsx.augtree.embed import EmbsManager
+from imodelsx.augtree.stump import Stump, StumpClassifier, StumpRegressor
+import logging
+import warnings
+from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+
+class AugTree:
+    def __init__(
+        self,
+        max_depth: int = 3,
+        max_features=5,
+        split_strategy=&#39;cart&#39;,
+        refinement_strategy=&#39;None&#39;,
+        verbose=True,
+        tokenizer=None,
+        use_refine_ties=False,
+        assert_checks=False,
+        llm_prompt_context: str=&#39;&#39;,
+        use_stemming=False,
+        embs_manager: EmbsManager=None,
+        cache_expansions_dir: str=None,
+    ):
+        &#39;&#39;&#39;
+        Params
+        ------
+        max_depth: int
+            Maximum depth of the tree.
+        max_features: int
+            Number of features to consider expanding at each stump
+        split_strategy: str
+            Strategy for generating candidate seed keyphrases.
+        refinement_strategy: str
+            &#39;None&#39;, &#39;llm&#39;, or &#39;embs&#39;
+        verbose: bool
+            Whether to print debug statements
+        tokenizer
+            Tokenizer to use for splitting text into tokens
+        use_refine_ties: bool
+            Whether to include expanded keywords that don&#39;t improve or decrease performance
+        assert_checks: bool
+            Whether to run checks during fitting
+        llm_prompt_context: str
+            Extra context string provided llm_refine (if refinement_strategy=llm)
+        embs_manager
+            Class that provides function to query for keywords from closest embeddings
+        cache_expansions_dir: str
+            Directory to cache keyphrase expansions
+        &#39;&#39;&#39;
+        self.max_depth = max_depth
+        self.max_features = max_features
+        self.split_strategy = split_strategy
+        self.verbose = verbose
+        self.use_refine_ties = use_refine_ties
+        self.assert_checks  = assert_checks
+        self.llm_prompt_context = llm_prompt_context
+        self.refinement_strategy = refinement_strategy
+        self.use_stemming = use_stemming
+        self.embs_manager = embs_manager
+        self.cache_expansions_dir = cache_expansions_dir
+        if tokenizer is None:
+            self.tokenizer = imodelsx.augtree.utils.get_spacy_tokenizer(use_stemming=use_stemming)
+        else:
+            self.tokenizer = tokenizer
+        assert self.refinement_strategy in [&#39;None&#39;, &#39;llm&#39;, &#39;embs&#39;]
+        if self.refinement_strategy == &#39;embs&#39;:
+            assert embs_manager is not None, &#39;must pass embs_manager when refinement_strategy == &#34;embs&#34;&#39;
+
+    def fit(self, X=None, y=None, feature_names=None, X_text=None):
+        if X is None and X_text:
+            warnings.warn(&#34;X is not passed, defaulting to generating unigrams from X_text&#34;)
+            X, _, feature_names = imodelsx.augtree.data.convert_text_data_to_counts_array(X_text, [], ngrams=1)
+
+        # check and set some attributes
+        X, y, _ = imodels.util.arguments.check_fit_arguments(
+            self, X, y, feature_names)
+        if isinstance(X_text, list):
+            X_text = np.array(X_text).flatten()
+        self.feature_names = feature_names
+        if isinstance(self.feature_names, list):
+            self.feature_names = np.array(self.feature_names).flatten()
+
+        # fit root stump
+        stump_kwargs = dict(
+            split_strategy=self.split_strategy,
+            max_features=self.max_features,
+            tokenizer=self.tokenizer,
+            use_refine_ties=self.use_refine_ties,
+            assert_checks=self.assert_checks,
+            llm_prompt_context=self.llm_prompt_context,
+            refinement_strategy=self.refinement_strategy,
+            embs_manager = self.embs_manager,
+            verbose=self.verbose,
+            use_stemming=self.use_stemming,
+            cache_expansions_dir=self.cache_expansions_dir,
+        )
+
+        # assume that the initial split finds a feature that provides some benefit
+        # otherwise, one leaf will end up NaN
+        if isinstance(self, RegressorMixin):
+            stump_class = StumpRegressor
+        else:
+            stump_class = StumpClassifier
+        stump = stump_class(**stump_kwargs).fit(
+            X, y,
+            feature_names=self.feature_names,
+            X_text=X_text
+        )
+        stump.idxs = np.ones(X.shape[0], dtype=bool)
+        self.root_ = stump
+
+        # recursively fit stumps and store as a decision tree
+        stumps_queue = [stump]
+        i = 0
+        depth = 1
+        while depth &lt; self.max_depth:
+            stumps_queue_new = []
+            for stump in stumps_queue:
+                stump = stump
+                if self.verbose:
+                    logging.debug(f&#39;Splitting on depth={depth} stump_num={i} {stump.idxs.sum()}&#39;)
+                idxs_pred = stump.predict(X_text=X_text) &gt; 0.5
+                for idxs_p, attr in zip([~idxs_pred, idxs_pred], [&#39;child_left&#39;, &#39;child_right&#39;]):
+                    # for idxs_p, attr in zip([idxs_pred], [&#39;child_right&#39;]):
+                    idxs_child = stump.idxs &amp; idxs_p
+                    if self.verbose:
+                        logging.debug(f&#39;\t{idxs_pred.sum()} {idxs_child.sum()}&#39;, len(np.unique(y[idxs_child])))
+                    if idxs_child.sum() &gt; 0 \
+                        and idxs_child.sum() &lt; stump.idxs.sum() \
+                            and len(np.unique(y[idxs_child])) &gt; 1:
+
+                        # fit a potential child stump
+                        stump_child = stump_class(**stump_kwargs).fit(
+                            X[idxs_child], y[idxs_child],
+                            X_text=X_text[idxs_child],
+                            feature_names=self.feature_names,
+                        )
+
+                        # make sure the stump actually found a non-trivial split
+                        if not stump_child.failed_to_split:
+                            
+                            # set the child stump
+                            stump_child.idxs = idxs_child
+                            acc_tree_baseline = np.mean(self.predict(
+                                X_text[idxs_child]) == y[idxs_child])
+                            if attr == &#39;child_left&#39;:
+                                stump.child_left = stump_child
+                            else:
+                                stump.child_right = stump_child
+                            stumps_queue_new.append(stump_child)
+                            if self.verbose:
+                                logging.debug(f&#39;\t\t {stump.stump_keywords} {stump.pos_or_neg}&#39;)
+                            i += 1
+
+                        ######################### checks ###########################
+                            if self.assert_checks and isinstance(self, ClassifierMixin):
+                                # check acc for the points in this stump
+                                acc_tree = np.mean(self.predict(
+                                    X_text[idxs_child]) == y[idxs_child])
+                                assert acc_tree &gt;= acc_tree_baseline, f&#39;stump acc {acc_tree:0.3f} should be &gt; after adding child {acc_tree_baseline:0.3f}&#39;
+
+                                # check total acc
+                                acc_total_baseline = max(y.mean(), 1 - y.mean())
+                                acc_total = np.mean(self.predict(X_text) == y)
+                                assert acc_total &gt;= acc_total_baseline, f&#39;total acc {acc_total:0.3f} should be &gt; after adding child {acc_total_baseline:0.3f}&#39;
+
+                                # check that stumptrain acc improved over this set
+                                # not necessarily going to improve total acc, since the stump always predicts 0/1
+                                # even though the correct answer might be always 0 or always be 1
+                                acc_child_baseline = min(
+                                    y[idxs_child].mean(), 1 - y[idxs_child].mean())
+                                assert stump_child.acc &gt; acc_child_baseline, f&#39;acc {stump_child.acc:0.3f} should be &gt; baseline {acc_child_baseline:0.3f}&#39;
+
+
+            stumps_queue = stumps_queue_new
+            depth += 1
+
+        return self
+
+    def predict_proba(self, X_text: List[str] = None):
+        preds = []
+        for x_t in X_text:
+
+            # prediction for single point
+            stump = self.root_
+            while stump:
+                # 0 or 1 class prediction here
+                pred = stump.predict(X_text=[x_t])[0]
+                value = stump.value
+
+                if pred &gt; 0.5:
+                    stump = stump.child_right
+                    value = value[1]
+                else:
+                    stump = stump.child_left
+                    value = value[0]
+
+                if stump is None:
+                    preds.append(value)
+        preds = np.array(preds)
+        probs = np.vstack((1 - preds, preds)).transpose()  # probs (n, 2)
+        return probs
+    
+
+    def predict(self, X_text: List[str] = None) -&gt; np.ndarray[int]:
+        preds_continuous = self.predict_proba(X_text)[:, 1]
+        if isinstance(self, ClassifierMixin):
+            return (preds_continuous &gt; 0.5).astype(int)
+        else:
+            return preds_continuous
+
+    def get_tree_dict_repr(self) -&gt; Dict[str, List[str]]:
+        &#34;&#34;&#34;
+        Returns a dictionary representation of the tree
+        Each key is a binary prefix string
+            &#34;0&#34; for root
+            &#34;00&#34; for left child of root
+            &#34;01&#34; for right child of root
+            &#34;000&#34; for left child of left child of root, etc.
+        Each value is a list of strings, where each string is a keyword
+        &#34;&#34;&#34;
+        tree_dict = {}
+        stumps_queue = [(self.root_, &#34;0&#34;)]
+        while stumps_queue:
+            stump, stump_id = stumps_queue.pop(0)
+            
+            # skip leaf nodes
+            if stump.child_left is None and stump.child_right is None:
+                continue
+            
+            if hasattr(stump, &#39;stump_keywords_refined&#39;):
+                keywords = stump.stump_keywords_refined
+            else:
+                keywords = stump.stump_keywords
+            tree_dict[stump_id] = keywords
+            if stump.child_left:
+                stumps_queue.append((stump.child_left, stump_id + &#34;0&#34;))
+            if stump.child_right:
+                stumps_queue.append((stump.child_right, stump_id + &#34;1&#34;))
+        return tree_dict
+
+    def __str__(self):
+        s = f&#39;&gt; Tree(max_depth={self.max_depth} max_features={self.max_features} refine={self.refinement_strategy})\n&gt; ------------------------------------------------------\n&#39;
+        return s + self.viz_tree()
+
+    def viz_tree(self, stump: Stump=None, depth: int=0, s: str=&#39;&#39;) -&gt; str:
+        if stump is None:
+            stump = self.root_
+        s += &#39;   &#39; * depth + str(stump) + &#39;\n&#39;
+        if stump.child_left:
+            s += self.viz_tree(stump.child_left, depth + 1)
+        else:
+            s += &#39;   &#39; * (depth + 1) + f&#39;Neg n={stump.n_samples[0]} val={stump.value[0]:0.3f}&#39; + &#39;\n&#39;
+        if stump.child_right:
+            s += self.viz_tree(stump.child_right, depth + 1)
+        else:
+            s += &#39;   &#39; * (depth + 1) + f&#39;Pos n={stump.n_samples[1]} val={stump.value[1]:0.3f}&#39; + &#39;\n&#39;
+        return s
+
+class AugTreeRegressor(AugTree, RegressorMixin):
+    ...
+
+
+class AugTreeClassifier(AugTree, ClassifierMixin):
+    ...</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="imodelsx.augtree.augtree.AugTree"><code class="flex name class">
+<span>class <span class="ident">AugTree</span></span>
+<span>(</span><span>max_depth: int = 3, max_features=5, split_strategy='cart', refinement_strategy='None', verbose=True, tokenizer=None, use_refine_ties=False, assert_checks=False, llm_prompt_context: str = '', use_stemming=False, embs_manager: <a title="imodelsx.augtree.embed.EmbsManager" href="embed.html#imodelsx.augtree.embed.EmbsManager">EmbsManager</a> = None, cache_expansions_dir: str = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="params">Params</h2>
+<p>max_depth: int
+Maximum depth of the tree.
+max_features: int
+Number of features to consider expanding at each stump
+split_strategy: str
+Strategy for generating candidate seed keyphrases.
+refinement_strategy: str
+'None', 'llm', or 'embs'
+verbose: bool
+Whether to print debug statements
+tokenizer
+Tokenizer to use for splitting text into tokens
+use_refine_ties: bool
+Whether to include expanded keywords that don't improve or decrease performance
+assert_checks: bool
+Whether to run checks during fitting
+llm_prompt_context: str
+Extra context string provided llm_refine (if refinement_strategy=llm)
+embs_manager
+Class that provides function to query for keywords from closest embeddings
+cache_expansions_dir: str
+Directory to cache keyphrase expansions</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AugTree:
+    def __init__(
+        self,
+        max_depth: int = 3,
+        max_features=5,
+        split_strategy=&#39;cart&#39;,
+        refinement_strategy=&#39;None&#39;,
+        verbose=True,
+        tokenizer=None,
+        use_refine_ties=False,
+        assert_checks=False,
+        llm_prompt_context: str=&#39;&#39;,
+        use_stemming=False,
+        embs_manager: EmbsManager=None,
+        cache_expansions_dir: str=None,
+    ):
+        &#39;&#39;&#39;
+        Params
+        ------
+        max_depth: int
+            Maximum depth of the tree.
+        max_features: int
+            Number of features to consider expanding at each stump
+        split_strategy: str
+            Strategy for generating candidate seed keyphrases.
+        refinement_strategy: str
+            &#39;None&#39;, &#39;llm&#39;, or &#39;embs&#39;
+        verbose: bool
+            Whether to print debug statements
+        tokenizer
+            Tokenizer to use for splitting text into tokens
+        use_refine_ties: bool
+            Whether to include expanded keywords that don&#39;t improve or decrease performance
+        assert_checks: bool
+            Whether to run checks during fitting
+        llm_prompt_context: str
+            Extra context string provided llm_refine (if refinement_strategy=llm)
+        embs_manager
+            Class that provides function to query for keywords from closest embeddings
+        cache_expansions_dir: str
+            Directory to cache keyphrase expansions
+        &#39;&#39;&#39;
+        self.max_depth = max_depth
+        self.max_features = max_features
+        self.split_strategy = split_strategy
+        self.verbose = verbose
+        self.use_refine_ties = use_refine_ties
+        self.assert_checks  = assert_checks
+        self.llm_prompt_context = llm_prompt_context
+        self.refinement_strategy = refinement_strategy
+        self.use_stemming = use_stemming
+        self.embs_manager = embs_manager
+        self.cache_expansions_dir = cache_expansions_dir
+        if tokenizer is None:
+            self.tokenizer = imodelsx.augtree.utils.get_spacy_tokenizer(use_stemming=use_stemming)
+        else:
+            self.tokenizer = tokenizer
+        assert self.refinement_strategy in [&#39;None&#39;, &#39;llm&#39;, &#39;embs&#39;]
+        if self.refinement_strategy == &#39;embs&#39;:
+            assert embs_manager is not None, &#39;must pass embs_manager when refinement_strategy == &#34;embs&#34;&#39;
+
+    def fit(self, X=None, y=None, feature_names=None, X_text=None):
+        if X is None and X_text:
+            warnings.warn(&#34;X is not passed, defaulting to generating unigrams from X_text&#34;)
+            X, _, feature_names = imodelsx.augtree.data.convert_text_data_to_counts_array(X_text, [], ngrams=1)
+
+        # check and set some attributes
+        X, y, _ = imodels.util.arguments.check_fit_arguments(
+            self, X, y, feature_names)
+        if isinstance(X_text, list):
+            X_text = np.array(X_text).flatten()
+        self.feature_names = feature_names
+        if isinstance(self.feature_names, list):
+            self.feature_names = np.array(self.feature_names).flatten()
+
+        # fit root stump
+        stump_kwargs = dict(
+            split_strategy=self.split_strategy,
+            max_features=self.max_features,
+            tokenizer=self.tokenizer,
+            use_refine_ties=self.use_refine_ties,
+            assert_checks=self.assert_checks,
+            llm_prompt_context=self.llm_prompt_context,
+            refinement_strategy=self.refinement_strategy,
+            embs_manager = self.embs_manager,
+            verbose=self.verbose,
+            use_stemming=self.use_stemming,
+            cache_expansions_dir=self.cache_expansions_dir,
+        )
+
+        # assume that the initial split finds a feature that provides some benefit
+        # otherwise, one leaf will end up NaN
+        if isinstance(self, RegressorMixin):
+            stump_class = StumpRegressor
+        else:
+            stump_class = StumpClassifier
+        stump = stump_class(**stump_kwargs).fit(
+            X, y,
+            feature_names=self.feature_names,
+            X_text=X_text
+        )
+        stump.idxs = np.ones(X.shape[0], dtype=bool)
+        self.root_ = stump
+
+        # recursively fit stumps and store as a decision tree
+        stumps_queue = [stump]
+        i = 0
+        depth = 1
+        while depth &lt; self.max_depth:
+            stumps_queue_new = []
+            for stump in stumps_queue:
+                stump = stump
+                if self.verbose:
+                    logging.debug(f&#39;Splitting on depth={depth} stump_num={i} {stump.idxs.sum()}&#39;)
+                idxs_pred = stump.predict(X_text=X_text) &gt; 0.5
+                for idxs_p, attr in zip([~idxs_pred, idxs_pred], [&#39;child_left&#39;, &#39;child_right&#39;]):
+                    # for idxs_p, attr in zip([idxs_pred], [&#39;child_right&#39;]):
+                    idxs_child = stump.idxs &amp; idxs_p
+                    if self.verbose:
+                        logging.debug(f&#39;\t{idxs_pred.sum()} {idxs_child.sum()}&#39;, len(np.unique(y[idxs_child])))
+                    if idxs_child.sum() &gt; 0 \
+                        and idxs_child.sum() &lt; stump.idxs.sum() \
+                            and len(np.unique(y[idxs_child])) &gt; 1:
+
+                        # fit a potential child stump
+                        stump_child = stump_class(**stump_kwargs).fit(
+                            X[idxs_child], y[idxs_child],
+                            X_text=X_text[idxs_child],
+                            feature_names=self.feature_names,
+                        )
+
+                        # make sure the stump actually found a non-trivial split
+                        if not stump_child.failed_to_split:
+                            
+                            # set the child stump
+                            stump_child.idxs = idxs_child
+                            acc_tree_baseline = np.mean(self.predict(
+                                X_text[idxs_child]) == y[idxs_child])
+                            if attr == &#39;child_left&#39;:
+                                stump.child_left = stump_child
+                            else:
+                                stump.child_right = stump_child
+                            stumps_queue_new.append(stump_child)
+                            if self.verbose:
+                                logging.debug(f&#39;\t\t {stump.stump_keywords} {stump.pos_or_neg}&#39;)
+                            i += 1
+
+                        ######################### checks ###########################
+                            if self.assert_checks and isinstance(self, ClassifierMixin):
+                                # check acc for the points in this stump
+                                acc_tree = np.mean(self.predict(
+                                    X_text[idxs_child]) == y[idxs_child])
+                                assert acc_tree &gt;= acc_tree_baseline, f&#39;stump acc {acc_tree:0.3f} should be &gt; after adding child {acc_tree_baseline:0.3f}&#39;
+
+                                # check total acc
+                                acc_total_baseline = max(y.mean(), 1 - y.mean())
+                                acc_total = np.mean(self.predict(X_text) == y)
+                                assert acc_total &gt;= acc_total_baseline, f&#39;total acc {acc_total:0.3f} should be &gt; after adding child {acc_total_baseline:0.3f}&#39;
+
+                                # check that stumptrain acc improved over this set
+                                # not necessarily going to improve total acc, since the stump always predicts 0/1
+                                # even though the correct answer might be always 0 or always be 1
+                                acc_child_baseline = min(
+                                    y[idxs_child].mean(), 1 - y[idxs_child].mean())
+                                assert stump_child.acc &gt; acc_child_baseline, f&#39;acc {stump_child.acc:0.3f} should be &gt; baseline {acc_child_baseline:0.3f}&#39;
+
+
+            stumps_queue = stumps_queue_new
+            depth += 1
+
+        return self
+
+    def predict_proba(self, X_text: List[str] = None):
+        preds = []
+        for x_t in X_text:
+
+            # prediction for single point
+            stump = self.root_
+            while stump:
+                # 0 or 1 class prediction here
+                pred = stump.predict(X_text=[x_t])[0]
+                value = stump.value
+
+                if pred &gt; 0.5:
+                    stump = stump.child_right
+                    value = value[1]
+                else:
+                    stump = stump.child_left
+                    value = value[0]
+
+                if stump is None:
+                    preds.append(value)
+        preds = np.array(preds)
+        probs = np.vstack((1 - preds, preds)).transpose()  # probs (n, 2)
+        return probs
+    
+
+    def predict(self, X_text: List[str] = None) -&gt; np.ndarray[int]:
+        preds_continuous = self.predict_proba(X_text)[:, 1]
+        if isinstance(self, ClassifierMixin):
+            return (preds_continuous &gt; 0.5).astype(int)
+        else:
+            return preds_continuous
+
+    def get_tree_dict_repr(self) -&gt; Dict[str, List[str]]:
+        &#34;&#34;&#34;
+        Returns a dictionary representation of the tree
+        Each key is a binary prefix string
+            &#34;0&#34; for root
+            &#34;00&#34; for left child of root
+            &#34;01&#34; for right child of root
+            &#34;000&#34; for left child of left child of root, etc.
+        Each value is a list of strings, where each string is a keyword
+        &#34;&#34;&#34;
+        tree_dict = {}
+        stumps_queue = [(self.root_, &#34;0&#34;)]
+        while stumps_queue:
+            stump, stump_id = stumps_queue.pop(0)
+            
+            # skip leaf nodes
+            if stump.child_left is None and stump.child_right is None:
+                continue
+            
+            if hasattr(stump, &#39;stump_keywords_refined&#39;):
+                keywords = stump.stump_keywords_refined
+            else:
+                keywords = stump.stump_keywords
+            tree_dict[stump_id] = keywords
+            if stump.child_left:
+                stumps_queue.append((stump.child_left, stump_id + &#34;0&#34;))
+            if stump.child_right:
+                stumps_queue.append((stump.child_right, stump_id + &#34;1&#34;))
+        return tree_dict
+
+    def __str__(self):
+        s = f&#39;&gt; Tree(max_depth={self.max_depth} max_features={self.max_features} refine={self.refinement_strategy})\n&gt; ------------------------------------------------------\n&#39;
+        return s + self.viz_tree()
+
+    def viz_tree(self, stump: Stump=None, depth: int=0, s: str=&#39;&#39;) -&gt; str:
+        if stump is None:
+            stump = self.root_
+        s += &#39;   &#39; * depth + str(stump) + &#39;\n&#39;
+        if stump.child_left:
+            s += self.viz_tree(stump.child_left, depth + 1)
+        else:
+            s += &#39;   &#39; * (depth + 1) + f&#39;Neg n={stump.n_samples[0]} val={stump.value[0]:0.3f}&#39; + &#39;\n&#39;
+        if stump.child_right:
+            s += self.viz_tree(stump.child_right, depth + 1)
+        else:
+            s += &#39;   &#39; * (depth + 1) + f&#39;Pos n={stump.n_samples[1]} val={stump.value[1]:0.3f}&#39; + &#39;\n&#39;
+        return s</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="imodelsx.augtree.augtree.AugTreeClassifier" href="#imodelsx.augtree.augtree.AugTreeClassifier">AugTreeClassifier</a></li>
+<li><a title="imodelsx.augtree.augtree.AugTreeRegressor" href="#imodelsx.augtree.augtree.AugTreeRegressor">AugTreeRegressor</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="imodelsx.augtree.augtree.AugTree.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, X=None, y=None, feature_names=None, X_text=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, X=None, y=None, feature_names=None, X_text=None):
+    if X is None and X_text:
+        warnings.warn(&#34;X is not passed, defaulting to generating unigrams from X_text&#34;)
+        X, _, feature_names = imodelsx.augtree.data.convert_text_data_to_counts_array(X_text, [], ngrams=1)
+
+    # check and set some attributes
+    X, y, _ = imodels.util.arguments.check_fit_arguments(
+        self, X, y, feature_names)
+    if isinstance(X_text, list):
+        X_text = np.array(X_text).flatten()
+    self.feature_names = feature_names
+    if isinstance(self.feature_names, list):
+        self.feature_names = np.array(self.feature_names).flatten()
+
+    # fit root stump
+    stump_kwargs = dict(
+        split_strategy=self.split_strategy,
+        max_features=self.max_features,
+        tokenizer=self.tokenizer,
+        use_refine_ties=self.use_refine_ties,
+        assert_checks=self.assert_checks,
+        llm_prompt_context=self.llm_prompt_context,
+        refinement_strategy=self.refinement_strategy,
+        embs_manager = self.embs_manager,
+        verbose=self.verbose,
+        use_stemming=self.use_stemming,
+        cache_expansions_dir=self.cache_expansions_dir,
+    )
+
+    # assume that the initial split finds a feature that provides some benefit
+    # otherwise, one leaf will end up NaN
+    if isinstance(self, RegressorMixin):
+        stump_class = StumpRegressor
+    else:
+        stump_class = StumpClassifier
+    stump = stump_class(**stump_kwargs).fit(
+        X, y,
+        feature_names=self.feature_names,
+        X_text=X_text
+    )
+    stump.idxs = np.ones(X.shape[0], dtype=bool)
+    self.root_ = stump
+
+    # recursively fit stumps and store as a decision tree
+    stumps_queue = [stump]
+    i = 0
+    depth = 1
+    while depth &lt; self.max_depth:
+        stumps_queue_new = []
+        for stump in stumps_queue:
+            stump = stump
+            if self.verbose:
+                logging.debug(f&#39;Splitting on depth={depth} stump_num={i} {stump.idxs.sum()}&#39;)
+            idxs_pred = stump.predict(X_text=X_text) &gt; 0.5
+            for idxs_p, attr in zip([~idxs_pred, idxs_pred], [&#39;child_left&#39;, &#39;child_right&#39;]):
+                # for idxs_p, attr in zip([idxs_pred], [&#39;child_right&#39;]):
+                idxs_child = stump.idxs &amp; idxs_p
+                if self.verbose:
+                    logging.debug(f&#39;\t{idxs_pred.sum()} {idxs_child.sum()}&#39;, len(np.unique(y[idxs_child])))
+                if idxs_child.sum() &gt; 0 \
+                    and idxs_child.sum() &lt; stump.idxs.sum() \
+                        and len(np.unique(y[idxs_child])) &gt; 1:
+
+                    # fit a potential child stump
+                    stump_child = stump_class(**stump_kwargs).fit(
+                        X[idxs_child], y[idxs_child],
+                        X_text=X_text[idxs_child],
+                        feature_names=self.feature_names,
+                    )
+
+                    # make sure the stump actually found a non-trivial split
+                    if not stump_child.failed_to_split:
+                        
+                        # set the child stump
+                        stump_child.idxs = idxs_child
+                        acc_tree_baseline = np.mean(self.predict(
+                            X_text[idxs_child]) == y[idxs_child])
+                        if attr == &#39;child_left&#39;:
+                            stump.child_left = stump_child
+                        else:
+                            stump.child_right = stump_child
+                        stumps_queue_new.append(stump_child)
+                        if self.verbose:
+                            logging.debug(f&#39;\t\t {stump.stump_keywords} {stump.pos_or_neg}&#39;)
+                        i += 1
+
+                    ######################### checks ###########################
+                        if self.assert_checks and isinstance(self, ClassifierMixin):
+                            # check acc for the points in this stump
+                            acc_tree = np.mean(self.predict(
+                                X_text[idxs_child]) == y[idxs_child])
+                            assert acc_tree &gt;= acc_tree_baseline, f&#39;stump acc {acc_tree:0.3f} should be &gt; after adding child {acc_tree_baseline:0.3f}&#39;
+
+                            # check total acc
+                            acc_total_baseline = max(y.mean(), 1 - y.mean())
+                            acc_total = np.mean(self.predict(X_text) == y)
+                            assert acc_total &gt;= acc_total_baseline, f&#39;total acc {acc_total:0.3f} should be &gt; after adding child {acc_total_baseline:0.3f}&#39;
+
+                            # check that stumptrain acc improved over this set
+                            # not necessarily going to improve total acc, since the stump always predicts 0/1
+                            # even though the correct answer might be always 0 or always be 1
+                            acc_child_baseline = min(
+                                y[idxs_child].mean(), 1 - y[idxs_child].mean())
+                            assert stump_child.acc &gt; acc_child_baseline, f&#39;acc {stump_child.acc:0.3f} should be &gt; baseline {acc_child_baseline:0.3f}&#39;
+
+
+        stumps_queue = stumps_queue_new
+        depth += 1
+
+    return self</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.augtree.AugTree.get_tree_dict_repr"><code class="name flex">
+<span>def <span class="ident">get_tree_dict_repr</span></span>(<span>self) ‑> Dict[str, List[str]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns a dictionary representation of the tree
+Each key is a binary prefix string
+"0" for root
+"00" for left child of root
+"01" for right child of root
+"000" for left child of left child of root, etc.
+Each value is a list of strings, where each string is a keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_tree_dict_repr(self) -&gt; Dict[str, List[str]]:
+    &#34;&#34;&#34;
+    Returns a dictionary representation of the tree
+    Each key is a binary prefix string
+        &#34;0&#34; for root
+        &#34;00&#34; for left child of root
+        &#34;01&#34; for right child of root
+        &#34;000&#34; for left child of left child of root, etc.
+    Each value is a list of strings, where each string is a keyword
+    &#34;&#34;&#34;
+    tree_dict = {}
+    stumps_queue = [(self.root_, &#34;0&#34;)]
+    while stumps_queue:
+        stump, stump_id = stumps_queue.pop(0)
+        
+        # skip leaf nodes
+        if stump.child_left is None and stump.child_right is None:
+            continue
+        
+        if hasattr(stump, &#39;stump_keywords_refined&#39;):
+            keywords = stump.stump_keywords_refined
+        else:
+            keywords = stump.stump_keywords
+        tree_dict[stump_id] = keywords
+        if stump.child_left:
+            stumps_queue.append((stump.child_left, stump_id + &#34;0&#34;))
+        if stump.child_right:
+            stumps_queue.append((stump.child_right, stump_id + &#34;1&#34;))
+    return tree_dict</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.augtree.AugTree.predict"><code class="name flex">
+<span>def <span class="ident">predict</span></span>(<span>self, X_text: List[str] = None) ‑> numpy.ndarray[int]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def predict(self, X_text: List[str] = None) -&gt; np.ndarray[int]:
+    preds_continuous = self.predict_proba(X_text)[:, 1]
+    if isinstance(self, ClassifierMixin):
+        return (preds_continuous &gt; 0.5).astype(int)
+    else:
+        return preds_continuous</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.augtree.AugTree.predict_proba"><code class="name flex">
+<span>def <span class="ident">predict_proba</span></span>(<span>self, X_text: List[str] = None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def predict_proba(self, X_text: List[str] = None):
+    preds = []
+    for x_t in X_text:
+
+        # prediction for single point
+        stump = self.root_
+        while stump:
+            # 0 or 1 class prediction here
+            pred = stump.predict(X_text=[x_t])[0]
+            value = stump.value
+
+            if pred &gt; 0.5:
+                stump = stump.child_right
+                value = value[1]
+            else:
+                stump = stump.child_left
+                value = value[0]
+
+            if stump is None:
+                preds.append(value)
+    preds = np.array(preds)
+    probs = np.vstack((1 - preds, preds)).transpose()  # probs (n, 2)
+    return probs</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.augtree.augtree.AugTree.viz_tree"><code class="name flex">
+<span>def <span class="ident">viz_tree</span></span>(<span>self, stump: <a title="imodelsx.augtree.stump.Stump" href="stump.html#imodelsx.augtree.stump.Stump">Stump</a> = None, depth: int = 0, s: str = '') ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def viz_tree(self, stump: Stump=None, depth: int=0, s: str=&#39;&#39;) -&gt; str:
+    if stump is None:
+        stump = self.root_
+    s += &#39;   &#39; * depth + str(stump) + &#39;\n&#39;
+    if stump.child_left:
+        s += self.viz_tree(stump.child_left, depth + 1)
+    else:
+        s += &#39;   &#39; * (depth + 1) + f&#39;Neg n={stump.n_samples[0]} val={stump.value[0]:0.3f}&#39; + &#39;\n&#39;
+    if stump.child_right:
+        s += self.viz_tree(stump.child_right, depth + 1)
+    else:
+        s += &#39;   &#39; * (depth + 1) + f&#39;Pos n={stump.n_samples[1]} val={stump.value[1]:0.3f}&#39; + &#39;\n&#39;
+    return s</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="imodelsx.augtree.augtree.AugTreeClassifier"><code class="flex name class">
+<span>class <span class="ident">AugTreeClassifier</span></span>
+<span>(</span><span>max_depth: int = 3, max_features=5, split_strategy='cart', refinement_strategy='None', verbose=True, tokenizer=None, use_refine_ties=False, assert_checks=False, llm_prompt_context: str = '', use_stemming=False, embs_manager: <a title="imodelsx.augtree.embed.EmbsManager" href="embed.html#imodelsx.augtree.embed.EmbsManager">EmbsManager</a> = None, cache_expansions_dir: str = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Mixin class for all classifiers in scikit-learn.</p>
+<h2 id="params">Params</h2>
+<p>max_depth: int
+Maximum depth of the tree.
+max_features: int
+Number of features to consider expanding at each stump
+split_strategy: str
+Strategy for generating candidate seed keyphrases.
+refinement_strategy: str
+'None', 'llm', or 'embs'
+verbose: bool
+Whether to print debug statements
+tokenizer
+Tokenizer to use for splitting text into tokens
+use_refine_ties: bool
+Whether to include expanded keywords that don't improve or decrease performance
+assert_checks: bool
+Whether to run checks during fitting
+llm_prompt_context: str
+Extra context string provided llm_refine (if refinement_strategy=llm)
+embs_manager
+Class that provides function to query for keywords from closest embeddings
+cache_expansions_dir: str
+Directory to cache keyphrase expansions</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AugTreeClassifier(AugTree, ClassifierMixin):
+    ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="imodelsx.augtree.augtree.AugTree" href="#imodelsx.augtree.augtree.AugTree">AugTree</a></li>
+<li>sklearn.base.ClassifierMixin</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="imodelsx.augtree.augtree.AugTree" href="#imodelsx.augtree.augtree.AugTree">AugTree</a></b></code>:
+<ul class="hlist">
+<li><code><a title="imodelsx.augtree.augtree.AugTree.get_tree_dict_repr" href="#imodelsx.augtree.augtree.AugTree.get_tree_dict_repr">get_tree_dict_repr</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="imodelsx.augtree.augtree.AugTreeRegressor"><code class="flex name class">
+<span>class <span class="ident">AugTreeRegressor</span></span>
+<span>(</span><span>max_depth: int = 3, max_features=5, split_strategy='cart', refinement_strategy='None', verbose=True, tokenizer=None, use_refine_ties=False, assert_checks=False, llm_prompt_context: str = '', use_stemming=False, embs_manager: <a title="imodelsx.augtree.embed.EmbsManager" href="embed.html#imodelsx.augtree.embed.EmbsManager">EmbsManager</a> = None, cache_expansions_dir: str = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Mixin class for all regression estimators in scikit-learn.</p>
+<h2 id="params">Params</h2>
+<p>max_depth: int
+Maximum depth of the tree.
+max_features: int
+Number of features to consider expanding at each stump
+split_strategy: str
+Strategy for generating candidate seed keyphrases.
+refinement_strategy: str
+'None', 'llm', or 'embs'
+verbose: bool
+Whether to print debug statements
+tokenizer
+Tokenizer to use for splitting text into tokens
+use_refine_ties: bool
+Whether to include expanded keywords that don't improve or decrease performance
+assert_checks: bool
+Whether to run checks during fitting
+llm_prompt_context: str
+Extra context string provided llm_refine (if refinement_strategy=llm)
+embs_manager
+Class that provides function to query for keywords from closest embeddings
+cache_expansions_dir: str
+Directory to cache keyphrase expansions</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AugTreeRegressor(AugTree, RegressorMixin):
+    ...</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="imodelsx.augtree.augtree.AugTree" href="#imodelsx.augtree.augtree.AugTree">AugTree</a></li>
+<li>sklearn.base.RegressorMixin</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="imodelsx.augtree.augtree.AugTree" href="#imodelsx.augtree.augtree.AugTree">AugTree</a></b></code>:
+<ul class="hlist">
+<li><code><a title="imodelsx.augtree.augtree.AugTree.get_tree_dict_repr" href="#imodelsx.augtree.augtree.AugTree.get_tree_dict_repr">get_tree_dict_repr</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="imodelsx.augtree" href="index.html">imodelsx.augtree</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="imodelsx.augtree.augtree.AugTree" href="#imodelsx.augtree.augtree.AugTree">AugTree</a></code></h4>
+<ul class="">
+<li><code><a title="imodelsx.augtree.augtree.AugTree.fit" href="#imodelsx.augtree.augtree.AugTree.fit">fit</a></code></li>
+<li><code><a title="imodelsx.augtree.augtree.AugTree.get_tree_dict_repr" href="#imodelsx.augtree.augtree.AugTree.get_tree_dict_repr">get_tree_dict_repr</a></code></li>
+<li><code><a title="imodelsx.augtree.augtree.AugTree.predict" href="#imodelsx.augtree.augtree.AugTree.predict">predict</a></code></li>
+<li><code><a title="imodelsx.augtree.augtree.AugTree.predict_proba" href="#imodelsx.augtree.augtree.AugTree.predict_proba">predict_proba</a></code></li>
+<li><code><a title="imodelsx.augtree.augtree.AugTree.viz_tree" href="#imodelsx.augtree.augtree.AugTree.viz_tree">viz_tree</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="imodelsx.augtree.augtree.AugTreeClassifier" href="#imodelsx.augtree.augtree.AugTreeClassifier">AugTreeClassifier</a></code></h4>
+</li>
+<li>
+<h4><code><a title="imodelsx.augtree.augtree.AugTreeRegressor" href="#imodelsx.augtree.augtree.AugTreeRegressor">AugTreeRegressor</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
