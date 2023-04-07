@@ -35,7 +35,7 @@ setuptools.setup(
         exclude=['tests', 'tests.*', '*.test.*']
     ),
     install_requires=required_pypi,
-    python_requires='>=3.6',
+    python_requires='>=3.9',
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

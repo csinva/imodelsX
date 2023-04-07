@@ -11,7 +11,7 @@ from imodelsx.augtree.utils import clean_str
 from os.path import join
 import pickle as pkl
 import sklearn.metrics
-import fire
+# import fire
 import torch.cuda
 from scipy.spatial import distance
 # from numba import jit
@@ -169,10 +169,10 @@ def test_dists():
     assert np.allclose(dists_eucl, dists_eucl_ref)
     
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # test_dists()
     # allows calling wth args, e.g. python embed.py --dataset_name sst2
-    fire.Fire(EmbsManager)
+    # fire.Fire(EmbsManager)
 
     # embs = EmbsManager(
     #     dataset_name='financial_phrasebank',

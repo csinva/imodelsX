@@ -2,7 +2,6 @@ from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 from spacy.lang.en import English
 from sklearn.metrics import mean_squared_error
-from nltk.stem.porter import PorterStemmer
 ROOT = 0
 LEFT = 1
 RIGHT = 2
@@ -95,6 +94,7 @@ class LLMTreeTokenizer:
         self.convert_lower = convert_lower
         self.use_stemming = use_stemming
         if self.use_stemming:
+            from nltk.stem.porter import PorterStemmer
             self.stemmer = PorterStemmer()
 
     def __call__(self, s):
