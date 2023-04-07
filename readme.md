@@ -51,7 +51,6 @@ prompts, metadata = explain_dataset_iprompt(
     checkpoint='EleutherAI/gpt-j-6B', # which language model to use
     num_learned_tokens=3, # how long of a prompt to learn
     n_shots=3, # shots per example
-
     n_epochs=15, # how many epochs to search
     verbose=0, # how much to print
     llm_float16=True, # whether to load the model in float_16
@@ -64,7 +63,7 @@ prompts is a list of found natural-language prompt strings
 
 ```python
 import imodelsx
-hypotheses, hypothesis_scores = imodelsx.explain_datasets_d3(
+hypotheses, hypothesis_scores = imodelsx.explain_dataset_d3(
     pos=positive_samples, # List[str] of positive examples
     neg=negative_samples, # another List[str]
     num_steps=100,
@@ -73,7 +72,7 @@ hypotheses, hypothesis_scores = imodelsx.explain_datasets_d3(
 )
 ```
 
-### Emb-GAM
+### Aug-GAM
 
 ```python
 from imodelsx import AugGAMClassifier

@@ -20,7 +20,7 @@ https://arxiv.org/abs/2201.12323
 """
 
 
-def explain_datasets_d3(
+def explain_dataset_d3(
     pos: List[str],
     neg: List[str],
     proposer_name: str = 't5ruiqi-zhong/t5proposer_0514',
