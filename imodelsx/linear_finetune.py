@@ -1,10 +1,5 @@
 """
-Simple scikit-learn interface for Emb-GAM.
-
-
-Emb-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models
-Chandan Singh & Jianfeng Gao
-https://arxiv.org/abs/2209.11799
+Simple scikit-learn interface for finetuning a single linear layer on top of LLM embeddings.
 """
 from numpy.typing import ArrayLike
 import numpy as np
@@ -47,6 +42,30 @@ class LinearFinetune(BaseEstimator):
             random seed for fitting
         normalize_embs
             whether to normalize embeddings before fitting linear model
+
+        Example
+        -------
+        ```
+        from imodelsx import LinearFinetuneClassifier
+        import datasets
+        import numpy as np
+
+        # load data
+        dset = datasets.load_dataset('rotten_tomatoes')['train']
+        dset = dset.select(np.random.choice(len(dset), size=300, replace=False))
+        dset_val = datasets.load_dataset('rotten_tomatoes')['validation']
+        dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
+
+
+        # fit a simple one-layer finetune
+        m = LinearFinetuneClassifier(
+            checkpoint='distilbert-base-uncased',
+        )
+        m.fit(dset['text'], dset['label'])
+        preds = m.predict(dset_val['text'])
+        acc = (preds == dset_val['label']).mean()
+        print('validation acc', acc)
+        ```
         '''
         self.checkpoint = checkpoint
         self.layer = layer
