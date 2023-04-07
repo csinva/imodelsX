@@ -119,13 +119,13 @@ class AugTree:
             for stump in stumps_queue:
                 stump = stump
                 if self.verbose:
-                    logging.debug(f'Splitting on {depth=} stump_num={i} {stump.idxs.sum()=}')
+                    logging.debug(f'Splitting on depth={depth} stump_num={i} {stump.idxs.sum()}')
                 idxs_pred = stump.predict(X_text=X_text) > 0.5
                 for idxs_p, attr in zip([~idxs_pred, idxs_pred], ['child_left', 'child_right']):
                     # for idxs_p, attr in zip([idxs_pred], ['child_right']):
                     idxs_child = stump.idxs & idxs_p
                     if self.verbose:
-                        logging.debug(f'\t{idxs_pred.sum()=} {idxs_child.sum()=}', len(np.unique(y[idxs_child])))
+                        logging.debug(f'\t{idxs_pred.sum()} {idxs_child.sum()}', len(np.unique(y[idxs_child])))
                     if idxs_child.sum() > 0 \
                         and idxs_child.sum() < stump.idxs.sum() \
                             and len(np.unique(y[idxs_child])) > 1:
