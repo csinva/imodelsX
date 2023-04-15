@@ -243,7 +243,7 @@ class AugGAM(BaseEstimator):
                 tokens = Dataset.from_dict(tokens).with_format("torch")
 
                 embeddings = []
-                for batch in DataLoader(tokens, batch_size=batch_size, shuffle=False):
+                for batch in DataLoader(tokens, batch_size=batch_size):
                     batch = {k: v.to(model.device) for k, v in batch.items()}
 
                     with torch.no_grad():

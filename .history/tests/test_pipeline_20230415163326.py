@@ -7,16 +7,15 @@ if __name__ == '__main__':
     dset = datasets.load_dataset('rotten_tomatoes')['train']
     dset = dset.select(np.random.choice(len(dset), size=10, replace=False))
     dset_val = datasets.load_dataset('rotten_tomatoes')['validation']
-    dset_val = dset_val.select(np.random.choice(
-        len(dset_val), size=10, replace=False))
+    dset_val = dset_val.select(np.random.choice(len(dset_val), size=10, replace=False))
 
     # fit model
     m = AugGAMClassifier(
         checkpoint='textattack/distilbert-base-uncased-rotten-tomatoes',
         ngrams=2,
-        all_ngrams=True,  # also use lower-order ngrams
+        all_ngrams=True, # also use lower-order ngrams
     )
-    m.fit(dset['text'], dset['label'], batch_size=8)
+    m.fit(dset['text'], dset['label'])
 
     # predict
     preds = m.predict(dset_val['text'])

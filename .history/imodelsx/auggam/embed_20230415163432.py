@@ -117,7 +117,7 @@ def embed_and_sum_function(
 
         ds = Dataset.from_dict(tokens).with_format("torch")
 
-        for batch in DataLoader(ds, batch_size=batch_size, shuffle=False):
+        for batch in DataLoader(ds, batch_size=batch_size):
             batch = {k: v.to(model.device) for k, v in batch.items()}
 
             with torch.no_grad():
@@ -141,7 +141,7 @@ def embed_and_sum_function(
 
         ds = Dataset.from_dict(tokens).with_format("torch")
 
-        for batch in DataLoader(ds, batch_size=batch_size, shuffle=False):
+        for batch in DataLoader(ds, batch_size=batch_size):
             batch = {k: v.to(model.device) for k, v in batch.items()}
 
             with torch.no_grad():
