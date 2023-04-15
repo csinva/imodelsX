@@ -74,10 +74,6 @@ def generate_ngrams_list(
         assert all_ngrams is False, "pad_starting_ngrams only works when all_ngrams=False"
         seqs_init = [' '.join(unigrams_list[:ngram_length]) for ngram_length in range(1, ngrams)]
         seqs = seqs_init + seqs
-    
-    freqs = Counter(seqs)
-
-    seqs = [seq for seq, freq in freqs.items() if freq >= min_frequency]
 
     return seqs
 

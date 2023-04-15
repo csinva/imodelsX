@@ -6,7 +6,6 @@ from tqdm import tqdm
 from transformers import pipeline
 import datasets
 import numpy as np
-from collections import Counter
 
 
 def generate_ngrams_list(
@@ -32,7 +31,7 @@ def generate_ngrams_list(
         so that length of ngrams_list is the same as the initial sequence
         e.g. for ngrams=3 ["the", "the quick", "the quick brown", "quick brown fox", "brown fox jumps", ...]
     min_frequency: int
-        minimum frequency to be considered for the ngrams_list
+        minimum frequency to be considered for the 
     """
 
     seqs = []
@@ -74,10 +73,6 @@ def generate_ngrams_list(
         assert all_ngrams is False, "pad_starting_ngrams only works when all_ngrams=False"
         seqs_init = [' '.join(unigrams_list[:ngram_length]) for ngram_length in range(1, ngrams)]
         seqs = seqs_init + seqs
-    
-    freqs = Counter(seqs)
-
-    seqs = [seq for seq, freq in freqs.items() if freq >= min_frequency]
 
     return seqs
 

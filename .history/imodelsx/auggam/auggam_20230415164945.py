@@ -34,7 +34,6 @@ class AugGAM(BaseEstimator):
         layer: str = 'last_hidden_state',
         ngrams: int = 2,
         all_ngrams: bool = False,
-        min_frequency: int = 1,
         tokenizer_ngrams=None,
         random_state=None,
         normalize_embs=False,
@@ -53,8 +52,6 @@ class AugGAM(BaseEstimator):
             Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
         all_ngrams
             Whether to use all order ngrams <= ngrams argument
-        min_frequency
-            minimum frequency of ngrams to be kept in the ngrams list.
         tokenizer_ngrams
             if None, defaults to spacy English tokenizer
         random_state
@@ -77,7 +74,6 @@ class AugGAM(BaseEstimator):
         self.layer = layer
         self.random_state = random_state
         self.all_ngrams = all_ngrams
-        self.min_frequency = min_frequency
         self.normalize_embs = normalize_embs
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
         self.instructor_prompt = instructor_prompt
@@ -168,6 +164,7 @@ class AugGAM(BaseEstimator):
                 self.checkpoint)
         return model, tokenizer_embeddings
 
+
     def cache_linear_coefs(self, X: ArrayLike, model=None,
                            tokenizer_embeddings=None,
                            renormalize_embs: bool = False,
@@ -226,8 +223,7 @@ class AugGAM(BaseEstimator):
                 # ngram = ngrams_list[i]
                 # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
                 ngram_batch = ngrams_list[i: i + batch_size]
-                embs_batch = model.encode(
-                    [[self.instructor_prompt, ngram] for ngram in ngram_batch])
+                embs_batch = model.encode([[self.instructor_prompt, ngram] for ngram in ngram_batch])
                 embs.append(embs_batch)
             embs = np.vstack(embs).squeeze()
         else:
@@ -254,7 +250,7 @@ class AugGAM(BaseEstimator):
         return embs
         """
 
-    def _get_ngrams_list(self, X):
+    def _get_ngrams_list(self, X, min_frequency=1):
         all_ngrams = set()
         for x in X:
             seqs = imodelsx.util.generate_ngrams_list(
@@ -262,7 +258,7 @@ class AugGAM(BaseEstimator):
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,
                 all_ngrams=self.all_ngrams,
-                min_frequency=self.min_frequency
+                min
             )
             all_ngrams |= set(seqs)
         return sorted(list(all_ngrams))

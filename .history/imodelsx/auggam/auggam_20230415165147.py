@@ -34,7 +34,7 @@ class AugGAM(BaseEstimator):
         layer: str = 'last_hidden_state',
         ngrams: int = 2,
         all_ngrams: bool = False,
-        min_frequency: int = 1,
+        min_frequency: int =1,
         tokenizer_ngrams=None,
         random_state=None,
         normalize_embs=False,
@@ -168,6 +168,7 @@ class AugGAM(BaseEstimator):
                 self.checkpoint)
         return model, tokenizer_embeddings
 
+
     def cache_linear_coefs(self, X: ArrayLike, model=None,
                            tokenizer_embeddings=None,
                            renormalize_embs: bool = False,
@@ -226,8 +227,7 @@ class AugGAM(BaseEstimator):
                 # ngram = ngrams_list[i]
                 # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
                 ngram_batch = ngrams_list[i: i + batch_size]
-                embs_batch = model.encode(
-                    [[self.instructor_prompt, ngram] for ngram in ngram_batch])
+                embs_batch = model.encode([[self.instructor_prompt, ngram] for ngram in ngram_batch])
                 embs.append(embs_batch)
             embs = np.vstack(embs).squeeze()
         else:
@@ -262,7 +262,7 @@ class AugGAM(BaseEstimator):
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,
                 all_ngrams=self.all_ngrams,
-                min_frequency=self.min_frequency
+                min_frequency=min_frequency
             )
             all_ngrams |= set(seqs)
         return sorted(list(all_ngrams))
