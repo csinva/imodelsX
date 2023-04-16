@@ -21,6 +21,13 @@ if __name__ == '__main__':
     # predict
     preds = m.predict(dset_val['text'])
     print('acc_val', np.mean(preds == dset_val['label']))
+    coefs_orig = np.array(list(m.coefs_dict_.values()))
+
+    # check results when varying batch size
+    m.fit(dset['text'], dset['label'], batch_size=16)
+    preds_check = m.predict(dset_val['text'])
+    assert np.allclose(preds, preds_check), 'predictions should be same when varying batch size'
+    assert np.allclose(np.array(list(m.coefs_dict_.values())), coefs_orig), 'coefs should be same when varying batch size'
 
     # interpret
     print('Total ngram coefficients: ', len(m.coefs_dict_))
