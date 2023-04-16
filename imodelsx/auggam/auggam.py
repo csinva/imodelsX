@@ -23,6 +23,8 @@ import os.path
 import warnings
 import pickle as pkl
 import torch
+from torch.utils.data import DataLoader
+from datasets import Dataset
 from sklearn.exceptions import ConvergenceWarning
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -81,6 +83,7 @@ class AugGAM(BaseEstimator):
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True,
             cache_embs_dir: str = None,
+            batch_size: int = 8
             ):
         '''Extract embeddings then fit linear model
 
@@ -92,6 +95,8 @@ class AugGAM(BaseEstimator):
             Whether to compute and cache linear coefs into self.coefs_dict_
         cache_embs_dir, optional
             if not None, directory to save embeddings into
+        batch_size, optional
+            if not None, batch size to pass while calculating embeddings
         '''
 
         # metadata
@@ -108,7 +113,8 @@ class AugGAM(BaseEstimator):
         # get embs
         if verbose:
             print('calculating embeddings...')
-        embs = self._get_embs_summed(X, model, tokenizer_embeddings)
+        embs = self._get_embs_summed(
+            X, model, tokenizer_embeddings, batch_size)
         if self.normalize_embs:
             self.normalizer = StandardScaler()
             embs = self.normalizer.fit_transform(embs)
@@ -134,7 +140,7 @@ class AugGAM(BaseEstimator):
 
         return self
 
-    def _get_embs_summed(self, X, model, tokenizer_embeddings):
+    def _get_embs_summed(self, X, model, tokenizer_embeddings, batch_size):
         embs = []
         for x in tqdm(X):
             emb = imodelsx.auggam.embed.embed_and_sum_function(
@@ -148,6 +154,7 @@ class AugGAM(BaseEstimator):
                 all_ngrams=self.all_ngrams,
                 fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
                 instructor_prompt=self.instructor_prompt,
+                batch_size=batch_size
             )
             embs.append(emb['embs'])
         return np.array(embs).squeeze()  # num_examples x embedding_size
@@ -164,10 +171,10 @@ class AugGAM(BaseEstimator):
                 self.checkpoint)
         return model, tokenizer_embeddings
 
-
     def cache_linear_coefs(self, X: ArrayLike, model=None,
                            tokenizer_embeddings=None,
                            renormalize_embs: bool = False,
+                           batch_size: int = 8,
                            verbose: bool = True):
         """Cache linear coefs for ngrams into a dictionary self.coefs_dict_
         If it already exists, only add linear coefs for new ngrams
@@ -193,7 +200,8 @@ class AugGAM(BaseEstimator):
             print('\tNothing to update!')
             return
 
-        embs = self._get_embs(ngrams_list, model, tokenizer_embeddings)
+        embs = self._get_embs(ngrams_list, model,
+                              tokenizer_embeddings, batch_size)
         if renormalize_embs:
             embs = StandardScaler().fit_transform(embs)
         elif self.normalize_embs:
@@ -210,7 +218,7 @@ class AugGAM(BaseEstimator):
         if verbose:
             print('\tAfter caching, coefs_dict_ len', len(self.coefs_dict_))
 
-    def _get_embs(self, ngrams_list, model, tokenizer_embeddings):
+    def _get_embs(self, ngrams_list, model, tokenizer_embeddings, batch_size):
         """Get embeddings for a list of ngrams (not summed!)
         """
         embs = []
@@ -223,20 +231,38 @@ class AugGAM(BaseEstimator):
                 # ngram = ngrams_list[i]
                 # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
                 ngram_batch = ngrams_list[i: i + batch_size]
-                embs_batch = model.encode([[self.instructor_prompt, ngram] for ngram in ngram_batch])
+                embs_batch = model.encode(
+                    [[self.instructor_prompt, ngram] for ngram in ngram_batch])
                 embs.append(embs_batch)
             embs = np.vstack(embs).squeeze()
         else:
             for i in tqdm(range(len(ngrams_list))):
                 tokens = tokenizer_embeddings(
                     [ngrams_list[i]], padding=True, truncation=True, return_tensors="pt")
-                tokens = tokens.to(model.device)
-                output = model(**tokens)
-                emb = output[self.layer].cpu().detach().numpy()
-                if len(emb.shape) == 3:  # includes seq_len
-                    emb = emb.mean(axis=1)
-                embs.append(emb)
-            embs = np.array(embs).squeeze()
+
+                tokens = Dataset.from_dict(tokens).with_format("torch")
+
+                embeddings = []
+                for batch in DataLoader(tokens, batch_size=batch_size, shuffle=False):
+                    batch = {k: v.to(model.device) for k, v in batch.items()}
+
+                    with torch.no_grad():
+                        output = model(**batch)
+                    torch.cuda.empty_cache()
+
+                    emb = output[self.layer].cpu().detach().numpy()
+
+                    # emb = np.array(emb, dtype="object")
+                    if len(emb.shape) == 3:  # includes seq_len
+                        emb = emb.mean(axis=1)
+                    embeddings.append(emb)
+
+                embeddings = np.concatenate(embeddings)
+
+                embs.append(embeddings)
+
+            embs = np.concatenate(embs)
+            embs = embs.squeeze()
         return embs
 
         """

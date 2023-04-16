@@ -1,8 +1,13 @@
 from transformers import BertModel, DistilBertModel
 from transformers import AutoModelForCausalLM
 from os.path import join as oj
+from datasets import Dataset
+from tqdm import tqdm
 import torch
+import numpy as np
+from torch.utils.data import DataLoader
 import imodelsx.util
+
 
 def get_model(checkpoint):
     if 'distilbert' in checkpoint.lower():
@@ -51,7 +56,8 @@ def embed_and_sum_function(
     checkpoint: str,
     dataset_key_text: str = None,
     layer: str = 'last_hidden_state',
-    padding: bool = True,
+    padding: str = "max_length",
+    batch_size: int = 8,
     parsing: str = '',
     nlp_chunks=None,
     all_ngrams: bool = False,
@@ -106,27 +112,57 @@ def embed_and_sum_function(
             tokenizer_embeddings.pad_token = tokenizer_embeddings.eos_token
         tokens = tokenizer_embeddings(seqs, padding=padding,
                                       truncation=True, return_tensors="pt")
-        tokens = tokens.to(model.device)
-        output = model(**tokens)
-        if layer == 'pooler_output':
-            embs = output['pooler_output'].cpu().detach().numpy()
-        elif layer == 'last_hidden_state_mean' or layer == 'last_hidden_state':
-            embs = output['last_hidden_state'].cpu().detach().numpy()
-            embs = embs.mean(axis=1)
+
+        embs = []
+
+        ds = Dataset.from_dict(tokens).with_format("torch")
+
+        for batch in DataLoader(ds, batch_size=batch_size, shuffle=False):
+            batch = {k: v.to(model.device) for k, v in batch.items()}
+
+            with torch.no_grad():
+                output = model(**batch)
+            torch.cuda.empty_cache()
+
+            if layer == 'pooler_output':
+                emb = output['pooler_output'].cpu().detach().numpy()
+            elif layer == 'last_hidden_state_mean' or layer == 'last_hidden_state':
+                emb = output['last_hidden_state'].cpu().detach().numpy()
+                emb = emb.mean(axis=1)
+
+            embs.append(emb)
+
+        embs = np.concatenate(embs)
+
     elif 'gpt' in checkpoint.lower():
         tokens = preprocess_gpt_token_batch(seqs, tokenizer_embeddings)
-        tokens = tokens.to(model.device)
-        output = model(**tokens)
 
-        # tuple of (layer x (batch_size, seq_len, hidden_size))
-        h = output['hidden_states']
-        # (batch_size, seq_len, hidden_size)
-        embs = h[0].cpu().detach().numpy()
-        embs = embs.mean(axis=1)  # (batch_size, hidden_size)
+        embs = []
+
+        ds = Dataset.from_dict(tokens).with_format("torch")
+
+        for batch in DataLoader(ds, batch_size=batch_size, shuffle=False):
+            batch = {k: v.to(model.device) for k, v in batch.items()}
+
+            with torch.no_grad():
+                output = model(**batch)
+            torch.cuda.empty_cache()
+
+            # tuple of (layer x (batch_size, seq_len, hidden_size))
+            h = output['hidden_states']
+            # (batch_size, seq_len, hidden_size)
+            emb = h[0].cpu().detach().numpy()
+            emb = emb.mean(axis=1)  # (batch_size, hidden_size)
+
+            embs.append(emb)
+
+        embs = np.concatenate(embs)
+
     elif checkpoint.startswith('hkunlp/instructor'):
         if instructor_prompt is None:
             instructor_prompt = "Represent the short phrase for sentiment classification: "
-        embs = model.encode([[instructor_prompt, x_i] for x_i in seqs], batch_size=32)
+        embs = model.encode([[instructor_prompt, x_i]
+                            for x_i in seqs], batch_size=batch_size)
 
     # sum over the embeddings
     embs = embs.sum(axis=0).reshape(1, -1)
