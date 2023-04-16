@@ -55,6 +55,8 @@ import os.path
 import warnings
 import pickle as pkl
 import torch
+from torch.utils.data import DataLoader
+from datasets import Dataset
 from sklearn.exceptions import ConvergenceWarning
 device = &#39;cuda&#39; if torch.cuda.is_available() else &#39;cpu&#39;
 
@@ -66,6 +68,7 @@ class AugGAM(BaseEstimator):
         layer: str = &#39;last_hidden_state&#39;,
         ngrams: int = 2,
         all_ngrams: bool = False,
+        min_frequency: int = 1,
         tokenizer_ngrams=None,
         random_state=None,
         normalize_embs=False,
@@ -84,6 +87,8 @@ class AugGAM(BaseEstimator):
             Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
         all_ngrams
             Whether to use all order ngrams &lt;= ngrams argument
+        min_frequency
+            minimum frequency of ngrams to be kept in the ngrams list.
         tokenizer_ngrams
             if None, defaults to spacy English tokenizer
         random_state
@@ -106,6 +111,7 @@ class AugGAM(BaseEstimator):
         self.layer = layer
         self.random_state = random_state
         self.all_ngrams = all_ngrams
+        self.min_frequency = min_frequency
         self.normalize_embs = normalize_embs
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
         self.instructor_prompt = instructor_prompt
@@ -113,6 +119,7 @@ class AugGAM(BaseEstimator):
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True,
             cache_embs_dir: str = None,
+            batch_size: int = 8
             ):
         &#39;&#39;&#39;Extract embeddings then fit linear model
 
@@ -124,6 +131,8 @@ class AugGAM(BaseEstimator):
             Whether to compute and cache linear coefs into self.coefs_dict_
         cache_embs_dir, optional
             if not None, directory to save embeddings into
+        batch_size, optional
+            if not None, batch size to pass while calculating embeddings
         &#39;&#39;&#39;
 
         # metadata
@@ -140,7 +149,8 @@ class AugGAM(BaseEstimator):
         # get embs
         if verbose:
             print(&#39;calculating embeddings...&#39;)
-        embs = self._get_embs_summed(X, model, tokenizer_embeddings)
+        embs = self._get_embs_summed(
+            X, model, tokenizer_embeddings, batch_size)
         if self.normalize_embs:
             self.normalizer = StandardScaler()
             embs = self.normalizer.fit_transform(embs)
@@ -166,7 +176,7 @@ class AugGAM(BaseEstimator):
 
         return self
 
-    def _get_embs_summed(self, X, model, tokenizer_embeddings):
+    def _get_embs_summed(self, X, model, tokenizer_embeddings, batch_size):
         embs = []
         for x in tqdm(X):
             emb = imodelsx.auggam.embed.embed_and_sum_function(
@@ -180,6 +190,7 @@ class AugGAM(BaseEstimator):
                 all_ngrams=self.all_ngrams,
                 fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
                 instructor_prompt=self.instructor_prompt,
+                batch_size=batch_size
             )
             embs.append(emb[&#39;embs&#39;])
         return np.array(embs).squeeze()  # num_examples x embedding_size
@@ -196,10 +207,10 @@ class AugGAM(BaseEstimator):
                 self.checkpoint)
         return model, tokenizer_embeddings
 
-
     def cache_linear_coefs(self, X: ArrayLike, model=None,
                            tokenizer_embeddings=None,
                            renormalize_embs: bool = False,
+                           batch_size: int = 8,
                            verbose: bool = True):
         &#34;&#34;&#34;Cache linear coefs for ngrams into a dictionary self.coefs_dict_
         If it already exists, only add linear coefs for new ngrams
@@ -225,7 +236,8 @@ class AugGAM(BaseEstimator):
             print(&#39;\tNothing to update!&#39;)
             return
 
-        embs = self._get_embs(ngrams_list, model, tokenizer_embeddings)
+        embs = self._get_embs(ngrams_list, model,
+                              tokenizer_embeddings, batch_size)
         if renormalize_embs:
             embs = StandardScaler().fit_transform(embs)
         elif self.normalize_embs:
@@ -242,7 +254,7 @@ class AugGAM(BaseEstimator):
         if verbose:
             print(&#39;\tAfter caching, coefs_dict_ len&#39;, len(self.coefs_dict_))
 
-    def _get_embs(self, ngrams_list, model, tokenizer_embeddings):
+    def _get_embs(self, ngrams_list, model, tokenizer_embeddings, batch_size):
         &#34;&#34;&#34;Get embeddings for a list of ngrams (not summed!)
         &#34;&#34;&#34;
         embs = []
@@ -255,20 +267,38 @@ class AugGAM(BaseEstimator):
                 # ngram = ngrams_list[i]
                 # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
                 ngram_batch = ngrams_list[i: i + batch_size]
-                embs_batch = model.encode([[self.instructor_prompt, ngram] for ngram in ngram_batch])
+                embs_batch = model.encode(
+                    [[self.instructor_prompt, ngram] for ngram in ngram_batch])
                 embs.append(embs_batch)
             embs = np.vstack(embs).squeeze()
         else:
             for i in tqdm(range(len(ngrams_list))):
                 tokens = tokenizer_embeddings(
                     [ngrams_list[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;)
-                tokens = tokens.to(model.device)
-                output = model(**tokens)
-                emb = output[self.layer].cpu().detach().numpy()
-                if len(emb.shape) == 3:  # includes seq_len
-                    emb = emb.mean(axis=1)
-                embs.append(emb)
-            embs = np.array(embs).squeeze()
+
+                tokens = Dataset.from_dict(tokens).with_format(&#34;torch&#34;)
+
+                embeddings = []
+                for batch in DataLoader(tokens, batch_size=batch_size, shuffle=False):
+                    batch = {k: v.to(model.device) for k, v in batch.items()}
+
+                    with torch.no_grad():
+                        output = model(**batch)
+                    torch.cuda.empty_cache()
+
+                    emb = output[self.layer].cpu().detach().numpy()
+
+                    # emb = np.array(emb, dtype=&#34;object&#34;)
+                    if len(emb.shape) == 3:  # includes seq_len
+                        emb = emb.mean(axis=1)
+                    embeddings.append(emb)
+
+                embeddings = np.concatenate(embeddings)
+
+                embs.append(embeddings)
+
+            embs = np.concatenate(embs)
+            embs = embs.squeeze()
         return embs
 
         &#34;&#34;&#34;
@@ -290,6 +320,7 @@ class AugGAM(BaseEstimator):
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,
                 all_ngrams=self.all_ngrams,
+                min_frequency=self.min_frequency
             )
             all_ngrams |= set(seqs)
         return sorted(list(all_ngrams))
@@ -372,7 +403,7 @@ class AugGAMClassifier(AugGAM, ClassifierMixin):
 <dl>
 <dt id="imodelsx.auggam.auggam.AugGAM"><code class="flex name class">
 <span>class <span class="ident">AugGAM</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, min_frequency: int = 1, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -391,6 +422,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.</dd>
 <dt><strong><code>all_ngrams</code></strong></dt>
 <dd>Whether to use all order ngrams &lt;= ngrams argument</dd>
+<dt><strong><code>min_frequency</code></strong></dt>
+<dd>minimum frequency of ngrams to be kept in the ngrams list.</dd>
 <dt><strong><code>tokenizer_ngrams</code></strong></dt>
 <dd>if None, defaults to spacy English tokenizer</dd>
 <dt><strong><code>random_state</code></strong></dt>
@@ -415,6 +448,7 @@ Usually, setting this to False will considerably impede performance</dd>
         layer: str = &#39;last_hidden_state&#39;,
         ngrams: int = 2,
         all_ngrams: bool = False,
+        min_frequency: int = 1,
         tokenizer_ngrams=None,
         random_state=None,
         normalize_embs=False,
@@ -433,6 +467,8 @@ Usually, setting this to False will considerably impede performance</dd>
             Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
         all_ngrams
             Whether to use all order ngrams &lt;= ngrams argument
+        min_frequency
+            minimum frequency of ngrams to be kept in the ngrams list.
         tokenizer_ngrams
             if None, defaults to spacy English tokenizer
         random_state
@@ -455,6 +491,7 @@ Usually, setting this to False will considerably impede performance</dd>
         self.layer = layer
         self.random_state = random_state
         self.all_ngrams = all_ngrams
+        self.min_frequency = min_frequency
         self.normalize_embs = normalize_embs
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
         self.instructor_prompt = instructor_prompt
@@ -462,6 +499,7 @@ Usually, setting this to False will considerably impede performance</dd>
     def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
             cache_linear_coefs: bool = True,
             cache_embs_dir: str = None,
+            batch_size: int = 8
             ):
         &#39;&#39;&#39;Extract embeddings then fit linear model
 
@@ -473,6 +511,8 @@ Usually, setting this to False will considerably impede performance</dd>
             Whether to compute and cache linear coefs into self.coefs_dict_
         cache_embs_dir, optional
             if not None, directory to save embeddings into
+        batch_size, optional
+            if not None, batch size to pass while calculating embeddings
         &#39;&#39;&#39;
 
         # metadata
@@ -489,7 +529,8 @@ Usually, setting this to False will considerably impede performance</dd>
         # get embs
         if verbose:
             print(&#39;calculating embeddings...&#39;)
-        embs = self._get_embs_summed(X, model, tokenizer_embeddings)
+        embs = self._get_embs_summed(
+            X, model, tokenizer_embeddings, batch_size)
         if self.normalize_embs:
             self.normalizer = StandardScaler()
             embs = self.normalizer.fit_transform(embs)
@@ -515,7 +556,7 @@ Usually, setting this to False will considerably impede performance</dd>
 
         return self
 
-    def _get_embs_summed(self, X, model, tokenizer_embeddings):
+    def _get_embs_summed(self, X, model, tokenizer_embeddings, batch_size):
         embs = []
         for x in tqdm(X):
             emb = imodelsx.auggam.embed.embed_and_sum_function(
@@ -529,6 +570,7 @@ Usually, setting this to False will considerably impede performance</dd>
                 all_ngrams=self.all_ngrams,
                 fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
                 instructor_prompt=self.instructor_prompt,
+                batch_size=batch_size
             )
             embs.append(emb[&#39;embs&#39;])
         return np.array(embs).squeeze()  # num_examples x embedding_size
@@ -545,10 +587,10 @@ Usually, setting this to False will considerably impede performance</dd>
                 self.checkpoint)
         return model, tokenizer_embeddings
 
-
     def cache_linear_coefs(self, X: ArrayLike, model=None,
                            tokenizer_embeddings=None,
                            renormalize_embs: bool = False,
+                           batch_size: int = 8,
                            verbose: bool = True):
         &#34;&#34;&#34;Cache linear coefs for ngrams into a dictionary self.coefs_dict_
         If it already exists, only add linear coefs for new ngrams
@@ -574,7 +616,8 @@ Usually, setting this to False will considerably impede performance</dd>
             print(&#39;\tNothing to update!&#39;)
             return
 
-        embs = self._get_embs(ngrams_list, model, tokenizer_embeddings)
+        embs = self._get_embs(ngrams_list, model,
+                              tokenizer_embeddings, batch_size)
         if renormalize_embs:
             embs = StandardScaler().fit_transform(embs)
         elif self.normalize_embs:
@@ -591,7 +634,7 @@ Usually, setting this to False will considerably impede performance</dd>
         if verbose:
             print(&#39;\tAfter caching, coefs_dict_ len&#39;, len(self.coefs_dict_))
 
-    def _get_embs(self, ngrams_list, model, tokenizer_embeddings):
+    def _get_embs(self, ngrams_list, model, tokenizer_embeddings, batch_size):
         &#34;&#34;&#34;Get embeddings for a list of ngrams (not summed!)
         &#34;&#34;&#34;
         embs = []
@@ -604,20 +647,38 @@ Usually, setting this to False will considerably impede performance</dd>
                 # ngram = ngrams_list[i]
                 # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
                 ngram_batch = ngrams_list[i: i + batch_size]
-                embs_batch = model.encode([[self.instructor_prompt, ngram] for ngram in ngram_batch])
+                embs_batch = model.encode(
+                    [[self.instructor_prompt, ngram] for ngram in ngram_batch])
                 embs.append(embs_batch)
             embs = np.vstack(embs).squeeze()
         else:
             for i in tqdm(range(len(ngrams_list))):
                 tokens = tokenizer_embeddings(
                     [ngrams_list[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;)
-                tokens = tokens.to(model.device)
-                output = model(**tokens)
-                emb = output[self.layer].cpu().detach().numpy()
-                if len(emb.shape) == 3:  # includes seq_len
-                    emb = emb.mean(axis=1)
-                embs.append(emb)
-            embs = np.array(embs).squeeze()
+
+                tokens = Dataset.from_dict(tokens).with_format(&#34;torch&#34;)
+
+                embeddings = []
+                for batch in DataLoader(tokens, batch_size=batch_size, shuffle=False):
+                    batch = {k: v.to(model.device) for k, v in batch.items()}
+
+                    with torch.no_grad():
+                        output = model(**batch)
+                    torch.cuda.empty_cache()
+
+                    emb = output[self.layer].cpu().detach().numpy()
+
+                    # emb = np.array(emb, dtype=&#34;object&#34;)
+                    if len(emb.shape) == 3:  # includes seq_len
+                        emb = emb.mean(axis=1)
+                    embeddings.append(emb)
+
+                embeddings = np.concatenate(embeddings)
+
+                embs.append(embeddings)
+
+            embs = np.concatenate(embs)
+            embs = embs.squeeze()
         return embs
 
         &#34;&#34;&#34;
@@ -639,6 +700,7 @@ Usually, setting this to False will considerably impede performance</dd>
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,
                 all_ngrams=self.all_ngrams,
+                min_frequency=self.min_frequency
             )
             all_ngrams |= set(seqs)
         return sorted(list(all_ngrams))
@@ -713,7 +775,7 @@ before calling predict.&#39;)
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.auggam.auggam.AugGAM.cache_linear_coefs"><code class="name flex">
-<span>def <span class="ident">cache_linear_coefs</span></span>(<span>self, X: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], model=None, tokenizer_embeddings=None, renormalize_embs: bool = False, verbose: bool = True)</span>
+<span>def <span class="ident">cache_linear_coefs</span></span>(<span>self, X: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], model=None, tokenizer_embeddings=None, renormalize_embs: bool = False, batch_size: int = 8, verbose: bool = True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Cache linear coefs for ngrams into a dictionary self.coefs_dict_
@@ -729,6 +791,7 @@ whether to renormalize embeddings before fitting linear model
 <pre><code class="python">def cache_linear_coefs(self, X: ArrayLike, model=None,
                        tokenizer_embeddings=None,
                        renormalize_embs: bool = False,
+                       batch_size: int = 8,
                        verbose: bool = True):
     &#34;&#34;&#34;Cache linear coefs for ngrams into a dictionary self.coefs_dict_
     If it already exists, only add linear coefs for new ngrams
@@ -754,7 +817,8 @@ whether to renormalize embeddings before fitting linear model
         print(&#39;\tNothing to update!&#39;)
         return
 
-    embs = self._get_embs(ngrams_list, model, tokenizer_embeddings)
+    embs = self._get_embs(ngrams_list, model,
+                          tokenizer_embeddings, batch_size)
     if renormalize_embs:
         embs = StandardScaler().fit_transform(embs)
     elif self.normalize_embs:
@@ -773,7 +837,7 @@ whether to renormalize embeddings before fitting linear model
 </details>
 </dd>
 <dt id="imodelsx.auggam.auggam.AugGAM.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, X: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_linear_coefs: bool = True, cache_embs_dir: str = None)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, X: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_linear_coefs: bool = True, cache_embs_dir: str = None, batch_size: int = 8)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Extract embeddings then fit linear model</p>
@@ -787,6 +851,8 @@ whether to renormalize embeddings before fitting linear model
 <dd>Whether to compute and cache linear coefs into self.coefs_dict_</dd>
 <dt><strong><code>cache_embs_dir</code></strong>, <strong><code>optional</code></strong></dt>
 <dd>if not None, directory to save embeddings into</dd>
+<dt><strong><code>batch_size</code></strong>, <strong><code>optional</code></strong></dt>
+<dd>if not None, batch size to pass while calculating embeddings</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -795,6 +861,7 @@ whether to renormalize embeddings before fitting linear model
 <pre><code class="python">def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
         cache_linear_coefs: bool = True,
         cache_embs_dir: str = None,
+        batch_size: int = 8
         ):
     &#39;&#39;&#39;Extract embeddings then fit linear model
 
@@ -806,6 +873,8 @@ whether to renormalize embeddings before fitting linear model
         Whether to compute and cache linear coefs into self.coefs_dict_
     cache_embs_dir, optional
         if not None, directory to save embeddings into
+    batch_size, optional
+        if not None, batch size to pass while calculating embeddings
     &#39;&#39;&#39;
 
     # metadata
@@ -822,7 +891,8 @@ whether to renormalize embeddings before fitting linear model
     # get embs
     if verbose:
         print(&#39;calculating embeddings...&#39;)
-    embs = self._get_embs_summed(X, model, tokenizer_embeddings)
+    embs = self._get_embs_summed(
+        X, model, tokenizer_embeddings, batch_size)
     if self.normalize_embs:
         self.normalizer = StandardScaler()
         embs = self.normalizer.fit_transform(embs)
@@ -901,7 +971,7 @@ For classification, returns discrete output.</p></div>
 </dd>
 <dt id="imodelsx.auggam.auggam.AugGAMClassifier"><code class="flex name class">
 <span>class <span class="ident">AugGAMClassifier</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, min_frequency: int = 1, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -920,6 +990,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.</dd>
 <dt><strong><code>all_ngrams</code></strong></dt>
 <dd>Whether to use all order ngrams &lt;= ngrams argument</dd>
+<dt><strong><code>min_frequency</code></strong></dt>
+<dd>minimum frequency of ngrams to be kept in the ngrams list.</dd>
 <dt><strong><code>tokenizer_ngrams</code></strong></dt>
 <dd>if None, defaults to spacy English tokenizer</dd>
 <dt><strong><code>random_state</code></strong></dt>
@@ -959,7 +1031,7 @@ Usually, setting this to False will considerably impede performance</dd>
 </dd>
 <dt id="imodelsx.auggam.auggam.AugGAMRegressor"><code class="flex name class">
 <span>class <span class="ident">AugGAMRegressor</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, min_frequency: int = 1, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -978,6 +1050,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.</dd>
 <dt><strong><code>all_ngrams</code></strong></dt>
 <dd>Whether to use all order ngrams &lt;= ngrams argument</dd>
+<dt><strong><code>min_frequency</code></strong></dt>
+<dd>minimum frequency of ngrams to be kept in the ngrams list.</dd>
 <dt><strong><code>tokenizer_ngrams</code></strong></dt>
 <dd>if None, defaults to spacy English tokenizer</dd>
 <dt><strong><code>random_state</code></strong></dt>
