@@ -15,6 +15,7 @@ if __name__ == '__main__':
         checkpoint='textattack/distilbert-base-uncased-rotten-tomatoes',
         ngrams=2,
         all_ngrams=True,  # also use lower-order ngrams
+        min_frequency=1
     )
     m.fit(dset['text'], dset['label'], batch_size=8)
 
