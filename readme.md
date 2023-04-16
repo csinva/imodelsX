@@ -20,11 +20,11 @@
 | Aug-GAM            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/augmodels.ipynb), [🗂️](https://csinva.io/imodelsX/auggam/auggam.html), [🔗](https://github.com/microsoft/aug-models), [📄](https://arxiv.org/abs/2209.11799) | Linear model | Fit better linear model using an LLM<br/>to extract embeddings (*Official*) |
 | Aug-Tree            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/augmodels.ipynb), [🗂️](https://csinva.io/imodelsX/augtree/augtree.html), [🔗](https://github.com/microsoft/aug-models), [📄](https://arxiv.org/abs/2209.11799) | Decision tree | Fit better decision tree using an LLM<br/>to expand features (⌛ In progress) |
 | Linear Finetune  | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/linearfinetune.ipynb), [🗂️](https://csinva.io/imodelsX/linear_finetune.html), ⠀⠀ | Black-box model | Finetune a single linear layer<br/>on top of LLM embeddings |
-| (Coming soon!)                 | ⌛                                        |                    |  We plan to support other interpretable models like [RLPrompt](https://arxiv.org/abs/2205.12548), [CBMs](https://arxiv.org/abs/2007.04612), [NAMs](https://proceedings.neurips.cc/paper/2021/hash/251bd0442dfcc53b5a761e050f8022b8-Abstract.html), and [NBDT](https://arxiv.org/abs/2004.00221)  
 
 <p align="center">
-Demo notebooks <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖</a>, Doc <a href="https://csinva.io/imodelsX/">🗂️</a>, Reference code implementation 🔗, Research paper 📄
+<a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖</a>Demo notebooks &emsp; <a href="https://csinva.io/imodelsX/">🗂️</a> Doc &emsp; 🔗 Reference code &emsp; 📄 Research paper
 </br>
+⌛ We plan to support other interpretable algorithms like <a href="https://arxiv.org/abs/2205.12548">RLPrompt</a>, <a href="https://arxiv.org/abs/2007.04612">CBMs</a>, and <a href="https://arxiv.org/abs/2004.00221">NBDT</a>. If you want to contribute an algorithm, feel free to open a PR 😄
 </p>
 
 
