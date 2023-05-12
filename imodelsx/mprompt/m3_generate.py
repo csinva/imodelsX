@@ -1,18 +1,13 @@
 import re
 from typing import Any, List, Mapping, Optional, Tuple
 import numpy as np
-import openai
-import os.path
 from os.path import join
 import pickle as pkl
-from langchain.llms.base import LLM
 from imodelsx.mprompt.llm import get_llm
-from transformers import T5Tokenizer, T5ForConditionalGeneration
-from langchain import PromptTemplate
 
 
 def generate_synthetic_strs(
-    llm: LLM,
+    llm,
     explanation_str: str,
     num_synthetic_strs: int = 20,
     template_num: int=0,
@@ -39,14 +34,10 @@ Generate {num_synthetic_strs} phrases that are {blank_or_do_not}similar to the c
         ['', 'not '],
     ]
     template = templates[template_num]
-    prompt_template = PromptTemplate(
-        input_variables=['num_synthetic_strs', 'blank_or_do_not', 'concept'],
-        template=template,
-    )
     strs_added = []
     strs_removed = []
     for blank_or_do_not in blank_or_do_not_templates[template_num]:
-        prompt = prompt_template.format(
+        prompt = template.format(
             num_synthetic_strs=num_synthetic_strs,
             blank_or_do_not=blank_or_do_not,
             concept=explanation_str,

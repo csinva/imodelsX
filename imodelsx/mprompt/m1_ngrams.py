@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable, List, Tuple
 import imodelsx
 import numpy as np
 from spacy.lang.en import English
@@ -6,7 +6,7 @@ from os.path import dirname, join
 import os.path
 import pickle as pkl
 import inspect
-import mprompt.data.data
+
 
 def explain_ngrams(
     X: List[str],
@@ -20,9 +20,24 @@ def explain_ngrams(
     module_num: int = None,
     noise_ngram_scores: float = 0,
     noise_seed: int = None,
-    module_num_restrict: int = -1,
-) -> List[str]:
-    """Note: this caches the call that gets the scores"""
+    text_str_list_restrict: List[str] = None,
+) -> Tuple[List[str], List[str]]:
+    """
+    Params
+    ------
+    ngrams: int
+        The order of ngrams to use (3 is trigrams)
+    text_str_list_restrict: List[str]
+        If not None, restrict the top ngrams to those that appear in this corpus
+
+    Returns
+    -------
+    ngram_list: List[str]
+        The top ngrams
+    ngram_scores: List[float]
+        The scores for each ngram
+
+    Note: this caches the call that gets the scores"""
     # get all ngrams
     tok = English(max_length=10e10)
     X_str = " ".join(X)
@@ -69,21 +84,18 @@ def explain_ngrams(
         )
 
     # restrict top ngrams to alternative corpus
-    if module_num_restrict >= 0:
+    if text_str_list_restrict is not None:
         print("before", ngrams_list)
-        text_str_list_alt = mprompt.data.data.get_relevant_data(
-            module_name, module_num_restrict
-        )
-        ngrams_set_alt = set(
+        ngrams_set_restrict = set(
             imodelsx.util.generate_ngrams_list(
-                " ".join(text_str_list_alt),
+                " ".join(text_str_list_restrict),
                 ngrams=ngrams,
                 tokenizer_ngrams=tok,
                 all_ngrams=all_ngrams,
             )
         )
         idxs_to_keep = np.array(
-            [i for i, ngram in enumerate(ngrams_list) if ngram in ngrams_set_alt]
+            [i for i, ngram in enumerate(ngrams_list) if ngram in ngrams_set_restrict]
         )
         ngrams_list = [ngrams_list[i] for i in idxs_to_keep]
         ngram_scores = ngram_scores[idxs_to_keep]

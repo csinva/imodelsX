@@ -1,47 +1,36 @@
 import json
 from transformers import (
-    T5Tokenizer,
     T5ForConditionalGeneration,
-    StoppingCriteriaList,
-    MaxLengthCriteria,
 )
-from transformers import AutoConfig, AutoModel, AutoTokenizer, AutoModelForCausalLM
-from langchain.cache import InMemoryCache
-import re
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from typing import Any, Dict, List, Mapping, Optional
-import numpy as np
 import openai
 import os.path
 from os.path import join, dirname
 import os
 import pickle as pkl
-import langchain
 from scipy.special import softmax
 import openai
-from langchain.llms.base import LLM
 import hashlib
 import torch
-from mprompt.config import CACHE_DIR
 
-# repo_dir = join(dirname(dirname(__file__)))
-# langchain.llm_cache = InMemoryCache()
-
-"""Wrapper class to call different language models
+"""Wrapper classes to call different language models
 """
 
 
-def get_llm(checkpoint):
+def get_llm(checkpoint: str, cache_dir: str):
     if checkpoint.startswith("text-da") or "-00" in checkpoint:
-        return llm_openai(checkpoint)
+        return llm_openai(checkpoint, cache_dir)
     elif checkpoint.startswith("gpt-3") or checkpoint.startswith("gpt-4"):
-        return llm_openai_chat(checkpoint)
+        return llm_openai_chat(checkpoint, cache_dir)
     else:
-        return llm_hf(checkpoint)
+        return llm_hf(checkpoint)  # ignores cache_dir
 
 
-def llm_openai(checkpoint="text-davinci-003") -> LLM:
+def llm_openai(checkpoint, cache_dir):
+    # e.g. text-davinci-003
     class LLM_OpenAI:
-        def __init__(self, checkpoint, cache_dir=join(CACHE_DIR, checkpoint)):
+        def __init__(self, checkpoint, cache_dir):
             self.checkpoint = checkpoint
             self.cache_dir = cache_dir
 
@@ -78,14 +67,16 @@ def llm_openai(checkpoint="text-davinci-003") -> LLM:
             )
             return response_text
 
-    return LLM_OpenAI(checkpoint)
+    return LLM_OpenAI(checkpoint, cache_dir)
 
 
-def llm_openai_chat(checkpoint="gpt-3.5-turbo") -> LLM:
+def llm_openai_chat(checkpoint, cache_dir):
     class LLM_Chat:
         """Chat models take a different format: https://platform.openai.com/docs/guides/chat/introduction"""
 
-        def __init__(self, checkpoint, cache_dir=join(CACHE_DIR, checkpoint)):
+        "gpt-3.5-turbo"
+
+        def __init__(self, checkpoint, cache_dir):
             self.checkpoint = checkpoint
             self.cache_dir = cache_dir
 
@@ -139,7 +130,7 @@ def llm_openai_chat(checkpoint="gpt-3.5-turbo") -> LLM:
             pkl.dump(response, open(cache_file_raw, "wb"))
             return response
 
-    return LLM_Chat(checkpoint)
+    return LLM_Chat(checkpoint, cache_dir)
 
 
 def _get_tokenizer(checkpoint):
@@ -151,7 +142,7 @@ def _get_tokenizer(checkpoint):
         return AutoTokenizer.from_pretrained(checkpoint, use_fast=True)
 
 
-def llm_hf(checkpoint="google/flan-t5-xl") -> LLM:
+def llm_hf(checkpoint="google/flan-t5-xl"):
     class LLM_HF:
         def __init__(self, checkpoint):
             _checkpoint: str = checkpoint
