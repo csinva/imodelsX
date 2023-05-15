@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>imodelsx.sasc.llm API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>imodelsx.sasc.llm</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import json
+from transformers import (
+    T5ForConditionalGeneration,
+)
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from typing import Any, Dict, List, Mapping, Optional
+import openai
+import os.path
+from os.path import join, dirname
+import os
+import pickle as pkl
+from scipy.special import softmax
+import openai
+import hashlib
+import torch
+
+&#34;&#34;&#34;Wrapper classes to call different language models
+&#34;&#34;&#34;
+
+def get_llm(checkpoint: str, cache_dir: str):
+    if checkpoint.startswith(&#34;text-da&#34;) or &#34;-00&#34; in checkpoint:
+        return llm_openai(checkpoint, cache_dir)
+    elif checkpoint.startswith(&#34;gpt-3&#34;) or checkpoint.startswith(&#34;gpt-4&#34;):
+        return llm_openai_chat(checkpoint, cache_dir)
+    else:
+        return llm_hf(checkpoint)  # ignores cache_dir
+
+
+def llm_openai(checkpoint, cache_dir):
+    # e.g. text-davinci-003
+    class LLM_OpenAI:
+        def __init__(self, checkpoint, cache_dir):
+            self.checkpoint = checkpoint
+            self.cache_dir = cache_dir
+
+        def __call__(self, prompt: str, max_new_tokens=250, seed=1, do_sample=True):
+            # cache
+            os.makedirs(self.cache_dir, exist_ok=True)
+            hash_str = hashlib.sha256(prompt.encode()).hexdigest()
+            cache_file = join(
+                self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}__seed={seed}.pkl&#34;
+            )
+            cache_file_raw = join(
+                self.cache_dir,
+                f&#34;raw_{hash_str}__num_tok={max_new_tokens}__seed={seed}.pkl&#34;,
+            )
+            if os.path.exists(cache_file):
+                return pkl.load(open(cache_file, &#34;rb&#34;))
+
+            response = openai.Completion.create(
+                engine=self.checkpoint,
+                prompt=prompt,
+                max_tokens=max_new_tokens,
+                temperature=0.1,
+                top_p=1,
+                frequency_penalty=0.25,  # maximum is 2
+                presence_penalty=0,
+                # stop=[&#34;101&#34;]
+            )
+            response_text = response[&#34;choices&#34;][0][&#34;text&#34;]
+
+            pkl.dump(response_text, open(cache_file, &#34;wb&#34;))
+            pkl.dump(
+                {&#34;prompt&#34;: prompt, &#34;response_text&#34;: response_text},
+                open(cache_file_raw, &#34;wb&#34;),
+            )
+            return response_text
+
+    return LLM_OpenAI(checkpoint, cache_dir)
+
+
+def llm_openai_chat(checkpoint, cache_dir):
+    class LLM_Chat:
+        &#34;&#34;&#34;Chat models take a different format: https://platform.openai.com/docs/guides/chat/introduction&#34;&#34;&#34;
+
+        &#34;gpt-3.5-turbo&#34;
+
+        def __init__(self, checkpoint, cache_dir):
+            self.checkpoint = checkpoint
+            self.cache_dir = cache_dir
+
+        def __call__(
+            self,
+            prompts_list: List[Dict[str, str]],
+            max_new_tokens=250,
+            seed=1,
+            do_sample=True,
+        ):
+            &#34;&#34;&#34;
+            prompts_list: list of dicts, each dict has keys &#39;role&#39; and &#39;content&#39;
+                Example: [
+                    {&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: &#34;You are a helpful assistant.&#34;},
+                    {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: &#34;Who won the world series in 2020?&#34;},
+                    {&#34;role&#34;: &#34;assistant&#34;, &#34;content&#34;: &#34;The Los Angeles Dodgers won the World Series in 2020.&#34;},
+                    {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: &#34;Where was it played?&#34;}
+                ]
+            &#34;&#34;&#34;
+            assert isinstance(prompts_list, list), prompts_list
+
+            # cache
+            os.makedirs(self.cache_dir, exist_ok=True)
+            prompts_list_dict = {
+                str(i): sorted(v.items()) for i, v in enumerate(prompts_list)
+            }
+            if not self.checkpoint == &#34;gpt-3.5-turbo&#34;:
+                prompts_list_dict[&#34;checkpoint&#34;] = self.checkpoint
+            dict_as_str = json.dumps(prompts_list_dict, sort_keys=True)
+            hash_str = hashlib.sha256(dict_as_str.encode()).hexdigest()
+            cache_file_raw = join(
+                self.cache_dir,
+                f&#34;chat__raw_{hash_str}__num_tok={max_new_tokens}__seed={seed}.pkl&#34;,
+            )
+            if os.path.exists(cache_file_raw):
+                print(&#34;cached!&#34;)
+                return pkl.load(open(cache_file_raw, &#34;rb&#34;))
+            print(&#34;not cached&#34;)
+
+            response = openai.ChatCompletion.create(
+                model=self.checkpoint,
+                messages=prompts_list,
+                max_tokens=max_new_tokens,
+                temperature=0.1,
+                top_p=1,
+                frequency_penalty=0.25,  # maximum is 2
+                presence_penalty=0,
+                # stop=[&#34;101&#34;]
+            )
+
+            pkl.dump(response, open(cache_file_raw, &#34;wb&#34;))
+            return response
+
+    return LLM_Chat(checkpoint, cache_dir)
+
+
+def _get_tokenizer(checkpoint):
+    if &#34;facebook/opt&#34; in checkpoint:
+        # opt can&#39;t use fast tokenizer
+        # https://huggingface.co/docs/transformers/model_doc/opt
+        return AutoTokenizer.from_pretrained(checkpoint, use_fast=False)
+    else:
+        return AutoTokenizer.from_pretrained(checkpoint, use_fast=True)
+
+
+def llm_hf(checkpoint=&#34;google/flan-t5-xl&#34;):
+    class LLM_HF:
+        def __init__(self, checkpoint):
+            _checkpoint: str = checkpoint
+            self._tokenizer = _get_tokenizer(_checkpoint)
+            if &#34;google/flan&#34; in checkpoint:
+                self._model = T5ForConditionalGeneration.from_pretrained(
+                    checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16
+                )
+            elif checkpoint == &#34;gpt-xl&#34;:
+                self._model = AutoModelForCausalLM.from_pretrained(checkpoint)
+            else:
+                self._model = AutoModelForCausalLM.from_pretrained(
+                    checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16
+                )
+
+        def __call__(
+            self,
+            prompt: str,
+            stop: Optional[List[str]] = None,
+            max_new_tokens=20,
+            do_sample=False,
+        ) -&gt; str:
+            if stop is not None:
+                raise ValueError(&#34;stop kwargs are not permitted.&#34;)
+            inputs = self._tokenizer(
+                prompt, return_tensors=&#34;pt&#34;, return_attention_mask=True
+            ).to(
+                self._model.device
+            )  # .input_ids.to(&#34;cuda&#34;)
+            # stopping_criteria = StoppingCriteriaList([MaxLengthCriteria(max_length=max_tokens)])
+            # outputs = self._model.generate(input_ids, max_length=max_tokens, stopping_criteria=stopping_criteria)
+            # print(&#39;pad_token&#39;, self._tokenizer.pad_token)
+            if self._tokenizer.pad_token_id is None:
+                self._tokenizer.pad_token_id = self._tokenizer.eos_token_id
+            outputs = self._model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                do_sample=do_sample,
+                # pad_token=self._tokenizer.pad_token,
+                pad_token_id=self._tokenizer.pad_token_id,
+                # top_p=0.92,
+                # top_k=0
+            )
+            out_str = self._tokenizer.decode(outputs[0])
+            if &#34;facebook/opt&#34; in checkpoint:
+                return out_str[len(&#34;&lt;/s&gt;&#34;) + len(prompt) :]
+            elif &#34;google/flan&#34; in checkpoint:
+                print(&#34;full&#34;, out_str)
+                return out_str[len(&#34;&lt;pad&gt;&#34;) : out_str.index(&#34;&lt;/s&gt;&#34;)]
+            else:
+                return out_str[len(prompt) :]
+
+        def _get_logit_for_target_token(
+            self, prompt: str, target_token_str: str
+        ) -&gt; float:
+            &#34;&#34;&#34;Get logits target_token_str
+            This is weird when token_output_ids represents multiple tokens
+            It currently will only take the first token
+            &#34;&#34;&#34;
+            # Get first token id in target_token_str
+            target_token_id = self._tokenizer(target_token_str)[&#34;input_ids&#34;][0]
+
+            # get prob of target token
+            inputs = self._tokenizer(
+                prompt,
+                return_tensors=&#34;pt&#34;,
+                return_attention_mask=True,
+                padding=False,
+                truncation=False,
+            ).to(self._model.device)
+            # shape is (batch_size, seq_len, vocab_size)
+            logits = self._model(**inputs)[&#34;logits&#34;].detach().cpu()
+            # shape is (vocab_size,)
+            probs_next_token = softmax(logits[0, -1, :].numpy().flatten())
+            return probs_next_token[target_token_id]
+
+        @property
+        def _identifying_params(self) -&gt; Mapping[str, Any]:
+            &#34;&#34;&#34;Get the identifying parameters.&#34;&#34;&#34;
+            return vars(self)
+
+        @property
+        def _llm_type(self) -&gt; str:
+            return &#34;custom_hf_llm_for_langchain&#34;
+
+    return LLM_HF(checkpoint)
+
+
+def get_paragraphs(
+    prompts,
+    checkpoint=&#34;gpt-4-0314&#34;,
+    prefix_first=&#34;Write the beginning paragraph of a story about&#34;,
+    prefix_next=&#34;Write the next paragraph of the story, but now make it about&#34;,
+):
+    &#34;&#34;&#34;
+    Example messages
+    ----------------
+    [
+      {&#39;role&#39;: &#39;system&#39;, &#39;content&#39;: &#39;You are a helpful assistant.&#39;},
+      {&#39;role&#39;: &#39;user&#39;, &#39;content&#39;: &#39;Write the beginning paragraph of a story about &#34;baseball&#34;. Make sure it contains several references to &#34;baseball&#34;.&#39;},
+      {&#39;role&#39;: &#39;assistant&#39;, &#39;content&#39;: &#39;The crack of the bat echoed through the stadium as the ball soared over the outfield fence. The crowd erupted into cheers, their excitement palpable. It was a beautiful day for baseball, with the sun shining down on the field and the smell of freshly cut grass filling the air. The players on the field were focused and determined, each one ready to give their all for their team. Baseball was more than just a game to them; it was a passion, a way of life. And as they took their positions on the field, they knew that anything was possible in this great game of baseball.&#39;},
+      {&#39;role&#39;: &#39;user&#39;, &#39;content&#39;: &#39;Write the next paragraph of the story, but now make it about &#34;animals&#34;. Make sure it contains several references to &#34;animals&#34;.&#39;},
+    ]
+    &#34;&#34;&#34;
+    token_limit = {
+        &#34;gpt-3.5-turbo&#34;: 3200,
+        &#34;gpt-4-0314&#34;: 30000,
+    }[checkpoint]
+
+    llm = get_llm(checkpoint)
+    response = None
+    messages = [{&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: &#34;You are a helpful assistant.&#34;}]
+    all_content = []
+    for i in range(len(prompts)):
+        messages.append({&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: prompts[i]})
+        all_content.append(messages[-1])
+        # for message in messages:
+        # print(message)
+        response = llm(messages)
+
+        if response is not None:
+            response_text = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
+            messages.append({&#34;role&#34;: &#34;assistant&#34;, &#34;content&#34;: response_text})
+            all_content.append(messages[-1])
+
+        # need to drop beginning of story whenever we approach the tok limit
+        # gpt-3.5.turbo has a limit of 4096, and it cant generate beyond that
+        num_tokens = response[&#34;usage&#34;][&#34;total_tokens&#34;]
+        # print(&#39;num_tokens&#39;, num_tokens)
+        if num_tokens &gt;= token_limit:
+            # drop the first (assistant, user) pair in messages
+            messages = [messages[0]] + messages[3:]
+
+            # rewrite the original prompt to now say beginning paragraph rather than next paragraph
+            messages[1][&#34;content&#34;] = messages[1][&#34;content&#34;].replace(
+                prefix_next, prefix_first
+            )
+
+    # extract out paragraphs
+    paragraphs = [d[&#34;content&#34;] for d in all_content if d[&#34;role&#34;] == &#34;assistant&#34;]
+    paragraphs
+    assert len(paragraphs) == len(prompts)
+    return paragraphs
+
+
+if __name__ == &#34;__main__&#34;:
+    # llm = get_llm(&#39;text-davinci-003&#39;)
+    # llm = get_llm(&#39;text-curie-001&#39;)
+    llm = get_llm(&#34;text-ada-001&#34;)
+    text = llm(&#34;Question: What do these have in common? Horse, cat, dog. Answer:&#34;)
+    print(&#34;text&#34;, text)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="imodelsx.sasc.llm.get_llm"><code class="name flex">
+<span>def <span class="ident">get_llm</span></span>(<span>checkpoint: str, cache_dir: str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_llm(checkpoint: str, cache_dir: str):
+    if checkpoint.startswith(&#34;text-da&#34;) or &#34;-00&#34; in checkpoint:
+        return llm_openai(checkpoint, cache_dir)
+    elif checkpoint.startswith(&#34;gpt-3&#34;) or checkpoint.startswith(&#34;gpt-4&#34;):
+        return llm_openai_chat(checkpoint, cache_dir)
+    else:
+        return llm_hf(checkpoint)  # ignores cache_dir</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.sasc.llm.get_paragraphs"><code class="name flex">
+<span>def <span class="ident">get_paragraphs</span></span>(<span>prompts, checkpoint='gpt-4-0314', prefix_first='Write the beginning paragraph of a story about', prefix_next='Write the next paragraph of the story, but now make it about')</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="example-messages">Example Messages</h2>
+<p>[
+{'role': 'system', 'content': 'You are a helpful assistant.'},
+{'role': 'user', 'content': 'Write the beginning paragraph of a story about "baseball". Make sure it contains several references to "baseball".'},
+{'role': 'assistant', 'content': 'The crack of the bat echoed through the stadium as the ball soared over the outfield fence. The crowd erupted into cheers, their excitement palpable. It was a beautiful day for baseball, with the sun shining down on the field and the smell of freshly cut grass filling the air. The players on the field were focused and determined, each one ready to give their all for their team. Baseball was more than just a game to them; it was a passion, a way of life. And as they took their positions on the field, they knew that anything was possible in this great game of baseball.'},
+{'role': 'user', 'content': 'Write the next paragraph of the story, but now make it about "animals". Make sure it contains several references to "animals".'},
+]</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_paragraphs(
+    prompts,
+    checkpoint=&#34;gpt-4-0314&#34;,
+    prefix_first=&#34;Write the beginning paragraph of a story about&#34;,
+    prefix_next=&#34;Write the next paragraph of the story, but now make it about&#34;,
+):
+    &#34;&#34;&#34;
+    Example messages
+    ----------------
+    [
+      {&#39;role&#39;: &#39;system&#39;, &#39;content&#39;: &#39;You are a helpful assistant.&#39;},
+      {&#39;role&#39;: &#39;user&#39;, &#39;content&#39;: &#39;Write the beginning paragraph of a story about &#34;baseball&#34;. Make sure it contains several references to &#34;baseball&#34;.&#39;},
+      {&#39;role&#39;: &#39;assistant&#39;, &#39;content&#39;: &#39;The crack of the bat echoed through the stadium as the ball soared over the outfield fence. The crowd erupted into cheers, their excitement palpable. It was a beautiful day for baseball, with the sun shining down on the field and the smell of freshly cut grass filling the air. The players on the field were focused and determined, each one ready to give their all for their team. Baseball was more than just a game to them; it was a passion, a way of life. And as they took their positions on the field, they knew that anything was possible in this great game of baseball.&#39;},
+      {&#39;role&#39;: &#39;user&#39;, &#39;content&#39;: &#39;Write the next paragraph of the story, but now make it about &#34;animals&#34;. Make sure it contains several references to &#34;animals&#34;.&#39;},
+    ]
+    &#34;&#34;&#34;
+    token_limit = {
+        &#34;gpt-3.5-turbo&#34;: 3200,
+        &#34;gpt-4-0314&#34;: 30000,
+    }[checkpoint]
+
+    llm = get_llm(checkpoint)
+    response = None
+    messages = [{&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: &#34;You are a helpful assistant.&#34;}]
+    all_content = []
+    for i in range(len(prompts)):
+        messages.append({&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: prompts[i]})
+        all_content.append(messages[-1])
+        # for message in messages:
+        # print(message)
+        response = llm(messages)
+
+        if response is not None:
+            response_text = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
+            messages.append({&#34;role&#34;: &#34;assistant&#34;, &#34;content&#34;: response_text})
+            all_content.append(messages[-1])
+
+        # need to drop beginning of story whenever we approach the tok limit
+        # gpt-3.5.turbo has a limit of 4096, and it cant generate beyond that
+        num_tokens = response[&#34;usage&#34;][&#34;total_tokens&#34;]
+        # print(&#39;num_tokens&#39;, num_tokens)
+        if num_tokens &gt;= token_limit:
+            # drop the first (assistant, user) pair in messages
+            messages = [messages[0]] + messages[3:]
+
+            # rewrite the original prompt to now say beginning paragraph rather than next paragraph
+            messages[1][&#34;content&#34;] = messages[1][&#34;content&#34;].replace(
+                prefix_next, prefix_first
+            )
+
+    # extract out paragraphs
+    paragraphs = [d[&#34;content&#34;] for d in all_content if d[&#34;role&#34;] == &#34;assistant&#34;]
+    paragraphs
+    assert len(paragraphs) == len(prompts)
+    return paragraphs</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.sasc.llm.llm_hf"><code class="name flex">
+<span>def <span class="ident">llm_hf</span></span>(<span>checkpoint='google/flan-t5-xl')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def llm_hf(checkpoint=&#34;google/flan-t5-xl&#34;):
+    class LLM_HF:
+        def __init__(self, checkpoint):
+            _checkpoint: str = checkpoint
+            self._tokenizer = _get_tokenizer(_checkpoint)
+            if &#34;google/flan&#34; in checkpoint:
+                self._model = T5ForConditionalGeneration.from_pretrained(
+                    checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16
+                )
+            elif checkpoint == &#34;gpt-xl&#34;:
+                self._model = AutoModelForCausalLM.from_pretrained(checkpoint)
+            else:
+                self._model = AutoModelForCausalLM.from_pretrained(
+                    checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16
+                )
+
+        def __call__(
+            self,
+            prompt: str,
+            stop: Optional[List[str]] = None,
+            max_new_tokens=20,
+            do_sample=False,
+        ) -&gt; str:
+            if stop is not None:
+                raise ValueError(&#34;stop kwargs are not permitted.&#34;)
+            inputs = self._tokenizer(
+                prompt, return_tensors=&#34;pt&#34;, return_attention_mask=True
+            ).to(
+                self._model.device
+            )  # .input_ids.to(&#34;cuda&#34;)
+            # stopping_criteria = StoppingCriteriaList([MaxLengthCriteria(max_length=max_tokens)])
+            # outputs = self._model.generate(input_ids, max_length=max_tokens, stopping_criteria=stopping_criteria)
+            # print(&#39;pad_token&#39;, self._tokenizer.pad_token)
+            if self._tokenizer.pad_token_id is None:
+                self._tokenizer.pad_token_id = self._tokenizer.eos_token_id
+            outputs = self._model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                do_sample=do_sample,
+                # pad_token=self._tokenizer.pad_token,
+                pad_token_id=self._tokenizer.pad_token_id,
+                # top_p=0.92,
+                # top_k=0
+            )
+            out_str = self._tokenizer.decode(outputs[0])
+            if &#34;facebook/opt&#34; in checkpoint:
+                return out_str[len(&#34;&lt;/s&gt;&#34;) + len(prompt) :]
+            elif &#34;google/flan&#34; in checkpoint:
+                print(&#34;full&#34;, out_str)
+                return out_str[len(&#34;&lt;pad&gt;&#34;) : out_str.index(&#34;&lt;/s&gt;&#34;)]
+            else:
+                return out_str[len(prompt) :]
+
+        def _get_logit_for_target_token(
+            self, prompt: str, target_token_str: str
+        ) -&gt; float:
+            &#34;&#34;&#34;Get logits target_token_str
+            This is weird when token_output_ids represents multiple tokens
+            It currently will only take the first token
+            &#34;&#34;&#34;
+            # Get first token id in target_token_str
+            target_token_id = self._tokenizer(target_token_str)[&#34;input_ids&#34;][0]
+
+            # get prob of target token
+            inputs = self._tokenizer(
+                prompt,
+                return_tensors=&#34;pt&#34;,
+                return_attention_mask=True,
+                padding=False,
+                truncation=False,
+            ).to(self._model.device)
+            # shape is (batch_size, seq_len, vocab_size)
+            logits = self._model(**inputs)[&#34;logits&#34;].detach().cpu()
+            # shape is (vocab_size,)
+            probs_next_token = softmax(logits[0, -1, :].numpy().flatten())
+            return probs_next_token[target_token_id]
+
+        @property
+        def _identifying_params(self) -&gt; Mapping[str, Any]:
+            &#34;&#34;&#34;Get the identifying parameters.&#34;&#34;&#34;
+            return vars(self)
+
+        @property
+        def _llm_type(self) -&gt; str:
+            return &#34;custom_hf_llm_for_langchain&#34;
+
+    return LLM_HF(checkpoint)</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.sasc.llm.llm_openai"><code class="name flex">
+<span>def <span class="ident">llm_openai</span></span>(<span>checkpoint, cache_dir)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def llm_openai(checkpoint, cache_dir):
+    # e.g. text-davinci-003
+    class LLM_OpenAI:
+        def __init__(self, checkpoint, cache_dir):
+            self.checkpoint = checkpoint
+            self.cache_dir = cache_dir
+
+        def __call__(self, prompt: str, max_new_tokens=250, seed=1, do_sample=True):
+            # cache
+            os.makedirs(self.cache_dir, exist_ok=True)
+            hash_str = hashlib.sha256(prompt.encode()).hexdigest()
+            cache_file = join(
+                self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}__seed={seed}.pkl&#34;
+            )
+            cache_file_raw = join(
+                self.cache_dir,
+                f&#34;raw_{hash_str}__num_tok={max_new_tokens}__seed={seed}.pkl&#34;,
+            )
+            if os.path.exists(cache_file):
+                return pkl.load(open(cache_file, &#34;rb&#34;))
+
+            response = openai.Completion.create(
+                engine=self.checkpoint,
+                prompt=prompt,
+                max_tokens=max_new_tokens,
+                temperature=0.1,
+                top_p=1,
+                frequency_penalty=0.25,  # maximum is 2
+                presence_penalty=0,
+                # stop=[&#34;101&#34;]
+            )
+            response_text = response[&#34;choices&#34;][0][&#34;text&#34;]
+
+            pkl.dump(response_text, open(cache_file, &#34;wb&#34;))
+            pkl.dump(
+                {&#34;prompt&#34;: prompt, &#34;response_text&#34;: response_text},
+                open(cache_file_raw, &#34;wb&#34;),
+            )
+            return response_text
+
+    return LLM_OpenAI(checkpoint, cache_dir)</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.sasc.llm.llm_openai_chat"><code class="name flex">
+<span>def <span class="ident">llm_openai_chat</span></span>(<span>checkpoint, cache_dir)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def llm_openai_chat(checkpoint, cache_dir):
+    class LLM_Chat:
+        &#34;&#34;&#34;Chat models take a different format: https://platform.openai.com/docs/guides/chat/introduction&#34;&#34;&#34;
+
+        &#34;gpt-3.5-turbo&#34;
+
+        def __init__(self, checkpoint, cache_dir):
+            self.checkpoint = checkpoint
+            self.cache_dir = cache_dir
+
+        def __call__(
+            self,
+            prompts_list: List[Dict[str, str]],
+            max_new_tokens=250,
+            seed=1,
+            do_sample=True,
+        ):
+            &#34;&#34;&#34;
+            prompts_list: list of dicts, each dict has keys &#39;role&#39; and &#39;content&#39;
+                Example: [
+                    {&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: &#34;You are a helpful assistant.&#34;},
+                    {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: &#34;Who won the world series in 2020?&#34;},
+                    {&#34;role&#34;: &#34;assistant&#34;, &#34;content&#34;: &#34;The Los Angeles Dodgers won the World Series in 2020.&#34;},
+                    {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: &#34;Where was it played?&#34;}
+                ]
+            &#34;&#34;&#34;
+            assert isinstance(prompts_list, list), prompts_list
+
+            # cache
+            os.makedirs(self.cache_dir, exist_ok=True)
+            prompts_list_dict = {
+                str(i): sorted(v.items()) for i, v in enumerate(prompts_list)
+            }
+            if not self.checkpoint == &#34;gpt-3.5-turbo&#34;:
+                prompts_list_dict[&#34;checkpoint&#34;] = self.checkpoint
+            dict_as_str = json.dumps(prompts_list_dict, sort_keys=True)
+            hash_str = hashlib.sha256(dict_as_str.encode()).hexdigest()
+            cache_file_raw = join(
+                self.cache_dir,
+                f&#34;chat__raw_{hash_str}__num_tok={max_new_tokens}__seed={seed}.pkl&#34;,
+            )
+            if os.path.exists(cache_file_raw):
+                print(&#34;cached!&#34;)
+                return pkl.load(open(cache_file_raw, &#34;rb&#34;))
+            print(&#34;not cached&#34;)
+
+            response = openai.ChatCompletion.create(
+                model=self.checkpoint,
+                messages=prompts_list,
+                max_tokens=max_new_tokens,
+                temperature=0.1,
+                top_p=1,
+                frequency_penalty=0.25,  # maximum is 2
+                presence_penalty=0,
+                # stop=[&#34;101&#34;]
+            )
+
+            pkl.dump(response, open(cache_file_raw, &#34;wb&#34;))
+            return response
+
+    return LLM_Chat(checkpoint, cache_dir)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="imodelsx.sasc" href="index.html">imodelsx.sasc</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="imodelsx.sasc.llm.get_llm" href="#imodelsx.sasc.llm.get_llm">get_llm</a></code></li>
+<li><code><a title="imodelsx.sasc.llm.get_paragraphs" href="#imodelsx.sasc.llm.get_paragraphs">get_paragraphs</a></code></li>
+<li><code><a title="imodelsx.sasc.llm.llm_hf" href="#imodelsx.sasc.llm.llm_hf">llm_hf</a></code></li>
+<li><code><a title="imodelsx.sasc.llm.llm_openai" href="#imodelsx.sasc.llm.llm_openai">llm_openai</a></code></li>
+<li><code><a title="imodelsx.sasc.llm.llm_openai_chat" href="#imodelsx.sasc.llm.llm_openai_chat">llm_openai_chat</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

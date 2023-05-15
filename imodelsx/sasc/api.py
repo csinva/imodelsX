@@ -1,14 +1,14 @@
 from typing import List, Callable, Tuple, Dict
-import imodelsx.mprompt.m1_ngrams
-import imodelsx.mprompt.m2_summarize
-import imodelsx.mprompt.m3_generate
-import imodelsx.mprompt.llm
+import imodelsx.sasc.m1_ngrams
+import imodelsx.sasc.m2_summarize
+import imodelsx.sasc.m3_generate
+import imodelsx.sasc.llm
 import numpy as np
 import pprint
 from collections import defaultdict
 
 
-def explain_module(
+def explain_module_sasc(
     # get ngram module responses
     text_str_list: List[str],
     mod: Callable[[List[str]], List[float]],
@@ -91,7 +91,7 @@ def explain_module(
     (
         ngrams_list,
         ngrams_scores,
-    ) = imodelsx.mprompt.m1_ngrams.explain_ngrams(
+    ) = imodelsx.sasc.m1_ngrams.explain_ngrams(
         text_str_list=text_str_list,
         mod=mod,
         ngrams=ngrams,
@@ -104,11 +104,11 @@ def explain_module(
     explanation_dict["ngrams_scores"] = ngrams_scores
 
     # compute explanation candidates
-    llm = imodelsx.mprompt.llm.get_llm(llm_checkpoint, llm_cache_dir)
+    llm = imodelsx.sasc.llm.get_llm(llm_checkpoint, llm_cache_dir)
     (
         explanation_strs,
         _,
-    ) = imodelsx.mprompt.m2_summarize.summarize_ngrams(
+    ) = imodelsx.sasc.m2_summarize.summarize_ngrams(
         llm,
         ngrams_list,
         num_summaries=num_summaries,
@@ -120,7 +120,7 @@ def explain_module(
 
     # score explanation candidates on synthetic data
     for explanation_str in explanation_strs:
-        strs_rel, strs_irrel = imodelsx.mprompt.m3_generate.generate_synthetic_strs(
+        strs_rel, strs_irrel = imodelsx.sasc.m3_generate.generate_synthetic_strs(
             llm,
             explanation_str=explanation_str,
             num_synthetic_strs=num_synthetic_strs,
@@ -164,7 +164,7 @@ if __name__ == "__main__":
         "elephant",
         "rhinoceros",
     ]
-    explanation_dict = explain_module(
+    explanation_dict = explain_module_sasc(
         text_str_list,
         mod,
         ngrams=1,

@@ -3,7 +3,7 @@ from typing import Any, List, Mapping, Optional, Tuple, Callable
 import numpy as np
 from os.path import join
 import pickle as pkl
-from imodelsx.mprompt.llm import get_llm
+from imodelsx.sasc.llm import get_llm
 
 
 def summarize_ngrams(
