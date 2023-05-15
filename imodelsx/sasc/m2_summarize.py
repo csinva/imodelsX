@@ -1,8 +1,5 @@
-import re
 from typing import Any, List, Mapping, Optional, Tuple, Callable
 import numpy as np
-from os.path import join
-import pickle as pkl
 from imodelsx.sasc.llm import get_llm
 
 
@@ -17,7 +14,7 @@ def summarize_ngrams(
     seed: int = 0,
 ) -> Tuple[List[str], List[str]]:
     """Refine a keyphrase by making a call to the llm
-    
+
     Params
     ------
     llm: Callable[[str], str]

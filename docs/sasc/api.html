@@ -36,7 +36,7 @@ import pprint
 from collections import defaultdict
 
 
-def explain_module(
+def explain_module_sasc(
     # get ngram module responses
     text_str_list: List[str],
     mod: Callable[[List[str]], List[float]],
@@ -57,8 +57,9 @@ def explain_module(
     verbose: bool = True,
 ) -&gt; Dict[str, List]:
     &#34;&#34;&#34;
-    Params
-    ------
+
+    Parameters
+    ----------
     text_str_list: List[str]
         The list of text strings to use to extract ngrams
     mod: Callable[[List[str]], List[float]]
@@ -73,7 +74,6 @@ def explain_module(
         If True, use the cache
     cache_filename: str
         The filename to use for the module ngram cache
-
     llm_checkpoint: str
         The checkpoint to use for the llm
     llm_cache_dir: str
@@ -84,7 +84,6 @@ def explain_module(
         The number of top ngrams to select
     num_top_ngrams_to_consider: int
         The number of top ngrams to consider selecting from
-
     num_synthetic_strs: int
         The number of synthetic strs to generate
     verbose: bool
@@ -192,7 +191,7 @@ if __name__ == &#34;__main__&#34;:
         &#34;elephant&#34;,
         &#34;rhinoceros&#34;,
     ]
-    explanation_dict = explain_module(
+    explanation_dict = explain_module_sasc(
         text_str_list,
         mod,
         ngrams=1,
@@ -211,41 +210,43 @@ if __name__ == &#34;__main__&#34;:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="imodelsx.sasc.api.explain_module"><code class="name flex">
-<span>def <span class="ident">explain_module</span></span>(<span>text_str_list: List[str], mod: Callable[[List[str]], List[float]], ngrams: int = 3, all_ngrams: bool = True, num_top_ngrams: int = 75, use_cache: bool = True, cache_filename: str = None, llm_checkpoint: str = 'text-davinci-003', llm_cache_dir: str = '.llm_cache', num_summaries: int = 3, num_top_ngrams_to_use: int = 30, num_top_ngrams_to_consider: int = 50, num_synthetic_strs: int = 20, seed: int = 0, verbose: bool = True) ‑> Dict[str, List]</span>
+<dt id="imodelsx.sasc.api.explain_module_sasc"><code class="name flex">
+<span>def <span class="ident">explain_module_sasc</span></span>(<span>text_str_list: List[str], mod: Callable[[List[str]], List[float]], ngrams: int = 3, all_ngrams: bool = True, num_top_ngrams: int = 75, use_cache: bool = True, cache_filename: str = None, llm_checkpoint: str = 'text-davinci-003', llm_cache_dir: str = '.llm_cache', num_summaries: int = 3, num_top_ngrams_to_use: int = 30, num_top_ngrams_to_consider: int = 50, num_synthetic_strs: int = 20, seed: int = 0, verbose: bool = True) ‑> Dict[str, List]</span>
 </code></dt>
 <dd>
-<div class="desc"><h2 id="params">Params</h2>
-<p>text_str_list: List[str]
-The list of text strings to use to extract ngrams
-mod: Callable[[List[str]], List[float]]
-The module to interpret
-ngrams: int
-The order of ngrams to use (3 is trigrams)
-all_ngrams: bool
-If True, use all ngrams up to ngrams. If False, use only ngrams
-num_top_ngrams: int
-The number of top ngrams to return
-use_cache: bool
-If True, use the cache
-cache_filename: str
-The filename to use for the module ngram cache</p>
-<p>llm_checkpoint: str
-The checkpoint to use for the llm
-llm_cache_dir: str
-The cache directory to use for the llm
-num_summaries: int
-The number of candidate explanations to generate
-num_top_ngrams_to_use: int
-The number of top ngrams to select
-num_top_ngrams_to_consider: int
-The number of top ngrams to consider selecting from</p>
-<p>num_synthetic_strs: int
-The number of synthetic strs to generate
-verbose: bool
-If True, print out progress
-seed: int
-The seed to use for the random number generator</p>
+<div class="desc"><h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>text_str_list</code></strong> :&ensp;<code>List[str]</code></dt>
+<dd>The list of text strings to use to extract ngrams</dd>
+<dt><strong><code>mod</code></strong> :&ensp;<code>Callable[[List[str]], List[float]]</code></dt>
+<dd>The module to interpret</dd>
+<dt><strong><code>ngrams</code></strong> :&ensp;<code>int</code></dt>
+<dd>The order of ngrams to use (3 is trigrams)</dd>
+<dt><strong><code>all_ngrams</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, use all ngrams up to ngrams. If False, use only ngrams</dd>
+<dt><strong><code>num_top_ngrams</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of top ngrams to return</dd>
+<dt><strong><code>use_cache</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, use the cache</dd>
+<dt><strong><code>cache_filename</code></strong> :&ensp;<code>str</code></dt>
+<dd>The filename to use for the module ngram cache</dd>
+<dt><strong><code>llm_checkpoint</code></strong> :&ensp;<code>str</code></dt>
+<dd>The checkpoint to use for the llm</dd>
+<dt><strong><code>llm_cache_dir</code></strong> :&ensp;<code>str</code></dt>
+<dd>The cache directory to use for the llm</dd>
+<dt><strong><code>num_summaries</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of candidate explanations to generate</dd>
+<dt><strong><code>num_top_ngrams_to_use</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of top ngrams to select</dd>
+<dt><strong><code>num_top_ngrams_to_consider</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of top ngrams to consider selecting from</dd>
+<dt><strong><code>num_synthetic_strs</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of synthetic strs to generate</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, print out progress</dd>
+<dt><strong><code>seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>The seed to use for the random number generator</dd>
+</dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>explanation_dict</code></strong> :&ensp;<code>Dict[str, List]</code></dt>
@@ -270,7 +271,7 @@ The list of synthetically generated irrelevant strs</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def explain_module(
+<pre><code class="python">def explain_module_sasc(
     # get ngram module responses
     text_str_list: List[str],
     mod: Callable[[List[str]], List[float]],
@@ -291,8 +292,9 @@ The list of synthetically generated irrelevant strs</dd>
     verbose: bool = True,
 ) -&gt; Dict[str, List]:
     &#34;&#34;&#34;
-    Params
-    ------
+
+    Parameters
+    ----------
     text_str_list: List[str]
         The list of text strings to use to extract ngrams
     mod: Callable[[List[str]], List[float]]
@@ -307,7 +309,6 @@ The list of synthetically generated irrelevant strs</dd>
         If True, use the cache
     cache_filename: str
         The filename to use for the module ngram cache
-
     llm_checkpoint: str
         The checkpoint to use for the llm
     llm_cache_dir: str
@@ -318,7 +319,6 @@ The list of synthetically generated irrelevant strs</dd>
         The number of top ngrams to select
     num_top_ngrams_to_consider: int
         The number of top ngrams to consider selecting from
-
     num_synthetic_strs: int
         The number of synthetic strs to generate
     verbose: bool
@@ -430,7 +430,7 @@ The list of synthetically generated irrelevant strs</dd>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="imodelsx.sasc.api.explain_module" href="#imodelsx.sasc.api.explain_module">explain_module</a></code></li>
+<li><code><a title="imodelsx.sasc.api.explain_module_sasc" href="#imodelsx.sasc.api.explain_module_sasc">explain_module_sasc</a></code></li>
 </ul>
 </li>
 </ul>

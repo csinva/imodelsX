@@ -61,7 +61,7 @@
 </tr>
 <tr>
 <td style="text-align: left;">AutoPrompt</td>
-<td>⠀⠀⠀<a href="">🗂️</a>, <a href="https://github.com/ucinlp/autoprompt">🔗</a>, <a href="https://arxiv.org/abs/2010.15980">📄</a></td>
+<td>ㅤㅤ<a href="">🗂️</a>, <a href="https://github.com/ucinlp/autoprompt">🔗</a>, <a href="https://arxiv.org/abs/2010.15980">📄</a></td>
 <td>Explanation</td>
 <td>Find a natural-language prompt<br/>using input-gradients (⌛ In progress)</td>
 </tr>
@@ -78,8 +78,14 @@
 <td>Fit better decision tree using an LLM<br/>to expand features (⌛ In progress)</td>
 </tr>
 <tr>
+<td style="text-align: left;">SASC</td>
+<td>ㅤㅤ<a href="https://csinva.io/imodelsX/sasc/api.html">🗂️</a>, <a href="https://github.com/microsoft/automated-explanations">🔗</a></td>
+<td>Explanation</td>
+<td>Explain a black-box text module<br/>using an LLM (<em>Official</em>)</td>
+</tr>
+<tr>
 <td style="text-align: left;">Linear Finetune</td>
-<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/linearfinetune.ipynb">📖</a>, <a href="https://csinva.io/imodelsX/linear_finetune.html">🗂️</a>, ⠀⠀</td>
+<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/linearfinetune.ipynb">📖</a>, <a href="https://csinva.io/imodelsX/linear_finetune.html">🗂️</a></td>
 <td>Black-box model</td>
 <td>Finetune a single linear layer<br/>on top of LLM embeddings</td>
 </tr>
@@ -169,6 +175,19 @@ preds = m.predict(dset_val['text'])
 acc = (preds == dset_val['label']).mean()
 print('validation acc', acc)
 </code></pre>
+<h3 id="sasc">SASC</h3>
+<p>Here, we explain a <em>module</em> rather than a dataset</p>
+<pre><code class="language-python"># a toy module that responds to the length of a string
+mod = lambda str_list: np.array([len(s) for s in str_list])
+
+# a toy dataset where the longest strings are animals
+text_str_list = [&quot;red&quot;, &quot;blue&quot;, &quot;x&quot;, &quot;1&quot;, &quot;2&quot;, &quot;hippopotamus&quot;, &quot;elephant&quot;, &quot;rhinoceros&quot;]
+explanation_dict = explain_module_sasc(
+    text_str_list,
+    mod,
+    ngrams=1,
+)
+</code></pre>
 <h1 id="related-work">Related work</h1>
 <ul>
 <li>imodels package (JOSS 2021 <a href="https://github.com/csinva/imodels">github</a>) - interpretable ML package for concise, transparent, and accurate predictive modeling (sklearn-compatible).</li>
@@ -191,7 +210,8 @@ from .augtree.augtree import AugTreeClassifier, AugTreeRegressor
 from .linear_finetune import LinearFinetuneClassifier, LinearFinetuneRegressor
 from .d3.d3 import explain_dataset_d3
 from .iprompt.api import explain_dataset_iprompt
-from .iprompt.data import get_add_two_numbers_dataset</code></pre>
+from .iprompt.data import get_add_two_numbers_dataset
+from .sasc.api import explain_module_sasc</code></pre>
 </details>
 </section>
 <section>
@@ -271,6 +291,7 @@ from .iprompt.data import get_add_two_numbers_dataset</code></pre>
 <li><a href="#d3-describedistributionaldifferences">D3 (DescribeDistributionalDifferences)</a></li>
 <li><a href="#aug-models">Aug-models</a></li>
 <li><a href="#linear-finetune">Linear finetune</a></li>
+<li><a href="#sasc">SASC</a></li>
 </ul>
 </li>
 <li><a href="#related-work">Related work</a></li>

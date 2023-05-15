@@ -29,8 +29,9 @@ def explain_module_sasc(
     verbose: bool = True,
 ) -> Dict[str, List]:
     """
-    Params
-    ------
+
+    Parameters
+    ----------
     text_str_list: List[str]
         The list of text strings to use to extract ngrams
     mod: Callable[[List[str]], List[float]]
@@ -45,7 +46,6 @@ def explain_module_sasc(
         If True, use the cache
     cache_filename: str
         The filename to use for the module ngram cache
-
     llm_checkpoint: str
         The checkpoint to use for the llm
     llm_cache_dir: str
@@ -56,7 +56,6 @@ def explain_module_sasc(
         The number of top ngrams to select
     num_top_ngrams_to_consider: int
         The number of top ngrams to consider selecting from
-
     num_synthetic_strs: int
         The number of synthetic strs to generate
     verbose: bool

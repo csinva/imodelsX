@@ -4,18 +4,17 @@ from transformers import (
 )
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from typing import Any, Dict, List, Mapping, Optional
-import openai
 import os.path
 from os.path import join, dirname
 import os
 import pickle as pkl
 from scipy.special import softmax
-import openai
 import hashlib
 import torch
 
 """Wrapper classes to call different language models
 """
+
 
 def get_llm(checkpoint: str, cache_dir: str):
     if checkpoint.startswith("text-da") or "-00" in checkpoint:
@@ -27,6 +26,8 @@ def get_llm(checkpoint: str, cache_dir: str):
 
 
 def llm_openai(checkpoint, cache_dir):
+    import openai
+
     # e.g. text-davinci-003
     class LLM_OpenAI:
         def __init__(self, checkpoint, cache_dir):
@@ -70,6 +71,8 @@ def llm_openai(checkpoint, cache_dir):
 
 
 def llm_openai_chat(checkpoint, cache_dir):
+    import openai
+
     class LLM_Chat:
         """Chat models take a different format: https://platform.openai.com/docs/guides/chat/introduction"""
 
