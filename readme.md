@@ -63,8 +63,8 @@ prompts is a list of found natural-language prompt strings
 ### D3 (DescribeDistributionalDifferences)
 
 ```python
-import imodelsx
-hypotheses, hypothesis_scores = imodelsx.explain_dataset_d3(
+from imodelsx import explain_dataset_d3
+hypotheses, hypothesis_scores = explain_dataset_d3(
     pos=positive_samples, # List[str] of positive examples
     neg=negative_samples, # another List[str]
     num_steps=100,
@@ -112,6 +112,7 @@ for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
 An easy-to-fit baseline that follows the same API.
 
 ```python
+from imodelsx import LinearFinetuneClassifier
 # fit a simple one-layer finetune
 m = LinearFinetuneClassifier(
     checkpoint='distilbert-base-uncased',
@@ -126,6 +127,7 @@ print('validation acc', acc)
 Here, we explain a *module* rather than a dataset
 
 ```python
+from imodelsx import explain_module_sasc
 # a toy module that responds to the length of a string
 mod = lambda str_list: np.array([len(s) for s in str_list])
 
