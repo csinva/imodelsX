@@ -9,8 +9,8 @@ import inspect
 
 
 def explain_ngrams(
-    X: List[str],
-    mod,
+    text_str_list: List[str],
+    mod: Callable[[List[str]], List[float]],
     ngrams: int = 3,
     all_ngrams: bool = True,
     num_top_ngrams: int = 75,
@@ -25,8 +25,24 @@ def explain_ngrams(
     """
     Params
     ------
+    text_str_list: List[str]
+        The list of text strings to use to extract ngrams
+    mod: Callable[[List[str]], List[float]]
+        The module to interpret
     ngrams: int
         The order of ngrams to use (3 is trigrams)
+    all_ngrams: bool
+        If True, use all ngrams up to ngrams. If False, use only ngrams
+    num_top_ngrams: int
+        The number of top ngrams to return
+    use_cache: bool
+        If True, use the cache
+    cache_filename: str
+        The filename to use for the module ngram cache
+    noise_ngram_scores: float
+        If > 0, add noise to the ngram scores
+    noise_seed: int
+        The seed to use for the ngram scores noise
     text_str_list_restrict: List[str]
         If not None, restrict the top ngrams to those that appear in this corpus
 
@@ -40,9 +56,9 @@ def explain_ngrams(
     Note: this caches the call that gets the scores"""
     # get all ngrams
     tok = English(max_length=10e10)
-    X_str = " ".join(X)
+    text_str = " ".join(text_str_list)
     ngrams_list = imodelsx.util.generate_ngrams_list(
-        X_str, ngrams=ngrams, tokenizer_ngrams=tok, all_ngrams=all_ngrams
+        text_str, ngrams=ngrams, tokenizer_ngrams=tok, all_ngrams=all_ngrams
     )
 
     # get unique ngrams

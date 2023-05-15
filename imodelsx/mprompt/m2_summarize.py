@@ -1,5 +1,5 @@
 import re
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, List, Mapping, Optional, Tuple, Callable
 import numpy as np
 from os.path import join
 import pickle as pkl
@@ -7,7 +7,7 @@ from imodelsx.mprompt.llm import get_llm
 
 
 def summarize_ngrams(
-    llm,
+    llm: Callable[[str], str],
     ngrams_list: List[str],
     num_summaries: int = 2,
     prefix_str="Here is a list of phrases:",
@@ -16,7 +16,27 @@ def summarize_ngrams(
     num_top_ngrams_to_consider: int = 50,
     seed: int = 0,
 ) -> Tuple[List[str], List[str]]:
-    """Refine a keyphrase by making a call to the llm"""
+    """Refine a keyphrase by making a call to the llm
+    
+    Params
+    ------
+    llm: Callable[[str], str]
+        The llm to use
+    ngrams_list: List[str]
+        The list of ngrams to summarize
+    num_summaries: int
+        The number of summaries to generate
+    prefix_str: str
+        The prefix of the prompt string to use for the llm summarization
+    suffix_str: str
+        The suffix of the prompt string to use for the llm summarization
+    num_top_ngrams_to_use: int
+        The number of top ngrams to select
+    num_top_ngrams_to_consider: int
+        The number of top ngrams to consider selecting from
+    seed: int
+        The seed to use for the random number generator
+    """
     rng = np.random.default_rng(seed)
 
     summaries = []
