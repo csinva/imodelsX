@@ -36,6 +36,13 @@ def summarize_ngrams(
         The number of top ngrams to consider selecting from
     seed: int
         The seed to use for the random number generator
+
+    Returns
+    -------
+    summaries: List[str]
+        The list of summaries
+    summary_rationales: List[str]
+        The list of summary rationales (when available)
     """
     rng = np.random.default_rng(seed)
 

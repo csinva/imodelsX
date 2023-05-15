@@ -10,14 +10,12 @@ import inspect
 
 def explain_ngrams(
     text_str_list: List[str],
-    mod: Callable[[List[str]], List[float]],
+    mod: Callable[[List[str]], np.ndarray[float]],
     ngrams: int = 3,
     all_ngrams: bool = True,
     num_top_ngrams: int = 75,
     use_cache: bool = True,
     cache_filename: str = None,
-    module_name: str = None,
-    module_num: int = None,
     noise_ngram_scores: float = 0,
     noise_seed: int = None,
     text_str_list_restrict: List[str] = None,
@@ -53,7 +51,8 @@ def explain_ngrams(
     ngram_scores: List[float]
         The scores for each ngram
 
-    Note: this caches the call that gets the scores"""
+    Note: this caches the call that gets the scores
+    """
     # get all ngrams
     tok = English(max_length=10e10)
     text_str = " ".join(text_str_list)
@@ -66,28 +65,34 @@ def explain_ngrams(
     # print(f'{ngrams_list=}')
 
     # compute scores and cache...
-    # fmri should cache all preds together, since they are efficiently computed together
-
+    use_cache = (
+        use_cache and cache_filename
+    )  # can only use cache if cache_filename is not None
     if use_cache and os.path.exists(cache_filename):
         ngram_scores = pkl.load(open(cache_filename, "rb"))
     else:
+        # some modules have specialized parameters...
+        # fmri should cache all preds together, since they are efficiently computed together
         call_parameters = inspect.signature(mod.__call__).parameters.keys()
         print("predicting all ngrams...")
-        if module_name == "dict_learn_factor":
+        if "return_all" in call_parameters:
+            ngram_scores = mod(ngrams_list, return_all=True)
+        elif "calc_ngram" in call_parameters:
             ngram_scores = mod(ngrams_list, calc_ngram=True)
         else:
-            if "return_all" in call_parameters:
-                ngram_scores = mod(ngrams_list, return_all=True)
-            else:
-                ngram_scores = mod(ngrams_list)
+            ngram_scores = mod(ngrams_list)
 
         if use_cache:
             os.makedirs(dirname(cache_filename), exist_ok=True)
             pkl.dump(ngram_scores, open(cache_filename, "wb"))
 
     # multidimensional predictions
+    # this is rare, module should just return a scalar
+    # but for fMRI voxels, we cached this as a full matrix and need to now select a column
+    if isinstance(ngram_scores, list):
+        ngram_scores = np.array(ngram_scores)
     if len(ngram_scores.shape) > 1 and ngram_scores.shape[1] > 1:
-        ngram_scores = ngram_scores[:, module_num]
+        ngram_scores = ngram_scores[:, mod.voxel_num_best]
 
     # add noise to ngram scores
     if noise_ngram_scores > 0:
@@ -132,7 +137,6 @@ if __name__ == "__main__":
     class a:
         noise_ngram_scores = 3
         seed = 100
-        module_name = "emb_diff_d3"
         module_num = 0
         module_num_restrict = -1
 

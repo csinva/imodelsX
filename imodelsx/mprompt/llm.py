@@ -17,7 +17,6 @@ import torch
 """Wrapper classes to call different language models
 """
 
-
 def get_llm(checkpoint: str, cache_dir: str):
     if checkpoint.startswith("text-da") or "-00" in checkpoint:
         return llm_openai(checkpoint, cache_dir)

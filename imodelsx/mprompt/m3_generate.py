@@ -11,8 +11,10 @@ def generate_synthetic_strs(
     explanation_str: str,
     num_synthetic_strs: int = 20,
     template_num: int = 0,
+    verbose=True,
 ) -> Tuple[List[str], List[str]]:
     """Generate text_added and text_removed via call to an LLM.
+
     Params
     ------
     llm: Callable[[str], str]
@@ -25,6 +27,13 @@ def generate_synthetic_strs(
         The number of synthetic strings to generate
     template_num: int
         The prompt template number to use
+
+    Returns
+    -------
+    strs_added: List[str]
+        The list of synthetic strings with the explanation scores added
+    strs_removed: List[str]
+        The list of synthetic strings with the explanation scores removed
     """
 
     templates = [
@@ -54,11 +63,12 @@ Generate {num_synthetic_strs} phrases that are {blank_or_do_not}similar to the c
         # note: this works works with openai model
         # but tends to stop after generating just one text with non-openai
         synthetic_text_numbered_str = llm(prompt, max_new_tokens=400, do_sample=True)
-        print("\n\n---------------\n")
-        print(prompt)
-        print("\n\n---------------\n")
-        print(synthetic_text_numbered_str)
-        print("\n\n---------------\n")
+        if verbose:
+            print("\n\n---------------\n")
+            print(prompt)
+            print("\n\n---------------\n")
+            print(synthetic_text_numbered_str)
+            print("\n\n---------------\n")
 
         # split the string s on any number followed by period like 1. or 2.
         synthetic_strs_split = re.split(r"\d.", synthetic_text_numbered_str)
@@ -70,7 +80,8 @@ Generate {num_synthetic_strs} phrases that are {blank_or_do_not}similar to the c
                 s = s[1:]
             synthetic_strs.append(s.strip())
         synthetic_strs = [s for s in synthetic_strs if len(s) > 2]
-        print("synthetic_strs=", synthetic_strs)
+        if verbose:
+            print("synthetic_strs=", synthetic_strs)
 
         # ks = list(set(ks))  # remove duplicates
         # ks = [k.lower() for k in ks if len(k) > 2] # lowercase & len > 2
