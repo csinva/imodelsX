@@ -231,7 +231,7 @@ def train_model(
             break
 
     # Serialize model-specific stuff (prefixes & losses for autoprompt, embeddings for prompt tuning, etc.)
-    n_eval = 128
+    n_eval = 512
     eval_dset = datasets.Dataset.from_dict(dset[:n_eval])
     eval_dataloader = DataLoader(
         eval_dset, batch_size=batch_size, shuffle=True, drop_last=False)
@@ -435,6 +435,8 @@ def explain_dataset_iprompt(
         Dictionary of metadata from fitting
     """
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+    if not prefix_before_input:
+        tokenizer.truncation_side = 'left'
     tokenizer.eos_token = tokenizer.eos_token or 0
     tokenizer.pad_token = tokenizer.eos_token
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import itertools
 import subprocess
 import random
@@ -6,6 +6,7 @@ from multiprocessing.pool import ThreadPool
 from multiprocessing import Pool, current_process, Queue
 from functools import reduce
 from itertools import repeat
+import time
 import traceback
 from os.path import dirname, join
 submit_utils_dir = dirname(__file__)
@@ -24,6 +25,8 @@ def run_args_list(
     n_cpus: int = 1,
     gpu_ids: List[int] = [],
     repeat_failed_jobs: bool = False,
+    slurm: bool = False,
+    slurm_kwargs: Optional[Dict] = None,
 ):
     """
     Params
@@ -45,6 +48,10 @@ def run_args_list(
         Ids of GPUs to run on (e.g. [0, 1] for 2 gpus)
     repeat_failed_jobs: bool
         Whether to repeatedly run failed jobs
+    run_slurm: bool
+        Whether to run on SLURM (defaults to False)
+    slurm_kwargs: Optional[Dict]
+        kwargs for slurm
     """
     n_gpus = len(gpu_ids)
     _validate_run_arguments(n_cpus, gpu_ids)
@@ -74,9 +81,16 @@ def run_args_list(
                 f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n' + param_str)
         return
 
-    # run serial
     failed_jobs = []
-    if n_cpus == 1 and n_gpus == 0:
+   
+    if slurm:
+        for i, param_str in enumerate(param_str_list):
+            print(
+                f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n' + param_str)
+            run_slurm(param_str, slurm_kwargs=slurm_kwargs)
+      
+    # run serial
+    elif n_cpus == 1 and n_gpus == 0:
         for i, param_str in enumerate(param_str_list):
             print(
                 f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n' + param_str)
@@ -161,6 +175,19 @@ def run_args_list(
                 repeat_failed_jobs=repeat_failed_jobs,
             )
 
+
+def run_slurm(param_str, slurm_kwargs):
+    from slurmpy import Slurm
+    slurm = Slurm(
+            f"imodelsx_job_{time.time()}",
+            slurm_kwargs=slurm_kwargs,
+            slurm_flags=["requeue"],
+        )
+    slurm.run(
+        f"""
+        {param_str}
+        """
+    )
 
 def run_on_gpu(param_str, i, n):
     gpu_id = job_queue_multiprocessing.get()

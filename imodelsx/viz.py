@@ -176,7 +176,7 @@ def extract_sklearn_tree_from_llm_tree(
         'node_count': node_count,
         'nodes': tree_data_array,
         'values': value_sklearns,
-        'n_features_in_': llm_tree.n_features_in_,
+        # 'n_features_in_': llm_tree.n_features_in_,
         # WARNING this circumvents
         # UserWarning: Trying to unpickle estimator DecisionTreeClassifier
         # from version pre-0.18 when using version

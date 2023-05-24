@@ -46,7 +46,7 @@ class AutoPrompt(HotFlip):
         self._autoprompt_verbose = True
         self._num_min_occurrences = 1
         # Will rank and save this many prefixes at the end of training.
-        self._num_prefixes_to_test = 1024
+        self._num_prefixes_to_test = 64
     
     def _test_prefixes(
         self,
@@ -60,11 +60,9 @@ class AutoPrompt(HotFlip):
         all_candidate_n_correct = torch.zeros(
             len(prefixes), dtype=torch.float32)
         total_n = 0
-        print('_test_prefixes')
-        # breakpoint()
         for batch in tqdm.tqdm(eval_dataloader, desc=f'evaluating {len(prefixes)} prefixes'):
-            if (self.args.n_shots > 1) and (self.args.single_shot_loss): ##
-                batch['input'] = batch['last_input'] ##
+            # if (self.args.n_shots > 1) and (self.args.single_shot_loss): ##
+            #    batch['input'] = batch['last_input'] ##
             x_text, y_text = self.prepare_batch(batch=batch)
             tok = functools.partial(
                 self.tokenizer, return_tensors='pt', padding='longest',
@@ -99,12 +97,12 @@ class AutoPrompt(HotFlip):
         # pickle.dump(self._prefix_pool, open(os.path.join(save_dir, 'prefix_pool.p'), 'wb'))
 
         all_prefixes = self._prefix_pool.topk_all(
-            k=self._num_prefixes_to_test, min_occurrences=2)
+            k=self._num_prefixes_to_test, min_occurrences=3)
 
         if not len(all_prefixes):
             # In the case where we get no prefixes here (i.e. prompt generation
             # only ran for a single step) just take anything from prefix pool.
-            all_prefixes = random.choices(self._prefix_pool.prefixes, k=self._num_prefixes_to_test)
+            all_prefixes = random.choices(list(self._prefix_pool.prefixes), k=self._num_prefixes_to_test)
 
         if self._do_final_reranking:
             all_losses, all_accuracies = self._test_prefixes(
