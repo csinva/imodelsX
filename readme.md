@@ -16,10 +16,11 @@
 | :-------------------------- | ------------------------------------------------------------ | ------- | ------------------------------------------------------------ |
 | iPrompt            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/iprompt.ipynb), [🗂️](http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt), [🔗](https://github.com/csinva/interpretable-autoprompting), [📄](https://arxiv.org/abs/2210.01848) | Explanation | Generates a prompt that<br/>explains patterns in data (*Official*) |
 | D3            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/d3.ipynb), [🗂️](http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_dataset_d3), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) | Explanation | Explain the difference between two distributions |
-| AutoPrompt            | ⠀⠀⠀[🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) | Explanation | Find a natural-language prompt<br/>using input-gradients (⌛ In progress)|
+| AutoPrompt            |  ㅤㅤ[🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) | Explanation | Find a natural-language prompt<br/>using input-gradients (⌛ In progress)|
 | Aug-GAM            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/augmodels.ipynb), [🗂️](https://csinva.io/imodelsX/auggam/auggam.html), [🔗](https://github.com/microsoft/aug-models), [📄](https://arxiv.org/abs/2209.11799) | Linear model | Fit better linear model using an LLM<br/>to extract embeddings (*Official*) |
 | Aug-Tree            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/augmodels.ipynb), [🗂️](https://csinva.io/imodelsX/augtree/augtree.html), [🔗](https://github.com/microsoft/aug-models), [📄](https://arxiv.org/abs/2209.11799) | Decision tree | Fit better decision tree using an LLM<br/>to expand features (⌛ In progress) |
-| Linear Finetune  | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/linearfinetune.ipynb), [🗂️](https://csinva.io/imodelsX/linear_finetune.html), ⠀⠀ | Black-box model | Finetune a single linear layer<br/>on top of LLM embeddings |
+| SASC            |  ㅤㅤ[🗂️](https://csinva.io/imodelsX/sasc/api.html), [🔗](https://github.com/microsoft/automated-explanations) | Explanation | Explain a black-box text module<br/>using an LLM (*Official*) |
+| Linear Finetune  | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/linearfinetune.ipynb), [🗂️](https://csinva.io/imodelsX/linear_finetune.html) | Black-box model | Finetune a single linear layer<br/>on top of LLM embeddings |
 
 <p align="center">
 <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖</a>Demo notebooks &emsp; <a href="https://csinva.io/imodelsX/">🗂️</a> Doc &emsp; 🔗 Reference code &emsp; 📄 Research paper
@@ -62,8 +63,8 @@ prompts is a list of found natural-language prompt strings
 ### D3 (DescribeDistributionalDifferences)
 
 ```python
-import imodelsx
-hypotheses, hypothesis_scores = imodelsx.explain_dataset_d3(
+from imodelsx import explain_dataset_d3
+hypotheses, hypothesis_scores = explain_dataset_d3(
     pos=positive_samples, # List[str] of positive examples
     neg=negative_samples, # another List[str]
     num_steps=100,
@@ -111,6 +112,7 @@ for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
 An easy-to-fit baseline that follows the same API.
 
 ```python
+from imodelsx import LinearFinetuneClassifier
 # fit a simple one-layer finetune
 m = LinearFinetuneClassifier(
     checkpoint='distilbert-base-uncased',
@@ -119,6 +121,23 @@ m.fit(dset['text'], dset['label'])
 preds = m.predict(dset_val['text'])
 acc = (preds == dset_val['label']).mean()
 print('validation acc', acc)
+```
+
+### SASC
+Here, we explain a *module* rather than a dataset
+
+```python
+from imodelsx import explain_module_sasc
+# a toy module that responds to the length of a string
+mod = lambda str_list: np.array([len(s) for s in str_list])
+
+# a toy dataset where the longest strings are animals
+text_str_list = ["red", "blue", "x", "1", "2", "hippopotamus", "elephant", "rhinoceros"]
+explanation_dict = explain_module_sasc(
+    text_str_list,
+    mod,
+    ngrams=1,
+)
 ```
 
 
