@@ -127,6 +127,7 @@ def average_over_seeds(
         k
         for k in get_main_args_list(experiment_filename)
         if not k == key_to_average_over
+        and k in df.columns
     ]
     numeric_keys = [k for k in list(df.select_dtypes("number")) if not k in group_keys]
 
