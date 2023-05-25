@@ -43,6 +43,9 @@ MODELS_RENAME_DICT = {
 CHECKPOINTS_RENAME_DICT = {
     'EleutherAI/gpt-j-6B': 'GPT-J (6B)',
     'gpt2': 'GPT-2 (117M)',
+    'gpt-3.5-turbo': 'ChatGPT',
+    'gpt-4-0314': 'GPT-4',
+    'text-davinci-003': 'GPT-3',
 }
 
 def _extract_arrays_from_llm_tree(llm_tree, dtreeviz_dummies):
