@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Callable, Dict, List, Tuple
 
 import datasets
 import functools
@@ -18,6 +18,7 @@ from imodelsx.iprompt import (
     PrefixLoss, PrefixModel,
     PromptTunedModel, HotFlip, GumbelPrefixModel
 )
+from imodelsx.iprompt.llm import get_llm
 import pandas as pd
 import logging
 import pickle as pkl
@@ -43,8 +44,226 @@ model_cls_dict = {
     'prompt_tune': PromptTunedModel,
 }
 
+def get_prompts_api(
+        data: List[str], 
+        llm: Callable,
+        prompt_template: str, 
+    ):
+    data_str = random.choice(data)
+    prompt = prompt_template(data=data_str).strip()
+    answer = llm(prompt, max_new_tokens=24)
+    return [answer]
 
-def train_model(
+
+def run_iprompt_api(
+    r: Dict[str, List],
+    input_strs: List[str],
+    output_strs: List[str],
+    model: PrefixModel,
+    tokenizer: transformers.PreTrainedTokenizer,
+    llm_api: str,
+    save_dir: str = 'results',
+    lr: float = 1e-4,
+    batch_size: int = 64,
+    max_length: int = 128,
+    n_epochs: int = 100,
+    n_shots: int = 1,
+    single_shot_loss: bool = True,
+    accum_grad_over_epoch: bool = False,
+    max_n_datapoints: int = 10**4,
+    max_n_steps: int = 10**4,
+    epoch_save_interval: int = 1,
+    mask_possible_answers: bool = False,
+    verbose: int = 0,
+):
+    """
+    Trains a model, either by optimizing continuous embeddings or finding an optimal discrete embedding.
+
+    Params
+    ------
+    r: dict
+        dictionary of things to save
+    """
+
+
+    # remove periods and newlines from the output so we actually use the tokens
+    # for the reranking step in iPrompt
+    output_strs = [s.rstrip().rstrip('.') for s in output_strs]
+
+    r['train_start_time'] = time.time()
+    model.train()
+
+    logging.info("beginning iPrompt with n_shots = %d", n_shots)
+
+    assert len(input_strs) == len(
+        output_strs), "input and output must be same length to create input-output pairs"
+    text_strs = list(map(lambda t: f'{t[0]}{t[1]}.', zip(input_strs, output_strs)))
+    df = pd.DataFrame.from_dict({
+        'input': input_strs,
+        'output': output_strs,
+        'text': text_strs,
+    })
+    if n_shots > 1:
+        d2 = defaultdict(list)
+        for i in range(max_n_datapoints):
+            all_shots = df.sample(n=n_shots, replace=False)
+            d2['text'].append('\n\n'.join(all_shots['text'].values))
+            #
+            last_input = all_shots.tail(n=1)['input'].values[0]
+            d2['input'].append(
+                ''.join(all_shots['text'].values[:-1]) + last_input)
+            d2['last_input'].append(last_input)
+            #
+            last_output = all_shots.tail(n=1)['output'].values[0]
+            d2['output'].append(last_output)
+            #
+        df = pd.DataFrame.from_dict(d2)
+    
+    # shuffle rows
+    if max_n_datapoints < len(df):
+        df = df.sample(n=max_n_datapoints, replace=False)
+    dset = datasets.Dataset.from_pandas(df)
+    dset.shuffle()
+    print(f'iPrompt got {len(dset)} datapoints, now loading model...')
+
+    model = model.to(device)
+    dataloader = DataLoader(
+        dset, batch_size=batch_size, shuffle=True, drop_last=False)
+
+    prompt_template = "{prompt_start}\n\n{data}\n\n{prompt_end}"
+    prompt_template = functools.partial(
+        prompt_template.format,
+        prompt_start=model.llm_candidate_regeneration_prompt_start,
+        prompt_end=model.llm_candidate_regeneration_prompt_end,
+    )
+    
+    prompts = []
+    # "gpt-3.5-turbo", "text-curie-001"
+    llm = get_llm( 
+        checkpoint=llm_api, role="user")
+    stopping_early = False
+    total_n = 0
+    total_n_steps = 0
+    total_n_datapoints = 0
+    for epoch in range(n_epochs):       
+        print(f'Beginning epoch {epoch}')
+        pbar = tqdm(enumerate(dataloader), total=len(dataloader))
+        for idx, batch in pbar:
+            total_n_steps += 1
+            if (n_shots > 1) and (single_shot_loss):
+                batch['input'] = batch['last_input']
+            x_text, y_text = model.prepare_batch(batch=batch)
+
+            tok = functools.partial(
+                model.tokenizer, return_tensors='pt', padding='longest',
+                truncation=True, max_length=max_length)
+            text_tokenized = tok(batch['text']).to(device)
+            text_detokenized = model.tokenizer.batch_decode(
+                text_tokenized['input_ids'], 
+                skip_special_tokens=True,
+            )
+            
+            prompts.extend(
+                get_prompts_api(
+                    data=text_detokenized, 
+                    llm=llm, 
+                    prompt_template=prompt_template, 
+                )
+            )
+
+            total_n += len(x_text)
+            total_n_datapoints += len(x_text)
+            if (total_n_datapoints > max_n_datapoints) or (total_n_steps > max_n_steps):
+                stopping_early = True
+                break
+
+        if stopping_early:
+            print(f"Ending epoch {epoch} early...")
+
+        # save stuff
+        for key, val in model.compute_metrics().items():
+            r[key].append(val)
+
+        # r['losses'].append(avg_loss)
+        if epoch % epoch_save_interval == 0:
+            os.makedirs(save_dir, exist_ok=True)
+            pkl.dump(r, open(os.path.join(save_dir, 'results.pkl'), 'wb'))
+
+        # Early stopping, check after epoch
+        if stopping_early:
+            print(
+                f"Stopping early after {total_n_steps} steps and {total_n_datapoints} datapoints")
+            break
+
+    
+    # 
+    #   Evaluate model on prefixes
+    # 
+
+    # Compute loss only over possible answers to make task easier
+    possible_answer_ids = []
+    for batch in dataloader:
+        y_text = [answer for answer in batch['output']]
+        y_tokenized = tokenizer(y_text, return_tensors='pt', padding='longest')
+        # only test on the single next token
+        true_next_token_ids = y_tokenized['input_ids'][:, 0]
+        possible_answer_ids.extend(true_next_token_ids.tolist())
+    
+    possible_answer_ids = torch.tensor(possible_answer_ids)
+    vocab_size = len(tokenizer.vocab)
+    possible_answer_mask = (
+            torch.arange(start=0, end=vocab_size)[:, None]
+            ==
+            possible_answer_ids[None, :]
+        ).any(dim=1).to(device)
+    n_eval = 256
+    eval_dset = datasets.Dataset.from_dict(dset[:n_eval])
+    eval_dataloader = DataLoader(
+        eval_dset, batch_size=batch_size, shuffle=True, drop_last=False)   
+    all_prefixes = model.tokenizer(
+        [f" {prompt.strip()}" for prompt in prompts], 
+        truncation=False, 
+        padding=False,
+    )["input_ids"]
+    all_losses, all_accuracies = model.test_prefixes(
+        prefixes=all_prefixes,
+        eval_dataloader=eval_dataloader,
+        possible_answer_mask=possible_answer_mask
+    )
+
+    # 
+    #   Store prefix info 
+    # 
+    df = pd.DataFrame(
+        zip(*[all_prefixes, all_losses, all_accuracies]),
+        columns=['prefix', 'loss', 'accuracy']
+    )
+    df = df.sort_values(by=['accuracy', 'loss'], ascending=[
+                        False, True]).reset_index()
+    df = df.sort_values(by='accuracy', ascending=False).reset_index()
+
+    df['prefix_str'] = df['prefix'].map(
+        functools.partial(model.tokenizer.decode, skip_special_tokens=True)
+    )
+
+    print('Final prefixes')
+    print(df.head())
+    r.update({
+            "prefix_ids": df['prefix'].tolist(),
+            "prefixes": df['prefix_str'].tolist(),
+            "prefix_train_acc": df['accuracy'].tolist(),
+            "prefix_train_loss": df['loss'].tolist(),
+        })
+
+    r['train_end_time'] = time.time()
+    r['train_time_elapsed'] = r['train_end_time'] - r['train_start_time']
+
+    pkl.dump(r, open(os.path.join(save_dir, 'results.pkl'), 'wb'))
+
+    return r
+
+
+def run_iprompt_local(
     r: Dict[str, List],
     input_strs: List[str],
     output_strs: List[str],
@@ -107,6 +326,7 @@ def train_model(
     if max_n_datapoints < len(df):
         df = df.sample(n=max_n_datapoints, replace=False)
     dset = datasets.Dataset.from_pandas(df)
+    dset.shuffle()
     print(f'iPrompt got {len(dset)} datapoints, now loading model...')
 
     model = model.to(device)
@@ -231,7 +451,7 @@ def train_model(
             break
 
     # Serialize model-specific stuff (prefixes & losses for autoprompt, embeddings for prompt tuning, etc.)
-    n_eval = 512
+    n_eval = 256
     eval_dset = datasets.Dataset.from_dict(dset[:n_eval])
     eval_dataloader = DataLoader(
         eval_dset, batch_size=batch_size, shuffle=True, drop_last=False)
@@ -382,6 +602,7 @@ def explain_dataset_iprompt(
     llm_candidate_regeneration_prompt_end: str = 'Prompt:',
     verbose: int = 0,  # verbosity level (0 for minimal)
     seed: int = 42,
+    llm_api: str = "",
 ) -> Tuple[List[str], Dict]:
     """Explain the relationship between the input strings and the output strings
 
@@ -484,6 +705,8 @@ def explain_dataset_iprompt(
             early_stopping_steps=early_stopping_steps,
             num_learned_tokens=num_learned_tokens,
             max_length=max_length,
+            n_shots=n_shots,
+            single_shot_loss=single_shot_loss,
             verbose=verbose,
             llm_float16=llm_float16,
             generation_checkpoint=generation_checkpoint,
@@ -498,32 +721,56 @@ def explain_dataset_iprompt(
             loss_func=loss_func, model=lm, tokenizer=tokenizer, preprefix=preprefix
         )
         """
-
+    
+    iprompt_local = len(llm_api) == 0
     
     np.random.seed(seed)
     torch.manual_seed(seed)
     random.seed(seed)
     r = defaultdict(list)
-    r = train_model(
-        r=r,
-        input_strs=input_strings,
-        output_strs=output_strings,
-        model=model,
-        tokenizer=tokenizer,
-        save_dir=save_dir,
-        lr=lr,
-        batch_size=batch_size,
-        max_length=max_length,
-        mask_possible_answers=mask_possible_answers,
-        n_epochs=n_epochs,
-        n_shots=n_shots,
-        single_shot_loss=single_shot_loss,
-        accum_grad_over_epoch=accum_grad_over_epoch,
-        max_n_datapoints=max_n_datapoints,
-        max_n_steps=max_n_steps,
-        epoch_save_interval=epoch_save_interval,
-        verbose=verbose,
-    )
+    if iprompt_local:
+        r = run_iprompt_local(
+            r=r,
+            input_strs=input_strings,
+            output_strs=output_strings,
+            model=model,
+            tokenizer=tokenizer,
+            save_dir=save_dir,
+            lr=lr,
+            batch_size=batch_size,
+            max_length=max_length,
+            mask_possible_answers=mask_possible_answers,
+            n_epochs=n_epochs,
+            n_shots=n_shots,
+            single_shot_loss=single_shot_loss,
+            accum_grad_over_epoch=accum_grad_over_epoch,
+            max_n_datapoints=max_n_datapoints,
+            max_n_steps=max_n_steps,
+            epoch_save_interval=epoch_save_interval,
+            verbose=verbose,
+        )
+    else:
+        r = run_iprompt_api(
+            r=r,
+            input_strs=input_strings,
+            output_strs=output_strings,
+            model=model,
+            tokenizer=tokenizer,
+            save_dir=save_dir,
+            lr=lr,
+            batch_size=batch_size,
+            max_length=max_length,
+            mask_possible_answers=mask_possible_answers,
+            n_epochs=n_epochs,
+            n_shots=n_shots,
+            single_shot_loss=single_shot_loss,
+            accum_grad_over_epoch=accum_grad_over_epoch,
+            max_n_datapoints=max_n_datapoints,
+            max_n_steps=max_n_steps,
+            epoch_save_interval=epoch_save_interval,
+            verbose=verbose,
+            llm_api=llm_api,
+        )
     model = model.cpu()
     return r['prefixes'], r
 

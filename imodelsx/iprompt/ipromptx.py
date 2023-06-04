@@ -44,6 +44,8 @@ class iPrompt(AutoPrompt):
         verbose: int = 0,
         llm_float16: bool = True,
         generation_checkpoint: str = '',
+        n_shots: int = 1,
+        single_shot_loss: bool = True,
         llm_candidate_regeneration_prompt_start: str = 'Data:',
         llm_candidate_regeneration_prompt_end: str = 'Prompt:',
     ):
@@ -53,6 +55,8 @@ class iPrompt(AutoPrompt):
         args.hotflip_num_candidates = None
         args.autoprompt_init_strategy = None
         args.save_dir_unique = '.'
+        args.n_shots = n_shots
+        args.single_shot_loss = single_shot_loss
         args.max_length = max_length
         args.iprompt_do_final_reranking = do_final_reranking
         super().__init__(
@@ -62,7 +66,6 @@ class iPrompt(AutoPrompt):
         self.tokenizer.add_special_tokens = False
         ####################################################################
         # iPrompt-specific parameters
-        # TODO argparse for GA-specific hparams
         self._pop_size = pop_size
         self._topk_pop_sample = (self._pop_size + 4) # sample next population from this num of top things. set higher for more randomness.
         self._num_mutations_per_ex = num_mutations # num mutations for each population item
@@ -109,6 +112,9 @@ class iPrompt(AutoPrompt):
            f"{llm_candidate_regeneration_prompt_start}\n\n", return_tensors='pt').input_ids.to(device)
         self._post_data_token_ids = self.tokenizer(
            f"\n\n{llm_candidate_regeneration_prompt_end}" + prompt_str, return_tensors='pt').input_ids.to(device)
+        
+        self.llm_candidate_regeneration_prompt_start = llm_candidate_regeneration_prompt_start
+        self.llm_candidate_regeneration_prompt_end = llm_candidate_regeneration_prompt_end
         ####################################################################
         self._iprompt_verbose = verbose
         self._step = 0

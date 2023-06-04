@@ -48,7 +48,7 @@ class AutoPrompt(HotFlip):
         # Will rank and save this many prefixes at the end of training.
         self._num_prefixes_to_test = 64
     
-    def _test_prefixes(
+    def test_prefixes(
         self,
         prefixes: List[Tuple[int]], 
         eval_dataloader: torch.utils.data.DataLoader, 
@@ -61,8 +61,8 @@ class AutoPrompt(HotFlip):
             len(prefixes), dtype=torch.float32)
         total_n = 0
         for batch in tqdm.tqdm(eval_dataloader, desc=f'evaluating {len(prefixes)} prefixes'):
-            # if (self.args.n_shots > 1) and (self.args.single_shot_loss): ##
-            #    batch['input'] = batch['last_input'] ##
+            if (self.args.n_shots > 1) and (self.args.single_shot_loss): ##
+               batch['input'] = batch['last_input'] ##
             x_text, y_text = self.prepare_batch(batch=batch)
             tok = functools.partial(
                 self.tokenizer, return_tensors='pt', padding='longest',
@@ -105,7 +105,7 @@ class AutoPrompt(HotFlip):
             all_prefixes = random.choices(list(self._prefix_pool.prefixes), k=self._num_prefixes_to_test)
 
         if self._do_final_reranking:
-            all_losses, all_accuracies = self._test_prefixes(
+            all_losses, all_accuracies = self.test_prefixes(
                 prefixes=all_prefixes,
                 eval_dataloader=eval_dataloader,
                 possible_answer_mask=possible_answer_mask
