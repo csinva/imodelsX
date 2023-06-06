@@ -9,6 +9,7 @@ with open(path.join(path_to_repo, 'readme.md'), encoding='utf-8') as f:
 required_pypi = [
     'datasets',
     'imodels',
+    'langchain',
     'numpy',
     'pandas',
     'scikit-learn',
