@@ -7,20 +7,15 @@ from transformers import (
 )
 import transformers
 from transformers import AutoConfig, AutoModel, AutoTokenizer, AutoModelForCausalLM
-from langchain.cache import InMemoryCache
 import re
 from transformers import LlamaForCausalLM, LlamaTokenizer
 from typing import Any, Dict, List, Mapping, Optional
 import numpy as np
-import openai
 import os.path
 from os.path import join, dirname
 import os
 import pickle as pkl
-import langchain
 from scipy.special import softmax
-import openai
-from langchain.llms.base import LLM
 import hashlib
 import torch
 import time
@@ -47,7 +42,8 @@ def get_llm(checkpoint, seed=1, role: str = None):
             checkpoint, seed=seed
         )  # warning: this sets torch.manual_seed(seed)
 
-def llm_openai(checkpoint="text-davinci-003", seed=1) -> LLM:
+def llm_openai(checkpoint="text-davinci-003", seed=1):
+    import openai
     class LLM_OpenAI:
         def __init__(self, checkpoint, seed):
             self.cache_dir = join(
@@ -86,7 +82,7 @@ def llm_openai(checkpoint="text-davinci-003", seed=1) -> LLM:
     return LLM_OpenAI(checkpoint, seed)
 
 
-def llm_openai_chat(checkpoint="gpt-3.5-turbo", seed=1, role=None) -> LLM:
+def llm_openai_chat(checkpoint="gpt-3.5-turbo", seed=1, role=None):
     class LLM_Chat:
         """Chat models take a different format: https://platform.openai.com/docs/guides/chat/introduction"""
 
@@ -167,7 +163,7 @@ def llm_openai_chat(checkpoint="gpt-3.5-turbo", seed=1, role=None) -> LLM:
     return LLM_Chat(checkpoint, seed, role)
 
 
-def llm_hf(checkpoint="google/flan-t5-xl", seed=1) -> LLM:
+def llm_hf(checkpoint="google/flan-t5-xl", seed=1):
     LLAMA_DIR = "/home/chansingh/llama"
 
     class LLM_HF:
