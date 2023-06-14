@@ -74,9 +74,9 @@ class AutoPrompt(HotFlip):
         self._autoprompt_verbose = True
         self._num_min_occurrences = 1
         # Will rank and save this many prefixes at the end of training.
-        self._num_prefixes_to_test = 1024
+        self._num_prefixes_to_test = 64
     
-    def _test_prefixes(
+    def test_prefixes(
         self,
         prefixes: List[Tuple[int]], 
         eval_dataloader: torch.utils.data.DataLoader, 
@@ -88,11 +88,9 @@ class AutoPrompt(HotFlip):
         all_candidate_n_correct = torch.zeros(
             len(prefixes), dtype=torch.float32)
         total_n = 0
-        print(&#39;_test_prefixes&#39;)
-        # breakpoint()
         for batch in tqdm.tqdm(eval_dataloader, desc=f&#39;evaluating {len(prefixes)} prefixes&#39;):
             if (self.args.n_shots &gt; 1) and (self.args.single_shot_loss): ##
-                batch[&#39;input&#39;] = batch[&#39;last_input&#39;] ##
+               batch[&#39;input&#39;] = batch[&#39;last_input&#39;] ##
             x_text, y_text = self.prepare_batch(batch=batch)
             tok = functools.partial(
                 self.tokenizer, return_tensors=&#39;pt&#39;, padding=&#39;longest&#39;,
@@ -127,15 +125,15 @@ class AutoPrompt(HotFlip):
         # pickle.dump(self._prefix_pool, open(os.path.join(save_dir, &#39;prefix_pool.p&#39;), &#39;wb&#39;))
 
         all_prefixes = self._prefix_pool.topk_all(
-            k=self._num_prefixes_to_test, min_occurrences=2)
+            k=self._num_prefixes_to_test, min_occurrences=3)
 
         if not len(all_prefixes):
             # In the case where we get no prefixes here (i.e. prompt generation
             # only ran for a single step) just take anything from prefix pool.
-            all_prefixes = random.choices(self._prefix_pool.prefixes, k=self._num_prefixes_to_test)
+            all_prefixes = random.choices(list(self._prefix_pool.prefixes), k=self._num_prefixes_to_test)
 
         if self._do_final_reranking:
-            all_losses, all_accuracies = self._test_prefixes(
+            all_losses, all_accuracies = self.test_prefixes(
                 prefixes=all_prefixes,
                 eval_dataloader=eval_dataloader,
                 possible_answer_mask=possible_answer_mask
@@ -378,9 +376,9 @@ evaluation mode.
         self._autoprompt_verbose = True
         self._num_min_occurrences = 1
         # Will rank and save this many prefixes at the end of training.
-        self._num_prefixes_to_test = 1024
+        self._num_prefixes_to_test = 64
     
-    def _test_prefixes(
+    def test_prefixes(
         self,
         prefixes: List[Tuple[int]], 
         eval_dataloader: torch.utils.data.DataLoader, 
@@ -392,11 +390,9 @@ evaluation mode.
         all_candidate_n_correct = torch.zeros(
             len(prefixes), dtype=torch.float32)
         total_n = 0
-        print(&#39;_test_prefixes&#39;)
-        # breakpoint()
         for batch in tqdm.tqdm(eval_dataloader, desc=f&#39;evaluating {len(prefixes)} prefixes&#39;):
             if (self.args.n_shots &gt; 1) and (self.args.single_shot_loss): ##
-                batch[&#39;input&#39;] = batch[&#39;last_input&#39;] ##
+               batch[&#39;input&#39;] = batch[&#39;last_input&#39;] ##
             x_text, y_text = self.prepare_batch(batch=batch)
             tok = functools.partial(
                 self.tokenizer, return_tensors=&#39;pt&#39;, padding=&#39;longest&#39;,
@@ -431,15 +427,15 @@ evaluation mode.
         # pickle.dump(self._prefix_pool, open(os.path.join(save_dir, &#39;prefix_pool.p&#39;), &#39;wb&#39;))
 
         all_prefixes = self._prefix_pool.topk_all(
-            k=self._num_prefixes_to_test, min_occurrences=2)
+            k=self._num_prefixes_to_test, min_occurrences=3)
 
         if not len(all_prefixes):
             # In the case where we get no prefixes here (i.e. prompt generation
             # only ran for a single step) just take anything from prefix pool.
-            all_prefixes = random.choices(self._prefix_pool.prefixes, k=self._num_prefixes_to_test)
+            all_prefixes = random.choices(list(self._prefix_pool.prefixes), k=self._num_prefixes_to_test)
 
         if self._do_final_reranking:
-            all_losses, all_accuracies = self._test_prefixes(
+            all_losses, all_accuracies = self.test_prefixes(
                 prefixes=all_prefixes,
                 eval_dataloader=eval_dataloader,
                 possible_answer_mask=possible_answer_mask
@@ -683,15 +679,15 @@ evaluation mode.
     # pickle.dump(self._prefix_pool, open(os.path.join(save_dir, &#39;prefix_pool.p&#39;), &#39;wb&#39;))
 
     all_prefixes = self._prefix_pool.topk_all(
-        k=self._num_prefixes_to_test, min_occurrences=2)
+        k=self._num_prefixes_to_test, min_occurrences=3)
 
     if not len(all_prefixes):
         # In the case where we get no prefixes here (i.e. prompt generation
         # only ran for a single step) just take anything from prefix pool.
-        all_prefixes = random.choices(self._prefix_pool.prefixes, k=self._num_prefixes_to_test)
+        all_prefixes = random.choices(list(self._prefix_pool.prefixes), k=self._num_prefixes_to_test)
 
     if self._do_final_reranking:
-        all_losses, all_accuracies = self._test_prefixes(
+        all_losses, all_accuracies = self.test_prefixes(
             prefixes=all_prefixes,
             eval_dataloader=eval_dataloader,
             possible_answer_mask=possible_answer_mask
@@ -727,6 +723,56 @@ evaluation mode.
         &#34;prefix_train_loss&#34;: df[&#39;loss&#39;].tolist(),
         &#34;prefix_n_queries&#34;: df[&#39;n_queries&#39;].tolist(),
     }</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.iprompt.autoprompt.AutoPrompt.test_prefixes"><code class="name flex">
+<span>def <span class="ident">test_prefixes</span></span>(<span>self, prefixes: List[Tuple[int]], eval_dataloader: torch.utils.data.dataloader.DataLoader, possible_answer_mask: torch.Tensor) ‑> Tuple[torch.Tensor, torch.Tensor]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes loss &amp; accuracy for each prefix on data in dataloader. Used to rank
+prefixes at the end of training.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_prefixes(
+    self,
+    prefixes: List[Tuple[int]], 
+    eval_dataloader: torch.utils.data.DataLoader, 
+    possible_answer_mask: torch.Tensor) -&gt; Tuple[torch.Tensor, torch.Tensor]:
+    &#34;&#34;&#34;Computes loss &amp; accuracy for each prefix on data in dataloader. Used to rank
+    prefixes at the end of training.
+    &#34;&#34;&#34;
+    all_candidate_losses = torch.zeros(len(prefixes), dtype=torch.float32)
+    all_candidate_n_correct = torch.zeros(
+        len(prefixes), dtype=torch.float32)
+    total_n = 0
+    for batch in tqdm.tqdm(eval_dataloader, desc=f&#39;evaluating {len(prefixes)} prefixes&#39;):
+        if (self.args.n_shots &gt; 1) and (self.args.single_shot_loss): ##
+           batch[&#39;input&#39;] = batch[&#39;last_input&#39;] ##
+        x_text, y_text = self.prepare_batch(batch=batch)
+        tok = functools.partial(
+            self.tokenizer, return_tensors=&#39;pt&#39;, padding=&#39;longest&#39;,
+            truncation=True, max_length=self.args.max_length  # TODO set max_length on self
+        )
+        x_tokenized = tok(x_text).to(device)
+        y_tokenized = tok(y_text).to(device)
+        total_n += len(x_tokenized.input_ids)
+
+        next_token_ids = y_tokenized.input_ids
+        for i in range(len(prefixes)):
+            with torch.no_grad():
+                _cand_input_ids, cand_loss, cand_n_correct = (
+                    self._compute_loss_with_set_prefix(
+                        original_input_ids=x_tokenized.input_ids,
+                        next_token_ids=next_token_ids,
+                        possible_answer_mask=possible_answer_mask,
+                        prefix_ids=torch.tensor(prefixes[i]).to(device),
+                    )
+                )
+            all_candidate_losses[i] += cand_loss.item()
+            all_candidate_n_correct[i] += cand_n_correct.item()
+    return all_candidate_losses.cpu().tolist(), (all_candidate_n_correct / total_n).cpu().tolist()</code></pre>
 </details>
 </dd>
 </dl>
@@ -770,6 +816,7 @@ evaluation mode.
 <li><code><a title="imodelsx.iprompt.autoprompt.AutoPrompt.prefix_ids" href="#imodelsx.iprompt.autoprompt.AutoPrompt.prefix_ids">prefix_ids</a></code></li>
 <li><code><a title="imodelsx.iprompt.autoprompt.AutoPrompt.preprefix" href="#imodelsx.iprompt.autoprompt.AutoPrompt.preprefix">preprefix</a></code></li>
 <li><code><a title="imodelsx.iprompt.autoprompt.AutoPrompt.serialize" href="#imodelsx.iprompt.autoprompt.AutoPrompt.serialize">serialize</a></code></li>
+<li><code><a title="imodelsx.iprompt.autoprompt.AutoPrompt.test_prefixes" href="#imodelsx.iprompt.autoprompt.AutoPrompt.test_prefixes">test_prefixes</a></code></li>
 <li><code><a title="imodelsx.iprompt.autoprompt.AutoPrompt.tokenizer" href="#imodelsx.iprompt.autoprompt.AutoPrompt.tokenizer">tokenizer</a></code></li>
 </ul>
 </li>

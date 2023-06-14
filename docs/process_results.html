@@ -38,30 +38,37 @@ import sys
 import warnings
 import scipy.stats
 import numpy as np
+
 repo_dir = dirname(dirname(os.path.abspath(__file__)))
 
+
 def get_results_df(results_dir, use_cached=False) -&gt; pd.DataFrame:
-    &#34;&#34;&#34;Load results from a directory of experiments, 
+    &#34;&#34;&#34;Load results from a directory of experiments,
     each experiments is a row in the dataframe
     &#34;&#34;&#34;
-    fname = join(results_dir, &#39;results_aggregated.pkl&#39;)
+    fname = join(results_dir, &#34;results_aggregated.pkl&#34;)
     if use_cached and os.path.exists(fname):
         return pd.read_pickle(fname)
-    dir_names = sorted([fname
-                        for fname in os.listdir(results_dir)
-                        if os.path.isdir(join(results_dir, fname))
-                        and os.path.exists(join(results_dir, fname, &#39;results.pkl&#39;))
-                        ])
+    dir_names = sorted(
+        [
+            fname
+            for fname in os.listdir(results_dir)
+            if os.path.isdir(join(results_dir, fname))
+            and os.path.exists(join(results_dir, fname, &#34;results.pkl&#34;))
+        ]
+    )
     results_list = []
     for dir_name in tqdm(dir_names):
         ser = pd.Series(
-            pkl.load(open(join(results_dir, dir_name, &#39;results.pkl&#39;), &#34;rb&#34;)))
+            pkl.load(open(join(results_dir, dir_name, &#34;results.pkl&#34;), &#34;rb&#34;))
+        )
         results_list.append(ser)
     r = pd.concat(results_list, axis=1).T.infer_objects()
     r.to_pickle(fname)
     return r
 
-def get_main_args_list(experiment_filename=&#39;01_train_model.py&#39;):
+
+def get_main_args_list(experiment_filename=&#34;01_train_model.py&#34;):
     &#34;&#34;&#34;Returns main arguments from the argparser used by an experiments script
 
     Params
@@ -69,7 +76,7 @@ def get_main_args_list(experiment_filename=&#39;01_train_model.py&#39;):
     experiment_filename: str
         Full path + name of the experiments script, e.g. /home/user/tree-prompt/experiments/01_train_model.py
     &#34;&#34;&#34;
-    if experiment_filename.endswith(&#39;.py&#39;):
+    if experiment_filename.endswith(&#34;.py&#34;):
         experiment_filename = experiment_filename[:-3]
     # sys.path.append(join(repo_dir, &#39;experiments&#39;))
     sys.path.append(os.path.dirname(experiment_filename))
@@ -77,7 +84,8 @@ def get_main_args_list(experiment_filename=&#39;01_train_model.py&#39;):
     args = train_script.add_main_args(argparse.ArgumentParser()).parse_args([])
     return list(vars(args).keys())
 
-def fill_missing_args_with_default(df, experiment_filename=&#39;01_train_model.py&#39;):
+
+def fill_missing_args_with_default(df, experiment_filename=&#34;01_train_model.py&#34;):
     &#34;&#34;&#34;Returns main arguments from the argparser used by an experiments script
     Params
     ------
@@ -85,7 +93,7 @@ def fill_missing_args_with_default(df, experiment_filename=&#39;01_train_model.p
     experiment_filename: str
         Full path + name of the experiments script, e.g. /home/user/tree-prompt/experiments/01_train_model.py
     &#34;&#34;&#34;
-    if experiment_filename.endswith(&#39;.py&#39;):
+    if experiment_filename.endswith(&#34;.py&#34;):
         experiment_filename = experiment_filename[:-3]
     sys.path.append(os.path.dirname(experiment_filename))
     train_script = __import__(os.path.basename(experiment_filename))
@@ -99,24 +107,32 @@ def fill_missing_args_with_default(df, experiment_filename=&#39;01_train_model.p
         df[k] = df[k].fillna(v)
     return df
 
-def delete_runs_in_dataframe(df: pd.DataFrame, actually_delete=False, directory_key=&#39;save_dir_unique&#39;):
-    &#39;&#39;&#39;Deletes stored results for all runs in the dataframe r.
-    &#39;&#39;&#39;
+
+def delete_runs_in_dataframe(
+    df: pd.DataFrame, actually_delete=False, directory_key=&#34;save_dir_unique&#34;
+):
+    &#34;&#34;&#34;Deletes stored results for all runs in the dataframe r.&#34;&#34;&#34;
     if not actually_delete:
-        print(f&#39;Not actually deleting {df.shape[0]} directories. Set actually_delete=True to actually delete the directories.&#39;)
+        print(
+            f&#34;Not actually deleting {df.shape[0]} directories. Set actually_delete=True to actually delete the directories.&#34;
+        )
         return
-    
+
     num_deleted = 0
     for i in tqdm(range(df.shape[0])):
         try:
-            os.system(f&#39;rm -rf {df.iloc[i][directory_key]}&#39;)
+            os.system(f&#34;rm -rf {df.iloc[i][directory_key]}&#34;)
             num_deleted += 1
         except:
             pass
-    print(f&#39;Deleted {num_deleted}/{df.shape[0]} directories.&#39;)
+    print(f&#34;Deleted {num_deleted}/{df.shape[0]} directories.&#34;)
 
 
-def average_over_seeds(df: pd.DataFrame, experiment_filename=&#39;01_train_model.py&#39;, key_to_average_over=&#39;seed&#39;):
+def average_over_seeds(
+    df: pd.DataFrame,
+    experiment_filename=&#34;01_train_model.py&#34;,
+    key_to_average_over=&#34;seed&#34;,
+):
     &#34;&#34;&#34;Returns values averaged over seed.
     Standard errors of the mean are added with columns suffixed with _err
     For example, &#39;accuracy_test&#39; yields two columns
@@ -129,25 +145,25 @@ def average_over_seeds(df: pd.DataFrame, experiment_filename=&#39;01_train_model
         Full path + name of the experiments script, e.g. /home/user/tree-prompt/experiments/01_train_model.py
         This is used to get the names of the arguments to aggregate over
     &#34;&#34;&#34;
+
     def sem(x):
-        &#39;&#39;&#39;Compute standard error of the mean, ignoring NaNs
-        &#39;&#39;&#39;
+        &#34;&#34;&#34;Compute standard error of the mean, ignoring NaNs&#34;&#34;&#34;
         with warnings.catch_warnings():
             return scipy.stats.sem(x, ddof=0)
-    
+
     group_keys = [
-        k for k in get_main_args_list(experiment_filename)
+        k
+        for k in get_main_args_list(experiment_filename)
         if not k == key_to_average_over
+        and k in df.columns
     ]
+    numeric_keys = [k for k in list(df.select_dtypes(&#34;number&#34;)) if not k in group_keys]
 
     df_avg = (
-        df
-        .groupby(by=group_keys)
-        .aggregate([np.mean, sem], numeric_only=True)
-        # .mean(numeric_only=True)
+        df.groupby(by=group_keys)[numeric_keys].aggregate([np.mean, sem])
         .reset_index()
     )
-    df_avg.columns = [x[0] + &#39;_err&#39; if x[1] == &#39;sem&#39; else x[0] for x in df_avg.columns]
+    df_avg.columns = [x[0] + &#34;_err&#34; if x[1] == &#34;sem&#34; else x[0] for x in df_avg.columns]
     return df_avg</code></pre>
 </details>
 </section>
@@ -175,7 +191,11 @@ This is used to get the names of the arguments to aggregate over</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def average_over_seeds(df: pd.DataFrame, experiment_filename=&#39;01_train_model.py&#39;, key_to_average_over=&#39;seed&#39;):
+<pre><code class="python">def average_over_seeds(
+    df: pd.DataFrame,
+    experiment_filename=&#34;01_train_model.py&#34;,
+    key_to_average_over=&#34;seed&#34;,
+):
     &#34;&#34;&#34;Returns values averaged over seed.
     Standard errors of the mean are added with columns suffixed with _err
     For example, &#39;accuracy_test&#39; yields two columns
@@ -188,25 +208,25 @@ This is used to get the names of the arguments to aggregate over</p></div>
         Full path + name of the experiments script, e.g. /home/user/tree-prompt/experiments/01_train_model.py
         This is used to get the names of the arguments to aggregate over
     &#34;&#34;&#34;
+
     def sem(x):
-        &#39;&#39;&#39;Compute standard error of the mean, ignoring NaNs
-        &#39;&#39;&#39;
+        &#34;&#34;&#34;Compute standard error of the mean, ignoring NaNs&#34;&#34;&#34;
         with warnings.catch_warnings():
             return scipy.stats.sem(x, ddof=0)
-    
+
     group_keys = [
-        k for k in get_main_args_list(experiment_filename)
+        k
+        for k in get_main_args_list(experiment_filename)
         if not k == key_to_average_over
+        and k in df.columns
     ]
+    numeric_keys = [k for k in list(df.select_dtypes(&#34;number&#34;)) if not k in group_keys]
 
     df_avg = (
-        df
-        .groupby(by=group_keys)
-        .aggregate([np.mean, sem], numeric_only=True)
-        # .mean(numeric_only=True)
+        df.groupby(by=group_keys)[numeric_keys].aggregate([np.mean, sem])
         .reset_index()
     )
-    df_avg.columns = [x[0] + &#39;_err&#39; if x[1] == &#39;sem&#39; else x[0] for x in df_avg.columns]
+    df_avg.columns = [x[0] + &#34;_err&#34; if x[1] == &#34;sem&#34; else x[0] for x in df_avg.columns]
     return df_avg</code></pre>
 </details>
 </dd>
@@ -219,21 +239,24 @@ This is used to get the names of the arguments to aggregate over</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def delete_runs_in_dataframe(df: pd.DataFrame, actually_delete=False, directory_key=&#39;save_dir_unique&#39;):
-    &#39;&#39;&#39;Deletes stored results for all runs in the dataframe r.
-    &#39;&#39;&#39;
+<pre><code class="python">def delete_runs_in_dataframe(
+    df: pd.DataFrame, actually_delete=False, directory_key=&#34;save_dir_unique&#34;
+):
+    &#34;&#34;&#34;Deletes stored results for all runs in the dataframe r.&#34;&#34;&#34;
     if not actually_delete:
-        print(f&#39;Not actually deleting {df.shape[0]} directories. Set actually_delete=True to actually delete the directories.&#39;)
+        print(
+            f&#34;Not actually deleting {df.shape[0]} directories. Set actually_delete=True to actually delete the directories.&#34;
+        )
         return
-    
+
     num_deleted = 0
     for i in tqdm(range(df.shape[0])):
         try:
-            os.system(f&#39;rm -rf {df.iloc[i][directory_key]}&#39;)
+            os.system(f&#34;rm -rf {df.iloc[i][directory_key]}&#34;)
             num_deleted += 1
         except:
             pass
-    print(f&#39;Deleted {num_deleted}/{df.shape[0]} directories.&#39;)</code></pre>
+    print(f&#34;Deleted {num_deleted}/{df.shape[0]} directories.&#34;)</code></pre>
 </details>
 </dd>
 <dt id="imodelsx.process_results.fill_missing_args_with_default"><code class="name flex">
@@ -249,7 +272,7 @@ Full path + name of the experiments script, e.g. /home/user/tree-prompt/experime
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def fill_missing_args_with_default(df, experiment_filename=&#39;01_train_model.py&#39;):
+<pre><code class="python">def fill_missing_args_with_default(df, experiment_filename=&#34;01_train_model.py&#34;):
     &#34;&#34;&#34;Returns main arguments from the argparser used by an experiments script
     Params
     ------
@@ -257,7 +280,7 @@ Full path + name of the experiments script, e.g. /home/user/tree-prompt/experime
     experiment_filename: str
         Full path + name of the experiments script, e.g. /home/user/tree-prompt/experiments/01_train_model.py
     &#34;&#34;&#34;
-    if experiment_filename.endswith(&#39;.py&#39;):
+    if experiment_filename.endswith(&#34;.py&#34;):
         experiment_filename = experiment_filename[:-3]
     sys.path.append(os.path.dirname(experiment_filename))
     train_script = __import__(os.path.basename(experiment_filename))
@@ -284,7 +307,7 @@ Full path + name of the experiments script, e.g. /home/user/tree-prompt/experime
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_main_args_list(experiment_filename=&#39;01_train_model.py&#39;):
+<pre><code class="python">def get_main_args_list(experiment_filename=&#34;01_train_model.py&#34;):
     &#34;&#34;&#34;Returns main arguments from the argparser used by an experiments script
 
     Params
@@ -292,7 +315,7 @@ Full path + name of the experiments script, e.g. /home/user/tree-prompt/experime
     experiment_filename: str
         Full path + name of the experiments script, e.g. /home/user/tree-prompt/experiments/01_train_model.py
     &#34;&#34;&#34;
-    if experiment_filename.endswith(&#39;.py&#39;):
+    if experiment_filename.endswith(&#34;.py&#34;):
         experiment_filename = experiment_filename[:-3]
     # sys.path.append(join(repo_dir, &#39;experiments&#39;))
     sys.path.append(os.path.dirname(experiment_filename))
@@ -312,21 +335,25 @@ each experiments is a row in the dataframe</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_results_df(results_dir, use_cached=False) -&gt; pd.DataFrame:
-    &#34;&#34;&#34;Load results from a directory of experiments, 
+    &#34;&#34;&#34;Load results from a directory of experiments,
     each experiments is a row in the dataframe
     &#34;&#34;&#34;
-    fname = join(results_dir, &#39;results_aggregated.pkl&#39;)
+    fname = join(results_dir, &#34;results_aggregated.pkl&#34;)
     if use_cached and os.path.exists(fname):
         return pd.read_pickle(fname)
-    dir_names = sorted([fname
-                        for fname in os.listdir(results_dir)
-                        if os.path.isdir(join(results_dir, fname))
-                        and os.path.exists(join(results_dir, fname, &#39;results.pkl&#39;))
-                        ])
+    dir_names = sorted(
+        [
+            fname
+            for fname in os.listdir(results_dir)
+            if os.path.isdir(join(results_dir, fname))
+            and os.path.exists(join(results_dir, fname, &#34;results.pkl&#34;))
+        ]
+    )
     results_list = []
     for dir_name in tqdm(dir_names):
         ser = pd.Series(
-            pkl.load(open(join(results_dir, dir_name, &#39;results.pkl&#39;), &#34;rb&#34;)))
+            pkl.load(open(join(results_dir, dir_name, &#34;results.pkl&#34;), &#34;rb&#34;))
+        )
         results_list.append(ser)
     r = pd.concat(results_list, axis=1).T.infer_objects()
     r.to_pickle(fname)

@@ -75,11 +75,11 @@
 <td style="text-align: left;">Aug-Tree</td>
 <td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/augmodels.ipynb">📖</a>, <a href="https://csinva.io/imodelsX/augtree/augtree.html">🗂️</a>, <a href="https://github.com/microsoft/aug-models">🔗</a>, <a href="https://arxiv.org/abs/2209.11799">📄</a></td>
 <td>Decision tree</td>
-<td>Fit better decision tree using an LLM<br/>to expand features (⌛ In progress)</td>
+<td>Fit better decision tree using an LLM<br/>to expand features (<em>Official</em>)</td>
 </tr>
 <tr>
 <td style="text-align: left;">SASC</td>
-<td>ㅤㅤ<a href="https://csinva.io/imodelsX/sasc/api.html">🗂️</a>, <a href="https://github.com/microsoft/automated-explanations">🔗</a></td>
+<td>ㅤㅤ<a href="https://csinva.io/imodelsX/sasc/api.html">🗂️</a>, <a href="https://github.com/microsoft/automated-explanations">🔗</a>, <a href="https://arxiv.org/abs/2305.09863">📄</a></td>
 <td>Explanation</td>
 <td>Explain a black-box text module<br/>using an LLM (<em>Official</em>)</td>
 </tr>
@@ -123,8 +123,8 @@ prompts, metadata = explain_dataset_iprompt(
 prompts is a list of found natural-language prompt strings
 </code></pre>
 <h3 id="d3-describedistributionaldifferences">D3 (DescribeDistributionalDifferences)</h3>
-<pre><code class="language-python">import imodelsx
-hypotheses, hypothesis_scores = imodelsx.explain_dataset_d3(
+<pre><code class="language-python">from imodelsx import explain_dataset_d3
+hypotheses, hypothesis_scores = explain_dataset_d3(
     pos=positive_samples, # List[str] of positive examples
     neg=negative_samples, # another List[str]
     num_steps=100,
@@ -166,7 +166,8 @@ for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
 </code></pre>
 <h3 id="linear-finetune">Linear finetune</h3>
 <p>An easy-to-fit baseline that follows the same API.</p>
-<pre><code class="language-python"># fit a simple one-layer finetune
+<pre><code class="language-python">from imodelsx import LinearFinetuneClassifier
+# fit a simple one-layer finetune
 m = LinearFinetuneClassifier(
     checkpoint='distilbert-base-uncased',
 )
@@ -177,7 +178,8 @@ print('validation acc', acc)
 </code></pre>
 <h3 id="sasc">SASC</h3>
 <p>Here, we explain a <em>module</em> rather than a dataset</p>
-<pre><code class="language-python"># a toy module that responds to the length of a string
+<pre><code class="language-python">from imodelsx import explain_module_sasc
+# a toy module that responds to the length of a string
 mod = lambda str_list: np.array([len(s) for s in str_list])
 
 # a toy dataset where the longest strings are animals
@@ -249,6 +251,10 @@ from .sasc.api import explain_module_sasc</code></pre>
 <dd>
 <div class="desc"><p>Simple scikit-learn interface for finetuning a single linear layer on top of LLM embeddings.</p></div>
 </dd>
+<dt><code class="name"><a title="imodelsx.llm" href="llm.html">imodelsx.llm</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt><code class="name"><a title="imodelsx.metrics" href="metrics.html">imodelsx.metrics</a></code></dt>
 <dd>
 <div class="desc"></div>
@@ -308,6 +314,7 @@ from .sasc.api import explain_module_sasc</code></pre>
 <li><code><a title="imodelsx.dummy_script" href="dummy_script.html">imodelsx.dummy_script</a></code></li>
 <li><code><a title="imodelsx.iprompt" href="iprompt/index.html">imodelsx.iprompt</a></code></li>
 <li><code><a title="imodelsx.linear_finetune" href="linear_finetune.html">imodelsx.linear_finetune</a></code></li>
+<li><code><a title="imodelsx.llm" href="llm.html">imodelsx.llm</a></code></li>
 <li><code><a title="imodelsx.metrics" href="metrics.html">imodelsx.metrics</a></code></li>
 <li><code><a title="imodelsx.process_results" href="process_results.html">imodelsx.process_results</a></code></li>
 <li><code><a title="imodelsx.sasc" href="sasc/index.html">imodelsx.sasc</a></code></li>

@@ -266,6 +266,7 @@ def get_paragraphs(
     checkpoint=&#34;gpt-4-0314&#34;,
     prefix_first=&#34;Write the beginning paragraph of a story about&#34;,
     prefix_next=&#34;Write the next paragraph of the story, but now make it about&#34;,
+    cache_dir=&#39;~/.cache/llm_stories&#39;,
 ):
     &#34;&#34;&#34;
     Example messages
@@ -282,7 +283,7 @@ def get_paragraphs(
         &#34;gpt-4-0314&#34;: 30000,
     }[checkpoint]
 
-    llm = get_llm(checkpoint)
+    llm = get_llm(checkpoint, cache_dir=cache_dir)
     response = None
     messages = [{&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: &#34;You are a helpful assistant.&#34;}]
     all_content = []
@@ -352,7 +353,7 @@ if __name__ == &#34;__main__&#34;:
 </details>
 </dd>
 <dt id="imodelsx.sasc.llm.get_paragraphs"><code class="name flex">
-<span>def <span class="ident">get_paragraphs</span></span>(<span>prompts, checkpoint='gpt-4-0314', prefix_first='Write the beginning paragraph of a story about', prefix_next='Write the next paragraph of the story, but now make it about')</span>
+<span>def <span class="ident">get_paragraphs</span></span>(<span>prompts, checkpoint='gpt-4-0314', prefix_first='Write the beginning paragraph of a story about', prefix_next='Write the next paragraph of the story, but now make it about', cache_dir='~/.cache/llm_stories')</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="example-messages">Example Messages</h2>
@@ -371,6 +372,7 @@ if __name__ == &#34;__main__&#34;:
     checkpoint=&#34;gpt-4-0314&#34;,
     prefix_first=&#34;Write the beginning paragraph of a story about&#34;,
     prefix_next=&#34;Write the next paragraph of the story, but now make it about&#34;,
+    cache_dir=&#39;~/.cache/llm_stories&#39;,
 ):
     &#34;&#34;&#34;
     Example messages
@@ -387,7 +389,7 @@ if __name__ == &#34;__main__&#34;:
         &#34;gpt-4-0314&#34;: 30000,
     }[checkpoint]
 
-    llm = get_llm(checkpoint)
+    llm = get_llm(checkpoint, cache_dir=cache_dir)
     response = None
     messages = [{&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: &#34;You are a helpful assistant.&#34;}]
     all_content = []

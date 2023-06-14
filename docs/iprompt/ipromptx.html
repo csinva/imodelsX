@@ -72,6 +72,8 @@ class iPrompt(AutoPrompt):
         verbose: int = 0,
         llm_float16: bool = True,
         generation_checkpoint: str = &#39;&#39;,
+        n_shots: int = 1,
+        single_shot_loss: bool = True,
         llm_candidate_regeneration_prompt_start: str = &#39;Data:&#39;,
         llm_candidate_regeneration_prompt_end: str = &#39;Prompt:&#39;,
     ):
@@ -81,6 +83,8 @@ class iPrompt(AutoPrompt):
         args.hotflip_num_candidates = None
         args.autoprompt_init_strategy = None
         args.save_dir_unique = &#39;.&#39;
+        args.n_shots = n_shots
+        args.single_shot_loss = single_shot_loss
         args.max_length = max_length
         args.iprompt_do_final_reranking = do_final_reranking
         super().__init__(
@@ -90,7 +94,6 @@ class iPrompt(AutoPrompt):
         self.tokenizer.add_special_tokens = False
         ####################################################################
         # iPrompt-specific parameters
-        # TODO argparse for GA-specific hparams
         self._pop_size = pop_size
         self._topk_pop_sample = (self._pop_size + 4) # sample next population from this num of top things. set higher for more randomness.
         self._num_mutations_per_ex = num_mutations # num mutations for each population item
@@ -137,6 +140,9 @@ class iPrompt(AutoPrompt):
            f&#34;{llm_candidate_regeneration_prompt_start}\n\n&#34;, return_tensors=&#39;pt&#39;).input_ids.to(device)
         self._post_data_token_ids = self.tokenizer(
            f&#34;\n\n{llm_candidate_regeneration_prompt_end}&#34; + prompt_str, return_tensors=&#39;pt&#39;).input_ids.to(device)
+        
+        self.llm_candidate_regeneration_prompt_start = llm_candidate_regeneration_prompt_start
+        self.llm_candidate_regeneration_prompt_end = llm_candidate_regeneration_prompt_end
         ####################################################################
         self._iprompt_verbose = verbose
         self._step = 0
@@ -468,7 +474,7 @@ class iPrompt(AutoPrompt):
 <dl>
 <dt id="imodelsx.iprompt.ipromptx.iPrompt"><code class="flex name class">
 <span>class <span class="ident">iPrompt</span></span>
-<span>(</span><span>loss_func: <a title="imodelsx.iprompt.utils.PrefixLoss" href="utils.html#imodelsx.iprompt.utils.PrefixLoss">PrefixLoss</a>, model: transformers.modeling_utils.PreTrainedModel, tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, preprefix_str: str = '', prefix_before_input: bool = True, pop_criterion: str = 'loss', pop_topk_strategy: str = 'different_start_token', pop_size: int = 8, num_mutations: int = 4, num_random_generations: int = 4, generation_repetition_penalty: float = 2.0, generation_temp: float = 1.0, generation_top_p: float = 1.0, do_final_reranking: bool = False, early_stopping_steps: int = -1, num_learned_tokens: int = 1, max_length: int = 128, verbose: int = 0, llm_float16: bool = True, generation_checkpoint: str = '', llm_candidate_regeneration_prompt_start: str = 'Data:', llm_candidate_regeneration_prompt_end: str = 'Prompt:')</span>
+<span>(</span><span>loss_func: <a title="imodelsx.iprompt.utils.PrefixLoss" href="utils.html#imodelsx.iprompt.utils.PrefixLoss">PrefixLoss</a>, model: transformers.modeling_utils.PreTrainedModel, tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, preprefix_str: str = '', prefix_before_input: bool = True, pop_criterion: str = 'loss', pop_topk_strategy: str = 'different_start_token', pop_size: int = 8, num_mutations: int = 4, num_random_generations: int = 4, generation_repetition_penalty: float = 2.0, generation_temp: float = 1.0, generation_top_p: float = 1.0, do_final_reranking: bool = False, early_stopping_steps: int = -1, num_learned_tokens: int = 1, max_length: int = 128, verbose: int = 0, llm_float16: bool = True, generation_checkpoint: str = '', n_shots: int = 1, single_shot_loss: bool = True, llm_candidate_regeneration_prompt_start: str = 'Data:', llm_candidate_regeneration_prompt_end: str = 'Prompt:')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all neural network modules.</p>
@@ -526,6 +532,8 @@ evaluation mode.
         verbose: int = 0,
         llm_float16: bool = True,
         generation_checkpoint: str = &#39;&#39;,
+        n_shots: int = 1,
+        single_shot_loss: bool = True,
         llm_candidate_regeneration_prompt_start: str = &#39;Data:&#39;,
         llm_candidate_regeneration_prompt_end: str = &#39;Prompt:&#39;,
     ):
@@ -535,6 +543,8 @@ evaluation mode.
         args.hotflip_num_candidates = None
         args.autoprompt_init_strategy = None
         args.save_dir_unique = &#39;.&#39;
+        args.n_shots = n_shots
+        args.single_shot_loss = single_shot_loss
         args.max_length = max_length
         args.iprompt_do_final_reranking = do_final_reranking
         super().__init__(
@@ -544,7 +554,6 @@ evaluation mode.
         self.tokenizer.add_special_tokens = False
         ####################################################################
         # iPrompt-specific parameters
-        # TODO argparse for GA-specific hparams
         self._pop_size = pop_size
         self._topk_pop_sample = (self._pop_size + 4) # sample next population from this num of top things. set higher for more randomness.
         self._num_mutations_per_ex = num_mutations # num mutations for each population item
@@ -591,6 +600,9 @@ evaluation mode.
            f&#34;{llm_candidate_regeneration_prompt_start}\n\n&#34;, return_tensors=&#39;pt&#39;).input_ids.to(device)
         self._post_data_token_ids = self.tokenizer(
            f&#34;\n\n{llm_candidate_regeneration_prompt_end}&#34; + prompt_str, return_tensors=&#39;pt&#39;).input_ids.to(device)
+        
+        self.llm_candidate_regeneration_prompt_start = llm_candidate_regeneration_prompt_start
+        self.llm_candidate_regeneration_prompt_end = llm_candidate_regeneration_prompt_end
         ####################################################################
         self._iprompt_verbose = verbose
         self._step = 0
@@ -1046,6 +1058,7 @@ num_correct (int): number of examples where prediction was correct</p></div>
 <li><code><a title="imodelsx.iprompt.autoprompt.AutoPrompt.forward" href="utils.html#imodelsx.iprompt.utils.PrefixModel.forward">forward</a></code></li>
 <li><code><a title="imodelsx.iprompt.autoprompt.AutoPrompt.prepare_batch" href="utils.html#imodelsx.iprompt.utils.PrefixModel.prepare_batch">prepare_batch</a></code></li>
 <li><code><a title="imodelsx.iprompt.autoprompt.AutoPrompt.serialize" href="autoprompt.html#imodelsx.iprompt.autoprompt.AutoPrompt.serialize">serialize</a></code></li>
+<li><code><a title="imodelsx.iprompt.autoprompt.AutoPrompt.test_prefixes" href="autoprompt.html#imodelsx.iprompt.autoprompt.AutoPrompt.test_prefixes">test_prefixes</a></code></li>
 </ul>
 </li>
 </ul>

@@ -238,6 +238,7 @@ def get_paragraphs(
     checkpoint="gpt-4-0314",
     prefix_first="Write the beginning paragraph of a story about",
     prefix_next="Write the next paragraph of the story, but now make it about",
+    cache_dir='~/.cache/llm_stories',
 ):
     """
     Example messages
@@ -254,7 +255,7 @@ def get_paragraphs(
         "gpt-4-0314": 30000,
     }[checkpoint]
 
-    llm = get_llm(checkpoint)
+    llm = get_llm(checkpoint, cache_dir=cache_dir)
     response = None
     messages = [{"role": "system", "content": "You are a helpful assistant."}]
     all_content = []

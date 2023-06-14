@@ -26,7 +26,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Any, Dict, List, Tuple
+<pre><code class="python">from typing import Any, Dict, List, Optional, Tuple
 import itertools
 import subprocess
 import random
@@ -34,6 +34,7 @@ from multiprocessing.pool import ThreadPool
 from multiprocessing import Pool, current_process, Queue
 from functools import reduce
 from itertools import repeat
+import time
 import traceback
 from os.path import dirname, join
 submit_utils_dir = dirname(__file__)
@@ -52,6 +53,8 @@ def run_args_list(
     n_cpus: int = 1,
     gpu_ids: List[int] = [],
     repeat_failed_jobs: bool = False,
+    slurm: bool = False,
+    slurm_kwargs: Optional[Dict] = None,
 ):
     &#34;&#34;&#34;
     Params
@@ -73,6 +76,10 @@ def run_args_list(
         Ids of GPUs to run on (e.g. [0, 1] for 2 gpus)
     repeat_failed_jobs: bool
         Whether to repeatedly run failed jobs
+    run_slurm: bool
+        Whether to run on SLURM (defaults to False)
+    slurm_kwargs: Optional[Dict]
+        kwargs for slurm
     &#34;&#34;&#34;
     n_gpus = len(gpu_ids)
     _validate_run_arguments(n_cpus, gpu_ids)
@@ -102,9 +109,16 @@ def run_args_list(
                 f&#39;\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n&#39; + param_str)
         return
 
-    # run serial
     failed_jobs = []
-    if n_cpus == 1 and n_gpus == 0:
+   
+    if slurm:
+        for i, param_str in enumerate(param_str_list):
+            print(
+                f&#39;\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n&#39; + param_str)
+            run_slurm(param_str, slurm_kwargs=slurm_kwargs)
+      
+    # run serial
+    elif n_cpus == 1 and n_gpus == 0:
         for i, param_str in enumerate(param_str_list):
             print(
                 f&#39;\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n&#39; + param_str)
@@ -189,6 +203,19 @@ def run_args_list(
                 repeat_failed_jobs=repeat_failed_jobs,
             )
 
+
+def run_slurm(param_str, slurm_kwargs):
+    from slurmpy import Slurm
+    slurm = Slurm(
+            f&#34;imodelsx_job_{time.time()}&#34;,
+            slurm_kwargs=slurm_kwargs,
+            slurm_flags=[&#34;requeue&#34;],
+        )
+    slurm.run(
+        f&#34;&#34;&#34;
+        {param_str}
+        &#34;&#34;&#34;
+    )
 
 def run_on_gpu(param_str, i, n):
     gpu_id = job_queue_multiprocessing.get()
@@ -386,7 +413,7 @@ focused on embarassingly parallel sweeps on a single machine.</p></div>
 </details>
 </dd>
 <dt id="imodelsx.submit_utils.run_args_list"><code class="name flex">
-<span>def <span class="ident">run_args_list</span></span>(<span>args_list: List[Dict[str, Any]], cmd_python: str = 'python', script_name: str = '02_train_suffix.py', actually_run: bool = True, shuffle: bool = False, reverse: bool = False, n_cpus: int = 1, gpu_ids: List[int] = [], repeat_failed_jobs: bool = False)</span>
+<span>def <span class="ident">run_args_list</span></span>(<span>args_list: List[Dict[str, Any]], cmd_python: str = 'python', script_name: str = '02_train_suffix.py', actually_run: bool = True, shuffle: bool = False, reverse: bool = False, n_cpus: int = 1, gpu_ids: List[int] = [], repeat_failed_jobs: bool = False, slurm: bool = False, slurm_kwargs: Optional[Dict] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="params">Params</h2>
@@ -406,7 +433,11 @@ Number of cpus to use (if &gt;1, parallelizes over local machine)
 gpu_ids: List[int]
 Ids of GPUs to run on (e.g. [0, 1] for 2 gpus)
 repeat_failed_jobs: bool
-Whether to repeatedly run failed jobs</p></div>
+Whether to repeatedly run failed jobs
+run_slurm: bool
+Whether to run on SLURM (defaults to False)
+slurm_kwargs: Optional[Dict]
+kwargs for slurm</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -421,6 +452,8 @@ Whether to repeatedly run failed jobs</p></div>
     n_cpus: int = 1,
     gpu_ids: List[int] = [],
     repeat_failed_jobs: bool = False,
+    slurm: bool = False,
+    slurm_kwargs: Optional[Dict] = None,
 ):
     &#34;&#34;&#34;
     Params
@@ -442,6 +475,10 @@ Whether to repeatedly run failed jobs</p></div>
         Ids of GPUs to run on (e.g. [0, 1] for 2 gpus)
     repeat_failed_jobs: bool
         Whether to repeatedly run failed jobs
+    run_slurm: bool
+        Whether to run on SLURM (defaults to False)
+    slurm_kwargs: Optional[Dict]
+        kwargs for slurm
     &#34;&#34;&#34;
     n_gpus = len(gpu_ids)
     _validate_run_arguments(n_cpus, gpu_ids)
@@ -471,9 +508,16 @@ Whether to repeatedly run failed jobs</p></div>
                 f&#39;\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n&#39; + param_str)
         return
 
-    # run serial
     failed_jobs = []
-    if n_cpus == 1 and n_gpus == 0:
+   
+    if slurm:
+        for i, param_str in enumerate(param_str_list):
+            print(
+                f&#39;\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n&#39; + param_str)
+            run_slurm(param_str, slurm_kwargs=slurm_kwargs)
+      
+    # run serial
+    elif n_cpus == 1 and n_gpus == 0:
         for i, param_str in enumerate(param_str_list):
             print(
                 f&#39;\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n&#39; + param_str)
@@ -594,6 +638,29 @@ Whether to repeatedly run failed jobs</p></div>
         return failed_job</code></pre>
 </details>
 </dd>
+<dt id="imodelsx.submit_utils.run_slurm"><code class="name flex">
+<span>def <span class="ident">run_slurm</span></span>(<span>param_str, slurm_kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run_slurm(param_str, slurm_kwargs):
+    from slurmpy import Slurm
+    slurm = Slurm(
+            f&#34;imodelsx_job_{time.time()}&#34;,
+            slurm_kwargs=slurm_kwargs,
+            slurm_flags=[&#34;requeue&#34;],
+        )
+    slurm.run(
+        f&#34;&#34;&#34;
+        {param_str}
+        &#34;&#34;&#34;
+    )</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -620,6 +687,7 @@ Whether to repeatedly run failed jobs</p></div>
 <li><code><a title="imodelsx.submit_utils.get_args_list" href="#imodelsx.submit_utils.get_args_list">get_args_list</a></code></li>
 <li><code><a title="imodelsx.submit_utils.run_args_list" href="#imodelsx.submit_utils.run_args_list">run_args_list</a></code></li>
 <li><code><a title="imodelsx.submit_utils.run_on_gpu" href="#imodelsx.submit_utils.run_on_gpu">run_on_gpu</a></code></li>
+<li><code><a title="imodelsx.submit_utils.run_slurm" href="#imodelsx.submit_utils.run_slurm">run_slurm</a></code></li>
 </ul>
 </li>
 </ul>
