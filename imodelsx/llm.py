@@ -63,7 +63,8 @@ def repeatedly_call_with_delay(llm_call, delay=LLM_CONFIG["LLM_REPEAT_DELAY"]):
                 # fix for when this function was returning response rather than string
                 if response is not None and not isinstance(response, str):
                     response = response["choices"][0]["message"]["content"]
-            except:
+            except Exception as e:
+                print(e)
                 time.sleep(delay)
         return response
 
@@ -72,6 +73,8 @@ def repeatedly_call_with_delay(llm_call, delay=LLM_CONFIG["LLM_REPEAT_DELAY"]):
 
 class LLM_OpenAI:
     def __init__(self, checkpoint, seed, CACHE_DIR):
+        import openai
+
         self.cache_dir = join(
             CACHE_DIR, "cache_openai", f'{checkpoint.replace("/", "_")}___{seed}'
         )
@@ -85,7 +88,6 @@ class LLM_OpenAI:
         cache_file = join(self.cache_dir, f"{hash_str}__num_tok={max_new_tokens}.pkl")
         if os.path.exists(cache_file):
             return pkl.load(open(cache_file, "rb"))
-        import openai
 
         response = openai.Completion.create(
             engine=self.checkpoint,
@@ -120,6 +122,8 @@ class LLM_Chat:
         prompts_list: List[Dict[str, str]],
         max_new_tokens=250,
         stop=None,
+        functions: List[Dict] = None,
+        return_str=True,
     ):
         """
         prompts_list: list of dicts, each dict has keys 'role' and 'content'
@@ -136,6 +140,8 @@ class LLM_Chat:
                 {"role": "user", "content": <<<<<prompts_list>>>>},
             ]
         """
+        import openai
+
         if isinstance(prompts_list, str):
             role = self.role
             if role is None:
@@ -154,6 +160,8 @@ class LLM_Chat:
         }
         if not self.checkpoint == "gpt-3.5-turbo":
             prompts_list_dict["checkpoint"] = self.checkpoint
+        if functions is not None:
+            prompts_list_dict["functions"] = functions
         dict_as_str = json.dumps(prompts_list_dict, sort_keys=True)
         hash_str = hashlib.sha256(dict_as_str.encode()).hexdigest()
         cache_file = join(
@@ -162,10 +170,11 @@ class LLM_Chat:
         )
         if os.path.exists(cache_file):
             print("cached!")
+            # print(cache_file)
             return pkl.load(open(cache_file, "rb"))
         print("not cached")
 
-        response = openai.ChatCompletion.create(
+        kwargs = dict(
             model=self.checkpoint,
             messages=prompts_list,
             max_tokens=max_new_tokens,
@@ -175,7 +184,14 @@ class LLM_Chat:
             presence_penalty=0,
             stop=stop,
             # stop=["101"]
-        )["choices"][0]["message"]["content"]
+        )
+        if functions is not None:
+            kwargs["functions"] = functions
+
+        response = openai.ChatCompletion.create(**kwargs)["choices"][0]["message"]
+
+        if return_str:
+            response = response["content"]
 
         pkl.dump(response, open(cache_file, "wb"))
         return response
