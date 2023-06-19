@@ -124,6 +124,7 @@ class LLM_Chat:
         stop=None,
         functions: List[Dict] = None,
         return_str=True,
+        verbose=True,
     ):
         """
         prompts_list: list of dicts, each dict has keys 'role' and 'content'
@@ -169,10 +170,12 @@ class LLM_Chat:
             f"chat__{hash_str}__num_tok={max_new_tokens}.pkl",
         )
         if os.path.exists(cache_file):
-            print("cached!")
+            if verbose:
+                print("cached!")
             # print(cache_file)
             return pkl.load(open(cache_file, "rb"))
-        print("not cached")
+        if verbose:
+            print("not cached")
 
         kwargs = dict(
             model=self.checkpoint,
