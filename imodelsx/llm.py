@@ -125,6 +125,7 @@ class LLM_Chat:
         functions: List[Dict] = None,
         return_str=True,
         verbose=True,
+        temperature=0.1,
     ):
         """
         prompts_list: list of dicts, each dict has keys 'role' and 'content'
@@ -181,7 +182,7 @@ class LLM_Chat:
             model=self.checkpoint,
             messages=prompts_list,
             max_tokens=max_new_tokens,
-            temperature=0.1,
+            temperature=temperature,
             top_p=1,
             frequency_penalty=0.25,  # maximum is 2
             presence_penalty=0,
