@@ -64,7 +64,12 @@ def repeatedly_call_with_delay(llm_call, delay=LLM_CONFIG["LLM_REPEAT_DELAY"]):
                 if response is not None and not isinstance(response, str):
                     response = response["choices"][0]["message"]["content"]
             except Exception as e:
+                e = str(e)
                 print(e)
+                if 'does not exist' in e:
+                    return None
+                elif 'maximum context length' in e:
+                    return None
                 time.sleep(delay)
         return response
 
