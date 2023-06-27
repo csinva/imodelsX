@@ -2,7 +2,6 @@ from typing import List, Callable, Tuple, Dict
 import imodelsx.sasc.m1_ngrams
 import imodelsx.sasc.m2_summarize
 import imodelsx.sasc.m3_generate
-import imodelsx.sasc.llm
 import numpy as np
 import pprint
 from collections import defaultdict
@@ -103,7 +102,7 @@ def explain_module_sasc(
     explanation_dict["ngrams_scores"] = ngrams_scores
 
     # compute explanation candidates
-    llm = imodelsx.sasc.llm.get_llm(llm_checkpoint, llm_cache_dir)
+    llm = imodelsx.llm.get_llm(llm_checkpoint, llm_cache_dir)
     (
         explanation_strs,
         _,

@@ -61,8 +61,8 @@ def repeatedly_call_with_delay(llm_call, delay=LLM_CONFIG["LLM_REPEAT_DELAY"]):
                 response = llm_call(*args, **kwargs)
 
                 # fix for when this function was returning response rather than string
-                if response is not None and not isinstance(response, str):
-                    response = response["choices"][0]["message"]["content"]
+                # if response is not None and not isinstance(response, str):
+                    # response = response["choices"][0]["message"]["content"]
             except Exception as e:
                 e = str(e)
                 print(e)
@@ -86,7 +86,7 @@ class LLM_OpenAI:
         self.checkpoint = checkpoint
 
     @repeatedly_call_with_delay
-    def __call__(self, prompt: str, max_new_tokens=250, do_sample=True, stop=None):
+    def __call__(self, prompt: str, max_new_tokens=250, do_sample=True, stop=None, return_str=True):
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         hash_str = hashlib.sha256(prompt.encode()).hexdigest()
@@ -105,10 +105,11 @@ class LLM_OpenAI:
             stop=stop,
             # stop=["101"]
         )
-        response_text = response["choices"][0]["text"]
+        if return_str:
+            response = response["choices"][0]["text"]
 
-        pkl.dump(response_text, open(cache_file, "wb"))
-        return response_text
+        pkl.dump(response, open(cache_file, "wb"))
+        return response
 
 
 class LLM_Chat:
@@ -178,6 +179,7 @@ class LLM_Chat:
         if os.path.exists(cache_file):
             if verbose:
                 print("cached!")
+                # print(cache_file)
             # print(cache_file)
             return pkl.load(open(cache_file, "rb"))
         if verbose:
@@ -197,10 +199,11 @@ class LLM_Chat:
         if functions is not None:
             kwargs["functions"] = functions
 
-        response = openai.ChatCompletion.create(**kwargs)["choices"][0]["message"]
+        response = openai.ChatCompletion.create(**kwargs)
 
         if return_str:
-            response = response["content"]
+            response = response["choices"][0]["message"]["content"]
+        # print(response)
 
         pkl.dump(response, open(cache_file, "wb"))
         return response

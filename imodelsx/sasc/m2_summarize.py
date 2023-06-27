@@ -1,6 +1,6 @@
 from typing import Any, List, Mapping, Optional, Tuple, Callable
 import numpy as np
-from imodelsx.sasc.llm import get_llm
+from imodelsx.llm import get_llm
 
 
 def summarize_ngrams(

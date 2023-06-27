@@ -1,6 +1,6 @@
 import re
 from typing import Any, List, Mapping, Optional, Tuple, Callable
-from imodelsx.sasc.llm import get_llm
+from imodelsx.llm import get_llm
 
 
 def generate_synthetic_strs(

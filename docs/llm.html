@@ -89,8 +89,8 @@ def repeatedly_call_with_delay(llm_call, delay=LLM_CONFIG[&#34;LLM_REPEAT_DELAY&
                 response = llm_call(*args, **kwargs)
 
                 # fix for when this function was returning response rather than string
-                if response is not None and not isinstance(response, str):
-                    response = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
+                # if response is not None and not isinstance(response, str):
+                    # response = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
             except Exception as e:
                 e = str(e)
                 print(e)
@@ -114,7 +114,7 @@ class LLM_OpenAI:
         self.checkpoint = checkpoint
 
     @repeatedly_call_with_delay
-    def __call__(self, prompt: str, max_new_tokens=250, do_sample=True, stop=None):
+    def __call__(self, prompt: str, max_new_tokens=250, do_sample=True, stop=None, return_str=True):
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         hash_str = hashlib.sha256(prompt.encode()).hexdigest()
@@ -133,10 +133,11 @@ class LLM_OpenAI:
             stop=stop,
             # stop=[&#34;101&#34;]
         )
-        response_text = response[&#34;choices&#34;][0][&#34;text&#34;]
+        if return_str:
+            response = response[&#34;choices&#34;][0][&#34;text&#34;]
 
-        pkl.dump(response_text, open(cache_file, &#34;wb&#34;))
-        return response_text
+        pkl.dump(response, open(cache_file, &#34;wb&#34;))
+        return response
 
 
 class LLM_Chat:
@@ -206,6 +207,7 @@ class LLM_Chat:
         if os.path.exists(cache_file):
             if verbose:
                 print(&#34;cached!&#34;)
+                # print(cache_file)
             # print(cache_file)
             return pkl.load(open(cache_file, &#34;rb&#34;))
         if verbose:
@@ -225,10 +227,11 @@ class LLM_Chat:
         if functions is not None:
             kwargs[&#34;functions&#34;] = functions
 
-        response = openai.ChatCompletion.create(**kwargs)[&#34;choices&#34;][0][&#34;message&#34;]
+        response = openai.ChatCompletion.create(**kwargs)
 
         if return_str:
-            response = response[&#34;content&#34;]
+            response = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
+        # print(response)
 
         pkl.dump(response, open(cache_file, &#34;wb&#34;))
         return response
@@ -449,8 +452,8 @@ Number of seconds to wait between calls (None will not repeat)</p></div>
                 response = llm_call(*args, **kwargs)
 
                 # fix for when this function was returning response rather than string
-                if response is not None and not isinstance(response, str):
-                    response = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
+                # if response is not None and not isinstance(response, str):
+                    # response = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
             except Exception as e:
                 e = str(e)
                 print(e)
@@ -546,6 +549,7 @@ Number of seconds to wait between calls (None will not repeat)</p></div>
         if os.path.exists(cache_file):
             if verbose:
                 print(&#34;cached!&#34;)
+                # print(cache_file)
             # print(cache_file)
             return pkl.load(open(cache_file, &#34;rb&#34;))
         if verbose:
@@ -565,10 +569,11 @@ Number of seconds to wait between calls (None will not repeat)</p></div>
         if functions is not None:
             kwargs[&#34;functions&#34;] = functions
 
-        response = openai.ChatCompletion.create(**kwargs)[&#34;choices&#34;][0][&#34;message&#34;]
+        response = openai.ChatCompletion.create(**kwargs)
 
         if return_str:
-            response = response[&#34;content&#34;]
+            response = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
+        # print(response)
 
         pkl.dump(response, open(cache_file, &#34;wb&#34;))
         return response</code></pre>
@@ -729,7 +734,7 @@ Number of seconds to wait between calls (None will not repeat)</p></div>
         self.checkpoint = checkpoint
 
     @repeatedly_call_with_delay
-    def __call__(self, prompt: str, max_new_tokens=250, do_sample=True, stop=None):
+    def __call__(self, prompt: str, max_new_tokens=250, do_sample=True, stop=None, return_str=True):
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         hash_str = hashlib.sha256(prompt.encode()).hexdigest()
@@ -748,10 +753,11 @@ Number of seconds to wait between calls (None will not repeat)</p></div>
             stop=stop,
             # stop=[&#34;101&#34;]
         )
-        response_text = response[&#34;choices&#34;][0][&#34;text&#34;]
+        if return_str:
+            response = response[&#34;choices&#34;][0][&#34;text&#34;]
 
-        pkl.dump(response_text, open(cache_file, &#34;wb&#34;))
-        return response_text</code></pre>
+        pkl.dump(response, open(cache_file, &#34;wb&#34;))
+        return response</code></pre>
 </details>
 </dd>
 </dl>
