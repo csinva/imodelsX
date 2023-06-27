@@ -1,7 +1,7 @@
 <p align="center">  <img src="https://microsoft.github.io/aug-models/embgam_gif.gif" width="18%"> 
 <img align="center" width=40% src="https://csinva.io/imodelsX/imodelsx_logo.svg?sanitize=True&kill_cache=1"> </img>	<img src="https://microsoft.github.io/aug-models/embgam_gif.gif" width="18%"></p>
 
-<p align="center">Library to explain <i>a dataset</i> in natural language. 
+<p align="center">Scikit-learn friendly library to interpret, predict, and prompt-engineer text datasets. 
 </p>
 <p align="center">
   <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖 demo notebooks</a>
