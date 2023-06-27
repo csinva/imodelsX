@@ -280,9 +280,10 @@ def get_paragraphs(
             messages = [messages[0]] + messages[3:]
 
             # rewrite the original prompt to now say beginning paragraph rather than next paragraph
-            messages[1]["content"] = messages[1]["content"].replace(
-                prefix_next, prefix_first
-            )
+            if prefix_first and prefix_next:
+                messages[1]["content"] = messages[1]["content"].replace(
+                    prefix_next, prefix_first
+                )
 
     # extract out paragraphs
     paragraphs = [d["content"] for d in all_content if d["role"] == "assistant"]
