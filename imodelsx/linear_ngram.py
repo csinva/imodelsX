@@ -23,31 +23,25 @@ from sklearn.exceptions import ConvergenceWarning
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-class LinearFinetune(BaseEstimator):
+class LinearNgram(BaseEstimator):
     def __init__(
         self,
-        checkpoint: str = "bert-base-uncased",
-        layer: str = "last_hidden_state",
+        checkpoint: str = "tfidfvectorizer",
         random_state=None,
-        normalize_embs=False,
     ):
         """LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.
 
         Parameters
         ----------
         checkpoint: str
-            Name of model checkpoint (i.e. to be fetch by huggingface)
-        layer: str
-            Name of layer to extract embeddings from
+            Name of vectorizer checkpoint
         random_state
             random seed for fitting
-        normalize_embs
-            whether to normalize embeddings before fitting linear model
 
         Example
         -------
         ```
-        from imodelsx import LinearFinetuneClassifier
+        from imodelsx import LinearNgramClassifier
         import datasets
         import numpy as np
 
@@ -59,31 +53,25 @@ class LinearFinetune(BaseEstimator):
 
 
         # fit a simple one-layer finetune
-        m = LinearFinetuneClassifier(
-            checkpoint='distilbert-base-uncased',
-        )
+        m = LinearNgramClassifier()
         m.fit(dset['text'], dset['label'])
         preds = m.predict(dset_val['text'])
         acc = (preds == dset_val['label']).mean()
         print('validation acc', acc)
         ```
         """
+
         self.checkpoint = checkpoint
         self.layer = layer
         self.random_state = random_state
         self.normalize_embs = normalize_embs
         self._initialize_checkpoint_and_tokenizer()
 
-    def _initialize_checkpoint_and_tokenizer(self):
-        self.model = transformers.AutoModel.from_pretrained(self.checkpoint).to(device)
-        self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.checkpoint)
-
     def fit(
         self,
         X_text: ArrayLike,
         y: ArrayLike,
         verbose=True,
-        cache_embs_dir: str = None,
     ):
         """Extract embeddings then fit linear model
 
@@ -91,8 +79,6 @@ class LinearFinetune(BaseEstimator):
         ----------
         X_text: ArrayLike[str]
         y: ArrayLike[str]
-        cache_embs_dir, optional
-            if not None, directory to save embeddings into
         """
 
         # metadata
@@ -108,18 +94,23 @@ class LinearFinetune(BaseEstimator):
         # get embs
         if verbose:
             print("calculating embeddings...")
-        if cache_embs_dir is not None and os.path.exists(
-            os.path.join(cache_embs_dir, "embs.pkl")
-        ):
-            embs = pkl.load(open(os.path.join(cache_embs_dir, "embs.pkl"), "rb"))
+        if self.all_ngrams:
+            lower_ngram = 1
         else:
-            embs = self._get_embs(X_text)
-            if cache_embs_dir is not None:
-                os.makedirs(cache_embs_dir, exist_ok=True)
-                pkl.dump(embs, open(os.path.join(cache_embs_dir, "embs.pkl"), "wb"))
-        if self.normalize_embs:
-            self.normalizer = StandardScaler()
-            embs = self.normalizer.fit_transform(embs)
+            lower_ngram = self.ngrams
+
+        # get vectorizer
+        if checkpoint == "countvectorizer":
+            self.vectorizer = CountVectorizer(
+                tokenizer=self.tokenizer_ngrams, ngram_range=(lower_ngram, self.ngrams)
+            )
+        elif checkpoint == "tfidfvectorizer":
+            self.vectorizer = TfidfVectorizer(
+                tokenizer=self.tokenizer_ngrams, ngram_range=(lower_ngram, self.ngrams)
+            )
+
+        # get embs
+        embs = self.vectorizer.fit_transform(X_text)
 
         # train linear
         warnings.filterwarnings("ignore", category=ConvergenceWarning)
@@ -133,47 +124,25 @@ class LinearFinetune(BaseEstimator):
 
         return self
 
-    def _get_embs(self, X_text: ArrayLike):
-        embs = []
-        if isinstance(X_text, list):
-            n = len(X_text)
-        else:
-            n = X_text.shape[0]
-        for i in tqdm(range(n)):
-            inputs = self.tokenizer(
-                [X_text[i]], padding=True, truncation=True, return_tensors="pt"
-            )
-            inputs = inputs.to(self.model.device)
-            output = self.model(**inputs)
-            emb = output[self.layer].cpu().detach().numpy()
-            if len(emb.shape) == 3:  # includes seq_len
-                emb = emb.mean(axis=1)
-            embs.append(emb)
-        return np.array(embs).squeeze()  # num_examples x embedding_size
-
     def predict(self, X_text):
         """For regression returns continuous output.
         For classification, returns discrete output.
         """
         check_is_fitted(self)
-        embs = self._get_embs(X_text)
-        if self.normalize_embs:
-            embs = self.normalizer.transform(embs)
+        embs = self.vectorizer.transform(X_text)
         return self.linear.predict(embs)
 
     def predict_proba(self, X_text):
         check_is_fitted(self)
-        embs = self._get_embs(X_text)
-        if self.normalize_embs:
-            embs = self.normalizer.transform(embs)
+        embs = self.vectorizer.transform(X_text)
         return self.linear.predict_proba(embs)
 
 
-class LinearFinetuneRegressor(LinearFinetune, RegressorMixin):
+class LinearNgramRegressor(LinearNgram, RegressorMixin):
     ...
 
 
-class LinearFinetuneClassifier(LinearFinetune, ClassifierMixin):
+class LinearNgramClassifier(LinearNgram, ClassifierMixin):
     ...
 
 
@@ -187,7 +156,7 @@ if __name__ == "__main__":
     print(dset["train"])
     print(np.unique(dset["train"]["label"]))
 
-    clf = LinearFinetuneClassifier()
+    clf = LinearNgramClassifier()
     clf.fit(dset["train"]["text"], dset["train"]["label"])
 
     print("predicting")

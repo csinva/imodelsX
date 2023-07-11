@@ -22,18 +22,19 @@ import os
 import os.path
 import warnings
 import pickle as pkl
+from os.path import join
 import torch
-from torch.utils.data import DataLoader
-from datasets import Dataset
+from transformers import LlamaModel, LlamaTokenizer
 from sklearn.exceptions import ConvergenceWarning
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 class AugGAM(BaseEstimator):
     def __init__(
         self,
-        checkpoint: str = 'bert-base-uncased',
-        layer: str = 'last_hidden_state',
+        checkpoint: str = "bert-base-uncased",
+        layer: str = "last_hidden_state",
         ngrams: int = 2,
         all_ngrams: bool = False,
         min_frequency: int = 1,
@@ -43,7 +44,7 @@ class AugGAM(BaseEstimator):
         fit_with_ngram_decomposition=True,
         instructor_prompt=None,
     ):
-        '''AugGAM-GAM Class - use either AugGAMClassifier or AugGAMRegressor rather than initializing this class directly.
+        """AugGAM-GAM Class - use either AugGAMClassifier or AugGAMRegressor rather than initializing this class directly.
 
         Parameters
         ----------
@@ -69,7 +70,7 @@ class AugGAM(BaseEstimator):
             Usually, setting this to False will considerably impede performance
         instructor_prompt
             if not None, use instructor-xl with this prompt
-        '''
+        """
         self.checkpoint = checkpoint
         self.ngrams = ngrams
         if tokenizer_ngrams == None:
@@ -84,12 +85,16 @@ class AugGAM(BaseEstimator):
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
         self.instructor_prompt = instructor_prompt
 
-    def fit(self, X: ArrayLike, y: ArrayLike, verbose=True,
-            cache_linear_coefs: bool = True,
-            cache_embs_dir: str = None,
-            batch_size: int = 8
-            ):
-        '''Extract embeddings then fit linear model
+    def fit(
+        self,
+        X: ArrayLike,
+        y: ArrayLike,
+        verbose=True,
+        cache_linear_coefs: bool = True,
+        cache_embs_dir: str = None,
+        batch_size: int = 8,
+    ):
+        """Extract embeddings then fit linear model
 
         Parameters
         ----------
@@ -101,7 +106,7 @@ class AugGAM(BaseEstimator):
             if not None, directory to save embeddings into
         batch_size, optional
             if not None, batch size to pass while calculating embeddings
-        '''
+        """
 
         # metadata
         if isinstance(self, ClassifierMixin):
@@ -111,25 +116,29 @@ class AugGAM(BaseEstimator):
 
         # set up model
         if verbose:
-            print('initializing model...')
+            print("initializing model...")
         model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
         # get embs
         if verbose:
-            print('calculating embeddings...')
-        embs = self._get_embs_summed(
-            X, model, tokenizer_embeddings, batch_size)
+            print("calculating embeddings...")
+        if cache_embs_dir is not None and os.path.exists(
+            os.path.join(cache_embs_dir, "embs.pkl")
+        ):
+            embs = pkl.load(open(os.path.join(cache_embs_dir, "embs.pkl"), "rb"))
+        else:
+            embs = self._get_embs_summed(X, model, tokenizer_embeddings, batch_size)
+            if cache_embs_dir is not None:
+                os.makedirs(cache_embs_dir, exist_ok=True)
+                pkl.dump(embs, open(os.path.join(cache_embs_dir, "embs.pkl"), "wb"))
         if self.normalize_embs:
             self.normalizer = StandardScaler()
             embs = self.normalizer.fit_transform(embs)
-        if cache_embs_dir is not None:
-            os.makedirs(cache_embs_dir, exist_ok=True)
-            pkl.dump(embs, open(os.path.join(cache_embs_dir, 'embs.pkl'), 'wb'))
 
         # train linear
         warnings.filterwarnings("ignore", category=ConvergenceWarning)
         if verbose:
-            print('training linear model...')
+            print("training linear model...")
         if isinstance(self, ClassifierMixin):
             self.linear = LogisticRegressionCV()
         elif isinstance(self, RegressorMixin):
@@ -139,7 +148,7 @@ class AugGAM(BaseEstimator):
         # cache linear coefs
         if cache_linear_coefs:
             if verbose:
-                print('caching linear coefs...')
+                print("caching linear coefs...")
             self.cache_linear_coefs(X, model, tokenizer_embeddings)
 
         return self
@@ -158,28 +167,44 @@ class AugGAM(BaseEstimator):
                 all_ngrams=self.all_ngrams,
                 fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
                 instructor_prompt=self.instructor_prompt,
-                batch_size=batch_size
+                batch_size=batch_size,
             )
-            embs.append(emb['embs'])
+            embs.append(emb["embs"])
         return np.array(embs).squeeze()  # num_examples x embedding_size
 
     def _get_model_and_tokenizer(self):
-        if self.checkpoint.startswith('hkunlp/instructor-xl'):
+        if self.checkpoint.startswith("hkunlp/instructor-xl"):
             from InstructorEmbedding import INSTRUCTOR
+
             model = INSTRUCTOR(self.checkpoint).to(device)
             tokenizer_embeddings = None
+        elif 'llama' in self.checkpoint:
+            # path to extracted llama weights
+            LLAMA_DIR = join(os.path.expanduser("~"), "llama")
+            tokenizer_embeddings = transformers.LlamaTokenizer.from_pretrained(
+                join(LLAMA_DIR, self.checkpoint)
+            )
+            model = transformers.LlamaModel.from_pretrained(
+                join(LLAMA_DIR, self.checkpoint),
+                device_map="auto",
+                torch_dtype=torch.float16,
+            )
         else:
-            model = transformers.AutoModel.from_pretrained(
-                self.checkpoint).to(device)
+            model = transformers.AutoModel.from_pretrained(self.checkpoint).to(device)
             tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
-                self.checkpoint)
+                self.checkpoint
+            )
         return model, tokenizer_embeddings
 
-    def cache_linear_coefs(self, X: ArrayLike, model=None,
-                           tokenizer_embeddings=None,
-                           renormalize_embs: bool = False,
-                           batch_size: int = 8,
-                           verbose: bool = True):
+    def cache_linear_coefs(
+        self,
+        X: ArrayLike,
+        model=None,
+        tokenizer_embeddings=None,
+        renormalize_embs: bool = False,
+        batch_size: int = 8,
+        verbose: bool = True,
+    ):
         """Cache linear coefs for ngrams into a dictionary self.coefs_dict_
         If it already exists, only add linear coefs for new ngrams
 
@@ -194,18 +219,16 @@ class AugGAM(BaseEstimator):
         ngrams_list = self._get_ngrams_list(X)
 
         # dont recompute ngrams we already know
-        if hasattr(self, 'coefs_dict_'):
+        if hasattr(self, "coefs_dict_"):
             coefs_dict_old = self.coefs_dict_
         else:
             coefs_dict_old = {}
-        ngrams_list = [ngram for ngram in ngrams_list
-                       if not ngram in coefs_dict_old]
+        ngrams_list = [ngram for ngram in ngrams_list if not ngram in coefs_dict_old]
         if len(ngrams_list) == 0 and verbose:
-            print('\tNothing to update!')
+            print("\tNothing to update!")
             return
 
-        embs = self._get_embs(ngrams_list, model,
-                              tokenizer_embeddings, batch_size)
+        embs = self._get_embs(ngrams_list, model, tokenizer_embeddings, batch_size)
         if renormalize_embs:
             embs = StandardScaler().fit_transform(embs)
         elif self.normalize_embs:
@@ -216,17 +239,15 @@ class AugGAM(BaseEstimator):
         linear_coef = embs @ coef_embs
         self.coefs_dict_ = {
             **coefs_dict_old,
-            **{ngrams_list[i]: linear_coef[i]
-               for i in range(len(ngrams_list))}
+            **{ngrams_list[i]: linear_coef[i] for i in range(len(ngrams_list))},
         }
         if verbose:
-            print('\tAfter caching, coefs_dict_ len', len(self.coefs_dict_))
+            print("\tAfter caching, coefs_dict_ len", len(self.coefs_dict_))
 
     def _get_embs(self, ngrams_list, model, tokenizer_embeddings, batch_size):
-        """Get embeddings for a list of ngrams (not summed!)
-        """
+        """Get embeddings for a list of ngrams (not summed!)"""
         embs = []
-        if self.checkpoint.startswith('hkunlp/instructor-xl'):
+        if self.checkpoint.startswith("hkunlp/instructor-xl"):
             # INSTRUCTION = "Represent the short phrase for sentiment classification: "
             # embs = model.encode([[INSTRUCTION, x_i] for x_i in ngrams_list], batch_size=32)
             embs = []
@@ -234,39 +255,31 @@ class AugGAM(BaseEstimator):
             for i in tqdm(range(0, len(ngrams_list), batch_size)):
                 # ngram = ngrams_list[i]
                 # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
-                ngram_batch = ngrams_list[i: i + batch_size]
+                ngram_batch = ngrams_list[i : i + batch_size]
                 embs_batch = model.encode(
-                    [[self.instructor_prompt, ngram] for ngram in ngram_batch])
+                    [[self.instructor_prompt, ngram] for ngram in ngram_batch]
+                )
                 embs.append(embs_batch)
             embs = np.vstack(embs).squeeze()
+
         else:
-            for i in tqdm(range(len(ngrams_list))):
-                tokens = tokenizer_embeddings(
-                    [ngrams_list[i]], padding=True, truncation=True, return_tensors="pt")
+            embs = []
+            for x in tqdm(ngrams_list):
+                emb = imodelsx.auggam.embed.embed_and_sum_function(
+                    x,
+                    model=model,
+                    ngrams=None,
+                    tokenizer_embeddings=tokenizer_embeddings,
+                    tokenizer_ngrams=self.tokenizer_ngrams,
+                    checkpoint=self.checkpoint,
+                    layer=self.layer,
+                    # only return a single embedding
+                    fit_with_ngram_decomposition=False,
+                    sum_embeddings=False,
+                )
+                embs.append(emb["embs"])
+            embs = np.array(embs).squeeze()  # num_examples x embedding_size
 
-                tokens = Dataset.from_dict(tokens).with_format("torch")
-
-                embeddings = []
-                for batch in DataLoader(tokens, batch_size=batch_size, shuffle=False):
-                    batch = {k: v.to(model.device) for k, v in batch.items()}
-
-                    with torch.no_grad():
-                        output = model(**batch)
-                    torch.cuda.empty_cache()
-
-                    emb = output[self.layer].cpu().detach().numpy()
-
-                    # emb = np.array(emb, dtype="object")
-                    if len(emb.shape) == 3:  # includes seq_len
-                        emb = emb.mean(axis=1)
-                    embeddings.append(emb)
-
-                embeddings = np.concatenate(embeddings)
-
-                embs.append(embeddings)
-
-            embs = np.concatenate(embs)
-            embs = embs.squeeze()
         return embs
 
         """
@@ -288,15 +301,15 @@ class AugGAM(BaseEstimator):
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,
                 all_ngrams=self.all_ngrams,
-                min_frequency=self.min_frequency
+                min_frequency=self.min_frequency,
             )
             all_ngrams |= set(seqs)
         return sorted(list(all_ngrams))
 
     def predict(self, X, warn=True):
-        '''For regression returns continuous output.
+        """For regression returns continuous output.
         For classification, returns discrete output.
-        '''
+        """
         check_is_fitted(self)
         preds = self._predict_cached(X, warn=warn)
         if isinstance(self, RegressorMixin):
@@ -309,21 +322,18 @@ class AugGAM(BaseEstimator):
 
     def predict_proba(self, X, warn=True):
         if not isinstance(self, ClassifierMixin):
-            raise Exception(
-                "predict_proba only available for EmbGAMClassifier")
+            raise Exception("predict_proba only available for EmbGAMClassifier")
         check_is_fitted(self)
         preds = self._predict_cached(X, warn=warn)
         if preds.ndim > 1:  # multiclass classification
             logits = preds
         else:
-            logits = np.vstack(
-                (1 - preds, preds)).transpose()
+            logits = np.vstack((1 - preds, preds)).transpose()
         return softmax(logits, axis=1)
 
     def _predict_cached(self, X, warn):
-        """Predict only the cached coefs in self.coefs_dict_
-        """
-        assert hasattr(self, 'coefs_dict_'), 'coefs are not cached!'
+        """Predict only the cached coefs in self.coefs_dict_"""
+        assert hasattr(self, "coefs_dict_"), "coefs are not cached!"
         preds = []
         n_unseen_ngrams = 0
         n_classes = len(self.classes_)
@@ -346,9 +356,10 @@ class AugGAM(BaseEstimator):
             preds.append(pred)
         if n_unseen_ngrams > 0 and warn:
             warnings.warn(
-                f'Saw an unseen ungram {n_unseen_ngrams} times. \
+                f"Saw an unseen ungram {n_unseen_ngrams} times. \
 For better performance, call cache_linear_coefs on the test dataset \
-before calling predict.')
+before calling predict."
+            )
         return np.array(preds)
 
 

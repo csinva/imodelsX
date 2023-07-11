@@ -19,7 +19,7 @@ import time
 
 # change these settings before using these classes!
 LLM_CONFIG = {
-    "LLM_REPEAT_DELAY": 5,  # how long to wait before recalling a failed llm call (can set to None)
+    "LLM_REPEAT_DELAY": 0.2,  # how long to wait before recalling a failed llm call (can set to None)
     "CACHE_DIR": join(
         os.path.expanduser("~"), "clin/CACHE_OPENAI"
     ),  # path to save cached llm outputs
