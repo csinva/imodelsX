@@ -108,7 +108,7 @@ def run_args_list(
                 print(e)
 
 
-    # run parallel
+    # run parallel on CPUs
     elif n_cpus > 1 and n_gpus == 0:
         def run_single_job(i, param_str):
             print(
@@ -143,7 +143,9 @@ def run_args_list(
         pool = Pool(processes=n_gpus)
         n = len(param_str_list)
         indexes = [i for i in range(n)]
-        for failed_job in pool.starmap(run_on_gpu, zip(param_str_list, indexes, repeat(n))):
+        args = zip(param_str_list, indexes, repeat(n))
+        # time.sleep(0.1)
+        for failed_job in pool.starmap(run_on_gpu, args, chunksize=1):
             failed_jobs.append(failed_job)
         failed_jobs = [x for x in failed_jobs if x is not None]
         pool.close()

@@ -121,9 +121,6 @@ def embed_and_sum_function(
         sentence = example
     # seqs = sentence
 
-    assert isinstance(
-        sentence, str
-    ), &#34;sentence must be a string (batched mode not supported)&#34;
     if fit_with_ngram_decomposition:
         seqs = imodelsx.util.generate_ngrams_list(
             sentence,
@@ -133,8 +130,15 @@ def embed_and_sum_function(
             nlp_chunks=nlp_chunks,
             all_ngrams=all_ngrams,
         )
-    else:
+    elif isinstance(sentence, list):
+        seqs = sentence
+    elif isinstance(sentence, str):
         seqs = [sentence]
+    else:
+        raise ValueError(&#34;sentence must be a string or list of strings&#34;)
+    # assert isinstance(
+    #     sentence, str
+    # ), &#34;sentence must be a string (batched mode not supported)&#34;
     # seqs = list(map(imodelsx.util.generate_ngrams_list, sentence))
 
     seq_len = len(seqs)
@@ -312,9 +316,6 @@ if using instructor, the prompt to use</p></div>
         sentence = example
     # seqs = sentence
 
-    assert isinstance(
-        sentence, str
-    ), &#34;sentence must be a string (batched mode not supported)&#34;
     if fit_with_ngram_decomposition:
         seqs = imodelsx.util.generate_ngrams_list(
             sentence,
@@ -324,8 +325,15 @@ if using instructor, the prompt to use</p></div>
             nlp_chunks=nlp_chunks,
             all_ngrams=all_ngrams,
         )
-    else:
+    elif isinstance(sentence, list):
+        seqs = sentence
+    elif isinstance(sentence, str):
         seqs = [sentence]
+    else:
+        raise ValueError(&#34;sentence must be a string or list of strings&#34;)
+    # assert isinstance(
+    #     sentence, str
+    # ), &#34;sentence must be a string (batched mode not supported)&#34;
     # seqs = list(map(imodelsx.util.generate_ngrams_list, sentence))
 
     seq_len = len(seqs)

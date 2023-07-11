@@ -85,6 +85,13 @@
 <td>Explain a black-box text module<br/>using an LLM (<em>Official</em>)</td>
 </tr>
 <tr>
+<td style="text-align: left;">Bag of Ngrams</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://csinva.io/imodelsX/linear_ngram.html">🗂️</a></td>
+<td>Linear model</td>
+<td>Learn a linear model of ngrams</td>
+</tr>
+<tr>
 <td style="text-align: left;">Linear Finetune</td>
 <td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/linearfinetune.ipynb">📖</a>, <a href="https://csinva.io/imodelsX/linear_finetune.html">🗂️</a></td>
 <td>Black-box model</td>
@@ -211,6 +218,7 @@ explanation_dict = explain_module_sasc(
 from .auggam.auggam import AugGAMClassifier, AugGAMRegressor
 from .augtree.augtree import AugTreeClassifier, AugTreeRegressor
 from .linear_finetune import LinearFinetuneClassifier, LinearFinetuneRegressor
+from .linear_ngram import LinearNgramClassifier, LinearNgramRegressor
 from .d3.d3 import explain_dataset_d3
 from .iprompt.api import explain_dataset_iprompt
 from .iprompt.data import get_add_two_numbers_dataset

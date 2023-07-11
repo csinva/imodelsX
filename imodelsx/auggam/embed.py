@@ -93,9 +93,6 @@ def embed_and_sum_function(
         sentence = example
     # seqs = sentence
 
-    assert isinstance(
-        sentence, str
-    ), "sentence must be a string (batched mode not supported)"
     if fit_with_ngram_decomposition:
         seqs = imodelsx.util.generate_ngrams_list(
             sentence,
@@ -111,6 +108,9 @@ def embed_and_sum_function(
         seqs = [sentence]
     else:
         raise ValueError("sentence must be a string or list of strings")
+    # assert isinstance(
+    #     sentence, str
+    # ), "sentence must be a string (batched mode not supported)"
     # seqs = list(map(imodelsx.util.generate_ngrams_list, sentence))
 
     seq_len = len(seqs)
