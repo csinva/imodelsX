@@ -105,8 +105,12 @@ def embed_and_sum_function(
             nlp_chunks=nlp_chunks,
             all_ngrams=all_ngrams,
         )
-    else:
+    elif isinstance(sentence, list):
+        seqs = sentence
+    elif isinstance(sentence, str):
         seqs = [sentence]
+    else:
+        raise ValueError("sentence must be a string or list of strings")
     # seqs = list(map(imodelsx.util.generate_ngrams_list, sentence))
 
     seq_len = len(seqs)

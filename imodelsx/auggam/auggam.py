@@ -263,21 +263,19 @@ class AugGAM(BaseEstimator):
             embs = np.vstack(embs).squeeze()
 
         else:
-            embs = []
-            for x in tqdm(ngrams_list):
-                emb = imodelsx.auggam.embed.embed_and_sum_function(
-                    x,
+            embs = imodelsx.auggam.embed.embed_and_sum_function(
+                    ngrams_list,
                     model=model,
                     ngrams=None,
                     tokenizer_embeddings=tokenizer_embeddings,
                     tokenizer_ngrams=self.tokenizer_ngrams,
                     checkpoint=self.checkpoint,
                     layer=self.layer,
+                    batch_size=batch_size,
                     # only return a single embedding
                     fit_with_ngram_decomposition=False,
                     sum_embeddings=False,
-                )
-                embs.append(emb["embs"])
+                )['embs']
             embs = np.array(embs).squeeze()  # num_examples x embedding_size
 
         return embs
