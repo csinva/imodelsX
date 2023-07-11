@@ -11,6 +11,7 @@ from sklearn.utils.validation import check_is_fitted
 from spacy.lang.en import English
 from scipy.sparse import issparse
 from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import transformers
 from tqdm import tqdm
 import os
@@ -27,14 +28,21 @@ class LinearNgram(BaseEstimator):
     def __init__(
         self,
         checkpoint: str = "tfidfvectorizer",
+        tokenizer=None,
+        ngrams=2,
+        all_ngrams=True,
         random_state=None,
     ):
-        """LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.
+        """LinearNgram Class - use either LinearNgramClassifier or LinearNgramRegressor rather than initializing this class directly.
 
         Parameters
         ----------
         checkpoint: str
-            Name of vectorizer checkpoint
+            Name of vectorizer checkpoint: "countvectorizer" or "tfidfvectorizer"
+        ngrams
+            Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
+        all_ngrams
+            Whether to use all order ngrams <= ngrams argument
         random_state
             random seed for fitting
 
@@ -52,7 +60,7 @@ class LinearNgram(BaseEstimator):
         dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
 
 
-        # fit a simple one-layer finetune
+        # fit a simple ngram model
         m = LinearNgramClassifier()
         m.fit(dset['text'], dset['label'])
         preds = m.predict(dset_val['text'])
@@ -60,12 +68,12 @@ class LinearNgram(BaseEstimator):
         print('validation acc', acc)
         ```
         """
-
+        assert checkpoint in ["countvectorizer", "tfidfvectorizer"]
         self.checkpoint = checkpoint
-        self.layer = layer
+        self.tokenizer = tokenizer
+        self.ngrams = ngrams
+        self.all_ngrams = all_ngrams
         self.random_state = random_state
-        self.normalize_embs = normalize_embs
-        self._initialize_checkpoint_and_tokenizer()
 
     def fit(
         self,
@@ -100,13 +108,13 @@ class LinearNgram(BaseEstimator):
             lower_ngram = self.ngrams
 
         # get vectorizer
-        if checkpoint == "countvectorizer":
+        if self.checkpoint == "countvectorizer":
             self.vectorizer = CountVectorizer(
-                tokenizer=self.tokenizer_ngrams, ngram_range=(lower_ngram, self.ngrams)
+                tokenizer=self.tokenizer, ngram_range=(lower_ngram, self.ngrams)
             )
-        elif checkpoint == "tfidfvectorizer":
+        elif self.checkpoint == "tfidfvectorizer":
             self.vectorizer = TfidfVectorizer(
-                tokenizer=self.tokenizer_ngrams, ngram_range=(lower_ngram, self.ngrams)
+                tokenizer=self.tokenizer, ngram_range=(lower_ngram, self.ngrams)
             )
 
         # get embs

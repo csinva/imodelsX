@@ -27,7 +27,7 @@
 <p align="center">
 <img src="https://microsoft.github.io/aug-models/embgam_gif.gif" width="18%">
 <img align="center" width=40% src="https://csinva.io/imodelsX/imodelsx_logo.svg?sanitize=True&kill_cache=1"> </img> <img src="https://microsoft.github.io/aug-models/embgam_gif.gif" width="18%"></p>
-<p align="center">Library to explain <i>a dataset</i> in natural language.
+<p align="center">Scikit-learn friendly library to interpret, predict, and prompt-engineer text datasets.
 </p>
 <p align="center">
 <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖 demo notebooks</a>
@@ -133,7 +133,7 @@ hypotheses, hypothesis_scores = explain_dataset_d3(
     batch_size=64,
 )
 </code></pre>
-<h3 id="aug-models">Aug-models</h3>
+<h3 id="aug-imodels">Aug-imodels</h3>
 <p>Use these just a like a scikit-learn model. During training, they fit better features via LLMs, but at test-time they are extremely fast and completely transparent.</p>
 <pre><code class="language-python">from imodelsx import AugGAMClassifier, AugTreeClassifier, AugGAMRegressor, AugTreeRegressor
 import datasets
@@ -165,10 +165,10 @@ print('Most negative ngrams')
 for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
     print('\t', k, round(v, 2))
 </code></pre>
-<h3 id="linear-finetune">Linear finetune</h3>
-<p>An easy-to-fit baseline that follows the same API.</p>
-<pre><code class="language-python">from imodelsx import LinearFinetuneClassifier
-# fit a simple one-layer finetune
+<h3 id="easy-baselines">Easy baselines</h3>
+<p>Easy-to-fit baselines that follows the same API.</p>
+<pre><code class="language-python">from imodelsx import LinearFinetuneClassifier, LinearNgramClassifier
+# fit a simple one-layer finetune on top of LLM embeddings
 m = LinearFinetuneClassifier(
     checkpoint='distilbert-base-uncased',
 )
@@ -252,6 +252,10 @@ from .sasc.api import explain_module_sasc</code></pre>
 <dd>
 <div class="desc"><p>Simple scikit-learn interface for finetuning a single linear layer on top of LLM embeddings.</p></div>
 </dd>
+<dt><code class="name"><a title="imodelsx.linear_ngram" href="linear_ngram.html">imodelsx.linear_ngram</a></code></dt>
+<dd>
+<div class="desc"><p>Simple scikit-learn interface for finetuning a single linear layer on top of LLM embeddings.</p></div>
+</dd>
 <dt><code class="name"><a title="imodelsx.llm" href="llm.html">imodelsx.llm</a></code></dt>
 <dd>
 <div class="desc"></div>
@@ -296,8 +300,8 @@ from .sasc.api import explain_module_sasc</code></pre>
 <li><a href="#quickstart">Quickstart</a><ul>
 <li><a href="#iprompt">iPrompt</a></li>
 <li><a href="#d3-describedistributionaldifferences">D3 (DescribeDistributionalDifferences)</a></li>
-<li><a href="#aug-models">Aug-models</a></li>
-<li><a href="#linear-finetune">Linear finetune</a></li>
+<li><a href="#aug-imodels">Aug-imodels</a></li>
+<li><a href="#easy-baselines">Easy baselines</a></li>
 <li><a href="#sasc">SASC</a></li>
 </ul>
 </li>
@@ -315,6 +319,7 @@ from .sasc.api import explain_module_sasc</code></pre>
 <li><code><a title="imodelsx.dummy_script" href="dummy_script.html">imodelsx.dummy_script</a></code></li>
 <li><code><a title="imodelsx.iprompt" href="iprompt/index.html">imodelsx.iprompt</a></code></li>
 <li><code><a title="imodelsx.linear_finetune" href="linear_finetune.html">imodelsx.linear_finetune</a></code></li>
+<li><code><a title="imodelsx.linear_ngram" href="linear_ngram.html">imodelsx.linear_ngram</a></code></li>
 <li><code><a title="imodelsx.llm" href="llm.html">imodelsx.llm</a></code></li>
 <li><code><a title="imodelsx.metrics" href="metrics.html">imodelsx.metrics</a></code></li>
 <li><code><a title="imodelsx.process_results" href="process_results.html">imodelsx.process_results</a></code></li>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>imodelsx.linear_finetune API documentation</title>
+<title>imodelsx.linear_ngram API documentation</title>
 <meta name="description" content="Simple scikit-learn interface for finetuning a single linear layer on top of LLM embeddings." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>imodelsx.linear_finetune</code></h1>
+<h1 class="title">Module <code>imodelsx.linear_ngram</code></h1>
 </header>
 <section id="section-intro">
 <p>Simple scikit-learn interface for finetuning a single linear layer on top of LLM embeddings.</p>
@@ -40,6 +40,7 @@ from sklearn.utils.validation import check_is_fitted
 from spacy.lang.en import English
 from scipy.sparse import issparse
 from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import transformers
 from tqdm import tqdm
 import os
@@ -52,31 +53,32 @@ from sklearn.exceptions import ConvergenceWarning
 device = &#34;cuda&#34; if torch.cuda.is_available() else &#34;cpu&#34;
 
 
-class LinearFinetune(BaseEstimator):
+class LinearNgram(BaseEstimator):
     def __init__(
         self,
-        checkpoint: str = &#34;bert-base-uncased&#34;,
-        layer: str = &#34;last_hidden_state&#34;,
+        checkpoint: str = &#34;tfidfvectorizer&#34;,
+        tokenizer=None,
+        ngrams=2,
+        all_ngrams=True,
         random_state=None,
-        normalize_embs=False,
     ):
-        &#34;&#34;&#34;LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.
+        &#34;&#34;&#34;LinearNgram Class - use either LinearNgramClassifier or LinearNgramRegressor rather than initializing this class directly.
 
         Parameters
         ----------
         checkpoint: str
-            Name of model checkpoint (i.e. to be fetch by huggingface)
-        layer: str
-            Name of layer to extract embeddings from
+            Name of vectorizer checkpoint: &#34;countvectorizer&#34; or &#34;tfidfvectorizer&#34;
+        ngrams
+            Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
+        all_ngrams
+            Whether to use all order ngrams &lt;= ngrams argument
         random_state
             random seed for fitting
-        normalize_embs
-            whether to normalize embeddings before fitting linear model
 
         Example
         -------
         ```
-        from imodelsx import LinearFinetuneClassifier
+        from imodelsx import LinearNgramClassifier
         import datasets
         import numpy as np
 
@@ -87,32 +89,26 @@ class LinearFinetune(BaseEstimator):
         dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
 
 
-        # fit a simple one-layer finetune
-        m = LinearFinetuneClassifier(
-            checkpoint=&#39;distilbert-base-uncased&#39;,
-        )
+        # fit a simple ngram model
+        m = LinearNgramClassifier()
         m.fit(dset[&#39;text&#39;], dset[&#39;label&#39;])
         preds = m.predict(dset_val[&#39;text&#39;])
         acc = (preds == dset_val[&#39;label&#39;]).mean()
         print(&#39;validation acc&#39;, acc)
         ```
         &#34;&#34;&#34;
+        assert checkpoint in [&#34;countvectorizer&#34;, &#34;tfidfvectorizer&#34;]
         self.checkpoint = checkpoint
-        self.layer = layer
+        self.tokenizer = tokenizer
+        self.ngrams = ngrams
+        self.all_ngrams = all_ngrams
         self.random_state = random_state
-        self.normalize_embs = normalize_embs
-        self._initialize_checkpoint_and_tokenizer()
-
-    def _initialize_checkpoint_and_tokenizer(self):
-        self.model = transformers.AutoModel.from_pretrained(self.checkpoint).to(device)
-        self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.checkpoint)
 
     def fit(
         self,
         X_text: ArrayLike,
         y: ArrayLike,
         verbose=True,
-        cache_embs_dir: str = None,
     ):
         &#34;&#34;&#34;Extract embeddings then fit linear model
 
@@ -120,8 +116,6 @@ class LinearFinetune(BaseEstimator):
         ----------
         X_text: ArrayLike[str]
         y: ArrayLike[str]
-        cache_embs_dir, optional
-            if not None, directory to save embeddings into
         &#34;&#34;&#34;
 
         # metadata
@@ -137,18 +131,23 @@ class LinearFinetune(BaseEstimator):
         # get embs
         if verbose:
             print(&#34;calculating embeddings...&#34;)
-        if cache_embs_dir is not None and os.path.exists(
-            os.path.join(cache_embs_dir, &#34;embs.pkl&#34;)
-        ):
-            embs = pkl.load(open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
+        if self.all_ngrams:
+            lower_ngram = 1
         else:
-            embs = self._get_embs(X_text)
-            if cache_embs_dir is not None:
-                os.makedirs(cache_embs_dir, exist_ok=True)
-                pkl.dump(embs, open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;))
-        if self.normalize_embs:
-            self.normalizer = StandardScaler()
-            embs = self.normalizer.fit_transform(embs)
+            lower_ngram = self.ngrams
+
+        # get vectorizer
+        if self.checkpoint == &#34;countvectorizer&#34;:
+            self.vectorizer = CountVectorizer(
+                tokenizer=self.tokenizer, ngram_range=(lower_ngram, self.ngrams)
+            )
+        elif self.checkpoint == &#34;tfidfvectorizer&#34;:
+            self.vectorizer = TfidfVectorizer(
+                tokenizer=self.tokenizer, ngram_range=(lower_ngram, self.ngrams)
+            )
+
+        # get embs
+        embs = self.vectorizer.fit_transform(X_text)
 
         # train linear
         warnings.filterwarnings(&#34;ignore&#34;, category=ConvergenceWarning)
@@ -162,47 +161,25 @@ class LinearFinetune(BaseEstimator):
 
         return self
 
-    def _get_embs(self, X_text: ArrayLike):
-        embs = []
-        if isinstance(X_text, list):
-            n = len(X_text)
-        else:
-            n = X_text.shape[0]
-        for i in tqdm(range(n)):
-            inputs = self.tokenizer(
-                [X_text[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;
-            )
-            inputs = inputs.to(self.model.device)
-            output = self.model(**inputs)
-            emb = output[self.layer].cpu().detach().numpy()
-            if len(emb.shape) == 3:  # includes seq_len
-                emb = emb.mean(axis=1)
-            embs.append(emb)
-        return np.array(embs).squeeze()  # num_examples x embedding_size
-
     def predict(self, X_text):
         &#34;&#34;&#34;For regression returns continuous output.
         For classification, returns discrete output.
         &#34;&#34;&#34;
         check_is_fitted(self)
-        embs = self._get_embs(X_text)
-        if self.normalize_embs:
-            embs = self.normalizer.transform(embs)
+        embs = self.vectorizer.transform(X_text)
         return self.linear.predict(embs)
 
     def predict_proba(self, X_text):
         check_is_fitted(self)
-        embs = self._get_embs(X_text)
-        if self.normalize_embs:
-            embs = self.normalizer.transform(embs)
+        embs = self.vectorizer.transform(X_text)
         return self.linear.predict_proba(embs)
 
 
-class LinearFinetuneRegressor(LinearFinetune, RegressorMixin):
+class LinearNgramRegressor(LinearNgram, RegressorMixin):
     ...
 
 
-class LinearFinetuneClassifier(LinearFinetune, ClassifierMixin):
+class LinearNgramClassifier(LinearNgram, ClassifierMixin):
     ...
 
 
@@ -216,7 +193,7 @@ if __name__ == &#34;__main__&#34;:
     print(dset[&#34;train&#34;])
     print(np.unique(dset[&#34;train&#34;][&#34;label&#34;]))
 
-    clf = LinearFinetuneClassifier()
+    clf = LinearNgramClassifier()
     clf.fit(dset[&#34;train&#34;][&#34;text&#34;], dset[&#34;train&#34;][&#34;label&#34;])
 
     print(&#34;predicting&#34;)
@@ -244,9 +221,9 @@ if __name__ == &#34;__main__&#34;:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="imodelsx.linear_finetune.LinearFinetune"><code class="flex name class">
-<span>class <span class="ident">LinearFinetune</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False)</span>
+<dt id="imodelsx.linear_ngram.LinearNgram"><code class="flex name class">
+<span>class <span class="ident">LinearNgram</span></span>
+<span>(</span><span>checkpoint: str = 'tfidfvectorizer', tokenizer=None, ngrams=2, all_ngrams=True, random_state=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -254,20 +231,20 @@ if __name__ == &#34;__main__&#34;:
 <p>All estimators should specify all the parameters that can be set
 at the class level in their <code>__init__</code> as explicit keyword
 arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
-<p>LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.</p>
+<p>LinearNgram Class - use either LinearNgramClassifier or LinearNgramRegressor rather than initializing this class directly.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
-<dd>Name of model checkpoint (i.e. to be fetch by huggingface)</dd>
-<dt><strong><code>layer</code></strong> :&ensp;<code>str</code></dt>
-<dd>Name of layer to extract embeddings from</dd>
+<dd>Name of vectorizer checkpoint: "countvectorizer" or "tfidfvectorizer"</dd>
+<dt><strong><code>ngrams</code></strong></dt>
+<dd>Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.</dd>
+<dt><strong><code>all_ngrams</code></strong></dt>
+<dd>Whether to use all order ngrams &lt;= ngrams argument</dd>
 <dt><strong><code>random_state</code></strong></dt>
 <dd>random seed for fitting</dd>
-<dt><strong><code>normalize_embs</code></strong></dt>
-<dd>whether to normalize embeddings before fitting linear model</dd>
 </dl>
 <h2 id="example">Example</h2>
-<pre><code>from imodelsx import LinearFinetuneClassifier
+<pre><code>from imodelsx import LinearNgramClassifier
 import datasets
 import numpy as np
 
@@ -278,10 +255,8 @@ dset_val = datasets.load_dataset('rotten_tomatoes')['validation']
 dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
 
 
-# fit a simple one-layer finetune
-m = LinearFinetuneClassifier(
-    checkpoint='distilbert-base-uncased',
-)
+# fit a simple ngram model
+m = LinearNgramClassifier()
 m.fit(dset['text'], dset['label'])
 preds = m.predict(dset_val['text'])
 acc = (preds == dset_val['label']).mean()
@@ -291,31 +266,32 @@ print('validation acc', acc)
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class LinearFinetune(BaseEstimator):
+<pre><code class="python">class LinearNgram(BaseEstimator):
     def __init__(
         self,
-        checkpoint: str = &#34;bert-base-uncased&#34;,
-        layer: str = &#34;last_hidden_state&#34;,
+        checkpoint: str = &#34;tfidfvectorizer&#34;,
+        tokenizer=None,
+        ngrams=2,
+        all_ngrams=True,
         random_state=None,
-        normalize_embs=False,
     ):
-        &#34;&#34;&#34;LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.
+        &#34;&#34;&#34;LinearNgram Class - use either LinearNgramClassifier or LinearNgramRegressor rather than initializing this class directly.
 
         Parameters
         ----------
         checkpoint: str
-            Name of model checkpoint (i.e. to be fetch by huggingface)
-        layer: str
-            Name of layer to extract embeddings from
+            Name of vectorizer checkpoint: &#34;countvectorizer&#34; or &#34;tfidfvectorizer&#34;
+        ngrams
+            Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
+        all_ngrams
+            Whether to use all order ngrams &lt;= ngrams argument
         random_state
             random seed for fitting
-        normalize_embs
-            whether to normalize embeddings before fitting linear model
 
         Example
         -------
         ```
-        from imodelsx import LinearFinetuneClassifier
+        from imodelsx import LinearNgramClassifier
         import datasets
         import numpy as np
 
@@ -326,32 +302,26 @@ print('validation acc', acc)
         dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
 
 
-        # fit a simple one-layer finetune
-        m = LinearFinetuneClassifier(
-            checkpoint=&#39;distilbert-base-uncased&#39;,
-        )
+        # fit a simple ngram model
+        m = LinearNgramClassifier()
         m.fit(dset[&#39;text&#39;], dset[&#39;label&#39;])
         preds = m.predict(dset_val[&#39;text&#39;])
         acc = (preds == dset_val[&#39;label&#39;]).mean()
         print(&#39;validation acc&#39;, acc)
         ```
         &#34;&#34;&#34;
+        assert checkpoint in [&#34;countvectorizer&#34;, &#34;tfidfvectorizer&#34;]
         self.checkpoint = checkpoint
-        self.layer = layer
+        self.tokenizer = tokenizer
+        self.ngrams = ngrams
+        self.all_ngrams = all_ngrams
         self.random_state = random_state
-        self.normalize_embs = normalize_embs
-        self._initialize_checkpoint_and_tokenizer()
-
-    def _initialize_checkpoint_and_tokenizer(self):
-        self.model = transformers.AutoModel.from_pretrained(self.checkpoint).to(device)
-        self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.checkpoint)
 
     def fit(
         self,
         X_text: ArrayLike,
         y: ArrayLike,
         verbose=True,
-        cache_embs_dir: str = None,
     ):
         &#34;&#34;&#34;Extract embeddings then fit linear model
 
@@ -359,8 +329,6 @@ print('validation acc', acc)
         ----------
         X_text: ArrayLike[str]
         y: ArrayLike[str]
-        cache_embs_dir, optional
-            if not None, directory to save embeddings into
         &#34;&#34;&#34;
 
         # metadata
@@ -376,18 +344,23 @@ print('validation acc', acc)
         # get embs
         if verbose:
             print(&#34;calculating embeddings...&#34;)
-        if cache_embs_dir is not None and os.path.exists(
-            os.path.join(cache_embs_dir, &#34;embs.pkl&#34;)
-        ):
-            embs = pkl.load(open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
+        if self.all_ngrams:
+            lower_ngram = 1
         else:
-            embs = self._get_embs(X_text)
-            if cache_embs_dir is not None:
-                os.makedirs(cache_embs_dir, exist_ok=True)
-                pkl.dump(embs, open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;))
-        if self.normalize_embs:
-            self.normalizer = StandardScaler()
-            embs = self.normalizer.fit_transform(embs)
+            lower_ngram = self.ngrams
+
+        # get vectorizer
+        if self.checkpoint == &#34;countvectorizer&#34;:
+            self.vectorizer = CountVectorizer(
+                tokenizer=self.tokenizer, ngram_range=(lower_ngram, self.ngrams)
+            )
+        elif self.checkpoint == &#34;tfidfvectorizer&#34;:
+            self.vectorizer = TfidfVectorizer(
+                tokenizer=self.tokenizer, ngram_range=(lower_ngram, self.ngrams)
+            )
+
+        # get embs
+        embs = self.vectorizer.fit_transform(X_text)
 
         # train linear
         warnings.filterwarnings(&#34;ignore&#34;, category=ConvergenceWarning)
@@ -401,39 +374,17 @@ print('validation acc', acc)
 
         return self
 
-    def _get_embs(self, X_text: ArrayLike):
-        embs = []
-        if isinstance(X_text, list):
-            n = len(X_text)
-        else:
-            n = X_text.shape[0]
-        for i in tqdm(range(n)):
-            inputs = self.tokenizer(
-                [X_text[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;
-            )
-            inputs = inputs.to(self.model.device)
-            output = self.model(**inputs)
-            emb = output[self.layer].cpu().detach().numpy()
-            if len(emb.shape) == 3:  # includes seq_len
-                emb = emb.mean(axis=1)
-            embs.append(emb)
-        return np.array(embs).squeeze()  # num_examples x embedding_size
-
     def predict(self, X_text):
         &#34;&#34;&#34;For regression returns continuous output.
         For classification, returns discrete output.
         &#34;&#34;&#34;
         check_is_fitted(self)
-        embs = self._get_embs(X_text)
-        if self.normalize_embs:
-            embs = self.normalizer.transform(embs)
+        embs = self.vectorizer.transform(X_text)
         return self.linear.predict(embs)
 
     def predict_proba(self, X_text):
         check_is_fitted(self)
-        embs = self._get_embs(X_text)
-        if self.normalize_embs:
-            embs = self.normalizer.transform(embs)
+        embs = self.vectorizer.transform(X_text)
         return self.linear.predict_proba(embs)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -442,13 +393,13 @@ print('validation acc', acc)
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="imodelsx.linear_finetune.LinearFinetuneClassifier" href="#imodelsx.linear_finetune.LinearFinetuneClassifier">LinearFinetuneClassifier</a></li>
-<li><a title="imodelsx.linear_finetune.LinearFinetuneRegressor" href="#imodelsx.linear_finetune.LinearFinetuneRegressor">LinearFinetuneRegressor</a></li>
+<li><a title="imodelsx.linear_ngram.LinearNgramClassifier" href="#imodelsx.linear_ngram.LinearNgramClassifier">LinearNgramClassifier</a></li>
+<li><a title="imodelsx.linear_ngram.LinearNgramRegressor" href="#imodelsx.linear_ngram.LinearNgramRegressor">LinearNgramRegressor</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="imodelsx.linear_finetune.LinearFinetune.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, X_text: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_embs_dir: str = None)</span>
+<dt id="imodelsx.linear_ngram.LinearNgram.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, X_text: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Extract embeddings then fit linear model</p>
@@ -458,8 +409,6 @@ print('validation acc', acc)
 <dd>&nbsp;</dd>
 <dt><strong><code>y</code></strong> :&ensp;<code>ArrayLike[str]</code></dt>
 <dd>&nbsp;</dd>
-<dt><strong><code>cache_embs_dir</code></strong>, <strong><code>optional</code></strong></dt>
-<dd>if not None, directory to save embeddings into</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -470,7 +419,6 @@ print('validation acc', acc)
     X_text: ArrayLike,
     y: ArrayLike,
     verbose=True,
-    cache_embs_dir: str = None,
 ):
     &#34;&#34;&#34;Extract embeddings then fit linear model
 
@@ -478,8 +426,6 @@ print('validation acc', acc)
     ----------
     X_text: ArrayLike[str]
     y: ArrayLike[str]
-    cache_embs_dir, optional
-        if not None, directory to save embeddings into
     &#34;&#34;&#34;
 
     # metadata
@@ -495,18 +441,23 @@ print('validation acc', acc)
     # get embs
     if verbose:
         print(&#34;calculating embeddings...&#34;)
-    if cache_embs_dir is not None and os.path.exists(
-        os.path.join(cache_embs_dir, &#34;embs.pkl&#34;)
-    ):
-        embs = pkl.load(open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
+    if self.all_ngrams:
+        lower_ngram = 1
     else:
-        embs = self._get_embs(X_text)
-        if cache_embs_dir is not None:
-            os.makedirs(cache_embs_dir, exist_ok=True)
-            pkl.dump(embs, open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;))
-    if self.normalize_embs:
-        self.normalizer = StandardScaler()
-        embs = self.normalizer.fit_transform(embs)
+        lower_ngram = self.ngrams
+
+    # get vectorizer
+    if self.checkpoint == &#34;countvectorizer&#34;:
+        self.vectorizer = CountVectorizer(
+            tokenizer=self.tokenizer, ngram_range=(lower_ngram, self.ngrams)
+        )
+    elif self.checkpoint == &#34;tfidfvectorizer&#34;:
+        self.vectorizer = TfidfVectorizer(
+            tokenizer=self.tokenizer, ngram_range=(lower_ngram, self.ngrams)
+        )
+
+    # get embs
+    embs = self.vectorizer.fit_transform(X_text)
 
     # train linear
     warnings.filterwarnings(&#34;ignore&#34;, category=ConvergenceWarning)
@@ -521,7 +472,7 @@ print('validation acc', acc)
     return self</code></pre>
 </details>
 </dd>
-<dt id="imodelsx.linear_finetune.LinearFinetune.predict"><code class="name flex">
+<dt id="imodelsx.linear_ngram.LinearNgram.predict"><code class="name flex">
 <span>def <span class="ident">predict</span></span>(<span>self, X_text)</span>
 </code></dt>
 <dd>
@@ -536,13 +487,11 @@ For classification, returns discrete output.</p></div>
     For classification, returns discrete output.
     &#34;&#34;&#34;
     check_is_fitted(self)
-    embs = self._get_embs(X_text)
-    if self.normalize_embs:
-        embs = self.normalizer.transform(embs)
+    embs = self.vectorizer.transform(X_text)
     return self.linear.predict(embs)</code></pre>
 </details>
 </dd>
-<dt id="imodelsx.linear_finetune.LinearFinetune.predict_proba"><code class="name flex">
+<dt id="imodelsx.linear_ngram.LinearNgram.predict_proba"><code class="name flex">
 <span>def <span class="ident">predict_proba</span></span>(<span>self, X_text)</span>
 </code></dt>
 <dd>
@@ -553,17 +502,15 @@ For classification, returns discrete output.</p></div>
 </summary>
 <pre><code class="python">def predict_proba(self, X_text):
     check_is_fitted(self)
-    embs = self._get_embs(X_text)
-    if self.normalize_embs:
-        embs = self.normalizer.transform(embs)
+    embs = self.vectorizer.transform(X_text)
     return self.linear.predict_proba(embs)</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
-<dt id="imodelsx.linear_finetune.LinearFinetuneClassifier"><code class="flex name class">
-<span>class <span class="ident">LinearFinetuneClassifier</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False)</span>
+<dt id="imodelsx.linear_ngram.LinearNgramClassifier"><code class="flex name class">
+<span>class <span class="ident">LinearNgramClassifier</span></span>
+<span>(</span><span>checkpoint: str = 'tfidfvectorizer', tokenizer=None, ngrams=2, all_ngrams=True, random_state=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -571,20 +518,20 @@ For classification, returns discrete output.</p></div>
 <p>All estimators should specify all the parameters that can be set
 at the class level in their <code>__init__</code> as explicit keyword
 arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
-<p>LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.</p>
+<p>LinearNgram Class - use either LinearNgramClassifier or LinearNgramRegressor rather than initializing this class directly.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
-<dd>Name of model checkpoint (i.e. to be fetch by huggingface)</dd>
-<dt><strong><code>layer</code></strong> :&ensp;<code>str</code></dt>
-<dd>Name of layer to extract embeddings from</dd>
+<dd>Name of vectorizer checkpoint: "countvectorizer" or "tfidfvectorizer"</dd>
+<dt><strong><code>ngrams</code></strong></dt>
+<dd>Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.</dd>
+<dt><strong><code>all_ngrams</code></strong></dt>
+<dd>Whether to use all order ngrams &lt;= ngrams argument</dd>
 <dt><strong><code>random_state</code></strong></dt>
 <dd>random seed for fitting</dd>
-<dt><strong><code>normalize_embs</code></strong></dt>
-<dd>whether to normalize embeddings before fitting linear model</dd>
 </dl>
 <h2 id="example">Example</h2>
-<pre><code>from imodelsx import LinearFinetuneClassifier
+<pre><code>from imodelsx import LinearNgramClassifier
 import datasets
 import numpy as np
 
@@ -595,10 +542,8 @@ dset_val = datasets.load_dataset('rotten_tomatoes')['validation']
 dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
 
 
-# fit a simple one-layer finetune
-m = LinearFinetuneClassifier(
-    checkpoint='distilbert-base-uncased',
-)
+# fit a simple ngram model
+m = LinearNgramClassifier()
 m.fit(dset['text'], dset['label'])
 preds = m.predict(dset_val['text'])
 acc = (preds == dset_val['label']).mean()
@@ -608,28 +553,28 @@ print('validation acc', acc)
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class LinearFinetuneClassifier(LinearFinetune, ClassifierMixin):
+<pre><code class="python">class LinearNgramClassifier(LinearNgram, ClassifierMixin):
     ...</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></li>
+<li><a title="imodelsx.linear_ngram.LinearNgram" href="#imodelsx.linear_ngram.LinearNgram">LinearNgram</a></li>
 <li>sklearn.base.BaseEstimator</li>
 <li>sklearn.base.ClassifierMixin</li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></b></code>:
+<li><code><b><a title="imodelsx.linear_ngram.LinearNgram" href="#imodelsx.linear_ngram.LinearNgram">LinearNgram</a></b></code>:
 <ul class="hlist">
-<li><code><a title="imodelsx.linear_finetune.LinearFinetune.fit" href="#imodelsx.linear_finetune.LinearFinetune.fit">fit</a></code></li>
-<li><code><a title="imodelsx.linear_finetune.LinearFinetune.predict" href="#imodelsx.linear_finetune.LinearFinetune.predict">predict</a></code></li>
+<li><code><a title="imodelsx.linear_ngram.LinearNgram.fit" href="#imodelsx.linear_ngram.LinearNgram.fit">fit</a></code></li>
+<li><code><a title="imodelsx.linear_ngram.LinearNgram.predict" href="#imodelsx.linear_ngram.LinearNgram.predict">predict</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
-<dt id="imodelsx.linear_finetune.LinearFinetuneRegressor"><code class="flex name class">
-<span>class <span class="ident">LinearFinetuneRegressor</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False)</span>
+<dt id="imodelsx.linear_ngram.LinearNgramRegressor"><code class="flex name class">
+<span>class <span class="ident">LinearNgramRegressor</span></span>
+<span>(</span><span>checkpoint: str = 'tfidfvectorizer', tokenizer=None, ngrams=2, all_ngrams=True, random_state=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -637,20 +582,20 @@ print('validation acc', acc)
 <p>All estimators should specify all the parameters that can be set
 at the class level in their <code>__init__</code> as explicit keyword
 arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
-<p>LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.</p>
+<p>LinearNgram Class - use either LinearNgramClassifier or LinearNgramRegressor rather than initializing this class directly.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
-<dd>Name of model checkpoint (i.e. to be fetch by huggingface)</dd>
-<dt><strong><code>layer</code></strong> :&ensp;<code>str</code></dt>
-<dd>Name of layer to extract embeddings from</dd>
+<dd>Name of vectorizer checkpoint: "countvectorizer" or "tfidfvectorizer"</dd>
+<dt><strong><code>ngrams</code></strong></dt>
+<dd>Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.</dd>
+<dt><strong><code>all_ngrams</code></strong></dt>
+<dd>Whether to use all order ngrams &lt;= ngrams argument</dd>
 <dt><strong><code>random_state</code></strong></dt>
 <dd>random seed for fitting</dd>
-<dt><strong><code>normalize_embs</code></strong></dt>
-<dd>whether to normalize embeddings before fitting linear model</dd>
 </dl>
 <h2 id="example">Example</h2>
-<pre><code>from imodelsx import LinearFinetuneClassifier
+<pre><code>from imodelsx import LinearNgramClassifier
 import datasets
 import numpy as np
 
@@ -661,10 +606,8 @@ dset_val = datasets.load_dataset('rotten_tomatoes')['validation']
 dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
 
 
-# fit a simple one-layer finetune
-m = LinearFinetuneClassifier(
-    checkpoint='distilbert-base-uncased',
-)
+# fit a simple ngram model
+m = LinearNgramClassifier()
 m.fit(dset['text'], dset['label'])
 preds = m.predict(dset_val['text'])
 acc = (preds == dset_val['label']).mean()
@@ -674,21 +617,21 @@ print('validation acc', acc)
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class LinearFinetuneRegressor(LinearFinetune, RegressorMixin):
+<pre><code class="python">class LinearNgramRegressor(LinearNgram, RegressorMixin):
     ...</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></li>
+<li><a title="imodelsx.linear_ngram.LinearNgram" href="#imodelsx.linear_ngram.LinearNgram">LinearNgram</a></li>
 <li>sklearn.base.BaseEstimator</li>
 <li>sklearn.base.RegressorMixin</li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></b></code>:
+<li><code><b><a title="imodelsx.linear_ngram.LinearNgram" href="#imodelsx.linear_ngram.LinearNgram">LinearNgram</a></b></code>:
 <ul class="hlist">
-<li><code><a title="imodelsx.linear_finetune.LinearFinetune.fit" href="#imodelsx.linear_finetune.LinearFinetune.fit">fit</a></code></li>
-<li><code><a title="imodelsx.linear_finetune.LinearFinetune.predict" href="#imodelsx.linear_finetune.LinearFinetune.predict">predict</a></code></li>
+<li><code><a title="imodelsx.linear_ngram.LinearNgram.fit" href="#imodelsx.linear_ngram.LinearNgram.fit">fit</a></code></li>
+<li><code><a title="imodelsx.linear_ngram.LinearNgram.predict" href="#imodelsx.linear_ngram.LinearNgram.predict">predict</a></code></li>
 </ul>
 </li>
 </ul>
@@ -710,18 +653,18 @@ print('validation acc', acc)
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></code></h4>
+<h4><code><a title="imodelsx.linear_ngram.LinearNgram" href="#imodelsx.linear_ngram.LinearNgram">LinearNgram</a></code></h4>
 <ul class="">
-<li><code><a title="imodelsx.linear_finetune.LinearFinetune.fit" href="#imodelsx.linear_finetune.LinearFinetune.fit">fit</a></code></li>
-<li><code><a title="imodelsx.linear_finetune.LinearFinetune.predict" href="#imodelsx.linear_finetune.LinearFinetune.predict">predict</a></code></li>
-<li><code><a title="imodelsx.linear_finetune.LinearFinetune.predict_proba" href="#imodelsx.linear_finetune.LinearFinetune.predict_proba">predict_proba</a></code></li>
+<li><code><a title="imodelsx.linear_ngram.LinearNgram.fit" href="#imodelsx.linear_ngram.LinearNgram.fit">fit</a></code></li>
+<li><code><a title="imodelsx.linear_ngram.LinearNgram.predict" href="#imodelsx.linear_ngram.LinearNgram.predict">predict</a></code></li>
+<li><code><a title="imodelsx.linear_ngram.LinearNgram.predict_proba" href="#imodelsx.linear_ngram.LinearNgram.predict_proba">predict_proba</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="imodelsx.linear_finetune.LinearFinetuneClassifier" href="#imodelsx.linear_finetune.LinearFinetuneClassifier">LinearFinetuneClassifier</a></code></h4>
+<h4><code><a title="imodelsx.linear_ngram.LinearNgramClassifier" href="#imodelsx.linear_ngram.LinearNgramClassifier">LinearNgramClassifier</a></code></h4>
 </li>
 <li>
-<h4><code><a title="imodelsx.linear_finetune.LinearFinetuneRegressor" href="#imodelsx.linear_finetune.LinearFinetuneRegressor">LinearFinetuneRegressor</a></code></h4>
+<h4><code><a title="imodelsx.linear_ngram.LinearNgramRegressor" href="#imodelsx.linear_ngram.LinearNgramRegressor">LinearNgramRegressor</a></code></h4>
 </li>
 </ul>
 </li>

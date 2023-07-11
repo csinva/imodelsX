@@ -38,13 +38,14 @@ import imodelsx.util
 
 
 def get_model(checkpoint):
-    if &#39;distilbert&#39; in checkpoint.lower():
+    if &#34;distilbert&#34; in checkpoint.lower():
         model = DistilBertModel.from_pretrained(checkpoint)
-    elif &#39;bert-base&#39; in checkpoint.lower() or &#39;BERT&#39; in checkpoint:
+    elif &#34;bert-base&#34; in checkpoint.lower() or &#34;BERT&#34; in checkpoint:
         model = BertModel.from_pretrained(checkpoint)
-    elif &#39;gpt&#39; in checkpoint.lower():
+    elif &#34;gpt&#34; in checkpoint.lower():
         model = AutoModelForCausalLM.from_pretrained(
-            checkpoint, output_hidden_states=True)
+            checkpoint, output_hidden_states=True
+        )
     try:
         model = model.cuda()
     except:
@@ -58,21 +59,21 @@ def preprocess_gpt_token_batch(seqs, tokenizer_embeddings):
     &#34;&#34;&#34;
     # batch_size = len(seqs)
 
-    token_ids = [tokenizer_embeddings.encode(
-        s, add_special_tokens=False) for s in seqs]
+    token_ids = [tokenizer_embeddings.encode(s, add_special_tokens=False) for s in seqs]
     prompt_lengths = [len(s) for s in token_ids]
     max_prompt_len = max(prompt_lengths)
 
     # use 0 as padding id, shouldn&#39;t matter (snippet from here https://github.com/huggingface/transformers/issues/3021)
-    padded_tokens = [tok_ids + [0] *
-                     (max_prompt_len - len(tok_ids)) for tok_ids in token_ids]
+    padded_tokens = [
+        tok_ids + [0] * (max_prompt_len - len(tok_ids)) for tok_ids in token_ids
+    ]
     input_ids = torch.LongTensor(padded_tokens)
     attn_mask = torch.zeros(input_ids.shape).long()
     for ix, tok_ids in enumerate(token_ids):
-        attn_mask[ix][:len(tok_ids)] = 1
+        attn_mask[ix][: len(tok_ids)] = 1
 
     # tokens = tokenizer(seqs, truncation=True, return_tensors=&#34;pt&#34;)
-    return {&#39;input_ids&#39;: input_ids, &#39;attention_mask&#39;: attn_mask}
+    return {&#34;input_ids&#34;: input_ids, &#34;attention_mask&#34;: attn_mask}
 
 
 def embed_and_sum_function(
@@ -83,14 +84,15 @@ def embed_and_sum_function(
     tokenizer_ngrams,
     checkpoint: str,
     dataset_key_text: str = None,
-    layer: str = &#39;last_hidden_state&#39;,
+    layer: str = &#34;last_hidden_state&#34;,
     padding: str = &#34;max_length&#34;,
     batch_size: int = 8,
-    parsing: str = &#39;&#39;,
+    parsing: str = &#34;&#34;,
     nlp_chunks=None,
     all_ngrams: bool = False,
     fit_with_ngram_decomposition: bool = True,
     instructor_prompt: str = None,
+    sum_embeddings=True,
 ):
     &#34;&#34;&#34;Get summed embeddings for a single example
 
@@ -98,7 +100,7 @@ def embed_and_sum_function(
     ------
     ngrams: int
         What order of ngrams to use (1 for unigrams, 2 for bigrams, ...)
-    dataset_key_text: 
+    dataset_key_text:
         str that identifies where data examples are stored, e.g. &#34;sentence&#34; for sst2
     tokenizer_embeddings
         tokenizing for the embedding model
@@ -120,11 +122,16 @@ def embed_and_sum_function(
     # seqs = sentence
 
     assert isinstance(
-        sentence, str), &#39;sentence must be a string (batched mode not supported)&#39;
+        sentence, str
+    ), &#34;sentence must be a string (batched mode not supported)&#34;
     if fit_with_ngram_decomposition:
         seqs = imodelsx.util.generate_ngrams_list(
-            sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
-            parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
+            sentence,
+            ngrams=ngrams,
+            tokenizer_ngrams=tokenizer_ngrams,
+            parsing=parsing,
+            nlp_chunks=nlp_chunks,
+            all_ngrams=all_ngrams,
         )
     else:
         seqs = [sentence]
@@ -135,13 +142,20 @@ def embed_and_sum_function(
         # will multiply embedding by 0 so doesn&#39;t matter, but still want to get the shape
         seqs = [&#34;dummy&#34;]
 
-    if &#39;bert&#39; in checkpoint.lower():  # has up to two keys, &#39;last_hidden_state&#39;, &#39;pooler_output&#39;
-        if not hasattr(tokenizer_embeddings, &#39;pad_token&#39;) or tokenizer_embeddings.pad_token is None:
-            tokenizer_embeddings.pad_token = tokenizer_embeddings.eos_token
-        tokens = tokenizer_embeddings(seqs, padding=padding,
-                                      truncation=True, return_tensors=&#34;pt&#34;)
+    if (
+        not hasattr(tokenizer_embeddings, &#34;pad_token&#34;)
+        or tokenizer_embeddings.pad_token is None
+    ):
+        tokenizer_embeddings.pad_token = tokenizer_embeddings.eos_token
 
-        embs = []
+    embs = []
+
+    if (
+        &#34;bert&#34; in checkpoint.lower()
+    ):  # has up to two keys, &#39;last_hidden_state&#39;, &#39;pooler_output&#39;
+        tokens = tokenizer_embeddings(
+            seqs, padding=padding, truncation=True, return_tensors=&#34;pt&#34;
+        )
 
         ds = Dataset.from_dict(tokens).with_format(&#34;torch&#34;)
 
@@ -152,20 +166,18 @@ def embed_and_sum_function(
                 output = model(**batch)
             torch.cuda.empty_cache()
 
-            if layer == &#39;pooler_output&#39;:
-                emb = output[&#39;pooler_output&#39;].cpu().detach().numpy()
-            elif layer == &#39;last_hidden_state_mean&#39; or layer == &#39;last_hidden_state&#39;:
-                emb = output[&#39;last_hidden_state&#39;].cpu().detach().numpy()
+            if layer == &#34;pooler_output&#34;:
+                emb = output[&#34;pooler_output&#34;].cpu().detach().numpy()
+            elif layer == &#34;last_hidden_state_mean&#34; or layer == &#34;last_hidden_state&#34;:
+                emb = output[&#34;last_hidden_state&#34;].cpu().detach().numpy()
                 emb = emb.mean(axis=1)
 
             embs.append(emb)
 
         embs = np.concatenate(embs)
 
-    elif &#39;gpt&#39; in checkpoint.lower():
+    elif &#34;gpt&#34; in checkpoint.lower() or &#39;llama&#39; in checkpoint.lower():
         tokens = preprocess_gpt_token_batch(seqs, tokenizer_embeddings)
-
-        embs = []
 
         ds = Dataset.from_dict(tokens).with_format(&#34;torch&#34;)
 
@@ -176,28 +188,50 @@ def embed_and_sum_function(
                 output = model(**batch)
             torch.cuda.empty_cache()
 
-            # tuple of (layer x (batch_size, seq_len, hidden_size))
-            h = output[&#39;hidden_states&#39;]
-            # (batch_size, seq_len, hidden_size)
-            emb = h[0].cpu().detach().numpy()
-            emb = emb.mean(axis=1)  # (batch_size, hidden_size)
+            if &#34;hidden_states&#34; in output.keys():
+                # extract (layer x (batch_size, seq_len, hidden_size))
+                h = output[&#34;hidden_states&#34;]
+
+                # convert to (batch_size, seq_len, hidden_size)
+                emb = h[0].cpu().detach().numpy()
+
+                # convert to (batch_size, hidden_size)
+                emb = emb.mean(axis=1)
+            elif &#34;last_hidden_state&#34; in output.keys():
+                # extract (batch_size, seq_len, hidden_size)
+                h = output[&#34;last_hidden_state&#34;]
+
+                # convert to np
+                emb = h.cpu().detach().numpy()
+
+                # convert to (batch_size, hidden_size)
+                emb = emb.mean(axis=1)
+            else:
+                raise Exception(f&#34;keys: {output.keys()}&#34;)
 
             embs.append(emb)
 
         embs = np.concatenate(embs)
 
-    elif checkpoint.startswith(&#39;hkunlp/instructor&#39;):
+    elif checkpoint.startswith(&#34;hkunlp/instructor&#34;):
         if instructor_prompt is None:
-            instructor_prompt = &#34;Represent the short phrase for sentiment classification: &#34;
-        embs = model.encode([[instructor_prompt, x_i]
-                            for x_i in seqs], batch_size=batch_size)
+            instructor_prompt = (
+                &#34;Represent the short phrase for sentiment classification: &#34;
+            )
+        embs = model.encode(
+            [[instructor_prompt, x_i] for x_i in seqs], batch_size=batch_size
+        )
+    
+    else:
+        raise Exception(f&#34;Unknown model checkpoint {checkpoint}&#34;)
 
     # sum over the embeddings
-    embs = embs.sum(axis=0).reshape(1, -1)
+    if sum_embeddings:
+        embs = embs.sum(axis=0).reshape(1, -1)
     if seq_len == 0:
         embs *= 0
 
-    return {&#39;embs&#39;: embs, &#39;seq_len&#39;: len(seqs)}</code></pre>
+    return {&#34;embs&#34;: embs, &#34;seq_len&#34;: len(seqs)}</code></pre>
 </details>
 </section>
 <section>
@@ -208,7 +242,7 @@ def embed_and_sum_function(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="imodelsx.auggam.embed.embed_and_sum_function"><code class="name flex">
-<span>def <span class="ident">embed_and_sum_function</span></span>(<span>example, model, ngrams: int, tokenizer_embeddings, tokenizer_ngrams, checkpoint: str, dataset_key_text: str = None, layer: str = 'last_hidden_state', padding: str = 'max_length', batch_size: int = 8, parsing: str = '', nlp_chunks=None, all_ngrams: bool = False, fit_with_ngram_decomposition: bool = True, instructor_prompt: str = None)</span>
+<span>def <span class="ident">embed_and_sum_function</span></span>(<span>example, model, ngrams: int, tokenizer_embeddings, tokenizer_ngrams, checkpoint: str, dataset_key_text: str = None, layer: str = 'last_hidden_state', padding: str = 'max_length', batch_size: int = 8, parsing: str = '', nlp_chunks=None, all_ngrams: bool = False, fit_with_ngram_decomposition: bool = True, instructor_prompt: str = None, sum_embeddings=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Get summed embeddings for a single example</p>
@@ -241,14 +275,15 @@ if using instructor, the prompt to use</p></div>
     tokenizer_ngrams,
     checkpoint: str,
     dataset_key_text: str = None,
-    layer: str = &#39;last_hidden_state&#39;,
+    layer: str = &#34;last_hidden_state&#34;,
     padding: str = &#34;max_length&#34;,
     batch_size: int = 8,
-    parsing: str = &#39;&#39;,
+    parsing: str = &#34;&#34;,
     nlp_chunks=None,
     all_ngrams: bool = False,
     fit_with_ngram_decomposition: bool = True,
     instructor_prompt: str = None,
+    sum_embeddings=True,
 ):
     &#34;&#34;&#34;Get summed embeddings for a single example
 
@@ -256,7 +291,7 @@ if using instructor, the prompt to use</p></div>
     ------
     ngrams: int
         What order of ngrams to use (1 for unigrams, 2 for bigrams, ...)
-    dataset_key_text: 
+    dataset_key_text:
         str that identifies where data examples are stored, e.g. &#34;sentence&#34; for sst2
     tokenizer_embeddings
         tokenizing for the embedding model
@@ -278,11 +313,16 @@ if using instructor, the prompt to use</p></div>
     # seqs = sentence
 
     assert isinstance(
-        sentence, str), &#39;sentence must be a string (batched mode not supported)&#39;
+        sentence, str
+    ), &#34;sentence must be a string (batched mode not supported)&#34;
     if fit_with_ngram_decomposition:
         seqs = imodelsx.util.generate_ngrams_list(
-            sentence, ngrams=ngrams, tokenizer_ngrams=tokenizer_ngrams,
-            parsing=parsing, nlp_chunks=nlp_chunks, all_ngrams=all_ngrams,
+            sentence,
+            ngrams=ngrams,
+            tokenizer_ngrams=tokenizer_ngrams,
+            parsing=parsing,
+            nlp_chunks=nlp_chunks,
+            all_ngrams=all_ngrams,
         )
     else:
         seqs = [sentence]
@@ -293,13 +333,20 @@ if using instructor, the prompt to use</p></div>
         # will multiply embedding by 0 so doesn&#39;t matter, but still want to get the shape
         seqs = [&#34;dummy&#34;]
 
-    if &#39;bert&#39; in checkpoint.lower():  # has up to two keys, &#39;last_hidden_state&#39;, &#39;pooler_output&#39;
-        if not hasattr(tokenizer_embeddings, &#39;pad_token&#39;) or tokenizer_embeddings.pad_token is None:
-            tokenizer_embeddings.pad_token = tokenizer_embeddings.eos_token
-        tokens = tokenizer_embeddings(seqs, padding=padding,
-                                      truncation=True, return_tensors=&#34;pt&#34;)
+    if (
+        not hasattr(tokenizer_embeddings, &#34;pad_token&#34;)
+        or tokenizer_embeddings.pad_token is None
+    ):
+        tokenizer_embeddings.pad_token = tokenizer_embeddings.eos_token
 
-        embs = []
+    embs = []
+
+    if (
+        &#34;bert&#34; in checkpoint.lower()
+    ):  # has up to two keys, &#39;last_hidden_state&#39;, &#39;pooler_output&#39;
+        tokens = tokenizer_embeddings(
+            seqs, padding=padding, truncation=True, return_tensors=&#34;pt&#34;
+        )
 
         ds = Dataset.from_dict(tokens).with_format(&#34;torch&#34;)
 
@@ -310,20 +357,18 @@ if using instructor, the prompt to use</p></div>
                 output = model(**batch)
             torch.cuda.empty_cache()
 
-            if layer == &#39;pooler_output&#39;:
-                emb = output[&#39;pooler_output&#39;].cpu().detach().numpy()
-            elif layer == &#39;last_hidden_state_mean&#39; or layer == &#39;last_hidden_state&#39;:
-                emb = output[&#39;last_hidden_state&#39;].cpu().detach().numpy()
+            if layer == &#34;pooler_output&#34;:
+                emb = output[&#34;pooler_output&#34;].cpu().detach().numpy()
+            elif layer == &#34;last_hidden_state_mean&#34; or layer == &#34;last_hidden_state&#34;:
+                emb = output[&#34;last_hidden_state&#34;].cpu().detach().numpy()
                 emb = emb.mean(axis=1)
 
             embs.append(emb)
 
         embs = np.concatenate(embs)
 
-    elif &#39;gpt&#39; in checkpoint.lower():
+    elif &#34;gpt&#34; in checkpoint.lower() or &#39;llama&#39; in checkpoint.lower():
         tokens = preprocess_gpt_token_batch(seqs, tokenizer_embeddings)
-
-        embs = []
 
         ds = Dataset.from_dict(tokens).with_format(&#34;torch&#34;)
 
@@ -334,28 +379,50 @@ if using instructor, the prompt to use</p></div>
                 output = model(**batch)
             torch.cuda.empty_cache()
 
-            # tuple of (layer x (batch_size, seq_len, hidden_size))
-            h = output[&#39;hidden_states&#39;]
-            # (batch_size, seq_len, hidden_size)
-            emb = h[0].cpu().detach().numpy()
-            emb = emb.mean(axis=1)  # (batch_size, hidden_size)
+            if &#34;hidden_states&#34; in output.keys():
+                # extract (layer x (batch_size, seq_len, hidden_size))
+                h = output[&#34;hidden_states&#34;]
+
+                # convert to (batch_size, seq_len, hidden_size)
+                emb = h[0].cpu().detach().numpy()
+
+                # convert to (batch_size, hidden_size)
+                emb = emb.mean(axis=1)
+            elif &#34;last_hidden_state&#34; in output.keys():
+                # extract (batch_size, seq_len, hidden_size)
+                h = output[&#34;last_hidden_state&#34;]
+
+                # convert to np
+                emb = h.cpu().detach().numpy()
+
+                # convert to (batch_size, hidden_size)
+                emb = emb.mean(axis=1)
+            else:
+                raise Exception(f&#34;keys: {output.keys()}&#34;)
 
             embs.append(emb)
 
         embs = np.concatenate(embs)
 
-    elif checkpoint.startswith(&#39;hkunlp/instructor&#39;):
+    elif checkpoint.startswith(&#34;hkunlp/instructor&#34;):
         if instructor_prompt is None:
-            instructor_prompt = &#34;Represent the short phrase for sentiment classification: &#34;
-        embs = model.encode([[instructor_prompt, x_i]
-                            for x_i in seqs], batch_size=batch_size)
+            instructor_prompt = (
+                &#34;Represent the short phrase for sentiment classification: &#34;
+            )
+        embs = model.encode(
+            [[instructor_prompt, x_i] for x_i in seqs], batch_size=batch_size
+        )
+    
+    else:
+        raise Exception(f&#34;Unknown model checkpoint {checkpoint}&#34;)
 
     # sum over the embeddings
-    embs = embs.sum(axis=0).reshape(1, -1)
+    if sum_embeddings:
+        embs = embs.sum(axis=0).reshape(1, -1)
     if seq_len == 0:
         embs *= 0
 
-    return {&#39;embs&#39;: embs, &#39;seq_len&#39;: len(seqs)}</code></pre>
+    return {&#34;embs&#34;: embs, &#34;seq_len&#34;: len(seqs)}</code></pre>
 </details>
 </dd>
 <dt id="imodelsx.auggam.embed.get_model"><code class="name flex">
@@ -368,13 +435,14 @@ if using instructor, the prompt to use</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_model(checkpoint):
-    if &#39;distilbert&#39; in checkpoint.lower():
+    if &#34;distilbert&#34; in checkpoint.lower():
         model = DistilBertModel.from_pretrained(checkpoint)
-    elif &#39;bert-base&#39; in checkpoint.lower() or &#39;BERT&#39; in checkpoint:
+    elif &#34;bert-base&#34; in checkpoint.lower() or &#34;BERT&#34; in checkpoint:
         model = BertModel.from_pretrained(checkpoint)
-    elif &#39;gpt&#39; in checkpoint.lower():
+    elif &#34;gpt&#34; in checkpoint.lower():
         model = AutoModelForCausalLM.from_pretrained(
-            checkpoint, output_hidden_states=True)
+            checkpoint, output_hidden_states=True
+        )
     try:
         model = model.cuda()
     except:
@@ -398,21 +466,21 @@ Add attention mask here</p></div>
     &#34;&#34;&#34;
     # batch_size = len(seqs)
 
-    token_ids = [tokenizer_embeddings.encode(
-        s, add_special_tokens=False) for s in seqs]
+    token_ids = [tokenizer_embeddings.encode(s, add_special_tokens=False) for s in seqs]
     prompt_lengths = [len(s) for s in token_ids]
     max_prompt_len = max(prompt_lengths)
 
     # use 0 as padding id, shouldn&#39;t matter (snippet from here https://github.com/huggingface/transformers/issues/3021)
-    padded_tokens = [tok_ids + [0] *
-                     (max_prompt_len - len(tok_ids)) for tok_ids in token_ids]
+    padded_tokens = [
+        tok_ids + [0] * (max_prompt_len - len(tok_ids)) for tok_ids in token_ids
+    ]
     input_ids = torch.LongTensor(padded_tokens)
     attn_mask = torch.zeros(input_ids.shape).long()
     for ix, tok_ids in enumerate(token_ids):
-        attn_mask[ix][:len(tok_ids)] = 1
+        attn_mask[ix][: len(tok_ids)] = 1
 
     # tokens = tokenizer(seqs, truncation=True, return_tensors=&#34;pt&#34;)
-    return {&#39;input_ids&#39;: input_ids, &#39;attention_mask&#39;: attn_mask}</code></pre>
+    return {&#34;input_ids&#34;: input_ids, &#34;attention_mask&#34;: attn_mask}</code></pre>
 </details>
 </dd>
 </dl>

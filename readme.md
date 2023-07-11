@@ -20,6 +20,7 @@
 | Aug-GAM            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/augmodels.ipynb), [🗂️](https://csinva.io/imodelsX/auggam/auggam.html), [🔗](https://github.com/microsoft/aug-models), [📄](https://arxiv.org/abs/2209.11799) | Linear model | Fit better linear model using an LLM<br/>to extract embeddings (*Official*) |
 | Aug-Tree            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/augmodels.ipynb), [🗂️](https://csinva.io/imodelsX/augtree/augtree.html), [🔗](https://github.com/microsoft/aug-models), [📄](https://arxiv.org/abs/2209.11799) | Decision tree | Fit better decision tree using an LLM<br/>to expand features (*Official*) |
 | SASC            |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ㅤㅤ[🗂️](https://csinva.io/imodelsX/sasc/api.html), [🔗](https://github.com/microsoft/automated-explanations), [📄](https://arxiv.org/abs/2305.09863) | Explanation | Explain a black-box text module<br/>using an LLM (*Official*) |
+| Bag of Ngrams  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  [🗂️](https://csinva.io/imodelsX/linear_ngram.html) | Linear model | Learn a linear model of ngrams |
 | Linear Finetune  | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/linearfinetune.ipynb), [🗂️](https://csinva.io/imodelsX/linear_finetune.html) | Black-box model | Finetune a single linear layer<br/>on top of LLM embeddings |
 
 <p align="center">
@@ -73,7 +74,7 @@ hypotheses, hypothesis_scores = explain_dataset_d3(
 )
 ```
 
-### Aug-models
+### Aug-imodels
 Use these just a like a scikit-learn model. During training, they fit better features via LLMs, but at test-time they are extremely fast and completely transparent.
 
 ```python
@@ -108,12 +109,12 @@ for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
     print('\t', k, round(v, 2))
 ```
 
-### Linear finetune
-An easy-to-fit baseline that follows the same API.
+### Easy baselines
+Easy-to-fit baselines that follows the same API.
 
 ```python
-from imodelsx import LinearFinetuneClassifier
-# fit a simple one-layer finetune
+from imodelsx import LinearFinetuneClassifier, LinearNgramClassifier
+# fit a simple one-layer finetune on top of LLM embeddings
 m = LinearFinetuneClassifier(
     checkpoint='distilbert-base-uncased',
 )

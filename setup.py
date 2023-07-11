@@ -25,8 +25,8 @@ required_pypi = [
 
 setuptools.setup(
     name="imodelsx",
-    version="0.30",
-    author="Chandan Singh, John X. Morris, Armin Askari, Divyanshu Aggarwal",
+    version="0.31",
+    author="Chandan Singh, John X. Morris, Armin Askari, Divyanshu Aggarwal, Aliyah Hsu",
     author_email="chansingh@microsoft.com",
     description="Library to explain a dataset in natural language.",
     long_description=long_description,
