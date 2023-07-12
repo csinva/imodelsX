@@ -31,6 +31,8 @@ def load_huggingface_dataset(
     financial_phrasebank|    ~2.3k       |    3
     emotion             |    ~18k        |    6         | note: this was removed, now has clones like dair-ai/emotion
     ag_news             |    ~120k       |    4
+    dbpedia_14          |    50K         |    14
+    trec                |    5.5k        |    6
     -----------------------------------------------------
     csinva/fmri_language_responses | ~10k | 250 regression voxels
     """
@@ -48,21 +50,23 @@ def load_huggingface_dataset(
     else:
         dset = datasets.load_dataset(dataset_name)
 
-    # process dset
+    # set up dataset_key_text
     dataset_key_text = 'text'
-    if dataset_name == 'sst2':
+    if dataset_name in ['sst2', 'financial_phrasebank']:
         dataset_key_text = 'sentence'
-    elif dataset_name == 'financial_phrasebank':
-        dataset_key_text = 'sentence'
-    elif dataset_name == 'imdb':
-        dset['validation'] = dset['test']
-    elif dataset_name == 'ag_news':
-        dset['validation'] = dset['test']
-    elif dataset_name == 'csinva/fmri_language_responses':
+    elif dataset_name == 'dbpedia_14':
+        dataset_key_text = 'content'
+    
+    # set validation set
+    if dataset_name in ['imdb', 'ag_news', 'csinva/fmri_language_responses', 'dbpedia_14', 'trec']:
         dset['validation'] = dset['test']
 
     # set up label key
-    if not label_name == 'label':
+    if label_name == 'label':
+        if dataset_name == 'trec':
+            dset['train'] = dset['train'].add_column('label', dset['train']['coarse_label'])
+            dset['validation'] = dset['validation'].add_column('label', dset['validation']['coarse_label'])
+    elif not label_name == 'label':
         dset['train'] = dset['train'].add_column('label', dset['train'][label_name])
         dset['validation'] = dset['validation'].add_column('label', dset['validation'][label_name])
 
