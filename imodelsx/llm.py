@@ -46,15 +46,11 @@ def get_llm(
         return LLM_HF(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR, LLAMA_DIR=LLAMA_DIR)
 
 
-def repeatedly_call_with_delay(llm_call, delay=LLM_CONFIG["LLM_REPEAT_DELAY"]):
-    """
-    delay: float
-        Number of seconds to wait between calls (None will not repeat)
-    """
-    if delay is None:
-        return llm_call
-
+def repeatedly_call_with_delay(llm_call):
     def wrapper(*args, **kwargs):
+        delay = LLM_CONFIG[
+            "LLM_REPEAT_DELAY"
+        ]  # Number of seconds to wait between calls (None will not repeat)
         response = None
         while response is None:
             try:
@@ -62,15 +58,18 @@ def repeatedly_call_with_delay(llm_call, delay=LLM_CONFIG["LLM_REPEAT_DELAY"]):
 
                 # fix for when this function was returning response rather than string
                 # if response is not None and not isinstance(response, str):
-                    # response = response["choices"][0]["message"]["content"]
+                # response = response["choices"][0]["message"]["content"]
             except Exception as e:
                 e = str(e)
                 print(e)
-                if 'does not exist' in e:
+                if "does not exist" in e:
                     return None
-                elif 'maximum context length' in e:
+                elif "maximum context length" in e:
                     return None
-                time.sleep(delay)
+                if delay is None:
+                    raise e
+                else:
+                    time.sleep(delay)
         return response
 
     return wrapper
@@ -86,7 +85,14 @@ class LLM_OpenAI:
         self.checkpoint = checkpoint
 
     @repeatedly_call_with_delay
-    def __call__(self, prompt: str, max_new_tokens=250, do_sample=True, stop=None, return_str=True):
+    def __call__(
+        self,
+        prompt: str,
+        max_new_tokens=250,
+        do_sample=True,
+        stop=None,
+        return_str=True,
+    ):
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         hash_str = hashlib.sha256(prompt.encode()).hexdigest()

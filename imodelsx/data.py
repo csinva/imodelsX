@@ -35,6 +35,11 @@ def load_huggingface_dataset(
     trec                |    5.5k        |    6
     -----------------------------------------------------
     csinva/fmri_language_responses | ~10k | 250 regression voxels
+
+    Example
+    -------
+    dset, dataset_key_text = imodelsx.data.load_huggingface_dataset('ag_news')
+
     """
     # load dset
     if dataset_name == 'tweet_eval':
