@@ -74,15 +74,10 @@ def get_llm(
         return LLM_HF(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR, LLAMA_DIR=LLAMA_DIR)
 
 
-def repeatedly_call_with_delay(llm_call, delay=LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;]):
-    &#34;&#34;&#34;
-    delay: float
-        Number of seconds to wait between calls (None will not repeat)
-    &#34;&#34;&#34;
-    if delay is None:
-        return llm_call
-
+def repeatedly_call_with_delay(llm_call):
     def wrapper(*args, **kwargs):
+        # Number of seconds to wait between calls (None will not repeat)
+        delay = LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;]  
         response = None
         while response is None:
             try:
@@ -90,15 +85,18 @@ def repeatedly_call_with_delay(llm_call, delay=LLM_CONFIG[&#34;LLM_REPEAT_DELAY&
 
                 # fix for when this function was returning response rather than string
                 # if response is not None and not isinstance(response, str):
-                    # response = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
+                # response = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
             except Exception as e:
                 e = str(e)
                 print(e)
-                if &#39;does not exist&#39; in e:
+                if &#34;does not exist&#34; in e:
                     return None
-                elif &#39;maximum context length&#39; in e:
+                elif &#34;maximum context length&#34; in e:
                     return None
-                time.sleep(delay)
+                if delay is None:
+                    raise e
+                else:
+                    time.sleep(delay)
         return response
 
     return wrapper
@@ -114,7 +112,14 @@ class LLM_OpenAI:
         self.checkpoint = checkpoint
 
     @repeatedly_call_with_delay
-    def __call__(self, prompt: str, max_new_tokens=250, do_sample=True, stop=None, return_str=True):
+    def __call__(
+        self,
+        prompt: str,
+        max_new_tokens=250,
+        do_sample=True,
+        stop=None,
+        return_str=True,
+    ):
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         hash_str = hashlib.sha256(prompt.encode()).hexdigest()
@@ -160,6 +165,7 @@ class LLM_Chat:
         return_str=True,
         verbose=True,
         temperature=0.1,
+        frequency_penalty=0.25,
     ):
         &#34;&#34;&#34;
         prompts_list: list of dicts, each dict has keys &#39;role&#39; and &#39;content&#39;
@@ -198,6 +204,8 @@ class LLM_Chat:
             prompts_list_dict[&#34;checkpoint&#34;] = self.checkpoint
         if functions is not None:
             prompts_list_dict[&#34;functions&#34;] = functions
+        if temperature &gt; 0.1:
+            prompts_list_dict[&#34;temperature&#34;] = temperature
         dict_as_str = json.dumps(prompts_list_dict, sort_keys=True)
         hash_str = hashlib.sha256(dict_as_str.encode()).hexdigest()
         cache_file = join(
@@ -219,7 +227,7 @@ class LLM_Chat:
             max_tokens=max_new_tokens,
             temperature=temperature,
             top_p=1,
-            frequency_penalty=0.25,  # maximum is 2
+            frequency_penalty=frequency_penalty,  # maximum is 2
             presence_penalty=0,
             stop=stop,
             # stop=[&#34;101&#34;]
@@ -428,24 +436,18 @@ if __name__ == &#34;__main__&#34;:
 </details>
 </dd>
 <dt id="imodelsx.llm.repeatedly_call_with_delay"><code class="name flex">
-<span>def <span class="ident">repeatedly_call_with_delay</span></span>(<span>llm_call, delay=0.2)</span>
+<span>def <span class="ident">repeatedly_call_with_delay</span></span>(<span>llm_call)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>delay: float
-Number of seconds to wait between calls (None will not repeat)</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def repeatedly_call_with_delay(llm_call, delay=LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;]):
-    &#34;&#34;&#34;
-    delay: float
-        Number of seconds to wait between calls (None will not repeat)
-    &#34;&#34;&#34;
-    if delay is None:
-        return llm_call
-
+<pre><code class="python">def repeatedly_call_with_delay(llm_call):
     def wrapper(*args, **kwargs):
+        # Number of seconds to wait between calls (None will not repeat)
+        delay = LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;]  
         response = None
         while response is None:
             try:
@@ -453,15 +455,18 @@ Number of seconds to wait between calls (None will not repeat)</p></div>
 
                 # fix for when this function was returning response rather than string
                 # if response is not None and not isinstance(response, str):
-                    # response = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
+                # response = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
             except Exception as e:
                 e = str(e)
                 print(e)
-                if &#39;does not exist&#39; in e:
+                if &#34;does not exist&#34; in e:
                     return None
-                elif &#39;maximum context length&#39; in e:
+                elif &#34;maximum context length&#34; in e:
                     return None
-                time.sleep(delay)
+                if delay is None:
+                    raise e
+                else:
+                    time.sleep(delay)
         return response
 
     return wrapper</code></pre>
@@ -502,6 +507,7 @@ Number of seconds to wait between calls (None will not repeat)</p></div>
         return_str=True,
         verbose=True,
         temperature=0.1,
+        frequency_penalty=0.25,
     ):
         &#34;&#34;&#34;
         prompts_list: list of dicts, each dict has keys &#39;role&#39; and &#39;content&#39;
@@ -540,6 +546,8 @@ Number of seconds to wait between calls (None will not repeat)</p></div>
             prompts_list_dict[&#34;checkpoint&#34;] = self.checkpoint
         if functions is not None:
             prompts_list_dict[&#34;functions&#34;] = functions
+        if temperature &gt; 0.1:
+            prompts_list_dict[&#34;temperature&#34;] = temperature
         dict_as_str = json.dumps(prompts_list_dict, sort_keys=True)
         hash_str = hashlib.sha256(dict_as_str.encode()).hexdigest()
         cache_file = join(
@@ -561,7 +569,7 @@ Number of seconds to wait between calls (None will not repeat)</p></div>
             max_tokens=max_new_tokens,
             temperature=temperature,
             top_p=1,
-            frequency_penalty=0.25,  # maximum is 2
+            frequency_penalty=frequency_penalty,  # maximum is 2
             presence_penalty=0,
             stop=stop,
             # stop=[&#34;101&#34;]
@@ -734,7 +742,14 @@ Number of seconds to wait between calls (None will not repeat)</p></div>
         self.checkpoint = checkpoint
 
     @repeatedly_call_with_delay
-    def __call__(self, prompt: str, max_new_tokens=250, do_sample=True, stop=None, return_str=True):
+    def __call__(
+        self,
+        prompt: str,
+        max_new_tokens=250,
+        do_sample=True,
+        stop=None,
+        return_str=True,
+    ):
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         hash_str = hashlib.sha256(prompt.encode()).hexdigest()

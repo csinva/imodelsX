@@ -48,9 +48,8 @@ def get_llm(
 
 def repeatedly_call_with_delay(llm_call):
     def wrapper(*args, **kwargs):
-        delay = LLM_CONFIG[
-            "LLM_REPEAT_DELAY"
-        ]  # Number of seconds to wait between calls (None will not repeat)
+        # Number of seconds to wait between calls (None will not repeat)
+        delay = LLM_CONFIG["LLM_REPEAT_DELAY"]  
         response = None
         while response is None:
             try:

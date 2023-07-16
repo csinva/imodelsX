@@ -59,8 +59,15 @@ def load_huggingface_dataset(
     financial_phrasebank|    ~2.3k       |    3
     emotion             |    ~18k        |    6         | note: this was removed, now has clones like dair-ai/emotion
     ag_news             |    ~120k       |    4
+    dbpedia_14          |    50K         |    14
+    trec                |    5.5k        |    6
     -----------------------------------------------------
     csinva/fmri_language_responses | ~10k | 250 regression voxels
+
+    Example
+    -------
+    dset, dataset_key_text = imodelsx.data.load_huggingface_dataset(&#39;ag_news&#39;)
+
     &#34;&#34;&#34;
     # load dset
     if dataset_name == &#39;tweet_eval&#39;:
@@ -76,21 +83,23 @@ def load_huggingface_dataset(
     else:
         dset = datasets.load_dataset(dataset_name)
 
-    # process dset
+    # set up dataset_key_text
     dataset_key_text = &#39;text&#39;
-    if dataset_name == &#39;sst2&#39;:
+    if dataset_name in [&#39;sst2&#39;, &#39;financial_phrasebank&#39;]:
         dataset_key_text = &#39;sentence&#39;
-    elif dataset_name == &#39;financial_phrasebank&#39;:
-        dataset_key_text = &#39;sentence&#39;
-    elif dataset_name == &#39;imdb&#39;:
-        dset[&#39;validation&#39;] = dset[&#39;test&#39;]
-    elif dataset_name == &#39;ag_news&#39;:
-        dset[&#39;validation&#39;] = dset[&#39;test&#39;]
-    elif dataset_name == &#39;csinva/fmri_language_responses&#39;:
+    elif dataset_name == &#39;dbpedia_14&#39;:
+        dataset_key_text = &#39;content&#39;
+    
+    # set validation set
+    if dataset_name in [&#39;imdb&#39;, &#39;ag_news&#39;, &#39;csinva/fmri_language_responses&#39;, &#39;dbpedia_14&#39;, &#39;trec&#39;]:
         dset[&#39;validation&#39;] = dset[&#39;test&#39;]
 
     # set up label key
-    if not label_name == &#39;label&#39;:
+    if label_name == &#39;label&#39;:
+        if dataset_name == &#39;trec&#39;:
+            dset[&#39;train&#39;] = dset[&#39;train&#39;].add_column(&#39;label&#39;, dset[&#39;train&#39;][&#39;coarse_label&#39;])
+            dset[&#39;validation&#39;] = dset[&#39;validation&#39;].add_column(&#39;label&#39;, dset[&#39;validation&#39;][&#39;coarse_label&#39;])
+    elif not label_name == &#39;label&#39;:
         dset[&#39;train&#39;] = dset[&#39;train&#39;].add_column(&#39;label&#39;, dset[&#39;train&#39;][label_name])
         dset[&#39;validation&#39;] = dset[&#39;validation&#39;].add_column(&#39;label&#39;, dset[&#39;validation&#39;][label_name])
 
@@ -247,9 +256,21 @@ ag_news
 |
 ~120k
 |
-4</p>
+4
+dbpedia_14
+|
+50K
+|
+14
+trec
+|
+5.5k
+|
+6</p>
 <hr>
-<p>csinva/fmri_language_responses | ~10k | 250 regression voxels</p></div>
+<p>csinva/fmri_language_responses | ~10k | 250 regression voxels</p>
+<h2 id="example">Example</h2>
+<p>dset, dataset_key_text = imodelsx.data.load_huggingface_dataset('ag_news')</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -281,8 +302,15 @@ ag_news
     financial_phrasebank|    ~2.3k       |    3
     emotion             |    ~18k        |    6         | note: this was removed, now has clones like dair-ai/emotion
     ag_news             |    ~120k       |    4
+    dbpedia_14          |    50K         |    14
+    trec                |    5.5k        |    6
     -----------------------------------------------------
     csinva/fmri_language_responses | ~10k | 250 regression voxels
+
+    Example
+    -------
+    dset, dataset_key_text = imodelsx.data.load_huggingface_dataset(&#39;ag_news&#39;)
+
     &#34;&#34;&#34;
     # load dset
     if dataset_name == &#39;tweet_eval&#39;:
@@ -298,21 +326,23 @@ ag_news
     else:
         dset = datasets.load_dataset(dataset_name)
 
-    # process dset
+    # set up dataset_key_text
     dataset_key_text = &#39;text&#39;
-    if dataset_name == &#39;sst2&#39;:
+    if dataset_name in [&#39;sst2&#39;, &#39;financial_phrasebank&#39;]:
         dataset_key_text = &#39;sentence&#39;
-    elif dataset_name == &#39;financial_phrasebank&#39;:
-        dataset_key_text = &#39;sentence&#39;
-    elif dataset_name == &#39;imdb&#39;:
-        dset[&#39;validation&#39;] = dset[&#39;test&#39;]
-    elif dataset_name == &#39;ag_news&#39;:
-        dset[&#39;validation&#39;] = dset[&#39;test&#39;]
-    elif dataset_name == &#39;csinva/fmri_language_responses&#39;:
+    elif dataset_name == &#39;dbpedia_14&#39;:
+        dataset_key_text = &#39;content&#39;
+    
+    # set validation set
+    if dataset_name in [&#39;imdb&#39;, &#39;ag_news&#39;, &#39;csinva/fmri_language_responses&#39;, &#39;dbpedia_14&#39;, &#39;trec&#39;]:
         dset[&#39;validation&#39;] = dset[&#39;test&#39;]
 
     # set up label key
-    if not label_name == &#39;label&#39;:
+    if label_name == &#39;label&#39;:
+        if dataset_name == &#39;trec&#39;:
+            dset[&#39;train&#39;] = dset[&#39;train&#39;].add_column(&#39;label&#39;, dset[&#39;train&#39;][&#39;coarse_label&#39;])
+            dset[&#39;validation&#39;] = dset[&#39;validation&#39;].add_column(&#39;label&#39;, dset[&#39;validation&#39;][&#39;coarse_label&#39;])
+    elif not label_name == &#39;label&#39;:
         dset[&#39;train&#39;] = dset[&#39;train&#39;].add_column(&#39;label&#39;, dset[&#39;train&#39;][label_name])
         dset[&#39;validation&#39;] = dset[&#39;validation&#39;].add_column(&#39;label&#39;, dset[&#39;validation&#39;][label_name])
 

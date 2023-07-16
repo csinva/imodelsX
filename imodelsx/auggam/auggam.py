@@ -178,7 +178,7 @@ class AugGAM(BaseEstimator):
 
             model = INSTRUCTOR(self.checkpoint).to(device)
             tokenizer_embeddings = None
-        elif 'llama' in self.checkpoint:
+        elif "llama" in self.checkpoint:
             # path to extracted llama weights
             LLAMA_DIR = join(os.path.expanduser("~"), "llama")
             tokenizer_embeddings = transformers.LlamaTokenizer.from_pretrained(
@@ -204,6 +204,7 @@ class AugGAM(BaseEstimator):
         renormalize_embs: bool = False,
         batch_size: int = 8,
         verbose: bool = True,
+        batch_size_embs: int = 512,
     ):
         """Cache linear coefs for ngrams into a dictionary self.coefs_dict_
         If it already exists, only add linear coefs for new ngrams
@@ -213,6 +214,10 @@ class AugGAM(BaseEstimator):
         renormalize_embs
             whether to renormalize embeddings before fitting linear model
             (useful if getting a test set that is different from the training)
+        batch_size
+            batch size to use for calculating embeddings (on gpu at same time)
+        batch_size_embs
+            batch size to use for number of embeddings stored (on cpu at same time)
         """
         model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
@@ -228,15 +233,32 @@ class AugGAM(BaseEstimator):
             print("\tNothing to update!")
             return
 
-        embs = self._get_embs(ngrams_list, model, tokenizer_embeddings, batch_size)
-        if renormalize_embs:
-            embs = StandardScaler().fit_transform(embs)
-        elif self.normalize_embs:
-            embs = self.normalizer.transform(embs)
+        # calculate linear coefs for each ngram in ngrams_list
+        if batch_size_embs is not None and not renormalize_embs:
+            coef_embs = self.linear.coef_.squeeze().transpose()
+            linear_coef = np.zeros(shape=len(ngrams_list))
+            # calculate linear coefs in batches
+            for i in tqdm(range(0, len(ngrams_list), batch_size_embs)):
+                embs = self._get_embs(
+                    ngrams_list[i : i + batch_size_embs],
+                    model,
+                    tokenizer_embeddings,
+                    batch_size,
+                )
+                if renormalize_embs:
+                    embs = StandardScaler().fit_transform(embs)
+                elif self.normalize_embs:
+                    embs = self.normalizer.transform(embs)
+                linear_coef[i : i + batch_size_embs] = embs @ coef_embs
+        else:
+            embs = self._get_embs(ngrams_list, model, tokenizer_embeddings, batch_size)
+            if renormalize_embs:
+                embs = StandardScaler().fit_transform(embs)
+            elif self.normalize_embs:
+                embs = self.normalizer.transform(embs)
+            linear_coef = embs @ coef_embs
 
         # save coefs
-        coef_embs = self.linear.coef_.squeeze().transpose()
-        linear_coef = embs @ coef_embs
         self.coefs_dict_ = {
             **coefs_dict_old,
             **{ngrams_list[i]: linear_coef[i] for i in range(len(ngrams_list))},
@@ -264,18 +286,18 @@ class AugGAM(BaseEstimator):
 
         else:
             embs = imodelsx.auggam.embed.embed_and_sum_function(
-                    ngrams_list,
-                    model=model,
-                    ngrams=None,
-                    tokenizer_embeddings=tokenizer_embeddings,
-                    tokenizer_ngrams=self.tokenizer_ngrams,
-                    checkpoint=self.checkpoint,
-                    layer=self.layer,
-                    batch_size=batch_size,
-                    # only return a single embedding
-                    fit_with_ngram_decomposition=False,
-                    sum_embeddings=False,
-                )['embs']
+                ngrams_list,
+                model=model,
+                ngrams=None,
+                tokenizer_embeddings=tokenizer_embeddings,
+                tokenizer_ngrams=self.tokenizer_ngrams,
+                checkpoint=self.checkpoint,
+                layer=self.layer,
+                batch_size=batch_size,
+                # only return a single embedding
+                fit_with_ngram_decomposition=False,
+                sum_embeddings=False,
+            )["embs"]
             embs = np.array(embs).squeeze()  # num_examples x embedding_size
 
         return embs
