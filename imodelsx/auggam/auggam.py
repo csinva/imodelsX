@@ -236,7 +236,8 @@ class AugGAM(BaseEstimator):
         # calculate linear coefs for each ngram in ngrams_list
         if batch_size_embs is not None and not renormalize_embs:
             coef_embs = self.linear.coef_.squeeze().transpose()
-            linear_coef = np.zeros(shape=len(ngrams_list))
+            n_outputs = 1 if coef_embs.ndim == 1 else coef_embs.shape[1]
+            linear_coef = np.zeros(shape=(len(ngrams_list), n_outputs))
             # calculate linear coefs in batches
             for i in tqdm(range(0, len(ngrams_list), batch_size_embs)):
                 embs = self._get_embs(
@@ -249,6 +250,7 @@ class AugGAM(BaseEstimator):
                     embs = StandardScaler().fit_transform(embs)
                 elif self.normalize_embs:
                     embs = self.normalizer.transform(embs)
+                embs = _clean_np_array(embs)
                 linear_coef[i : i + batch_size_embs] = embs @ coef_embs
         else:
             embs = self._get_embs(ngrams_list, model, tokenizer_embeddings, batch_size)
@@ -256,6 +258,7 @@ class AugGAM(BaseEstimator):
                 embs = StandardScaler().fit_transform(embs)
             elif self.normalize_embs:
                 embs = self.normalizer.transform(embs)
+            embs = _clean_np_array(embs)
             linear_coef = embs @ coef_embs
 
         # save coefs
@@ -300,7 +303,7 @@ class AugGAM(BaseEstimator):
             )["embs"]
             embs = np.array(embs).squeeze()  # num_examples x embedding_size
 
-        return embs
+        return _clean_np_array(embs)
 
         """
         # Faster version that needs more memory
@@ -342,7 +345,7 @@ class AugGAM(BaseEstimator):
 
     def predict_proba(self, X, warn=True):
         if not isinstance(self, ClassifierMixin):
-            raise Exception("predict_proba only available for EmbGAMClassifier")
+            raise Exception("predict_proba only available for Classifier")
         check_is_fitted(self)
         preds = self._predict_cached(X, warn=warn)
         if preds.ndim > 1:  # multiclass classification
@@ -389,3 +392,9 @@ class AugGAMRegressor(AugGAM, RegressorMixin):
 
 class AugGAMClassifier(AugGAM, ClassifierMixin):
     ...
+
+def _clean_np_array(arr):
+    '''Replace inf and nan with 0'''
+    arr[np.isinf(arr)] = 0
+    arr[np.isnan(arr)] = 0
+    return arr
