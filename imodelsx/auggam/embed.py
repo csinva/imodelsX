@@ -118,7 +118,7 @@ def embed_and_sum_function(
         # will multiply embedding by 0 so doesn't matter, but still want to get the shape
         seqs = ["dummy"]
 
-    if (
+    if not checkpoint.startswith("hkunlp/instructor") and (
         not hasattr(tokenizer_embeddings, "pad_token")
         or tokenizer_embeddings.pad_token is None
     ):
@@ -152,7 +152,7 @@ def embed_and_sum_function(
 
         embs = np.concatenate(embs)
 
-    elif "gpt" in checkpoint.lower() or 'llama' in checkpoint.lower():
+    elif "gpt" in checkpoint.lower() or "llama" in checkpoint.lower():
         tokens = preprocess_gpt_token_batch(seqs, tokenizer_embeddings)
 
         ds = Dataset.from_dict(tokens).with_format("torch")
@@ -197,7 +197,7 @@ def embed_and_sum_function(
         embs = model.encode(
             [[instructor_prompt, x_i] for x_i in seqs], batch_size=batch_size
         )
-    
+
     else:
         raise Exception(f"Unknown model checkpoint {checkpoint}")
 
