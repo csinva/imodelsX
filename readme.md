@@ -1,7 +1,7 @@
 <p align="center">  <img src="https://microsoft.github.io/aug-models/embgam_gif.gif" width="18%"> 
 <img align="center" width=40% src="https://csinva.io/imodelsX/imodelsx_logo.svg?sanitize=True&kill_cache=1"> </img>	<img src="https://microsoft.github.io/aug-models/embgam_gif.gif" width="18%"></p>
 
-<p align="center">Scikit-learn friendly library to interpret, predict, and prompt-engineer text datasets. 
+<p align="center">Scikit-learn friendly library to interpret, predict, and prompt-engineer text datasets. Also a bunch of utilities for getting started with text data.
 </p>
 <p align="center">
   <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖 demo notebooks</a>
@@ -12,6 +12,18 @@
   <img src="https://img.shields.io/pypi/v/imodelsx?color=green">  
 </p>  
 
+**General utilities**
+
+| Model                       | Reference                                                    | 
+| :-------------------------- | ------------------------------------------------------------ | 
+|  [🗂️](https://csinva.io/imodelsX/llm.html)  LLM wrapper| Learn a linear model of ngrams |
+|  [🗂️](https://csinva.io/imodelsX/data.html)  Dataset wrapper| Download minimially processed huggingface datasets |
+| [🗂️](https://csinva.io/imodelsX/linear_ngram.html) Bag of Ngrams    | Learn a linear model of ngrams |
+| [🗂️](https://csinva.io/imodelsX/linear_finetune.html) Linear Finetune  | Finetune a single linear layer on top of LLM embeddings |
+
+
+**Explanation and interpretation**
+
 | Model                       | Reference                                                    | Output  | Description                                                  |
 | :-------------------------- | ------------------------------------------------------------ | ------- | ------------------------------------------------------------ |
 | iPrompt            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/iprompt.ipynb), [🗂️](http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt), [🔗](https://github.com/csinva/interpretable-autoprompting), [📄](https://arxiv.org/abs/2210.01848) | Explanation | Generates a prompt that<br/>explains patterns in data (*Official*) |
@@ -20,8 +32,6 @@
 | Aug-GAM            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/aug_imodels.ipynb), [🗂️](https://csinva.io/imodelsX/auggam/auggam.html), [🔗](https://github.com/microsoft/aug-models), [📄](https://arxiv.org/abs/2209.11799) | Linear model | Fit better linear model using an LLM<br/>to extract embeddings (*Official*) |
 | Aug-Tree            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/aug_imodels.ipynb), [🗂️](https://csinva.io/imodelsX/augtree/augtree.html), [🔗](https://github.com/microsoft/aug-models), [📄](https://arxiv.org/abs/2209.11799) | Decision tree | Fit better decision tree using an LLM<br/>to expand features (*Official*) |
 | SASC            |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ㅤㅤ[🗂️](https://csinva.io/imodelsX/sasc/api.html), [🔗](https://github.com/microsoft/automated-explanations), [📄](https://arxiv.org/abs/2305.09863) | Explanation | Explain a black-box text module<br/>using an LLM (*Official*) |
-| Bag of Ngrams  | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  [🗂️](https://csinva.io/imodelsX/linear_ngram.html) | Linear model | Learn a linear model of ngrams |
-| Linear Finetune  | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/linearfinetune.ipynb), [🗂️](https://csinva.io/imodelsX/linear_finetune.html) | Black-box model | Finetune a single linear layer<br/>on top of LLM embeddings |
 
 <p align="center">
 <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖</a>Demo notebooks &emsp; <a href="https://csinva.io/imodelsX/">🗂️</a> Doc &emsp; 🔗 Reference code &emsp; 📄 Research paper
@@ -34,6 +44,85 @@
 **Installation**: `pip install imodelsx` (or, for more control, clone and install from source)
 
 **Demos**: see the [demo notebooks](https://github.com/csinva/imodelsX/tree/master/demo_notebooks)
+
+# General utilities
+
+### Easy baselines
+Easy-to-fit baselines that follows the sklearn API.
+
+```python
+from imodelsx import LinearFinetuneClassifier, LinearNgramClassifier
+# fit a simple one-layer finetune on top of LLM embeddings
+m = LinearFinetuneClassifier(
+    checkpoint='distilbert-base-uncased',
+)
+m.fit(dset['text'], dset['label'])
+preds = m.predict(dset_val['text'])
+acc = (preds == dset_val['label']).mean()
+print('validation acc', acc)
+```
+
+### LLM wrapper
+Easy API for calling different language models with caching (much more lightweight than [langchain](https://github.com/langchain-ai/langchain)).
+
+```python
+import imodelsx.llm
+# supports any huggingface checkpoint or openai checkpoint (including chat models)
+llm = imodelsx.llm.get_llm(
+    checkpoint="gpt2-xl",  # text-davinci-003, gpt-3.5-turbo, ...
+    CACHE_DIR=".cache",
+)
+out = llm("May the Force be")
+llm("May the Force be") # when computing the same string again, uses the cache
+```
+
+### Data wrapper
+API for loading huggingface datasets with basic preprocessing.
+```python
+import imodelsx.data
+dset, dataset_key_text = imodelsx.data.load_huggingface_dataset('ag_news')
+# Ensures that dset has a split named 'train' and 'validation',
+# and that the input data is contained for each split in a column given by {dataset_key_text}
+```
+
+# Explainable models
+
+### Aug-imodels
+Use these just a like a scikit-learn model. During training, they fit better features via LLMs, but at test-time they are extremely fast and completely transparent.
+
+```python
+from imodelsx import AugGAMClassifier, AugTreeClassifier, AugGAMRegressor, AugTreeRegressor
+import datasets
+import numpy as np
+
+# set up data
+dset = datasets.load_dataset('rotten_tomatoes')['train']
+dset = dset.select(np.random.choice(len(dset), size=300, replace=False))
+dset_val = datasets.load_dataset('rotten_tomatoes')['validation']
+dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
+
+# fit model
+m = AugGAMClassifier(
+    checkpoint='textattack/distilbert-base-uncased-rotten-tomatoes',
+    ngrams=2, # use bigrams
+)
+m.fit(dset['text'], dset['label'])
+
+# predict
+preds = m.predict(dset_val['text'])
+print('acc_val', np.mean(preds == dset_val['label']))
+
+# interpret
+print('Total ngram coefficients: ', len(m.coefs_dict_))
+print('Most positive ngrams')
+for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1], reverse=True)[:8]:
+    print('\t', k, round(v, 2))
+print('Most negative ngrams')
+for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
+    print('\t', k, round(v, 2))
+```
+
+# Natural-language explanations
 
 ### iPrompt
 
@@ -72,56 +161,6 @@ hypotheses, hypothesis_scores = explain_dataset_d3(
     num_folds=2,
     batch_size=64,
 )
-```
-
-### Aug-imodels
-Use these just a like a scikit-learn model. During training, they fit better features via LLMs, but at test-time they are extremely fast and completely transparent.
-
-```python
-from imodelsx import AugGAMClassifier, AugTreeClassifier, AugGAMRegressor, AugTreeRegressor
-import datasets
-import numpy as np
-
-# set up data
-dset = datasets.load_dataset('rotten_tomatoes')['train']
-dset = dset.select(np.random.choice(len(dset), size=300, replace=False))
-dset_val = datasets.load_dataset('rotten_tomatoes')['validation']
-dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
-
-# fit model
-m = AugGAMClassifier(
-    checkpoint='textattack/distilbert-base-uncased-rotten-tomatoes',
-    ngrams=2, # use bigrams
-)
-m.fit(dset['text'], dset['label'])
-
-# predict
-preds = m.predict(dset_val['text'])
-print('acc_val', np.mean(preds == dset_val['label']))
-
-# interpret
-print('Total ngram coefficients: ', len(m.coefs_dict_))
-print('Most positive ngrams')
-for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1], reverse=True)[:8]:
-    print('\t', k, round(v, 2))
-print('Most negative ngrams')
-for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
-    print('\t', k, round(v, 2))
-```
-
-### Easy baselines
-Easy-to-fit baselines that follows the same API.
-
-```python
-from imodelsx import LinearFinetuneClassifier, LinearNgramClassifier
-# fit a simple one-layer finetune on top of LLM embeddings
-m = LinearFinetuneClassifier(
-    checkpoint='distilbert-base-uncased',
-)
-m.fit(dset['text'], dset['label'])
-preds = m.predict(dset_val['text'])
-acc = (preds == dset_val['label']).mean()
-print('validation acc', acc)
 ```
 
 ### SASC

@@ -268,7 +268,8 @@ class AugGAM(BaseEstimator):
         # calculate linear coefs for each ngram in ngrams_list
         if batch_size_embs is not None and not renormalize_embs:
             coef_embs = self.linear.coef_.squeeze().transpose()
-            linear_coef = np.zeros(shape=len(ngrams_list))
+            n_outputs = 1 if coef_embs.ndim == 1 else coef_embs.shape[1]
+            linear_coef = np.zeros(shape=(len(ngrams_list), n_outputs))
             # calculate linear coefs in batches
             for i in tqdm(range(0, len(ngrams_list), batch_size_embs)):
                 embs = self._get_embs(
@@ -281,6 +282,7 @@ class AugGAM(BaseEstimator):
                     embs = StandardScaler().fit_transform(embs)
                 elif self.normalize_embs:
                     embs = self.normalizer.transform(embs)
+                embs = _clean_np_array(embs)
                 linear_coef[i : i + batch_size_embs] = embs @ coef_embs
         else:
             embs = self._get_embs(ngrams_list, model, tokenizer_embeddings, batch_size)
@@ -288,6 +290,7 @@ class AugGAM(BaseEstimator):
                 embs = StandardScaler().fit_transform(embs)
             elif self.normalize_embs:
                 embs = self.normalizer.transform(embs)
+            embs = _clean_np_array(embs)
             linear_coef = embs @ coef_embs
 
         # save coefs
@@ -332,7 +335,7 @@ class AugGAM(BaseEstimator):
             )[&#34;embs&#34;]
             embs = np.array(embs).squeeze()  # num_examples x embedding_size
 
-        return embs
+        return _clean_np_array(embs)
 
         &#34;&#34;&#34;
         # Faster version that needs more memory
@@ -374,7 +377,7 @@ class AugGAM(BaseEstimator):
 
     def predict_proba(self, X, warn=True):
         if not isinstance(self, ClassifierMixin):
-            raise Exception(&#34;predict_proba only available for EmbGAMClassifier&#34;)
+            raise Exception(&#34;predict_proba only available for Classifier&#34;)
         check_is_fitted(self)
         preds = self._predict_cached(X, warn=warn)
         if preds.ndim &gt; 1:  # multiclass classification
@@ -420,7 +423,13 @@ class AugGAMRegressor(AugGAM, RegressorMixin):
 
 
 class AugGAMClassifier(AugGAM, ClassifierMixin):
-    ...</code></pre>
+    ...
+
+def _clean_np_array(arr):
+    &#39;&#39;&#39;Replace inf and nan with 0&#39;&#39;&#39;
+    arr[np.isinf(arr)] = 0
+    arr[np.isnan(arr)] = 0
+    return arr</code></pre>
 </details>
 </section>
 <section>
@@ -678,7 +687,8 @@ Usually, setting this to False will considerably impede performance</dd>
         # calculate linear coefs for each ngram in ngrams_list
         if batch_size_embs is not None and not renormalize_embs:
             coef_embs = self.linear.coef_.squeeze().transpose()
-            linear_coef = np.zeros(shape=len(ngrams_list))
+            n_outputs = 1 if coef_embs.ndim == 1 else coef_embs.shape[1]
+            linear_coef = np.zeros(shape=(len(ngrams_list), n_outputs))
             # calculate linear coefs in batches
             for i in tqdm(range(0, len(ngrams_list), batch_size_embs)):
                 embs = self._get_embs(
@@ -691,6 +701,7 @@ Usually, setting this to False will considerably impede performance</dd>
                     embs = StandardScaler().fit_transform(embs)
                 elif self.normalize_embs:
                     embs = self.normalizer.transform(embs)
+                embs = _clean_np_array(embs)
                 linear_coef[i : i + batch_size_embs] = embs @ coef_embs
         else:
             embs = self._get_embs(ngrams_list, model, tokenizer_embeddings, batch_size)
@@ -698,6 +709,7 @@ Usually, setting this to False will considerably impede performance</dd>
                 embs = StandardScaler().fit_transform(embs)
             elif self.normalize_embs:
                 embs = self.normalizer.transform(embs)
+            embs = _clean_np_array(embs)
             linear_coef = embs @ coef_embs
 
         # save coefs
@@ -742,7 +754,7 @@ Usually, setting this to False will considerably impede performance</dd>
             )[&#34;embs&#34;]
             embs = np.array(embs).squeeze()  # num_examples x embedding_size
 
-        return embs
+        return _clean_np_array(embs)
 
         &#34;&#34;&#34;
         # Faster version that needs more memory
@@ -784,7 +796,7 @@ Usually, setting this to False will considerably impede performance</dd>
 
     def predict_proba(self, X, warn=True):
         if not isinstance(self, ClassifierMixin):
-            raise Exception(&#34;predict_proba only available for EmbGAMClassifier&#34;)
+            raise Exception(&#34;predict_proba only available for Classifier&#34;)
         check_is_fitted(self)
         preds = self._predict_cached(X, warn=warn)
         if preds.ndim &gt; 1:  # multiclass classification
@@ -893,7 +905,8 @@ batch size to use for number of embeddings stored (on cpu at same time)</p></div
     # calculate linear coefs for each ngram in ngrams_list
     if batch_size_embs is not None and not renormalize_embs:
         coef_embs = self.linear.coef_.squeeze().transpose()
-        linear_coef = np.zeros(shape=len(ngrams_list))
+        n_outputs = 1 if coef_embs.ndim == 1 else coef_embs.shape[1]
+        linear_coef = np.zeros(shape=(len(ngrams_list), n_outputs))
         # calculate linear coefs in batches
         for i in tqdm(range(0, len(ngrams_list), batch_size_embs)):
             embs = self._get_embs(
@@ -906,6 +919,7 @@ batch size to use for number of embeddings stored (on cpu at same time)</p></div
                 embs = StandardScaler().fit_transform(embs)
             elif self.normalize_embs:
                 embs = self.normalizer.transform(embs)
+            embs = _clean_np_array(embs)
             linear_coef[i : i + batch_size_embs] = embs @ coef_embs
     else:
         embs = self._get_embs(ngrams_list, model, tokenizer_embeddings, batch_size)
@@ -913,6 +927,7 @@ batch size to use for number of embeddings stored (on cpu at same time)</p></div
             embs = StandardScaler().fit_transform(embs)
         elif self.normalize_embs:
             embs = self.normalizer.transform(embs)
+        embs = _clean_np_array(embs)
         linear_coef = embs @ coef_embs
 
     # save coefs
@@ -1051,7 +1066,7 @@ For classification, returns discrete output.</p></div>
 </summary>
 <pre><code class="python">def predict_proba(self, X, warn=True):
     if not isinstance(self, ClassifierMixin):
-        raise Exception(&#34;predict_proba only available for EmbGAMClassifier&#34;)
+        raise Exception(&#34;predict_proba only available for Classifier&#34;)
     check_is_fitted(self)
     preds = self._predict_cached(X, warn=warn)
     if preds.ndim &gt; 1:  # multiclass classification

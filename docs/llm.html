@@ -47,7 +47,7 @@ import time
 
 # change these settings before using these classes!
 LLM_CONFIG = {
-    &#34;LLM_REPEAT_DELAY&#34;: 0.2,  # how long to wait before recalling a failed llm call (can set to None)
+    &#34;LLM_REPEAT_DELAY&#34;: None,  # how long to wait before recalling a failed llm call (can set to None)
     &#34;CACHE_DIR&#34;: join(
         os.path.expanduser(&#34;~&#34;), &#34;clin/CACHE_OPENAI&#34;
     ),  # path to save cached llm outputs
@@ -77,7 +77,7 @@ def get_llm(
 def repeatedly_call_with_delay(llm_call):
     def wrapper(*args, **kwargs):
         # Number of seconds to wait between calls (None will not repeat)
-        delay = LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;]  
+        delay = LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;]
         response = None
         while response is None:
             try:
@@ -447,7 +447,7 @@ if __name__ == &#34;__main__&#34;:
 <pre><code class="python">def repeatedly_call_with_delay(llm_call):
     def wrapper(*args, **kwargs):
         # Number of seconds to wait between calls (None will not repeat)
-        delay = LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;]  
+        delay = LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;]
         response = None
         while response is None:
             try:
