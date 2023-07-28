@@ -22,7 +22,7 @@
 | [🗂️](https://csinva.io/imodelsX/linear_finetune.html) Linear Finetune  | Finetune a single linear layer on top of LLM embeddings |
 
 
-**Explanation and interpretation**
+**Explanation and interpretable modeling/prompting**
 
 | Model                       | Reference                                                    | Output  | Description                                                  |
 | :-------------------------- | ------------------------------------------------------------ | ------- | ------------------------------------------------------------ |
