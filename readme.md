@@ -16,7 +16,7 @@
 
 | Model                       | Reference                                                    | 
 | :-------------------------- | ------------------------------------------------------------ | 
-|  [🗂️](https://csinva.io/imodelsX/llm.html)  LLM wrapper| Learn a linear model of ngrams |
+|  [🗂️](https://csinva.io/imodelsX/llm.html)  LLM wrapper| Easily call different LLMs |
 |  [🗂️](https://csinva.io/imodelsX/data.html)  Dataset wrapper| Download minimially processed huggingface datasets |
 | [🗂️](https://csinva.io/imodelsX/linear_ngram.html) Bag of Ngrams    | Learn a linear model of ngrams |
 | [🗂️](https://csinva.io/imodelsX/linear_finetune.html) Linear Finetune  | Finetune a single linear layer on top of LLM embeddings |
