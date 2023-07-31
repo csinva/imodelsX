@@ -1,7 +1,7 @@
 <p align="center">  <img src="https://microsoft.github.io/aug-models/embgam_gif.gif" width="18%"> 
 <img align="center" width=40% src="https://csinva.io/imodelsX/imodelsx_logo.svg?sanitize=True&kill_cache=1"> </img>	<img src="https://microsoft.github.io/aug-models/embgam_gif.gif" width="18%"></p>
 
-<p align="center">Scikit-learn friendly library to interpret, predict, and prompt-engineer text datasets. Also a bunch of utilities for getting started with text data.
+<p align="center">Scikit-learn friendly library to interpret, predict, and prompt-engineer text datasets.<br/>Also a bunch of utilities for getting started with text data.
 </p>
 <p align="center">
   <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖 demo notebooks</a>
@@ -48,7 +48,7 @@
 # General utilities
 
 ### Easy baselines
-Easy-to-fit baselines that follows the sklearn API.
+Easy-to-fit baselines that follow the sklearn API.
 
 ```python
 from imodelsx import LinearFinetuneClassifier, LinearNgramClassifier
