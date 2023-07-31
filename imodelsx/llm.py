@@ -33,9 +33,13 @@ def get_llm(
     checkpoint,
     seed=1,
     role: str = None,
+    repeat_delay: Optional[float] = None,
     CACHE_DIR=LLM_CONFIG["CACHE_DIR"],
     LLAMA_DIR=LLM_CONFIG["LLAMA_DIR"],
 ):
+    if repeat_delay is not None:
+        LLM_CONFIG["LLM_REPEAT_DELAY"] = repeat_delay
+
     """Get an LLM with a call function and caching capabilities"""
     if checkpoint.startswith("text-da"):
         return LLM_OpenAI(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR)
