@@ -80,7 +80,7 @@ def repeatedly_call_with_delay(llm_call):
 
 class LLM_OpenAI:
     def __init__(self, checkpoint, seed, CACHE_DIR):
-        import openai
+        
 
         self.cache_dir = join(
             CACHE_DIR, "cache_openai", f'{checkpoint.replace("/", "_")}___{seed}'
@@ -96,6 +96,7 @@ class LLM_OpenAI:
         stop=None,
         return_str=True,
     ):
+        import openai
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         hash_str = hashlib.sha256(prompt.encode()).hexdigest()
