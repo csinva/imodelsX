@@ -48,6 +48,14 @@ CHECKPOINTS_RENAME_DICT = {
     'text-davinci-003': 'GPT-3',
 }
 
+METRICS_RENAME_DICT = {
+    'accuracy': 'Accuracy',
+    'f1': 'F1',
+    'precision': 'Precision',
+    'recall': 'Recall',
+    'roc_auc': 'ROC AUC',
+}
+
 def _extract_arrays_from_llm_tree(llm_tree, dtreeviz_dummies):
     """Takes in an LLM tree and recursively converts it to arrays
     that we can later use to build a sklearn decision tree object
