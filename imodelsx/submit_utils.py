@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 import itertools
 import subprocess
 import random
@@ -23,7 +23,7 @@ def run_args_list(
     shuffle: bool = False,
     reverse: bool = False,
     n_cpus: int = 1,
-    gpu_ids: List[int] = [],
+    gpu_ids: Union[List[int], List[List[int]]] = [],
     repeat_failed_jobs: bool = False,
     slurm: bool = False,
     slurm_kwargs: Optional[Dict] = None,
@@ -44,8 +44,9 @@ def run_args_list(
         Whether to reverse the order of the script calls
     n_cpus: int
         Number of cpus to use (if >1, parallelizes over local machine)
-    gpu_ids: List[int]
+    gpu_ids: List[int], List[List[int]]
         Ids of GPUs to run on (e.g. [0, 1] for 2 gpus)
+        If List[List[int]], then each inner list is a group of GPUs to run on, e.g. [[0, 1], [2, 3]] for 2 groups of 2 GPUs
     repeat_failed_jobs: bool
         Whether to repeatedly run failed jobs
     run_slurm: bool
@@ -197,8 +198,12 @@ def run_on_gpu(param_str, i, n):
     try:
         # run on GPU <gpu_id>
         ident = current_process().ident
-        print(f'{ident}: Starting process on GPU {gpu_id}')
-        prefix = f'CUDA_VISIBLE_DEVICES={gpu_id} '
+        print(f'{ident}: Starting process on GPU(s) {gpu_id}')
+        if isinstance(gpu_id, list):
+            gpu_str = ','.join([str(x) for x in gpu_id])
+        else:
+            gpu_str = str(gpu_id)
+        prefix = f'CUDA_VISIBLE_DEVICES={gpu_str} '
         param_str = prefix + param_str
         print(
             f'\n\n-------------------{i + 1}/{n}--------------------\n' + param_str)
@@ -210,7 +215,7 @@ def run_on_gpu(param_str, i, n):
         exit(0)
     except subprocess.CalledProcessError as e:
         print('CalledProcessError', e)
-        print(f'{ident}: Finished on GPU {gpu_id}')
+        print(f'{ident}: Finished on GPU(s) {gpu_id}')
         failed_job = (i, param_str)
     finally:
         job_queue_multiprocessing.put(gpu_id)
@@ -291,8 +296,15 @@ def _validate_run_arguments(
     if len(gpu_ids) > 0:
         import torch.cuda
         num_gpus = torch.cuda.device_count()
-        assert all([x >= 0 and x < num_gpus for x in gpu_ids]
-                   ), f'gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}'
+        assert all([isinstance(x, int) for x in gpu_ids]) or all([isinstance(x, list) for x in gpu_ids]
+                                                                 ), f'gpu_ids {gpu_ids} must be type int or type list'
+        if all([isinstance(x, int) for x in gpu_ids]):
+            assert all([x >= 0 and x < num_gpus for x in gpu_ids]
+                    ), f'gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}'
+        elif all([isinstance(x, list) for x in gpu_ids]):
+            gpu_ids_flattened = sum(gpu_ids, [])
+            assert all([x >= 0 and x < num_gpus for x in gpu_ids_flattened]
+                    ), f'gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}'
 
 
 if __name__ == '__main__':
@@ -317,6 +329,6 @@ if __name__ == '__main__':
         script_name=join(submit_utils_dir, 'dummy_script.py'),
         actually_run=True,
         # n_cpus=3,
-        gpu_ids=[0],
+        gpu_ids=[[0, 3]],
         repeat_failed_jobs=True,
     )
