@@ -37,15 +37,20 @@ MODELS_RENAME_DICT = {
     'manual_tree': 'TreePrompt',
     'manual_ensemble': 'Ensemble (best-first)',
     'manual_boosting': 'Ensemble (boosting)',
-    'manual_gbdt': 'TreePrompt (GBDT)'
+    'manual_gbdt': 'TreePrompt (GBDT)',
+    'single_prompt': 'Single prompt',
 }
 
 CHECKPOINTS_RENAME_DICT = {
     'EleutherAI/gpt-j-6B': 'GPT-J (6B)',
     'gpt2': 'GPT-2 (117M)',
+    'gpt2-medium': 'GPT-2 (345M)',
+    'gpt2-large': 'GPT-2 (762M)',
+    'gpt2-xl': 'GPT-2 (1.5B)',
     'gpt-3.5-turbo': 'ChatGPT',
     'gpt-4-0314': 'GPT-4',
     'text-davinci-003': 'GPT-3',
+    'llama_7b': 'LLAMA (7B)',
 }
 
 METRICS_RENAME_DICT = {
