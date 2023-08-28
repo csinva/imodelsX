@@ -30,6 +30,8 @@ class LinearFinetune(BaseEstimator):
         layer: str = "last_hidden_state",
         random_state=None,
         normalize_embs=False,
+        cache_embs_dir: str = None,
+        verbose: int = 0,
     ):
         """LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.
 
@@ -43,6 +45,8 @@ class LinearFinetune(BaseEstimator):
             random seed for fitting
         normalize_embs
             whether to normalize embeddings before fitting linear model
+        cache_embs_dir, optional
+            if not None, directory to save embeddings into
 
         Example
         -------
@@ -72,6 +76,8 @@ class LinearFinetune(BaseEstimator):
         self.layer = layer
         self.random_state = random_state
         self.normalize_embs = normalize_embs
+        self.cache_embs_dir = cache_embs_dir
+        self.verbose = verbose
         self._initialize_checkpoint_and_tokenizer()
 
     def _initialize_checkpoint_and_tokenizer(self):
@@ -82,8 +88,6 @@ class LinearFinetune(BaseEstimator):
         self,
         X_text: ArrayLike,
         y: ArrayLike,
-        verbose=True,
-        cache_embs_dir: str = None,
     ):
         """Extract embeddings then fit linear model
 
@@ -91,8 +95,6 @@ class LinearFinetune(BaseEstimator):
         ----------
         X_text: ArrayLike[str]
         y: ArrayLike[str]
-        cache_embs_dir, optional
-            if not None, directory to save embeddings into
         """
 
         # metadata
@@ -102,28 +104,30 @@ class LinearFinetune(BaseEstimator):
             np.random.seed(self.random_state)
 
         # set up model
-        if verbose:
+        if self.verbose:
             print("initializing model...")
 
         # get embs
-        if verbose:
+        if self.verbose:
             print("calculating embeddings...")
-        if cache_embs_dir is not None and os.path.exists(
-            os.path.join(cache_embs_dir, "embs.pkl")
+        if self.cache_embs_dir is not None and os.path.exists(
+            os.path.join(self.cache_embs_dir, "embs.pkl")
         ):
-            embs = pkl.load(open(os.path.join(cache_embs_dir, "embs.pkl"), "rb"))
+            embs = pkl.load(open(os.path.join(self.cache_embs_dir, "embs.pkl"), "rb"))
         else:
             embs = self._get_embs(X_text)
-            if cache_embs_dir is not None:
-                os.makedirs(cache_embs_dir, exist_ok=True)
-                pkl.dump(embs, open(os.path.join(cache_embs_dir, "embs.pkl"), "wb"))
+            if self.cache_embs_dir is not None:
+                os.makedirs(self.cache_embs_dir, exist_ok=True)
+                pkl.dump(
+                    embs, open(os.path.join(self.cache_embs_dir, "embs.pkl"), "wb")
+                )
         if self.normalize_embs:
             self.normalizer = StandardScaler()
             embs = self.normalizer.fit_transform(embs)
 
         # train linear
         warnings.filterwarnings("ignore", category=ConvergenceWarning)
-        if verbose:
+        if self.verbose:
             print("training linear model...")
         if isinstance(self, ClassifierMixin):
             self.linear = LogisticRegressionCV()
@@ -141,7 +145,7 @@ class LinearFinetune(BaseEstimator):
             n = X_text.shape[0]
         for i in tqdm(range(n)):
             inputs = self.tokenizer(
-                [X_text[i]], padding=True, truncation=True, return_tensors="pt"
+                [X_text[i]], padding="max_length", truncation=True, return_tensors="pt"
             )
             inputs = inputs.to(self.model.device)
             output = self.model(**inputs)

@@ -51,6 +51,7 @@ CHECKPOINTS_RENAME_DICT = {
     'gpt-4-0314': 'GPT-4',
     'text-davinci-003': 'GPT-3',
     'llama_7b': 'LLAMA (7B)',
+    'meta-llama/Llama-2-7b-hf': 'LLAMA-2 (7B)',
 }
 
 METRICS_RENAME_DICT = {

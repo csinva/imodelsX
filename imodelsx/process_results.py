@@ -10,6 +10,7 @@ import sys
 import warnings
 import scipy.stats
 import numpy as np
+import joblib
 
 repo_dir = dirname(dirname(os.path.abspath(__file__)))
 
@@ -31,10 +32,13 @@ def get_results_df(results_dir, use_cached=False) -> pd.DataFrame:
     )
     results_list = []
     for dir_name in tqdm(dir_names):
-        ser = pd.Series(
-            pkl.load(open(join(results_dir, dir_name, "results.pkl"), "rb"))
-        )
-        results_list.append(ser)
+        try:
+            ser = pd.Series(
+                joblib.load(open(join(results_dir, dir_name, "results.pkl"), "rb"))
+            )
+            results_list.append(ser)
+        except:
+            print(f'Error loading {join(results_dir, dir_name, "results.pkl")}')
     r = pd.concat(results_list, axis=1).T.infer_objects()
     r.to_pickle(fname)
     return r
@@ -126,14 +130,25 @@ def average_over_seeds(
     group_keys = [
         k
         for k in get_main_args_list(experiment_filename)
-        if not k == key_to_average_over
-        and k in df.columns
+        if not k == key_to_average_over and k in df.columns
     ]
     numeric_keys = [k for k in list(df.select_dtypes("number")) if not k in group_keys]
 
     df_avg = (
-        df.groupby(by=group_keys)[numeric_keys].aggregate([np.mean, sem])
-        .reset_index()
+        df.groupby(by=group_keys)[numeric_keys].aggregate([np.mean, sem]).reset_index()
     )
     df_avg.columns = [x[0] + "_err" if x[1] == "sem" else x[0] for x in df_avg.columns]
     return df_avg
+
+
+def remove_columns_with_static_values(df: pd.DataFrame):
+    """Removes columns that have the same value for all rows"""
+    return df.loc[:, df.nunique() > 1]
+
+
+def get_experiment_keys(df, experiment_filename):
+    return [
+        k
+        for k in get_main_args_list(experiment_filename=experiment_filename)
+        if not k == "seed" and k in df.columns and len(df[k].unique()) > 1
+    ]
