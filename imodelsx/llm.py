@@ -80,8 +80,6 @@ def repeatedly_call_with_delay(llm_call):
 
 class LLM_OpenAI:
     def __init__(self, checkpoint, seed, CACHE_DIR):
-        
-
         self.cache_dir = join(
             CACHE_DIR, "cache_openai", f'{checkpoint.replace("/", "_")}___{seed}'
         )
@@ -97,6 +95,7 @@ class LLM_OpenAI:
         return_str=True,
     ):
         import openai
+
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         hash_str = hashlib.sha256(prompt.encode()).hexdigest()
@@ -237,12 +236,35 @@ class LLM_HF:
                 "chaoyi-wu/PMC_LLAMA_7B"
             )
         else:
-            self._tokenizer = AutoTokenizer.from_pretrained(checkpoint, use_fast=True)
+            self._tokenizer = AutoTokenizer.from_pretrained(
+                checkpoint
+            )  # , use_fast=True)
 
         # set checkpoint
+        kwargs = {
+            "pretrained_model_name_or_path": checkpoint,
+            "output_hidden_states": False,
+            "pad_token_id": tokenizer.eos_token_id,
+            "low_cpu_mem_usage": True,
+        }
         if "google/flan" in checkpoint:
             self._model = T5ForConditionalGeneration.from_pretrained(
                 checkpoint, device_map="auto", torch_dtype=torch.float16
+            )
+        elif checkpoint == "EleutherAI/gpt-j-6B":
+            self._model = AutoModelForCausalLM.from_pretrained(
+                checkpoint,
+                revision="float16",
+                torch_dtype=torch.float16,
+                **kwargs,
+            )
+        elif "llama-2" in checkpoint.lower():
+            self._model = transformers.AutoModelForCausalLM.from_pretrained(
+                checkpoint,
+                torch_dtype=torch.float16,
+                device_map="auto",
+                token=os.environ.get("LLAMA_TOKEN"),
+                offload_folder="offload",
             )
         elif "llama_" in checkpoint:
             self._model = transformers.LlamaForCausalLM.from_pretrained(
