@@ -221,30 +221,29 @@ class LLM_Chat:
         return response
 
 
+def load_tokenizer(checkpoint: str) -> transformers.PreTrainedTokenizer:
+    if "facebook/opt" in checkpoint:
+        # opt can't use fast tokenizer
+        return AutoTokenizer.from_pretrained(checkpoint, use_fast=False)
+    elif "llama_" in checkpoint:
+        return transformers.LlamaTokenizer.from_pretrained(join(LLAMA_DIR, checkpoint))
+    elif "PMC_LLAMA" in checkpoint:
+        return transformers.LlamaTokenizer.from_pretrained("chaoyi-wu/PMC_LLAMA_7B")
+    else:
+        return AutoTokenizer.from_pretrained(checkpoint)  # , use_fast=True)
+    # return AutoTokenizer.from_pretrained(checkpoint,
+    # token=os.environ.get("LLAMA_TOKEN"),)
+
+
 class LLM_HF:
     def __init__(self, checkpoint, seed, CACHE_DIR, LLAMA_DIR=None):
-        # set tokenizer
-        if "facebook/opt" in checkpoint:
-            # opt can't use fast tokenizer
-            self._tokenizer = AutoTokenizer.from_pretrained(checkpoint, use_fast=False)
-        elif "llama_" in checkpoint:
-            self._tokenizer = transformers.LlamaTokenizer.from_pretrained(
-                join(LLAMA_DIR, checkpoint)
-            )
-        elif "PMC_LLAMA" in checkpoint:
-            self._tokenizer = transformers.LlamaTokenizer.from_pretrained(
-                "chaoyi-wu/PMC_LLAMA_7B"
-            )
-        else:
-            self._tokenizer = AutoTokenizer.from_pretrained(
-                checkpoint
-            )  # , use_fast=True)
+        self._tokenizer = load_tokenizer(checkpoint)
 
         # set checkpoint
         kwargs = {
             "pretrained_model_name_or_path": checkpoint,
             "output_hidden_states": False,
-            "pad_token_id": tokenizer.eos_token_id,
+            # "pad_token_id": tokenizer.eos_token_id,
             "low_cpu_mem_usage": True,
         }
         if "google/flan" in checkpoint:
