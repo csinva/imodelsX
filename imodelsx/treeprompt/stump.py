@@ -21,14 +21,12 @@ class PromptStump:
         self,
         args=None,
         prompt: str = None,
-        split_strategy: str = "iprompt",
         tokenizer=None,
         max_features=10,
         assert_checks: bool = False,
         verbose: bool = True,
         model: AutoModelForCausalLM = None,
         checkpoint: str = "EleutherAI/gpt-j-6B",
-        checkpoint_prompting: str = "EleutherAI/gpt-j-6B",
         verbalizer: Dict[int, str] = {0: " Negative.", 1: " Positive."},
         batch_size: int = 1,
     ):
@@ -40,17 +38,12 @@ class PromptStump:
         args: contains some parameters passed through namespace
         prompt: str
             the prompt to use (optional)
-        split_strategy: str
-            'iprompt' - use iprompt to split
-            'manual' - use passed prompt in args.prompt
         max_features: int
             used by StumpTabular to decide how many features to save
         checkpoint: str
             the underlying model used for prediction
         model: AutoModelForCausalLM
             if this is passed, will override checkpoint
-        checkpoint_prompting: str
-            the model used for finding the prompt
         """
         if args is None:
 
@@ -63,13 +56,10 @@ class PromptStump:
         else:
             self.args = args
         self.prompt = prompt
-        assert split_strategy in ["iprompt", "cart", "linear", "manual"]
-        self.split_strategy = split_strategy
         self.assert_checks = assert_checks
         self.verbose = verbose
         self.max_features = max_features
         self.checkpoint = checkpoint
-        self.checkpoint_prompting = checkpoint_prompting
         self.model = model
         if tokenizer is None:
             self.tokenizer = imodelsx.llm.load_tokenizer(checkpoint)
@@ -95,45 +85,6 @@ class PromptStump:
         # actually run fitting
         input_strings = X_text
         output_strings = [self.verbalizer[int(yi)] for yi in y]
-
-        # set self.prompt
-        if not self.split_strategy == "manual":
-            # self.model = self.model.to('cpu')
-            print(f"calling explain_dataset_iprompt with batch size {self.batch_size}")
-            prompts, metadata = imodelsx.explain_dataset_iprompt(
-                lm=self.model,
-                input_strings=input_strings,
-                output_strings=output_strings,
-                checkpoint=self.checkpoint,  # which language model to use
-                num_learned_tokens=12,  # how long of a prompt to learn
-                n_shots=1,  # number of examples in context
-                n_epochs=5,  # how many epochs to search
-                batch_size=self.batch_size,  # batch size for iprompt
-                llm_float16=False,  # whether to load the model in float_16
-                verbose=1,  # how much to print
-                # sets template like ${input}${prefix}
-                prefix_before_input=False,
-                mask_possible_answers=True,  # only compute loss over valid output tokens
-                generation_repetition_penalty=1.0,
-                pop_topk_strategy="different_start_token",
-                pop_criterion="acc",
-                max_n_datapoints=len(input_strings),
-                # on an a6000 gpu with gpt2-xl in fp16 and batch size 32,
-                # 100 steps takes around 30 minutes.
-                max_n_steps=200,  # limit search by a fixed number of steps
-            )
-            # Consider just the top-32 prompts for splitting the tree.
-            prompts = prompts[:32]
-
-            torch.cuda.empty_cache()
-            self.model = self.model.to("cuda")
-            print("((sent model to cuda))")
-
-            # save stuff
-            self.prompt = prompts[0]
-            print(f"Got {len(prompts)} prompts. Top prompt: `{prompts[0]}`")
-            self.prompts = prompts
-            self.meta = metadata
 
         # set value (calls self.predict, which uses self.prompt)
         self._set_value_acc_samples(X_text, y)
@@ -185,10 +136,6 @@ class PromptStump:
                 target_token_ids,
                 batch_size=self.batch_size,
             )
-        # preds = np.zeros((len(X_text), len(target_token_ids)))
-        # for i, x in enumerate(X_text):
-        #     preds[i] = self._get_logit_for_target_tokens(x, target_token_ids)
-        #     preds[i] = self._get_logit_for_target_tokens(x + self.prompt, target_token_ids)
         assert preds.shape == (len(X_text), len(target_token_ids)), (
             "preds shape was"
             + str(preds.shape)
@@ -225,10 +172,6 @@ class PromptStump:
                 target_token_ids,
                 batch_size=self.batch_size,
             )
-        # preds = np.zeros((len(X_text), len(target_token_ids)))
-        # for i, x in enumerate(X_text):
-        #     preds[i] = self._get_logit_for_target_tokens(x, target_token_ids)
-        #     preds[i] = self._get_logit_for_target_tokens(x + self.prompt, target_token_ids)
         assert preds.shape == (len(X_text), len(target_token_ids)), (
             "preds shape was"
             + str(preds.shape)
@@ -307,7 +250,6 @@ class PromptStump:
             ).to(self.model.device)
 
             # shape is (batch_size, seq_len, vocab_size)
-            # logits = self.model(**inputs)["logits"].detach()
             with torch.no_grad():
                 outputs = self.model(**inputs)
             return outputs["past_key_values"]
@@ -318,10 +260,6 @@ class PromptStump:
                 target_token_ids,
                 batch_size=self.batch_size,
             )
-        # preds = np.zeros((len(X_text), len(target_token_ids)))
-        # for i, x in enumerate(X_text):
-        #     preds[i] = self._get_logit_for_target_tokens(x, target_token_ids)
-        #     preds[i] = self._get_logit_for_target_tokens(x + self.prompt, target_token_ids)
         assert preds.shape == (len(X_text), len(target_token_ids)), (
             "preds shape was"
             + str(preds.shape)
@@ -453,8 +391,6 @@ class PromptStump:
             inputs["attention_mask"] = attention_mask
 
             # shape is (batch_size, seq_len, vocab_size)
-            # print(">>", past_key_values[0][0].shape)
-            # print({ k: v.shape for k,v in inputs.items() })
             with torch.no_grad():
                 outputs = self.model(**inputs, past_key_values=past_key_values_new)
             logits = outputs["logits"]
@@ -469,16 +405,6 @@ class PromptStump:
                         for token_output_id in target_token_ids
                     ]
                 )
-
-    # def _get_logit_for_target_tokens(self, prompt: str, target_token_ids: List[int]) -> np.ndarray[float]:
-    #     """Get logits for each target token
-    #     This can fail when token_output_ids represents multiple tokens
-    #     So things get mapped to the same id representing "unknown"
-    #     """
-    #     inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
-    #     logits = self.model(**inputs)['logits'].detach()  # shape is (batch_size, seq_len, vocab_size)
-    #     logit_targets = [logits[0, -1, token_output_id].item() for token_output_id in target_token_ids]
-    #     return np.array(logit_targets)
 
     def _get_first_token_id(self, prompt: str) -> str:
         """Get first token id in prompt (after special tokens).

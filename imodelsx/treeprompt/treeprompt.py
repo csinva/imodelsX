@@ -106,8 +106,6 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
             if not loaded_from_cache:
                 if stump is None:
                     stump = imodelsx.treeprompt.stump.PromptStump(
-                        # args=args,
-                        split_strategy="manual",  # 'manual' specifies that we use m.prompt instead of autoprompting
                         model=llm,
                         checkpoint=self.checkpoint,
                         verbalizer=self.verbalizer,
