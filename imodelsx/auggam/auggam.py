@@ -41,6 +41,8 @@ class AugGAM(BaseEstimator):
         tokenizer_ngrams=None,
         random_state=None,
         normalize_embs=False,
+        cache_embs_dir: str = None,
+        cache_coefs_dir: str = None,
         fit_with_ngram_decomposition=True,
         instructor_prompt=None,
     ):
@@ -64,6 +66,8 @@ class AugGAM(BaseEstimator):
             random seed for fitting
         normalize_embs
             whether to normalize embeddings before fitting linear model
+        cache_embs_dir: str = None,
+            if not None, directory to save embeddings into
         fit_with_ngram_decomposition
             whether to fit to emb-gam style (using sum of embeddings of each ngram)
             if False, fits a typical model and uses ngram decomposition only for prediction / testing
@@ -82,6 +86,7 @@ class AugGAM(BaseEstimator):
         self.all_ngrams = all_ngrams
         self.min_frequency = min_frequency
         self.normalize_embs = normalize_embs
+        self.cache_embs_dir = cache_embs_dir
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
         self.instructor_prompt = instructor_prompt
 
@@ -91,7 +96,6 @@ class AugGAM(BaseEstimator):
         y: ArrayLike,
         verbose=True,
         cache_linear_coefs: bool = True,
-        cache_embs_dir: str = None,
         batch_size: int = 8,
     ):
         """Extract embeddings then fit linear model
@@ -102,8 +106,6 @@ class AugGAM(BaseEstimator):
         y: ArrayLike[str]
         cache_linear_coefs
             Whether to compute and cache linear coefs into self.coefs_dict_
-        cache_embs_dir, optional
-            if not None, directory to save embeddings into
         batch_size, optional
             if not None, batch size to pass while calculating embeddings
         """
@@ -122,15 +124,23 @@ class AugGAM(BaseEstimator):
         # get embs
         if verbose:
             print("calculating embeddings...")
-        if cache_embs_dir is not None and os.path.exists(
-            os.path.join(cache_embs_dir, "embs.pkl")
+        if self.cache_embs_dir is not None and os.path.exists(
+            os.path.join(self.cache_embs_dir, "embs_train.pkl")
         ):
-            embs = pkl.load(open(os.path.join(cache_embs_dir, "embs.pkl"), "rb"))
+            embs = pkl.load(
+                open(os.path.join(self.cache_embs_dir, "embs_train.pkl"), "rb")
+            )
         else:
-            embs = self._get_embs_summed(X, model, tokenizer_embeddings, batch_size)
-            if cache_embs_dir is not None:
-                os.makedirs(cache_embs_dir, exist_ok=True)
-                pkl.dump(embs, open(os.path.join(cache_embs_dir, "embs.pkl"), "wb"))
+            embs = self._get_embs_summed(
+                X, model, tokenizer_embeddings, batch_size)
+            if self.cache_embs_dir is not None:
+                os.makedirs(self.cache_embs_dir, exist_ok=True)
+                pkl.dump(
+                    embs,
+                    open(os.path.join(self.cache_embs_dir, "embs_train.pkl"), "wb"),
+                )
+
+        # normalize embs
         if self.normalize_embs:
             self.normalizer = StandardScaler()
             embs = self.normalizer.fit_transform(embs)
@@ -190,7 +200,8 @@ class AugGAM(BaseEstimator):
                 torch_dtype=torch.float16,
             )
         else:
-            model = transformers.AutoModel.from_pretrained(self.checkpoint).to(device)
+            model = transformers.AutoModel.from_pretrained(
+                self.checkpoint).to(device)
             tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
                 self.checkpoint
             )
@@ -228,37 +239,40 @@ class AugGAM(BaseEstimator):
             coefs_dict_old = self.coefs_dict_
         else:
             coefs_dict_old = {}
-        ngrams_list = [ngram for ngram in ngrams_list if not ngram in coefs_dict_old]
+        ngrams_list = [
+            ngram for ngram in ngrams_list if not ngram in coefs_dict_old]
         if len(ngrams_list) == 0 and verbose:
             print("\tNothing to update!")
             return
 
+        def normalize_embs(embs, renormalize_embs):
+            if renormalize_embs:
+                embs = StandardScaler().fit_transform(embs)
+            elif self.normalize_embs:
+                embs = self.normalizer.transform(embs)
+            return _clean_np_array(embs)
+
         # calculate linear coefs for each ngram in ngrams_list
-        if batch_size_embs is not None and not renormalize_embs:
+        if batch_size_embs is not None:
             coef_embs = self.linear.coef_.squeeze().transpose()
             n_outputs = 1 if coef_embs.ndim == 1 else coef_embs.shape[1]
             linear_coef = np.zeros(shape=(len(ngrams_list), n_outputs))
             # calculate linear coefs in batches
             for i in tqdm(range(0, len(ngrams_list), batch_size_embs)):
                 embs = self._get_embs(
-                    ngrams_list[i : i + batch_size_embs],
+                    ngrams_list[i: i + batch_size_embs],
                     model,
                     tokenizer_embeddings,
                     batch_size,
                 )
-                if renormalize_embs:
-                    embs = StandardScaler().fit_transform(embs)
-                elif self.normalize_embs:
-                    embs = self.normalizer.transform(embs)
-                embs = _clean_np_array(embs)
-                linear_coef[i : i + batch_size_embs] = embs @ coef_embs
+                embs = normalize_embs(embs, renormalize_embs)
+                linear_coef[i: i + batch_size_embs] = (embs @ coef_embs).reshape(
+                    -1, n_outputs
+                )
         else:
-            embs = self._get_embs(ngrams_list, model, tokenizer_embeddings, batch_size)
-            if renormalize_embs:
-                embs = StandardScaler().fit_transform(embs)
-            elif self.normalize_embs:
-                embs = self.normalizer.transform(embs)
-            embs = _clean_np_array(embs)
+            embs = self._get_embs(ngrams_list, model,
+                                  tokenizer_embeddings, batch_size)
+            embs = normalize_embs(embs, renormalize_embs)
             linear_coef = embs @ coef_embs
 
         # save coefs
@@ -280,7 +294,7 @@ class AugGAM(BaseEstimator):
             for i in tqdm(range(0, len(ngrams_list), batch_size)):
                 # ngram = ngrams_list[i]
                 # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
-                ngram_batch = ngrams_list[i : i + batch_size]
+                ngram_batch = ngrams_list[i: i + batch_size]
                 embs_batch = model.encode(
                     [[self.instructor_prompt, ngram] for ngram in ngram_batch]
                 )
@@ -348,10 +362,11 @@ class AugGAM(BaseEstimator):
             raise Exception("predict_proba only available for Classifier")
         check_is_fitted(self)
         preds = self._predict_cached(X, warn=warn)
-        if preds.ndim > 1:  # multiclass classification
+        if preds.ndim == 1 or preds.shape[1] == 1:
+            logits = np.vstack(
+                (1 - preds.squeeze(), preds.squeeze())).transpose()
+        else:  # multiclass classification
             logits = preds
-        else:
-            logits = np.vstack((1 - preds, preds)).transpose()
         return softmax(logits, axis=1)
 
     def _predict_cached(self, X, warn):
@@ -393,8 +408,9 @@ class AugGAMRegressor(AugGAM, RegressorMixin):
 class AugGAMClassifier(AugGAM, ClassifierMixin):
     ...
 
+
 def _clean_np_array(arr):
-    '''Replace inf and nan with 0'''
+    """Replace inf and nan with 0"""
     arr[np.isinf(arr)] = 0
     arr[np.isnan(arr)] = 0
     return arr
