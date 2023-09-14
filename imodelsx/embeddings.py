@@ -9,11 +9,26 @@ from sklearn.metrics.pairwise import cosine_similarity
 from typing import List
 from sklearn.feature_extraction.text import TfidfVectorizer
 import imodelsx.embeddings
+from copy import deepcopy
 
 
 def get_embs(
-    texts: List[str], checkpoint: str = "bert-base-uncased", batch_size: int = 32
+    texts: List[str], checkpoint: str = "bert-base-uncased", batch_size: int = 32,
+    aggregate: str = "mean"
 ) -> np.ndarray:
+    '''
+    Get embeddings for a list of texts.
+
+    Params
+    ------
+    texts: List[str]: List of texts to get embeddings for.
+    checkpoint: str: Name of the checkpoint to use. Use tf-idf for linear embeddings.
+    batch_size: int: Batch size to use for inference.
+    aggregate: str: Aggregation method to use for the embeddings. Can be "mean" or "first" (to use CLS token for BERT).
+    '''
+    if checkpoint == "tf-idf":
+        return get_embs_linear(texts)
+
     # load model
     # get embeddings for each text from the corpus
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
@@ -22,7 +37,7 @@ def get_embs(
     # calculate embeddings
     embs = []
     for i in tqdm(range(0, len(texts), batch_size)):
-        t = texts[i : i + batch_size]
+        t = texts[i: i + batch_size]
         with torch.no_grad():
             # tokenize
             inputs = tokenizer(
@@ -30,9 +45,12 @@ def get_embs(
             ).to("cuda")
             # Shape: [batch_size, seq_len, hidden_size]
             outputs = model(**inputs).last_hidden_state.detach().cpu().numpy()
-            emb = np.mean(outputs, axis=1).squeeze()  # average over sequence length
-            # emb = outputs[:, 0, :].squeeze()  # use CLS token
-            embs.append(emb)
+            # average over sequence length
+            if aggregate == "mean":
+                emb = np.mean(outputs, axis=1).squeeze()
+            elif aggregate == "first":
+                emb = outputs[:, 0, :].squeeze()  # use CLS token
+            embs.append(deepcopy(emb))
     embs = np.concatenate(embs)
     return embs
 
@@ -50,8 +68,8 @@ def get_embs_linear(texts: List[str]) -> np.ndarray:
     """
     vectorizer = TfidfVectorizer(
         # tokenizer=AutoTokenizer.from_pretrained(checkpoint).tokenize,
-        preprocessor=lambda x: x,
-        token_pattern=None,
+        # preprocessor=lambda x: x,
+        # token_pattern=None,
         lowercase=False,
         max_features=10000,
     )
