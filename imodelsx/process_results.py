@@ -11,11 +11,12 @@ import warnings
 import scipy.stats
 import numpy as np
 import joblib
+import json
 
 repo_dir = dirname(dirname(os.path.abspath(__file__)))
 
 
-def get_results_df(results_dir, use_cached=False) -> pd.DataFrame:
+def get_results_df(results_dir, use_cached=False, results_fname='results.pkl') -> pd.DataFrame:
     """Load results from a directory of experiments,
     each experiments is a row in the dataframe
     """
@@ -27,18 +28,23 @@ def get_results_df(results_dir, use_cached=False) -> pd.DataFrame:
             fname
             for fname in os.listdir(results_dir)
             if os.path.isdir(join(results_dir, fname))
-            and os.path.exists(join(results_dir, fname, "results.pkl"))
+            and os.path.exists(join(results_dir, fname, results_fname))
         ]
     )
     results_list = []
     for dir_name in tqdm(dir_names):
         try:
-            ser = pd.Series(
-                joblib.load(open(join(results_dir, dir_name, "results.pkl"), "rb"))
-            )
+            if results_fname.endswith(".pkl") or results_fname.endswith(".pickle") or results_fname.endswith(".joblib"):
+                result = joblib.load(
+                    join(results_dir, dir_name, results_fname))
+            elif results_fname.endswith(".json"):
+                result = json.load(
+                    open(join(results_dir, dir_name, results_fname), "r"))
+            ser = pd.Series(result)
             results_list.append(ser)
         except:
-            print(f'Error loading {join(results_dir, dir_name, "results.pkl")}')
+            print(
+                f'Error loading {join(results_dir, dir_name, results_fname)}')
     r = pd.concat(results_list, axis=1).T.infer_objects()
     r.to_pickle(fname)
     return r
@@ -134,12 +140,15 @@ def average_over_seeds(
         for k in get_main_args_list(experiment_filename)
         if not k == key_to_average_over and k in df.columns
     ]
-    numeric_keys = [k for k in list(df.select_dtypes("number")) if not k in group_keys]
+    numeric_keys = [k for k in list(
+        df.select_dtypes("number")) if not k in group_keys]
 
     df_avg = (
-        df.groupby(by=group_keys)[numeric_keys].aggregate([np.mean, sem]).reset_index()
+        df.groupby(by=group_keys)[numeric_keys].aggregate(
+            [np.mean, sem]).reset_index()
     )
-    df_avg.columns = [x[0] + "_err" if x[1] == "sem" else x[0] for x in df_avg.columns]
+    df_avg.columns = [x[0] + "_err" if x[1] == "sem" else x[0]
+                      for x in df_avg.columns]
     return df_avg
 
 
