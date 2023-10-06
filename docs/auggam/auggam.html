@@ -73,6 +73,8 @@ class AugGAM(BaseEstimator):
         tokenizer_ngrams=None,
         random_state=None,
         normalize_embs=False,
+        cache_embs_dir: str = None,
+        cache_coefs_dir: str = None,
         fit_with_ngram_decomposition=True,
         instructor_prompt=None,
     ):
@@ -96,6 +98,8 @@ class AugGAM(BaseEstimator):
             random seed for fitting
         normalize_embs
             whether to normalize embeddings before fitting linear model
+        cache_embs_dir: str = None,
+            if not None, directory to save embeddings into
         fit_with_ngram_decomposition
             whether to fit to emb-gam style (using sum of embeddings of each ngram)
             if False, fits a typical model and uses ngram decomposition only for prediction / testing
@@ -114,6 +118,7 @@ class AugGAM(BaseEstimator):
         self.all_ngrams = all_ngrams
         self.min_frequency = min_frequency
         self.normalize_embs = normalize_embs
+        self.cache_embs_dir = cache_embs_dir
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
         self.instructor_prompt = instructor_prompt
 
@@ -123,7 +128,6 @@ class AugGAM(BaseEstimator):
         y: ArrayLike,
         verbose=True,
         cache_linear_coefs: bool = True,
-        cache_embs_dir: str = None,
         batch_size: int = 8,
     ):
         &#34;&#34;&#34;Extract embeddings then fit linear model
@@ -134,8 +138,6 @@ class AugGAM(BaseEstimator):
         y: ArrayLike[str]
         cache_linear_coefs
             Whether to compute and cache linear coefs into self.coefs_dict_
-        cache_embs_dir, optional
-            if not None, directory to save embeddings into
         batch_size, optional
             if not None, batch size to pass while calculating embeddings
         &#34;&#34;&#34;
@@ -154,15 +156,23 @@ class AugGAM(BaseEstimator):
         # get embs
         if verbose:
             print(&#34;calculating embeddings...&#34;)
-        if cache_embs_dir is not None and os.path.exists(
-            os.path.join(cache_embs_dir, &#34;embs.pkl&#34;)
+        if self.cache_embs_dir is not None and os.path.exists(
+            os.path.join(self.cache_embs_dir, &#34;embs_train.pkl&#34;)
         ):
-            embs = pkl.load(open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
+            embs = pkl.load(
+                open(os.path.join(self.cache_embs_dir, &#34;embs_train.pkl&#34;), &#34;rb&#34;)
+            )
         else:
-            embs = self._get_embs_summed(X, model, tokenizer_embeddings, batch_size)
-            if cache_embs_dir is not None:
-                os.makedirs(cache_embs_dir, exist_ok=True)
-                pkl.dump(embs, open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;))
+            embs = self._get_embs_summed(
+                X, model, tokenizer_embeddings, batch_size)
+            if self.cache_embs_dir is not None:
+                os.makedirs(self.cache_embs_dir, exist_ok=True)
+                pkl.dump(
+                    embs,
+                    open(os.path.join(self.cache_embs_dir, &#34;embs_train.pkl&#34;), &#34;wb&#34;),
+                )
+
+        # normalize embs
         if self.normalize_embs:
             self.normalizer = StandardScaler()
             embs = self.normalizer.fit_transform(embs)
@@ -222,7 +232,8 @@ class AugGAM(BaseEstimator):
                 torch_dtype=torch.float16,
             )
         else:
-            model = transformers.AutoModel.from_pretrained(self.checkpoint).to(device)
+            model = transformers.AutoModel.from_pretrained(
+                self.checkpoint).to(device)
             tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
                 self.checkpoint
             )
@@ -260,37 +271,40 @@ class AugGAM(BaseEstimator):
             coefs_dict_old = self.coefs_dict_
         else:
             coefs_dict_old = {}
-        ngrams_list = [ngram for ngram in ngrams_list if not ngram in coefs_dict_old]
+        ngrams_list = [
+            ngram for ngram in ngrams_list if not ngram in coefs_dict_old]
         if len(ngrams_list) == 0 and verbose:
             print(&#34;\tNothing to update!&#34;)
             return
 
+        def normalize_embs(embs, renormalize_embs):
+            if renormalize_embs:
+                embs = StandardScaler().fit_transform(embs)
+            elif self.normalize_embs:
+                embs = self.normalizer.transform(embs)
+            return _clean_np_array(embs)
+
         # calculate linear coefs for each ngram in ngrams_list
-        if batch_size_embs is not None and not renormalize_embs:
+        if batch_size_embs is not None:
             coef_embs = self.linear.coef_.squeeze().transpose()
             n_outputs = 1 if coef_embs.ndim == 1 else coef_embs.shape[1]
             linear_coef = np.zeros(shape=(len(ngrams_list), n_outputs))
             # calculate linear coefs in batches
             for i in tqdm(range(0, len(ngrams_list), batch_size_embs)):
                 embs = self._get_embs(
-                    ngrams_list[i : i + batch_size_embs],
+                    ngrams_list[i: i + batch_size_embs],
                     model,
                     tokenizer_embeddings,
                     batch_size,
                 )
-                if renormalize_embs:
-                    embs = StandardScaler().fit_transform(embs)
-                elif self.normalize_embs:
-                    embs = self.normalizer.transform(embs)
-                embs = _clean_np_array(embs)
-                linear_coef[i : i + batch_size_embs] = embs @ coef_embs
+                embs = normalize_embs(embs, renormalize_embs)
+                linear_coef[i: i + batch_size_embs] = (embs @ coef_embs).reshape(
+                    -1, n_outputs
+                )
         else:
-            embs = self._get_embs(ngrams_list, model, tokenizer_embeddings, batch_size)
-            if renormalize_embs:
-                embs = StandardScaler().fit_transform(embs)
-            elif self.normalize_embs:
-                embs = self.normalizer.transform(embs)
-            embs = _clean_np_array(embs)
+            embs = self._get_embs(ngrams_list, model,
+                                  tokenizer_embeddings, batch_size)
+            embs = normalize_embs(embs, renormalize_embs)
             linear_coef = embs @ coef_embs
 
         # save coefs
@@ -312,7 +326,7 @@ class AugGAM(BaseEstimator):
             for i in tqdm(range(0, len(ngrams_list), batch_size)):
                 # ngram = ngrams_list[i]
                 # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
-                ngram_batch = ngrams_list[i : i + batch_size]
+                ngram_batch = ngrams_list[i: i + batch_size]
                 embs_batch = model.encode(
                     [[self.instructor_prompt, ngram] for ngram in ngram_batch]
                 )
@@ -380,10 +394,11 @@ class AugGAM(BaseEstimator):
             raise Exception(&#34;predict_proba only available for Classifier&#34;)
         check_is_fitted(self)
         preds = self._predict_cached(X, warn=warn)
-        if preds.ndim &gt; 1:  # multiclass classification
+        if preds.ndim == 1 or preds.shape[1] == 1:
+            logits = np.vstack(
+                (1 - preds.squeeze(), preds.squeeze())).transpose()
+        else:  # multiclass classification
             logits = preds
-        else:
-            logits = np.vstack((1 - preds, preds)).transpose()
         return softmax(logits, axis=1)
 
     def _predict_cached(self, X, warn):
@@ -425,8 +440,9 @@ class AugGAMRegressor(AugGAM, RegressorMixin):
 class AugGAMClassifier(AugGAM, ClassifierMixin):
     ...
 
+
 def _clean_np_array(arr):
-    &#39;&#39;&#39;Replace inf and nan with 0&#39;&#39;&#39;
+    &#34;&#34;&#34;Replace inf and nan with 0&#34;&#34;&#34;
     arr[np.isinf(arr)] = 0
     arr[np.isnan(arr)] = 0
     return arr</code></pre>
@@ -443,7 +459,7 @@ def _clean_np_array(arr):
 <dl>
 <dt id="imodelsx.auggam.auggam.AugGAM"><code class="flex name class">
 <span>class <span class="ident">AugGAM</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, min_frequency: int = 1, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, min_frequency: int = 1, tokenizer_ngrams=None, random_state=None, normalize_embs=False, cache_embs_dir: str = None, cache_coefs_dir: str = None, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -470,6 +486,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>random seed for fitting</dd>
 <dt><strong><code>normalize_embs</code></strong></dt>
 <dd>whether to normalize embeddings before fitting linear model</dd>
+<dt><strong><code>cache_embs_dir</code></strong> :&ensp;<code>str = None,</code></dt>
+<dd>if not None, directory to save embeddings into</dd>
 <dt><strong><code>fit_with_ngram_decomposition</code></strong></dt>
 <dd>whether to fit to emb-gam style (using sum of embeddings of each ngram)
 if False, fits a typical model and uses ngram decomposition only for prediction / testing
@@ -492,6 +510,8 @@ Usually, setting this to False will considerably impede performance</dd>
         tokenizer_ngrams=None,
         random_state=None,
         normalize_embs=False,
+        cache_embs_dir: str = None,
+        cache_coefs_dir: str = None,
         fit_with_ngram_decomposition=True,
         instructor_prompt=None,
     ):
@@ -515,6 +535,8 @@ Usually, setting this to False will considerably impede performance</dd>
             random seed for fitting
         normalize_embs
             whether to normalize embeddings before fitting linear model
+        cache_embs_dir: str = None,
+            if not None, directory to save embeddings into
         fit_with_ngram_decomposition
             whether to fit to emb-gam style (using sum of embeddings of each ngram)
             if False, fits a typical model and uses ngram decomposition only for prediction / testing
@@ -533,6 +555,7 @@ Usually, setting this to False will considerably impede performance</dd>
         self.all_ngrams = all_ngrams
         self.min_frequency = min_frequency
         self.normalize_embs = normalize_embs
+        self.cache_embs_dir = cache_embs_dir
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
         self.instructor_prompt = instructor_prompt
 
@@ -542,7 +565,6 @@ Usually, setting this to False will considerably impede performance</dd>
         y: ArrayLike,
         verbose=True,
         cache_linear_coefs: bool = True,
-        cache_embs_dir: str = None,
         batch_size: int = 8,
     ):
         &#34;&#34;&#34;Extract embeddings then fit linear model
@@ -553,8 +575,6 @@ Usually, setting this to False will considerably impede performance</dd>
         y: ArrayLike[str]
         cache_linear_coefs
             Whether to compute and cache linear coefs into self.coefs_dict_
-        cache_embs_dir, optional
-            if not None, directory to save embeddings into
         batch_size, optional
             if not None, batch size to pass while calculating embeddings
         &#34;&#34;&#34;
@@ -573,15 +593,23 @@ Usually, setting this to False will considerably impede performance</dd>
         # get embs
         if verbose:
             print(&#34;calculating embeddings...&#34;)
-        if cache_embs_dir is not None and os.path.exists(
-            os.path.join(cache_embs_dir, &#34;embs.pkl&#34;)
+        if self.cache_embs_dir is not None and os.path.exists(
+            os.path.join(self.cache_embs_dir, &#34;embs_train.pkl&#34;)
         ):
-            embs = pkl.load(open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
+            embs = pkl.load(
+                open(os.path.join(self.cache_embs_dir, &#34;embs_train.pkl&#34;), &#34;rb&#34;)
+            )
         else:
-            embs = self._get_embs_summed(X, model, tokenizer_embeddings, batch_size)
-            if cache_embs_dir is not None:
-                os.makedirs(cache_embs_dir, exist_ok=True)
-                pkl.dump(embs, open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;))
+            embs = self._get_embs_summed(
+                X, model, tokenizer_embeddings, batch_size)
+            if self.cache_embs_dir is not None:
+                os.makedirs(self.cache_embs_dir, exist_ok=True)
+                pkl.dump(
+                    embs,
+                    open(os.path.join(self.cache_embs_dir, &#34;embs_train.pkl&#34;), &#34;wb&#34;),
+                )
+
+        # normalize embs
         if self.normalize_embs:
             self.normalizer = StandardScaler()
             embs = self.normalizer.fit_transform(embs)
@@ -641,7 +669,8 @@ Usually, setting this to False will considerably impede performance</dd>
                 torch_dtype=torch.float16,
             )
         else:
-            model = transformers.AutoModel.from_pretrained(self.checkpoint).to(device)
+            model = transformers.AutoModel.from_pretrained(
+                self.checkpoint).to(device)
             tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
                 self.checkpoint
             )
@@ -679,37 +708,40 @@ Usually, setting this to False will considerably impede performance</dd>
             coefs_dict_old = self.coefs_dict_
         else:
             coefs_dict_old = {}
-        ngrams_list = [ngram for ngram in ngrams_list if not ngram in coefs_dict_old]
+        ngrams_list = [
+            ngram for ngram in ngrams_list if not ngram in coefs_dict_old]
         if len(ngrams_list) == 0 and verbose:
             print(&#34;\tNothing to update!&#34;)
             return
 
+        def normalize_embs(embs, renormalize_embs):
+            if renormalize_embs:
+                embs = StandardScaler().fit_transform(embs)
+            elif self.normalize_embs:
+                embs = self.normalizer.transform(embs)
+            return _clean_np_array(embs)
+
         # calculate linear coefs for each ngram in ngrams_list
-        if batch_size_embs is not None and not renormalize_embs:
+        if batch_size_embs is not None:
             coef_embs = self.linear.coef_.squeeze().transpose()
             n_outputs = 1 if coef_embs.ndim == 1 else coef_embs.shape[1]
             linear_coef = np.zeros(shape=(len(ngrams_list), n_outputs))
             # calculate linear coefs in batches
             for i in tqdm(range(0, len(ngrams_list), batch_size_embs)):
                 embs = self._get_embs(
-                    ngrams_list[i : i + batch_size_embs],
+                    ngrams_list[i: i + batch_size_embs],
                     model,
                     tokenizer_embeddings,
                     batch_size,
                 )
-                if renormalize_embs:
-                    embs = StandardScaler().fit_transform(embs)
-                elif self.normalize_embs:
-                    embs = self.normalizer.transform(embs)
-                embs = _clean_np_array(embs)
-                linear_coef[i : i + batch_size_embs] = embs @ coef_embs
+                embs = normalize_embs(embs, renormalize_embs)
+                linear_coef[i: i + batch_size_embs] = (embs @ coef_embs).reshape(
+                    -1, n_outputs
+                )
         else:
-            embs = self._get_embs(ngrams_list, model, tokenizer_embeddings, batch_size)
-            if renormalize_embs:
-                embs = StandardScaler().fit_transform(embs)
-            elif self.normalize_embs:
-                embs = self.normalizer.transform(embs)
-            embs = _clean_np_array(embs)
+            embs = self._get_embs(ngrams_list, model,
+                                  tokenizer_embeddings, batch_size)
+            embs = normalize_embs(embs, renormalize_embs)
             linear_coef = embs @ coef_embs
 
         # save coefs
@@ -731,7 +763,7 @@ Usually, setting this to False will considerably impede performance</dd>
             for i in tqdm(range(0, len(ngrams_list), batch_size)):
                 # ngram = ngrams_list[i]
                 # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
-                ngram_batch = ngrams_list[i : i + batch_size]
+                ngram_batch = ngrams_list[i: i + batch_size]
                 embs_batch = model.encode(
                     [[self.instructor_prompt, ngram] for ngram in ngram_batch]
                 )
@@ -799,10 +831,11 @@ Usually, setting this to False will considerably impede performance</dd>
             raise Exception(&#34;predict_proba only available for Classifier&#34;)
         check_is_fitted(self)
         preds = self._predict_cached(X, warn=warn)
-        if preds.ndim &gt; 1:  # multiclass classification
+        if preds.ndim == 1 or preds.shape[1] == 1:
+            logits = np.vstack(
+                (1 - preds.squeeze(), preds.squeeze())).transpose()
+        else:  # multiclass classification
             logits = preds
-        else:
-            logits = np.vstack((1 - preds, preds)).transpose()
         return softmax(logits, axis=1)
 
     def _predict_cached(self, X, warn):
@@ -839,6 +872,7 @@ before calling predict.&#34;
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>sklearn.base.BaseEstimator</li>
+<li>sklearn.utils._metadata_requests._MetadataRequester</li>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -897,37 +931,40 @@ batch size to use for number of embeddings stored (on cpu at same time)</p></div
         coefs_dict_old = self.coefs_dict_
     else:
         coefs_dict_old = {}
-    ngrams_list = [ngram for ngram in ngrams_list if not ngram in coefs_dict_old]
+    ngrams_list = [
+        ngram for ngram in ngrams_list if not ngram in coefs_dict_old]
     if len(ngrams_list) == 0 and verbose:
         print(&#34;\tNothing to update!&#34;)
         return
 
+    def normalize_embs(embs, renormalize_embs):
+        if renormalize_embs:
+            embs = StandardScaler().fit_transform(embs)
+        elif self.normalize_embs:
+            embs = self.normalizer.transform(embs)
+        return _clean_np_array(embs)
+
     # calculate linear coefs for each ngram in ngrams_list
-    if batch_size_embs is not None and not renormalize_embs:
+    if batch_size_embs is not None:
         coef_embs = self.linear.coef_.squeeze().transpose()
         n_outputs = 1 if coef_embs.ndim == 1 else coef_embs.shape[1]
         linear_coef = np.zeros(shape=(len(ngrams_list), n_outputs))
         # calculate linear coefs in batches
         for i in tqdm(range(0, len(ngrams_list), batch_size_embs)):
             embs = self._get_embs(
-                ngrams_list[i : i + batch_size_embs],
+                ngrams_list[i: i + batch_size_embs],
                 model,
                 tokenizer_embeddings,
                 batch_size,
             )
-            if renormalize_embs:
-                embs = StandardScaler().fit_transform(embs)
-            elif self.normalize_embs:
-                embs = self.normalizer.transform(embs)
-            embs = _clean_np_array(embs)
-            linear_coef[i : i + batch_size_embs] = embs @ coef_embs
+            embs = normalize_embs(embs, renormalize_embs)
+            linear_coef[i: i + batch_size_embs] = (embs @ coef_embs).reshape(
+                -1, n_outputs
+            )
     else:
-        embs = self._get_embs(ngrams_list, model, tokenizer_embeddings, batch_size)
-        if renormalize_embs:
-            embs = StandardScaler().fit_transform(embs)
-        elif self.normalize_embs:
-            embs = self.normalizer.transform(embs)
-        embs = _clean_np_array(embs)
+        embs = self._get_embs(ngrams_list, model,
+                              tokenizer_embeddings, batch_size)
+        embs = normalize_embs(embs, renormalize_embs)
         linear_coef = embs @ coef_embs
 
     # save coefs
@@ -940,7 +977,7 @@ batch size to use for number of embeddings stored (on cpu at same time)</p></div
 </details>
 </dd>
 <dt id="imodelsx.auggam.auggam.AugGAM.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, X: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_linear_coefs: bool = True, cache_embs_dir: str = None, batch_size: int = 8)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, X: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_linear_coefs: bool = True, batch_size: int = 8)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Extract embeddings then fit linear model</p>
@@ -952,8 +989,6 @@ batch size to use for number of embeddings stored (on cpu at same time)</p></div
 <dd>&nbsp;</dd>
 <dt><strong><code>cache_linear_coefs</code></strong></dt>
 <dd>Whether to compute and cache linear coefs into self.coefs_dict_</dd>
-<dt><strong><code>cache_embs_dir</code></strong>, <strong><code>optional</code></strong></dt>
-<dd>if not None, directory to save embeddings into</dd>
 <dt><strong><code>batch_size</code></strong>, <strong><code>optional</code></strong></dt>
 <dd>if not None, batch size to pass while calculating embeddings</dd>
 </dl></div>
@@ -967,7 +1002,6 @@ batch size to use for number of embeddings stored (on cpu at same time)</p></div
     y: ArrayLike,
     verbose=True,
     cache_linear_coefs: bool = True,
-    cache_embs_dir: str = None,
     batch_size: int = 8,
 ):
     &#34;&#34;&#34;Extract embeddings then fit linear model
@@ -978,8 +1012,6 @@ batch size to use for number of embeddings stored (on cpu at same time)</p></div
     y: ArrayLike[str]
     cache_linear_coefs
         Whether to compute and cache linear coefs into self.coefs_dict_
-    cache_embs_dir, optional
-        if not None, directory to save embeddings into
     batch_size, optional
         if not None, batch size to pass while calculating embeddings
     &#34;&#34;&#34;
@@ -998,15 +1030,23 @@ batch size to use for number of embeddings stored (on cpu at same time)</p></div
     # get embs
     if verbose:
         print(&#34;calculating embeddings...&#34;)
-    if cache_embs_dir is not None and os.path.exists(
-        os.path.join(cache_embs_dir, &#34;embs.pkl&#34;)
+    if self.cache_embs_dir is not None and os.path.exists(
+        os.path.join(self.cache_embs_dir, &#34;embs_train.pkl&#34;)
     ):
-        embs = pkl.load(open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
+        embs = pkl.load(
+            open(os.path.join(self.cache_embs_dir, &#34;embs_train.pkl&#34;), &#34;rb&#34;)
+        )
     else:
-        embs = self._get_embs_summed(X, model, tokenizer_embeddings, batch_size)
-        if cache_embs_dir is not None:
-            os.makedirs(cache_embs_dir, exist_ok=True)
-            pkl.dump(embs, open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;))
+        embs = self._get_embs_summed(
+            X, model, tokenizer_embeddings, batch_size)
+        if self.cache_embs_dir is not None:
+            os.makedirs(self.cache_embs_dir, exist_ok=True)
+            pkl.dump(
+                embs,
+                open(os.path.join(self.cache_embs_dir, &#34;embs_train.pkl&#34;), &#34;wb&#34;),
+            )
+
+    # normalize embs
     if self.normalize_embs:
         self.normalizer = StandardScaler()
         embs = self.normalizer.fit_transform(embs)
@@ -1069,18 +1109,268 @@ For classification, returns discrete output.</p></div>
         raise Exception(&#34;predict_proba only available for Classifier&#34;)
     check_is_fitted(self)
     preds = self._predict_cached(X, warn=warn)
-    if preds.ndim &gt; 1:  # multiclass classification
+    if preds.ndim == 1 or preds.shape[1] == 1:
+        logits = np.vstack(
+            (1 - preds.squeeze(), preds.squeeze())).transpose()
+    else:  # multiclass classification
         logits = preds
-    else:
-        logits = np.vstack((1 - preds, preds)).transpose()
     return softmax(logits, axis=1)</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.auggam.auggam.AugGAM.set_fit_request"><code class="name flex">
+<span>def <span class="ident">set_fit_request</span></span>(<span>self: <a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a>, *, batch_size: Union[bool, ForwardRef(None), str] = '$UNCHANGED$', cache_linear_coefs: Union[bool, ForwardRef(None), str] = '$UNCHANGED$', verbose: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Request metadata passed to the <code>fit</code> method.</p>
+<p>Note that this method is only relevant if
+<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
+Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
+mechanism works.</p>
+<p>The options for each parameter are:</p>
+<ul>
+<li>
+<p><code>True</code>: metadata is requested, and passed to <code>fit</code> if provided. The request is ignored if metadata is not provided.</p>
+</li>
+<li>
+<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>fit</code>.</p>
+</li>
+<li>
+<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
+</li>
+<li>
+<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
+</li>
+</ul>
+<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
+existing request. This allows you to change the request for some
+parameters and not others.</p>
+<div class="admonition versionadded">
+<p class="admonition-title">Added in version:&ensp;1.3</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is only relevant if this estimator is used as a
+sub-estimator of a meta-estimator, e.g. used inside a
+:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>batch_size</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
+default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
+<dd>Metadata routing for <code>batch_size</code> parameter in <code>fit</code>.</dd>
+<dt><strong><code>cache_linear_coefs</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
+default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
+<dd>Metadata routing for <code>cache_linear_coefs</code> parameter in <code>fit</code>.</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
+default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
+<dd>Metadata routing for <code>verbose</code> parameter in <code>fit</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
+<dd>The updated object.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(**kw):
+    &#34;&#34;&#34;Updates the request for provided parameters
+
+    This docstring is overwritten below.
+    See REQUESTER_DOC for expected functionality
+    &#34;&#34;&#34;
+    if not _routing_enabled():
+        raise RuntimeError(
+            &#34;This method is only available when metadata routing is enabled.&#34;
+            &#34; You can enable it using&#34;
+            &#34; sklearn.set_config(enable_metadata_routing=True).&#34;
+        )
+
+    if self.validate_keys and (set(kw) - set(self.keys)):
+        raise TypeError(
+            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
+            f&#34; are: {set(self.keys)}&#34;
+        )
+
+    requests = instance._get_metadata_request()
+    method_metadata_request = getattr(requests, self.name)
+
+    for prop, alias in kw.items():
+        if alias is not UNCHANGED:
+            method_metadata_request.add_request(param=prop, alias=alias)
+    instance._metadata_request = requests
+
+    return instance</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.auggam.auggam.AugGAM.set_predict_proba_request"><code class="name flex">
+<span>def <span class="ident">set_predict_proba_request</span></span>(<span>self: <a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a>, *, warn: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Request metadata passed to the <code>predict_proba</code> method.</p>
+<p>Note that this method is only relevant if
+<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
+Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
+mechanism works.</p>
+<p>The options for each parameter are:</p>
+<ul>
+<li>
+<p><code>True</code>: metadata is requested, and passed to <code>predict_proba</code> if provided. The request is ignored if metadata is not provided.</p>
+</li>
+<li>
+<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>predict_proba</code>.</p>
+</li>
+<li>
+<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
+</li>
+<li>
+<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
+</li>
+</ul>
+<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
+existing request. This allows you to change the request for some
+parameters and not others.</p>
+<div class="admonition versionadded">
+<p class="admonition-title">Added in version:&ensp;1.3</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is only relevant if this estimator is used as a
+sub-estimator of a meta-estimator, e.g. used inside a
+:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>warn</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
+default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
+<dd>Metadata routing for <code>warn</code> parameter in <code>predict_proba</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
+<dd>The updated object.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(**kw):
+    &#34;&#34;&#34;Updates the request for provided parameters
+
+    This docstring is overwritten below.
+    See REQUESTER_DOC for expected functionality
+    &#34;&#34;&#34;
+    if not _routing_enabled():
+        raise RuntimeError(
+            &#34;This method is only available when metadata routing is enabled.&#34;
+            &#34; You can enable it using&#34;
+            &#34; sklearn.set_config(enable_metadata_routing=True).&#34;
+        )
+
+    if self.validate_keys and (set(kw) - set(self.keys)):
+        raise TypeError(
+            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
+            f&#34; are: {set(self.keys)}&#34;
+        )
+
+    requests = instance._get_metadata_request()
+    method_metadata_request = getattr(requests, self.name)
+
+    for prop, alias in kw.items():
+        if alias is not UNCHANGED:
+            method_metadata_request.add_request(param=prop, alias=alias)
+    instance._metadata_request = requests
+
+    return instance</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.auggam.auggam.AugGAM.set_predict_request"><code class="name flex">
+<span>def <span class="ident">set_predict_request</span></span>(<span>self: <a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a>, *, warn: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Request metadata passed to the <code>predict</code> method.</p>
+<p>Note that this method is only relevant if
+<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
+Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
+mechanism works.</p>
+<p>The options for each parameter are:</p>
+<ul>
+<li>
+<p><code>True</code>: metadata is requested, and passed to <code>predict</code> if provided. The request is ignored if metadata is not provided.</p>
+</li>
+<li>
+<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>predict</code>.</p>
+</li>
+<li>
+<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
+</li>
+<li>
+<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
+</li>
+</ul>
+<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
+existing request. This allows you to change the request for some
+parameters and not others.</p>
+<div class="admonition versionadded">
+<p class="admonition-title">Added in version:&ensp;1.3</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is only relevant if this estimator is used as a
+sub-estimator of a meta-estimator, e.g. used inside a
+:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>warn</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
+default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
+<dd>Metadata routing for <code>warn</code> parameter in <code>predict</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
+<dd>The updated object.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(**kw):
+    &#34;&#34;&#34;Updates the request for provided parameters
+
+    This docstring is overwritten below.
+    See REQUESTER_DOC for expected functionality
+    &#34;&#34;&#34;
+    if not _routing_enabled():
+        raise RuntimeError(
+            &#34;This method is only available when metadata routing is enabled.&#34;
+            &#34; You can enable it using&#34;
+            &#34; sklearn.set_config(enable_metadata_routing=True).&#34;
+        )
+
+    if self.validate_keys and (set(kw) - set(self.keys)):
+        raise TypeError(
+            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
+            f&#34; are: {set(self.keys)}&#34;
+        )
+
+    requests = instance._get_metadata_request()
+    method_metadata_request = getattr(requests, self.name)
+
+    for prop, alias in kw.items():
+        if alias is not UNCHANGED:
+            method_metadata_request.add_request(param=prop, alias=alias)
+    instance._metadata_request = requests
+
+    return instance</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
 <dt id="imodelsx.auggam.auggam.AugGAMClassifier"><code class="flex name class">
 <span>class <span class="ident">AugGAMClassifier</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, min_frequency: int = 1, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, min_frequency: int = 1, tokenizer_ngrams=None, random_state=None, normalize_embs=False, cache_embs_dir: str = None, cache_coefs_dir: str = None, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -1107,6 +1397,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>random seed for fitting</dd>
 <dt><strong><code>normalize_embs</code></strong></dt>
 <dd>whether to normalize embeddings before fitting linear model</dd>
+<dt><strong><code>cache_embs_dir</code></strong> :&ensp;<code>str = None,</code></dt>
+<dd>if not None, directory to save embeddings into</dd>
 <dt><strong><code>fit_with_ngram_decomposition</code></strong></dt>
 <dd>whether to fit to emb-gam style (using sum of embeddings of each ngram)
 if False, fits a typical model and uses ngram decomposition only for prediction / testing
@@ -1125,8 +1417,93 @@ Usually, setting this to False will considerably impede performance</dd>
 <ul class="hlist">
 <li><a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a></li>
 <li>sklearn.base.BaseEstimator</li>
+<li>sklearn.utils._metadata_requests._MetadataRequester</li>
 <li>sklearn.base.ClassifierMixin</li>
 </ul>
+<h3>Methods</h3>
+<dl>
+<dt id="imodelsx.auggam.auggam.AugGAMClassifier.set_score_request"><code class="name flex">
+<span>def <span class="ident">set_score_request</span></span>(<span>self: <a title="imodelsx.auggam.auggam.AugGAMClassifier" href="#imodelsx.auggam.auggam.AugGAMClassifier">AugGAMClassifier</a>, *, sample_weight: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.auggam.auggam.AugGAMClassifier" href="#imodelsx.auggam.auggam.AugGAMClassifier">AugGAMClassifier</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Request metadata passed to the <code>score</code> method.</p>
+<p>Note that this method is only relevant if
+<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
+Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
+mechanism works.</p>
+<p>The options for each parameter are:</p>
+<ul>
+<li>
+<p><code>True</code>: metadata is requested, and passed to <code>score</code> if provided. The request is ignored if metadata is not provided.</p>
+</li>
+<li>
+<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>score</code>.</p>
+</li>
+<li>
+<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
+</li>
+<li>
+<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
+</li>
+</ul>
+<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
+existing request. This allows you to change the request for some
+parameters and not others.</p>
+<div class="admonition versionadded">
+<p class="admonition-title">Added in version:&ensp;1.3</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is only relevant if this estimator is used as a
+sub-estimator of a meta-estimator, e.g. used inside a
+:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>sample_weight</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
+default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
+<dd>Metadata routing for <code>sample_weight</code> parameter in <code>score</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
+<dd>The updated object.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(**kw):
+    &#34;&#34;&#34;Updates the request for provided parameters
+
+    This docstring is overwritten below.
+    See REQUESTER_DOC for expected functionality
+    &#34;&#34;&#34;
+    if not _routing_enabled():
+        raise RuntimeError(
+            &#34;This method is only available when metadata routing is enabled.&#34;
+            &#34; You can enable it using&#34;
+            &#34; sklearn.set_config(enable_metadata_routing=True).&#34;
+        )
+
+    if self.validate_keys and (set(kw) - set(self.keys)):
+        raise TypeError(
+            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
+            f&#34; are: {set(self.keys)}&#34;
+        )
+
+    requests = instance._get_metadata_request()
+    method_metadata_request = getattr(requests, self.name)
+
+    for prop, alias in kw.items():
+        if alias is not UNCHANGED:
+            method_metadata_request.add_request(param=prop, alias=alias)
+    instance._metadata_request = requests
+
+    return instance</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a></b></code>:
@@ -1134,13 +1511,16 @@ Usually, setting this to False will considerably impede performance</dd>
 <li><code><a title="imodelsx.auggam.auggam.AugGAM.cache_linear_coefs" href="#imodelsx.auggam.auggam.AugGAM.cache_linear_coefs">cache_linear_coefs</a></code></li>
 <li><code><a title="imodelsx.auggam.auggam.AugGAM.fit" href="#imodelsx.auggam.auggam.AugGAM.fit">fit</a></code></li>
 <li><code><a title="imodelsx.auggam.auggam.AugGAM.predict" href="#imodelsx.auggam.auggam.AugGAM.predict">predict</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.set_fit_request" href="#imodelsx.auggam.auggam.AugGAM.set_fit_request">set_fit_request</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.set_predict_proba_request" href="#imodelsx.auggam.auggam.AugGAM.set_predict_proba_request">set_predict_proba_request</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.set_predict_request" href="#imodelsx.auggam.auggam.AugGAM.set_predict_request">set_predict_request</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="imodelsx.auggam.auggam.AugGAMRegressor"><code class="flex name class">
 <span>class <span class="ident">AugGAMRegressor</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, min_frequency: int = 1, tokenizer_ngrams=None, random_state=None, normalize_embs=False, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, min_frequency: int = 1, tokenizer_ngrams=None, random_state=None, normalize_embs=False, cache_embs_dir: str = None, cache_coefs_dir: str = None, fit_with_ngram_decomposition=True, instructor_prompt=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -1167,6 +1547,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>random seed for fitting</dd>
 <dt><strong><code>normalize_embs</code></strong></dt>
 <dd>whether to normalize embeddings before fitting linear model</dd>
+<dt><strong><code>cache_embs_dir</code></strong> :&ensp;<code>str = None,</code></dt>
+<dd>if not None, directory to save embeddings into</dd>
 <dt><strong><code>fit_with_ngram_decomposition</code></strong></dt>
 <dd>whether to fit to emb-gam style (using sum of embeddings of each ngram)
 if False, fits a typical model and uses ngram decomposition only for prediction / testing
@@ -1185,8 +1567,93 @@ Usually, setting this to False will considerably impede performance</dd>
 <ul class="hlist">
 <li><a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a></li>
 <li>sklearn.base.BaseEstimator</li>
+<li>sklearn.utils._metadata_requests._MetadataRequester</li>
 <li>sklearn.base.RegressorMixin</li>
 </ul>
+<h3>Methods</h3>
+<dl>
+<dt id="imodelsx.auggam.auggam.AugGAMRegressor.set_score_request"><code class="name flex">
+<span>def <span class="ident">set_score_request</span></span>(<span>self: <a title="imodelsx.auggam.auggam.AugGAMRegressor" href="#imodelsx.auggam.auggam.AugGAMRegressor">AugGAMRegressor</a>, *, sample_weight: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.auggam.auggam.AugGAMRegressor" href="#imodelsx.auggam.auggam.AugGAMRegressor">AugGAMRegressor</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Request metadata passed to the <code>score</code> method.</p>
+<p>Note that this method is only relevant if
+<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
+Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
+mechanism works.</p>
+<p>The options for each parameter are:</p>
+<ul>
+<li>
+<p><code>True</code>: metadata is requested, and passed to <code>score</code> if provided. The request is ignored if metadata is not provided.</p>
+</li>
+<li>
+<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>score</code>.</p>
+</li>
+<li>
+<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
+</li>
+<li>
+<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
+</li>
+</ul>
+<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
+existing request. This allows you to change the request for some
+parameters and not others.</p>
+<div class="admonition versionadded">
+<p class="admonition-title">Added in version:&ensp;1.3</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is only relevant if this estimator is used as a
+sub-estimator of a meta-estimator, e.g. used inside a
+:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>sample_weight</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
+default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
+<dd>Metadata routing for <code>sample_weight</code> parameter in <code>score</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
+<dd>The updated object.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(**kw):
+    &#34;&#34;&#34;Updates the request for provided parameters
+
+    This docstring is overwritten below.
+    See REQUESTER_DOC for expected functionality
+    &#34;&#34;&#34;
+    if not _routing_enabled():
+        raise RuntimeError(
+            &#34;This method is only available when metadata routing is enabled.&#34;
+            &#34; You can enable it using&#34;
+            &#34; sklearn.set_config(enable_metadata_routing=True).&#34;
+        )
+
+    if self.validate_keys and (set(kw) - set(self.keys)):
+        raise TypeError(
+            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
+            f&#34; are: {set(self.keys)}&#34;
+        )
+
+    requests = instance._get_metadata_request()
+    method_metadata_request = getattr(requests, self.name)
+
+    for prop, alias in kw.items():
+        if alias is not UNCHANGED:
+            method_metadata_request.add_request(param=prop, alias=alias)
+    instance._metadata_request = requests
+
+    return instance</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="imodelsx.auggam.auggam.AugGAM" href="#imodelsx.auggam.auggam.AugGAM">AugGAM</a></b></code>:
@@ -1194,6 +1661,9 @@ Usually, setting this to False will considerably impede performance</dd>
 <li><code><a title="imodelsx.auggam.auggam.AugGAM.cache_linear_coefs" href="#imodelsx.auggam.auggam.AugGAM.cache_linear_coefs">cache_linear_coefs</a></code></li>
 <li><code><a title="imodelsx.auggam.auggam.AugGAM.fit" href="#imodelsx.auggam.auggam.AugGAM.fit">fit</a></code></li>
 <li><code><a title="imodelsx.auggam.auggam.AugGAM.predict" href="#imodelsx.auggam.auggam.AugGAM.predict">predict</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.set_fit_request" href="#imodelsx.auggam.auggam.AugGAM.set_fit_request">set_fit_request</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.set_predict_proba_request" href="#imodelsx.auggam.auggam.AugGAM.set_predict_proba_request">set_predict_proba_request</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.set_predict_request" href="#imodelsx.auggam.auggam.AugGAM.set_predict_request">set_predict_request</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1221,13 +1691,22 @@ Usually, setting this to False will considerably impede performance</dd>
 <li><code><a title="imodelsx.auggam.auggam.AugGAM.fit" href="#imodelsx.auggam.auggam.AugGAM.fit">fit</a></code></li>
 <li><code><a title="imodelsx.auggam.auggam.AugGAM.predict" href="#imodelsx.auggam.auggam.AugGAM.predict">predict</a></code></li>
 <li><code><a title="imodelsx.auggam.auggam.AugGAM.predict_proba" href="#imodelsx.auggam.auggam.AugGAM.predict_proba">predict_proba</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.set_fit_request" href="#imodelsx.auggam.auggam.AugGAM.set_fit_request">set_fit_request</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.set_predict_proba_request" href="#imodelsx.auggam.auggam.AugGAM.set_predict_proba_request">set_predict_proba_request</a></code></li>
+<li><code><a title="imodelsx.auggam.auggam.AugGAM.set_predict_request" href="#imodelsx.auggam.auggam.AugGAM.set_predict_request">set_predict_request</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="imodelsx.auggam.auggam.AugGAMClassifier" href="#imodelsx.auggam.auggam.AugGAMClassifier">AugGAMClassifier</a></code></h4>
+<ul class="">
+<li><code><a title="imodelsx.auggam.auggam.AugGAMClassifier.set_score_request" href="#imodelsx.auggam.auggam.AugGAMClassifier.set_score_request">set_score_request</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="imodelsx.auggam.auggam.AugGAMRegressor" href="#imodelsx.auggam.auggam.AugGAMRegressor">AugGAMRegressor</a></code></h4>
+<ul class="">
+<li><code><a title="imodelsx.auggam.auggam.AugGAMRegressor.set_score_request" href="#imodelsx.auggam.auggam.AugGAMRegressor.set_score_request">set_score_request</a></code></li>
+</ul>
 </li>
 </ul>
 </li>

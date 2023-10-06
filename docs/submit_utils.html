@@ -26,7 +26,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Any, Dict, List, Optional, Tuple
+<pre><code class="python">from typing import Any, Dict, List, Optional, Tuple, Union
 import itertools
 import subprocess
 import random
@@ -51,7 +51,7 @@ def run_args_list(
     shuffle: bool = False,
     reverse: bool = False,
     n_cpus: int = 1,
-    gpu_ids: List[int] = [],
+    gpu_ids: Union[List[int], List[List[int]]] = [],
     repeat_failed_jobs: bool = False,
     slurm: bool = False,
     slurm_kwargs: Optional[Dict] = None,
@@ -72,8 +72,9 @@ def run_args_list(
         Whether to reverse the order of the script calls
     n_cpus: int
         Number of cpus to use (if &gt;1, parallelizes over local machine)
-    gpu_ids: List[int]
+    gpu_ids: List[int], List[List[int]]
         Ids of GPUs to run on (e.g. [0, 1] for 2 gpus)
+        If List[List[int]], then each inner list is a group of GPUs to run on, e.g. [[0, 1], [2, 3]] for 2 groups of 2 GPUs
     repeat_failed_jobs: bool
         Whether to repeatedly run failed jobs
     run_slurm: bool
@@ -225,8 +226,12 @@ def run_on_gpu(param_str, i, n):
     try:
         # run on GPU &lt;gpu_id&gt;
         ident = current_process().ident
-        print(f&#39;{ident}: Starting process on GPU {gpu_id}&#39;)
-        prefix = f&#39;CUDA_VISIBLE_DEVICES={gpu_id} &#39;
+        print(f&#39;{ident}: Starting process on GPU(s) {gpu_id}&#39;)
+        if isinstance(gpu_id, list):
+            gpu_str = &#39;,&#39;.join([str(x) for x in gpu_id])
+        else:
+            gpu_str = str(gpu_id)
+        prefix = f&#39;CUDA_VISIBLE_DEVICES={gpu_str} &#39;
         param_str = prefix + param_str
         print(
             f&#39;\n\n-------------------{i + 1}/{n}--------------------\n&#39; + param_str)
@@ -238,7 +243,7 @@ def run_on_gpu(param_str, i, n):
         exit(0)
     except subprocess.CalledProcessError as e:
         print(&#39;CalledProcessError&#39;, e)
-        print(f&#39;{ident}: Finished on GPU {gpu_id}&#39;)
+        print(f&#39;{ident}: Finished on GPU(s) {gpu_id}&#39;)
         failed_job = (i, param_str)
     finally:
         job_queue_multiprocessing.put(gpu_id)
@@ -319,8 +324,15 @@ def _validate_run_arguments(
     if len(gpu_ids) &gt; 0:
         import torch.cuda
         num_gpus = torch.cuda.device_count()
-        assert all([x &gt;= 0 and x &lt; num_gpus for x in gpu_ids]
-                   ), f&#39;gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}&#39;
+        assert all([isinstance(x, int) for x in gpu_ids]) or all([isinstance(x, list) for x in gpu_ids]
+                                                                 ), f&#39;gpu_ids {gpu_ids} must be type int or type list&#39;
+        if all([isinstance(x, int) for x in gpu_ids]):
+            assert all([x &gt;= 0 and x &lt; num_gpus for x in gpu_ids]
+                    ), f&#39;gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}&#39;
+        elif all([isinstance(x, list) for x in gpu_ids]):
+            gpu_ids_flattened = sum(gpu_ids, [])
+            assert all([x &gt;= 0 and x &lt; num_gpus for x in gpu_ids_flattened]
+                    ), f&#39;gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}&#39;
 
 
 if __name__ == &#39;__main__&#39;:
@@ -345,7 +357,7 @@ if __name__ == &#39;__main__&#39;:
         script_name=join(submit_utils_dir, &#39;dummy_script.py&#39;),
         actually_run=True,
         # n_cpus=3,
-        gpu_ids=[0],
+        gpu_ids=[[0, 3]],
         repeat_failed_jobs=True,
     )</code></pre>
 </details>
@@ -415,7 +427,7 @@ focused on embarassingly parallel sweeps on a single machine.</p></div>
 </details>
 </dd>
 <dt id="imodelsx.submit_utils.run_args_list"><code class="name flex">
-<span>def <span class="ident">run_args_list</span></span>(<span>args_list: List[Dict[str, Any]], cmd_python: str = 'python', script_name: str = '02_train_suffix.py', actually_run: bool = True, shuffle: bool = False, reverse: bool = False, n_cpus: int = 1, gpu_ids: List[int] = [], repeat_failed_jobs: bool = False, slurm: bool = False, slurm_kwargs: Optional[Dict] = None)</span>
+<span>def <span class="ident">run_args_list</span></span>(<span>args_list: List[Dict[str, Any]], cmd_python: str = 'python', script_name: str = '02_train_suffix.py', actually_run: bool = True, shuffle: bool = False, reverse: bool = False, n_cpus: int = 1, gpu_ids: Union[List[int], List[List[int]]] = [], repeat_failed_jobs: bool = False, slurm: bool = False, slurm_kwargs: Optional[Dict] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="params">Params</h2>
@@ -432,8 +444,9 @@ reverse: bool
 Whether to reverse the order of the script calls
 n_cpus: int
 Number of cpus to use (if &gt;1, parallelizes over local machine)
-gpu_ids: List[int]
+gpu_ids: List[int], List[List[int]]
 Ids of GPUs to run on (e.g. [0, 1] for 2 gpus)
+If List[List[int]], then each inner list is a group of GPUs to run on, e.g. [[0, 1], [2, 3]] for 2 groups of 2 GPUs
 repeat_failed_jobs: bool
 Whether to repeatedly run failed jobs
 run_slurm: bool
@@ -452,7 +465,7 @@ kwargs for slurm</p></div>
     shuffle: bool = False,
     reverse: bool = False,
     n_cpus: int = 1,
-    gpu_ids: List[int] = [],
+    gpu_ids: Union[List[int], List[List[int]]] = [],
     repeat_failed_jobs: bool = False,
     slurm: bool = False,
     slurm_kwargs: Optional[Dict] = None,
@@ -473,8 +486,9 @@ kwargs for slurm</p></div>
         Whether to reverse the order of the script calls
     n_cpus: int
         Number of cpus to use (if &gt;1, parallelizes over local machine)
-    gpu_ids: List[int]
+    gpu_ids: List[int], List[List[int]]
         Ids of GPUs to run on (e.g. [0, 1] for 2 gpus)
+        If List[List[int]], then each inner list is a group of GPUs to run on, e.g. [[0, 1], [2, 3]] for 2 groups of 2 GPUs
     repeat_failed_jobs: bool
         Whether to repeatedly run failed jobs
     run_slurm: bool
@@ -622,8 +636,12 @@ kwargs for slurm</p></div>
     try:
         # run on GPU &lt;gpu_id&gt;
         ident = current_process().ident
-        print(f&#39;{ident}: Starting process on GPU {gpu_id}&#39;)
-        prefix = f&#39;CUDA_VISIBLE_DEVICES={gpu_id} &#39;
+        print(f&#39;{ident}: Starting process on GPU(s) {gpu_id}&#39;)
+        if isinstance(gpu_id, list):
+            gpu_str = &#39;,&#39;.join([str(x) for x in gpu_id])
+        else:
+            gpu_str = str(gpu_id)
+        prefix = f&#39;CUDA_VISIBLE_DEVICES={gpu_str} &#39;
         param_str = prefix + param_str
         print(
             f&#39;\n\n-------------------{i + 1}/{n}--------------------\n&#39; + param_str)
@@ -635,7 +653,7 @@ kwargs for slurm</p></div>
         exit(0)
     except subprocess.CalledProcessError as e:
         print(&#39;CalledProcessError&#39;, e)
-        print(f&#39;{ident}: Finished on GPU {gpu_id}&#39;)
+        print(f&#39;{ident}: Finished on GPU(s) {gpu_id}&#39;)
         failed_job = (i, param_str)
     finally:
         job_queue_multiprocessing.put(gpu_id)

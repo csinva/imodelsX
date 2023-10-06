@@ -61,9 +61,13 @@ def get_llm(
     checkpoint,
     seed=1,
     role: str = None,
+    repeat_delay: Optional[float] = None,
     CACHE_DIR=LLM_CONFIG[&#34;CACHE_DIR&#34;],
     LLAMA_DIR=LLM_CONFIG[&#34;LLAMA_DIR&#34;],
 ):
+    if repeat_delay is not None:
+        LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;] = repeat_delay
+
     &#34;&#34;&#34;Get an LLM with a call function and caching capabilities&#34;&#34;&#34;
     if checkpoint.startswith(&#34;text-da&#34;):
         return LLM_OpenAI(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR)
@@ -104,8 +108,6 @@ def repeatedly_call_with_delay(llm_call):
 
 class LLM_OpenAI:
     def __init__(self, checkpoint, seed, CACHE_DIR):
-        import openai
-
         self.cache_dir = join(
             CACHE_DIR, &#34;cache_openai&#34;, f&#39;{checkpoint.replace(&#34;/&#34;, &#34;_&#34;)}___{seed}&#39;
         )
@@ -120,6 +122,8 @@ class LLM_OpenAI:
         stop=None,
         return_str=True,
     ):
+        import openai
+
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         hash_str = hashlib.sha256(prompt.encode()).hexdigest()
@@ -245,27 +249,49 @@ class LLM_Chat:
         return response
 
 
+def load_tokenizer(checkpoint: str) -&gt; transformers.PreTrainedTokenizer:
+    if &#34;facebook/opt&#34; in checkpoint:
+        # opt can&#39;t use fast tokenizer
+        return AutoTokenizer.from_pretrained(checkpoint, use_fast=False)
+    elif &#34;llama_&#34; in checkpoint:
+        return transformers.LlamaTokenizer.from_pretrained(join(LLAMA_DIR, checkpoint))
+    elif &#34;PMC_LLAMA&#34; in checkpoint:
+        return transformers.LlamaTokenizer.from_pretrained(&#34;chaoyi-wu/PMC_LLAMA_7B&#34;)
+    else:
+        return AutoTokenizer.from_pretrained(checkpoint)  # , use_fast=True)
+    # return AutoTokenizer.from_pretrained(checkpoint,
+    # token=os.environ.get(&#34;LLAMA_TOKEN&#34;),)
+
+
 class LLM_HF:
     def __init__(self, checkpoint, seed, CACHE_DIR, LLAMA_DIR=None):
-        # set tokenizer
-        if &#34;facebook/opt&#34; in checkpoint:
-            # opt can&#39;t use fast tokenizer
-            self._tokenizer = AutoTokenizer.from_pretrained(checkpoint, use_fast=False)
-        elif &#34;llama_&#34; in checkpoint:
-            self._tokenizer = transformers.LlamaTokenizer.from_pretrained(
-                join(LLAMA_DIR, checkpoint)
-            )
-        elif &#34;PMC_LLAMA&#34; in checkpoint:
-            self._tokenizer = transformers.LlamaTokenizer.from_pretrained(
-                &#34;chaoyi-wu/PMC_LLAMA_7B&#34;
-            )
-        else:
-            self._tokenizer = AutoTokenizer.from_pretrained(checkpoint, use_fast=True)
+        self._tokenizer = load_tokenizer(checkpoint)
 
         # set checkpoint
+        kwargs = {
+            &#34;pretrained_model_name_or_path&#34;: checkpoint,
+            &#34;output_hidden_states&#34;: False,
+            # &#34;pad_token_id&#34;: tokenizer.eos_token_id,
+            &#34;low_cpu_mem_usage&#34;: True,
+        }
         if &#34;google/flan&#34; in checkpoint:
             self._model = T5ForConditionalGeneration.from_pretrained(
                 checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16
+            )
+        elif checkpoint == &#34;EleutherAI/gpt-j-6B&#34;:
+            self._model = AutoModelForCausalLM.from_pretrained(
+                checkpoint,
+                revision=&#34;float16&#34;,
+                torch_dtype=torch.float16,
+                **kwargs,
+            )
+        elif &#34;llama-2&#34; in checkpoint.lower():
+            self._model = transformers.AutoModelForCausalLM.from_pretrained(
+                checkpoint,
+                torch_dtype=torch.float16,
+                device_map=&#34;auto&#34;,
+                token=os.environ.get(&#34;LLAMA_TOKEN&#34;),
+                offload_folder=&#34;offload&#34;,
             )
         elif &#34;llama_&#34; in checkpoint:
             self._model = transformers.LlamaForCausalLM.from_pretrained(
@@ -410,10 +436,10 @@ if __name__ == &#34;__main__&#34;:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="imodelsx.llm.get_llm"><code class="name flex">
-<span>def <span class="ident">get_llm</span></span>(<span>checkpoint, seed=1, role: str = None, CACHE_DIR='/home/chansingh/clin/CACHE_OPENAI', LLAMA_DIR='/home/chansingh/llama')</span>
+<span>def <span class="ident">get_llm</span></span>(<span>checkpoint, seed=1, role: str = None, repeat_delay: Optional[float] = None, CACHE_DIR='/home/chansingh/clin/CACHE_OPENAI', LLAMA_DIR='/home/chansingh/llama')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Get an LLM with a call function and caching capabilities</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -422,9 +448,13 @@ if __name__ == &#34;__main__&#34;:
     checkpoint,
     seed=1,
     role: str = None,
+    repeat_delay: Optional[float] = None,
     CACHE_DIR=LLM_CONFIG[&#34;CACHE_DIR&#34;],
     LLAMA_DIR=LLM_CONFIG[&#34;LLAMA_DIR&#34;],
 ):
+    if repeat_delay is not None:
+        LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;] = repeat_delay
+
     &#34;&#34;&#34;Get an LLM with a call function and caching capabilities&#34;&#34;&#34;
     if checkpoint.startswith(&#34;text-da&#34;):
         return LLM_OpenAI(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR)
@@ -433,6 +463,29 @@ if __name__ == &#34;__main__&#34;:
     else:
         # warning: this sets torch.manual_seed(seed)
         return LLM_HF(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR, LLAMA_DIR=LLAMA_DIR)</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.llm.load_tokenizer"><code class="name flex">
+<span>def <span class="ident">load_tokenizer</span></span>(<span>checkpoint: str) ‑> transformers.tokenization_utils.PreTrainedTokenizer</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_tokenizer(checkpoint: str) -&gt; transformers.PreTrainedTokenizer:
+    if &#34;facebook/opt&#34; in checkpoint:
+        # opt can&#39;t use fast tokenizer
+        return AutoTokenizer.from_pretrained(checkpoint, use_fast=False)
+    elif &#34;llama_&#34; in checkpoint:
+        return transformers.LlamaTokenizer.from_pretrained(join(LLAMA_DIR, checkpoint))
+    elif &#34;PMC_LLAMA&#34; in checkpoint:
+        return transformers.LlamaTokenizer.from_pretrained(&#34;chaoyi-wu/PMC_LLAMA_7B&#34;)
+    else:
+        return AutoTokenizer.from_pretrained(checkpoint)  # , use_fast=True)
+    # return AutoTokenizer.from_pretrained(checkpoint,
+    # token=os.environ.get(&#34;LLAMA_TOKEN&#34;),)</code></pre>
 </details>
 </dd>
 <dt id="imodelsx.llm.repeatedly_call_with_delay"><code class="name flex">
@@ -599,25 +652,33 @@ if __name__ == &#34;__main__&#34;:
 </summary>
 <pre><code class="python">class LLM_HF:
     def __init__(self, checkpoint, seed, CACHE_DIR, LLAMA_DIR=None):
-        # set tokenizer
-        if &#34;facebook/opt&#34; in checkpoint:
-            # opt can&#39;t use fast tokenizer
-            self._tokenizer = AutoTokenizer.from_pretrained(checkpoint, use_fast=False)
-        elif &#34;llama_&#34; in checkpoint:
-            self._tokenizer = transformers.LlamaTokenizer.from_pretrained(
-                join(LLAMA_DIR, checkpoint)
-            )
-        elif &#34;PMC_LLAMA&#34; in checkpoint:
-            self._tokenizer = transformers.LlamaTokenizer.from_pretrained(
-                &#34;chaoyi-wu/PMC_LLAMA_7B&#34;
-            )
-        else:
-            self._tokenizer = AutoTokenizer.from_pretrained(checkpoint, use_fast=True)
+        self._tokenizer = load_tokenizer(checkpoint)
 
         # set checkpoint
+        kwargs = {
+            &#34;pretrained_model_name_or_path&#34;: checkpoint,
+            &#34;output_hidden_states&#34;: False,
+            # &#34;pad_token_id&#34;: tokenizer.eos_token_id,
+            &#34;low_cpu_mem_usage&#34;: True,
+        }
         if &#34;google/flan&#34; in checkpoint:
             self._model = T5ForConditionalGeneration.from_pretrained(
                 checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16
+            )
+        elif checkpoint == &#34;EleutherAI/gpt-j-6B&#34;:
+            self._model = AutoModelForCausalLM.from_pretrained(
+                checkpoint,
+                revision=&#34;float16&#34;,
+                torch_dtype=torch.float16,
+                **kwargs,
+            )
+        elif &#34;llama-2&#34; in checkpoint.lower():
+            self._model = transformers.AutoModelForCausalLM.from_pretrained(
+                checkpoint,
+                torch_dtype=torch.float16,
+                device_map=&#34;auto&#34;,
+                token=os.environ.get(&#34;LLAMA_TOKEN&#34;),
+                offload_folder=&#34;offload&#34;,
             )
         elif &#34;llama_&#34; in checkpoint:
             self._model = transformers.LlamaForCausalLM.from_pretrained(
@@ -734,8 +795,6 @@ if __name__ == &#34;__main__&#34;:
 </summary>
 <pre><code class="python">class LLM_OpenAI:
     def __init__(self, checkpoint, seed, CACHE_DIR):
-        import openai
-
         self.cache_dir = join(
             CACHE_DIR, &#34;cache_openai&#34;, f&#39;{checkpoint.replace(&#34;/&#34;, &#34;_&#34;)}___{seed}&#39;
         )
@@ -750,6 +809,8 @@ if __name__ == &#34;__main__&#34;:
         stop=None,
         return_str=True,
     ):
+        import openai
+
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         hash_str = hashlib.sha256(prompt.encode()).hexdigest()
@@ -792,6 +853,7 @@ if __name__ == &#34;__main__&#34;:
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="imodelsx.llm.get_llm" href="#imodelsx.llm.get_llm">get_llm</a></code></li>
+<li><code><a title="imodelsx.llm.load_tokenizer" href="#imodelsx.llm.load_tokenizer">load_tokenizer</a></code></li>
 <li><code><a title="imodelsx.llm.repeatedly_call_with_delay" href="#imodelsx.llm.repeatedly_call_with_delay">repeatedly_call_with_delay</a></code></li>
 </ul>
 </li>

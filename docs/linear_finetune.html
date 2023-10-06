@@ -59,6 +59,8 @@ class LinearFinetune(BaseEstimator):
         layer: str = &#34;last_hidden_state&#34;,
         random_state=None,
         normalize_embs=False,
+        cache_embs_dir: str = None,
+        verbose: int = 0,
     ):
         &#34;&#34;&#34;LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.
 
@@ -72,6 +74,8 @@ class LinearFinetune(BaseEstimator):
             random seed for fitting
         normalize_embs
             whether to normalize embeddings before fitting linear model
+        cache_embs_dir, optional
+            if not None, directory to save embeddings into
 
         Example
         -------
@@ -101,6 +105,8 @@ class LinearFinetune(BaseEstimator):
         self.layer = layer
         self.random_state = random_state
         self.normalize_embs = normalize_embs
+        self.cache_embs_dir = cache_embs_dir
+        self.verbose = verbose
         self._initialize_checkpoint_and_tokenizer()
 
     def _initialize_checkpoint_and_tokenizer(self):
@@ -111,8 +117,6 @@ class LinearFinetune(BaseEstimator):
         self,
         X_text: ArrayLike,
         y: ArrayLike,
-        verbose=True,
-        cache_embs_dir: str = None,
     ):
         &#34;&#34;&#34;Extract embeddings then fit linear model
 
@@ -120,8 +124,6 @@ class LinearFinetune(BaseEstimator):
         ----------
         X_text: ArrayLike[str]
         y: ArrayLike[str]
-        cache_embs_dir, optional
-            if not None, directory to save embeddings into
         &#34;&#34;&#34;
 
         # metadata
@@ -131,28 +133,30 @@ class LinearFinetune(BaseEstimator):
             np.random.seed(self.random_state)
 
         # set up model
-        if verbose:
+        if self.verbose:
             print(&#34;initializing model...&#34;)
 
         # get embs
-        if verbose:
+        if self.verbose:
             print(&#34;calculating embeddings...&#34;)
-        if cache_embs_dir is not None and os.path.exists(
-            os.path.join(cache_embs_dir, &#34;embs.pkl&#34;)
+        if self.cache_embs_dir is not None and os.path.exists(
+            os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;)
         ):
-            embs = pkl.load(open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
+            embs = pkl.load(open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
         else:
             embs = self._get_embs(X_text)
-            if cache_embs_dir is not None:
-                os.makedirs(cache_embs_dir, exist_ok=True)
-                pkl.dump(embs, open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;))
+            if self.cache_embs_dir is not None:
+                os.makedirs(self.cache_embs_dir, exist_ok=True)
+                pkl.dump(
+                    embs, open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;)
+                )
         if self.normalize_embs:
             self.normalizer = StandardScaler()
             embs = self.normalizer.fit_transform(embs)
 
         # train linear
         warnings.filterwarnings(&#34;ignore&#34;, category=ConvergenceWarning)
-        if verbose:
+        if self.verbose:
             print(&#34;training linear model...&#34;)
         if isinstance(self, ClassifierMixin):
             self.linear = LogisticRegressionCV()
@@ -170,7 +174,7 @@ class LinearFinetune(BaseEstimator):
             n = X_text.shape[0]
         for i in tqdm(range(n)):
             inputs = self.tokenizer(
-                [X_text[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;
+                [X_text[i]], padding=&#34;max_length&#34;, truncation=True, return_tensors=&#34;pt&#34;
             )
             inputs = inputs.to(self.model.device)
             output = self.model(**inputs)
@@ -246,7 +250,7 @@ if __name__ == &#34;__main__&#34;:
 <dl>
 <dt id="imodelsx.linear_finetune.LinearFinetune"><code class="flex name class">
 <span>class <span class="ident">LinearFinetune</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False, cache_embs_dir: str = None, verbose: int = 0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -265,6 +269,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>random seed for fitting</dd>
 <dt><strong><code>normalize_embs</code></strong></dt>
 <dd>whether to normalize embeddings before fitting linear model</dd>
+<dt><strong><code>cache_embs_dir</code></strong>, <strong><code>optional</code></strong></dt>
+<dd>if not None, directory to save embeddings into</dd>
 </dl>
 <h2 id="example">Example</h2>
 <pre><code>from imodelsx import LinearFinetuneClassifier
@@ -298,6 +304,8 @@ print('validation acc', acc)
         layer: str = &#34;last_hidden_state&#34;,
         random_state=None,
         normalize_embs=False,
+        cache_embs_dir: str = None,
+        verbose: int = 0,
     ):
         &#34;&#34;&#34;LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.
 
@@ -311,6 +319,8 @@ print('validation acc', acc)
             random seed for fitting
         normalize_embs
             whether to normalize embeddings before fitting linear model
+        cache_embs_dir, optional
+            if not None, directory to save embeddings into
 
         Example
         -------
@@ -340,6 +350,8 @@ print('validation acc', acc)
         self.layer = layer
         self.random_state = random_state
         self.normalize_embs = normalize_embs
+        self.cache_embs_dir = cache_embs_dir
+        self.verbose = verbose
         self._initialize_checkpoint_and_tokenizer()
 
     def _initialize_checkpoint_and_tokenizer(self):
@@ -350,8 +362,6 @@ print('validation acc', acc)
         self,
         X_text: ArrayLike,
         y: ArrayLike,
-        verbose=True,
-        cache_embs_dir: str = None,
     ):
         &#34;&#34;&#34;Extract embeddings then fit linear model
 
@@ -359,8 +369,6 @@ print('validation acc', acc)
         ----------
         X_text: ArrayLike[str]
         y: ArrayLike[str]
-        cache_embs_dir, optional
-            if not None, directory to save embeddings into
         &#34;&#34;&#34;
 
         # metadata
@@ -370,28 +378,30 @@ print('validation acc', acc)
             np.random.seed(self.random_state)
 
         # set up model
-        if verbose:
+        if self.verbose:
             print(&#34;initializing model...&#34;)
 
         # get embs
-        if verbose:
+        if self.verbose:
             print(&#34;calculating embeddings...&#34;)
-        if cache_embs_dir is not None and os.path.exists(
-            os.path.join(cache_embs_dir, &#34;embs.pkl&#34;)
+        if self.cache_embs_dir is not None and os.path.exists(
+            os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;)
         ):
-            embs = pkl.load(open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
+            embs = pkl.load(open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
         else:
             embs = self._get_embs(X_text)
-            if cache_embs_dir is not None:
-                os.makedirs(cache_embs_dir, exist_ok=True)
-                pkl.dump(embs, open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;))
+            if self.cache_embs_dir is not None:
+                os.makedirs(self.cache_embs_dir, exist_ok=True)
+                pkl.dump(
+                    embs, open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;)
+                )
         if self.normalize_embs:
             self.normalizer = StandardScaler()
             embs = self.normalizer.fit_transform(embs)
 
         # train linear
         warnings.filterwarnings(&#34;ignore&#34;, category=ConvergenceWarning)
-        if verbose:
+        if self.verbose:
             print(&#34;training linear model...&#34;)
         if isinstance(self, ClassifierMixin):
             self.linear = LogisticRegressionCV()
@@ -409,7 +419,7 @@ print('validation acc', acc)
             n = X_text.shape[0]
         for i in tqdm(range(n)):
             inputs = self.tokenizer(
-                [X_text[i]], padding=True, truncation=True, return_tensors=&#34;pt&#34;
+                [X_text[i]], padding=&#34;max_length&#34;, truncation=True, return_tensors=&#34;pt&#34;
             )
             inputs = inputs.to(self.model.device)
             output = self.model(**inputs)
@@ -439,6 +449,7 @@ print('validation acc', acc)
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>sklearn.base.BaseEstimator</li>
+<li>sklearn.utils._metadata_requests._MetadataRequester</li>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -448,7 +459,7 @@ print('validation acc', acc)
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.linear_finetune.LinearFinetune.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, X_text: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_embs_dir: str = None)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, X_text: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Extract embeddings then fit linear model</p>
@@ -458,8 +469,6 @@ print('validation acc', acc)
 <dd>&nbsp;</dd>
 <dt><strong><code>y</code></strong> :&ensp;<code>ArrayLike[str]</code></dt>
 <dd>&nbsp;</dd>
-<dt><strong><code>cache_embs_dir</code></strong>, <strong><code>optional</code></strong></dt>
-<dd>if not None, directory to save embeddings into</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -469,8 +478,6 @@ print('validation acc', acc)
     self,
     X_text: ArrayLike,
     y: ArrayLike,
-    verbose=True,
-    cache_embs_dir: str = None,
 ):
     &#34;&#34;&#34;Extract embeddings then fit linear model
 
@@ -478,8 +485,6 @@ print('validation acc', acc)
     ----------
     X_text: ArrayLike[str]
     y: ArrayLike[str]
-    cache_embs_dir, optional
-        if not None, directory to save embeddings into
     &#34;&#34;&#34;
 
     # metadata
@@ -489,28 +494,30 @@ print('validation acc', acc)
         np.random.seed(self.random_state)
 
     # set up model
-    if verbose:
+    if self.verbose:
         print(&#34;initializing model...&#34;)
 
     # get embs
-    if verbose:
+    if self.verbose:
         print(&#34;calculating embeddings...&#34;)
-    if cache_embs_dir is not None and os.path.exists(
-        os.path.join(cache_embs_dir, &#34;embs.pkl&#34;)
+    if self.cache_embs_dir is not None and os.path.exists(
+        os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;)
     ):
-        embs = pkl.load(open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
+        embs = pkl.load(open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
     else:
         embs = self._get_embs(X_text)
-        if cache_embs_dir is not None:
-            os.makedirs(cache_embs_dir, exist_ok=True)
-            pkl.dump(embs, open(os.path.join(cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;))
+        if self.cache_embs_dir is not None:
+            os.makedirs(self.cache_embs_dir, exist_ok=True)
+            pkl.dump(
+                embs, open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;)
+            )
     if self.normalize_embs:
         self.normalizer = StandardScaler()
         embs = self.normalizer.fit_transform(embs)
 
     # train linear
     warnings.filterwarnings(&#34;ignore&#34;, category=ConvergenceWarning)
-    if verbose:
+    if self.verbose:
         print(&#34;training linear model...&#34;)
     if isinstance(self, ClassifierMixin):
         self.linear = LogisticRegressionCV()
@@ -559,11 +566,254 @@ For classification, returns discrete output.</p></div>
     return self.linear.predict_proba(embs)</code></pre>
 </details>
 </dd>
+<dt id="imodelsx.linear_finetune.LinearFinetune.set_fit_request"><code class="name flex">
+<span>def <span class="ident">set_fit_request</span></span>(<span>self: <a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a>, *, X_text: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Request metadata passed to the <code>fit</code> method.</p>
+<p>Note that this method is only relevant if
+<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
+Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
+mechanism works.</p>
+<p>The options for each parameter are:</p>
+<ul>
+<li>
+<p><code>True</code>: metadata is requested, and passed to <code>fit</code> if provided. The request is ignored if metadata is not provided.</p>
+</li>
+<li>
+<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>fit</code>.</p>
+</li>
+<li>
+<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
+</li>
+<li>
+<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
+</li>
+</ul>
+<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
+existing request. This allows you to change the request for some
+parameters and not others.</p>
+<div class="admonition versionadded">
+<p class="admonition-title">Added in version:&ensp;1.3</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is only relevant if this estimator is used as a
+sub-estimator of a meta-estimator, e.g. used inside a
+:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>X_text</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
+default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
+<dd>Metadata routing for <code>X_text</code> parameter in <code>fit</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
+<dd>The updated object.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(**kw):
+    &#34;&#34;&#34;Updates the request for provided parameters
+
+    This docstring is overwritten below.
+    See REQUESTER_DOC for expected functionality
+    &#34;&#34;&#34;
+    if not _routing_enabled():
+        raise RuntimeError(
+            &#34;This method is only available when metadata routing is enabled.&#34;
+            &#34; You can enable it using&#34;
+            &#34; sklearn.set_config(enable_metadata_routing=True).&#34;
+        )
+
+    if self.validate_keys and (set(kw) - set(self.keys)):
+        raise TypeError(
+            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
+            f&#34; are: {set(self.keys)}&#34;
+        )
+
+    requests = instance._get_metadata_request()
+    method_metadata_request = getattr(requests, self.name)
+
+    for prop, alias in kw.items():
+        if alias is not UNCHANGED:
+            method_metadata_request.add_request(param=prop, alias=alias)
+    instance._metadata_request = requests
+
+    return instance</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.linear_finetune.LinearFinetune.set_predict_proba_request"><code class="name flex">
+<span>def <span class="ident">set_predict_proba_request</span></span>(<span>self: <a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a>, *, X_text: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Request metadata passed to the <code>predict_proba</code> method.</p>
+<p>Note that this method is only relevant if
+<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
+Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
+mechanism works.</p>
+<p>The options for each parameter are:</p>
+<ul>
+<li>
+<p><code>True</code>: metadata is requested, and passed to <code>predict_proba</code> if provided. The request is ignored if metadata is not provided.</p>
+</li>
+<li>
+<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>predict_proba</code>.</p>
+</li>
+<li>
+<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
+</li>
+<li>
+<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
+</li>
+</ul>
+<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
+existing request. This allows you to change the request for some
+parameters and not others.</p>
+<div class="admonition versionadded">
+<p class="admonition-title">Added in version:&ensp;1.3</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is only relevant if this estimator is used as a
+sub-estimator of a meta-estimator, e.g. used inside a
+:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>X_text</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
+default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
+<dd>Metadata routing for <code>X_text</code> parameter in <code>predict_proba</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
+<dd>The updated object.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(**kw):
+    &#34;&#34;&#34;Updates the request for provided parameters
+
+    This docstring is overwritten below.
+    See REQUESTER_DOC for expected functionality
+    &#34;&#34;&#34;
+    if not _routing_enabled():
+        raise RuntimeError(
+            &#34;This method is only available when metadata routing is enabled.&#34;
+            &#34; You can enable it using&#34;
+            &#34; sklearn.set_config(enable_metadata_routing=True).&#34;
+        )
+
+    if self.validate_keys and (set(kw) - set(self.keys)):
+        raise TypeError(
+            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
+            f&#34; are: {set(self.keys)}&#34;
+        )
+
+    requests = instance._get_metadata_request()
+    method_metadata_request = getattr(requests, self.name)
+
+    for prop, alias in kw.items():
+        if alias is not UNCHANGED:
+            method_metadata_request.add_request(param=prop, alias=alias)
+    instance._metadata_request = requests
+
+    return instance</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.linear_finetune.LinearFinetune.set_predict_request"><code class="name flex">
+<span>def <span class="ident">set_predict_request</span></span>(<span>self: <a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a>, *, X_text: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Request metadata passed to the <code>predict</code> method.</p>
+<p>Note that this method is only relevant if
+<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
+Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
+mechanism works.</p>
+<p>The options for each parameter are:</p>
+<ul>
+<li>
+<p><code>True</code>: metadata is requested, and passed to <code>predict</code> if provided. The request is ignored if metadata is not provided.</p>
+</li>
+<li>
+<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>predict</code>.</p>
+</li>
+<li>
+<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
+</li>
+<li>
+<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
+</li>
+</ul>
+<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
+existing request. This allows you to change the request for some
+parameters and not others.</p>
+<div class="admonition versionadded">
+<p class="admonition-title">Added in version:&ensp;1.3</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is only relevant if this estimator is used as a
+sub-estimator of a meta-estimator, e.g. used inside a
+:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>X_text</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
+default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
+<dd>Metadata routing for <code>X_text</code> parameter in <code>predict</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
+<dd>The updated object.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(**kw):
+    &#34;&#34;&#34;Updates the request for provided parameters
+
+    This docstring is overwritten below.
+    See REQUESTER_DOC for expected functionality
+    &#34;&#34;&#34;
+    if not _routing_enabled():
+        raise RuntimeError(
+            &#34;This method is only available when metadata routing is enabled.&#34;
+            &#34; You can enable it using&#34;
+            &#34; sklearn.set_config(enable_metadata_routing=True).&#34;
+        )
+
+    if self.validate_keys and (set(kw) - set(self.keys)):
+        raise TypeError(
+            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
+            f&#34; are: {set(self.keys)}&#34;
+        )
+
+    requests = instance._get_metadata_request()
+    method_metadata_request = getattr(requests, self.name)
+
+    for prop, alias in kw.items():
+        if alias is not UNCHANGED:
+            method_metadata_request.add_request(param=prop, alias=alias)
+    instance._metadata_request = requests
+
+    return instance</code></pre>
+</details>
+</dd>
 </dl>
 </dd>
 <dt id="imodelsx.linear_finetune.LinearFinetuneClassifier"><code class="flex name class">
 <span>class <span class="ident">LinearFinetuneClassifier</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False, cache_embs_dir: str = None, verbose: int = 0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -582,6 +832,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>random seed for fitting</dd>
 <dt><strong><code>normalize_embs</code></strong></dt>
 <dd>whether to normalize embeddings before fitting linear model</dd>
+<dt><strong><code>cache_embs_dir</code></strong>, <strong><code>optional</code></strong></dt>
+<dd>if not None, directory to save embeddings into</dd>
 </dl>
 <h2 id="example">Example</h2>
 <pre><code>from imodelsx import LinearFinetuneClassifier
@@ -615,21 +867,109 @@ print('validation acc', acc)
 <ul class="hlist">
 <li><a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></li>
 <li>sklearn.base.BaseEstimator</li>
+<li>sklearn.utils._metadata_requests._MetadataRequester</li>
 <li>sklearn.base.ClassifierMixin</li>
 </ul>
+<h3>Methods</h3>
+<dl>
+<dt id="imodelsx.linear_finetune.LinearFinetuneClassifier.set_score_request"><code class="name flex">
+<span>def <span class="ident">set_score_request</span></span>(<span>self: <a title="imodelsx.linear_finetune.LinearFinetuneClassifier" href="#imodelsx.linear_finetune.LinearFinetuneClassifier">LinearFinetuneClassifier</a>, *, sample_weight: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.linear_finetune.LinearFinetuneClassifier" href="#imodelsx.linear_finetune.LinearFinetuneClassifier">LinearFinetuneClassifier</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Request metadata passed to the <code>score</code> method.</p>
+<p>Note that this method is only relevant if
+<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
+Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
+mechanism works.</p>
+<p>The options for each parameter are:</p>
+<ul>
+<li>
+<p><code>True</code>: metadata is requested, and passed to <code>score</code> if provided. The request is ignored if metadata is not provided.</p>
+</li>
+<li>
+<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>score</code>.</p>
+</li>
+<li>
+<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
+</li>
+<li>
+<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
+</li>
+</ul>
+<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
+existing request. This allows you to change the request for some
+parameters and not others.</p>
+<div class="admonition versionadded">
+<p class="admonition-title">Added in version:&ensp;1.3</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is only relevant if this estimator is used as a
+sub-estimator of a meta-estimator, e.g. used inside a
+:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>sample_weight</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
+default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
+<dd>Metadata routing for <code>sample_weight</code> parameter in <code>score</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
+<dd>The updated object.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(**kw):
+    &#34;&#34;&#34;Updates the request for provided parameters
+
+    This docstring is overwritten below.
+    See REQUESTER_DOC for expected functionality
+    &#34;&#34;&#34;
+    if not _routing_enabled():
+        raise RuntimeError(
+            &#34;This method is only available when metadata routing is enabled.&#34;
+            &#34; You can enable it using&#34;
+            &#34; sklearn.set_config(enable_metadata_routing=True).&#34;
+        )
+
+    if self.validate_keys and (set(kw) - set(self.keys)):
+        raise TypeError(
+            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
+            f&#34; are: {set(self.keys)}&#34;
+        )
+
+    requests = instance._get_metadata_request()
+    method_metadata_request = getattr(requests, self.name)
+
+    for prop, alias in kw.items():
+        if alias is not UNCHANGED:
+            method_metadata_request.add_request(param=prop, alias=alias)
+    instance._metadata_request = requests
+
+    return instance</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></b></code>:
 <ul class="hlist">
 <li><code><a title="imodelsx.linear_finetune.LinearFinetune.fit" href="#imodelsx.linear_finetune.LinearFinetune.fit">fit</a></code></li>
 <li><code><a title="imodelsx.linear_finetune.LinearFinetune.predict" href="#imodelsx.linear_finetune.LinearFinetune.predict">predict</a></code></li>
+<li><code><a title="imodelsx.linear_finetune.LinearFinetune.set_fit_request" href="#imodelsx.linear_finetune.LinearFinetune.set_fit_request">set_fit_request</a></code></li>
+<li><code><a title="imodelsx.linear_finetune.LinearFinetune.set_predict_proba_request" href="#imodelsx.linear_finetune.LinearFinetune.set_predict_proba_request">set_predict_proba_request</a></code></li>
+<li><code><a title="imodelsx.linear_finetune.LinearFinetune.set_predict_request" href="#imodelsx.linear_finetune.LinearFinetune.set_predict_request">set_predict_request</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
 <dt id="imodelsx.linear_finetune.LinearFinetuneRegressor"><code class="flex name class">
 <span>class <span class="ident">LinearFinetuneRegressor</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False, cache_embs_dir: str = None, verbose: int = 0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -648,6 +988,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
 <dd>random seed for fitting</dd>
 <dt><strong><code>normalize_embs</code></strong></dt>
 <dd>whether to normalize embeddings before fitting linear model</dd>
+<dt><strong><code>cache_embs_dir</code></strong>, <strong><code>optional</code></strong></dt>
+<dd>if not None, directory to save embeddings into</dd>
 </dl>
 <h2 id="example">Example</h2>
 <pre><code>from imodelsx import LinearFinetuneClassifier
@@ -681,14 +1023,102 @@ print('validation acc', acc)
 <ul class="hlist">
 <li><a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></li>
 <li>sklearn.base.BaseEstimator</li>
+<li>sklearn.utils._metadata_requests._MetadataRequester</li>
 <li>sklearn.base.RegressorMixin</li>
 </ul>
+<h3>Methods</h3>
+<dl>
+<dt id="imodelsx.linear_finetune.LinearFinetuneRegressor.set_score_request"><code class="name flex">
+<span>def <span class="ident">set_score_request</span></span>(<span>self: <a title="imodelsx.linear_finetune.LinearFinetuneRegressor" href="#imodelsx.linear_finetune.LinearFinetuneRegressor">LinearFinetuneRegressor</a>, *, sample_weight: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.linear_finetune.LinearFinetuneRegressor" href="#imodelsx.linear_finetune.LinearFinetuneRegressor">LinearFinetuneRegressor</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Request metadata passed to the <code>score</code> method.</p>
+<p>Note that this method is only relevant if
+<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
+Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
+mechanism works.</p>
+<p>The options for each parameter are:</p>
+<ul>
+<li>
+<p><code>True</code>: metadata is requested, and passed to <code>score</code> if provided. The request is ignored if metadata is not provided.</p>
+</li>
+<li>
+<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>score</code>.</p>
+</li>
+<li>
+<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
+</li>
+<li>
+<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
+</li>
+</ul>
+<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
+existing request. This allows you to change the request for some
+parameters and not others.</p>
+<div class="admonition versionadded">
+<p class="admonition-title">Added in version:&ensp;1.3</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is only relevant if this estimator is used as a
+sub-estimator of a meta-estimator, e.g. used inside a
+:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>sample_weight</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
+default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
+<dd>Metadata routing for <code>sample_weight</code> parameter in <code>score</code>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
+<dd>The updated object.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def func(**kw):
+    &#34;&#34;&#34;Updates the request for provided parameters
+
+    This docstring is overwritten below.
+    See REQUESTER_DOC for expected functionality
+    &#34;&#34;&#34;
+    if not _routing_enabled():
+        raise RuntimeError(
+            &#34;This method is only available when metadata routing is enabled.&#34;
+            &#34; You can enable it using&#34;
+            &#34; sklearn.set_config(enable_metadata_routing=True).&#34;
+        )
+
+    if self.validate_keys and (set(kw) - set(self.keys)):
+        raise TypeError(
+            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
+            f&#34; are: {set(self.keys)}&#34;
+        )
+
+    requests = instance._get_metadata_request()
+    method_metadata_request = getattr(requests, self.name)
+
+    for prop, alias in kw.items():
+        if alias is not UNCHANGED:
+            method_metadata_request.add_request(param=prop, alias=alias)
+    instance._metadata_request = requests
+
+    return instance</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></b></code>:
 <ul class="hlist">
 <li><code><a title="imodelsx.linear_finetune.LinearFinetune.fit" href="#imodelsx.linear_finetune.LinearFinetune.fit">fit</a></code></li>
 <li><code><a title="imodelsx.linear_finetune.LinearFinetune.predict" href="#imodelsx.linear_finetune.LinearFinetune.predict">predict</a></code></li>
+<li><code><a title="imodelsx.linear_finetune.LinearFinetune.set_fit_request" href="#imodelsx.linear_finetune.LinearFinetune.set_fit_request">set_fit_request</a></code></li>
+<li><code><a title="imodelsx.linear_finetune.LinearFinetune.set_predict_proba_request" href="#imodelsx.linear_finetune.LinearFinetune.set_predict_proba_request">set_predict_proba_request</a></code></li>
+<li><code><a title="imodelsx.linear_finetune.LinearFinetune.set_predict_request" href="#imodelsx.linear_finetune.LinearFinetune.set_predict_request">set_predict_request</a></code></li>
 </ul>
 </li>
 </ul>
@@ -715,13 +1145,22 @@ print('validation acc', acc)
 <li><code><a title="imodelsx.linear_finetune.LinearFinetune.fit" href="#imodelsx.linear_finetune.LinearFinetune.fit">fit</a></code></li>
 <li><code><a title="imodelsx.linear_finetune.LinearFinetune.predict" href="#imodelsx.linear_finetune.LinearFinetune.predict">predict</a></code></li>
 <li><code><a title="imodelsx.linear_finetune.LinearFinetune.predict_proba" href="#imodelsx.linear_finetune.LinearFinetune.predict_proba">predict_proba</a></code></li>
+<li><code><a title="imodelsx.linear_finetune.LinearFinetune.set_fit_request" href="#imodelsx.linear_finetune.LinearFinetune.set_fit_request">set_fit_request</a></code></li>
+<li><code><a title="imodelsx.linear_finetune.LinearFinetune.set_predict_proba_request" href="#imodelsx.linear_finetune.LinearFinetune.set_predict_proba_request">set_predict_proba_request</a></code></li>
+<li><code><a title="imodelsx.linear_finetune.LinearFinetune.set_predict_request" href="#imodelsx.linear_finetune.LinearFinetune.set_predict_request">set_predict_request</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="imodelsx.linear_finetune.LinearFinetuneClassifier" href="#imodelsx.linear_finetune.LinearFinetuneClassifier">LinearFinetuneClassifier</a></code></h4>
+<ul class="">
+<li><code><a title="imodelsx.linear_finetune.LinearFinetuneClassifier.set_score_request" href="#imodelsx.linear_finetune.LinearFinetuneClassifier.set_score_request">set_score_request</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="imodelsx.linear_finetune.LinearFinetuneRegressor" href="#imodelsx.linear_finetune.LinearFinetuneRegressor">LinearFinetuneRegressor</a></code></h4>
+<ul class="">
+<li><code><a title="imodelsx.linear_finetune.LinearFinetuneRegressor.set_score_request" href="#imodelsx.linear_finetune.LinearFinetuneRegressor.set_score_request">set_score_request</a></code></li>
+</ul>
 </li>
 </ul>
 </li>

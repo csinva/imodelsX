@@ -13,6 +13,7 @@ import numpy as np
 import sklearn.tree
 from sklearn.metrics import accuracy_score
 from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.preprocessing import OneHotEncoder
 
 import imodelsx.treeprompt.stump
 
@@ -165,9 +166,11 @@ if __name__ == "__main__":
     # load data
     rng = np.random.default_rng(42)
     dset_train = datasets.load_dataset("rotten_tomatoes")["train"]
-    dset_train = dset_train.select(rng.choice(len(dset_train), size=100, replace=False))
+    dset_train = dset_train.select(rng.choice(
+        len(dset_train), size=100, replace=False))
     dset_val = datasets.load_dataset("rotten_tomatoes")["validation"]
-    dset_val = dset_val.select(rng.choice(len(dset_val), size=100, replace=False))
+    dset_val = dset_val.select(rng.choice(
+        len(dset_val), size=100, replace=False))
 
     # example fit
     prompts = [
@@ -182,7 +185,7 @@ if __name__ == "__main__":
         checkpoint="gpt2",
         prompts=prompts,
         verbalizer=verbalizer,
-        cache_prompt_features_dir=None,  #'cache_prompt_features_dir/gp2',
+        cache_prompt_features_dir=None,  # 'cache_prompt_features_dir/gp2',
     )
     m.fit(dset_train["text"], dset_train["label"])
 

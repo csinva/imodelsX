@@ -27,7 +27,7 @@
 <p align="center">
 <img src="https://microsoft.github.io/aug-models/embgam_gif.gif" width="18%">
 <img align="center" width=40% src="https://csinva.io/imodelsX/imodelsx_logo.svg?sanitize=True&kill_cache=1"> </img> <img src="https://microsoft.github.io/aug-models/embgam_gif.gif" width="18%"></p>
-<p align="center">Scikit-learn friendly library to interpret, predict, and prompt-engineer text datasets. Also a bunch of utilities for getting started with text data.
+<p align="center">Scikit-learn friendly library to explain, predict, and steer text models/data.<br/>Also a bunch of utilities for getting started with text data.
 </p>
 <p align="center">
 <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖 demo notebooks</a>
@@ -37,36 +37,7 @@
 <img src="https://img.shields.io/badge/python-3.9+-blue">
 <img src="https://img.shields.io/pypi/v/imodelsx?color=green">
 </p>
-<p><strong>General utilities</strong></p>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Model</th>
-<th>Reference</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><a href="https://csinva.io/imodelsX/llm.html">🗂️</a>
-LLM wrapper</td>
-<td>Learn a linear model of ngrams</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="https://csinva.io/imodelsX/data.html">🗂️</a>
-Dataset wrapper</td>
-<td>Download minimially processed huggingface datasets</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="https://csinva.io/imodelsX/linear_ngram.html">🗂️</a> Bag of Ngrams</td>
-<td>Learn a linear model of ngrams</td>
-</tr>
-<tr>
-<td style="text-align: left;"><a href="https://csinva.io/imodelsX/linear_finetune.html">🗂️</a> Linear Finetune</td>
-<td>Finetune a single linear layer on top of LLM embeddings</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Explanation and interpretation</strong></p>
+<p><strong>Explainable modeling/steering</strong></p>
 <table>
 <thead>
 <tr>
@@ -78,9 +49,15 @@ Dataset wrapper</td>
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;">Tree-Prompt</td>
+<td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/tree_prompt.ipynb">📖</a>, <a href="http://csinva.io/imodelsX/treeprompt/treeprompt.html">🗂️</a>, <a href="https://github.com/csinva/tree-prompt/tree/main">🔗</a>, <a href="">📄</a></td>
+<td>Explanation<br/>+ Steering</td>
+<td>Generates a tree of prompts to<br/>steer an LLM (<em>Official</em>)</td>
+</tr>
+<tr>
 <td style="text-align: left;">iPrompt</td>
 <td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/iprompt.ipynb">📖</a>, <a href="http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt">🗂️</a>, <a href="https://github.com/csinva/interpretable-autoprompting">🔗</a>, <a href="https://arxiv.org/abs/2210.01848">📄</a></td>
-<td>Explanation</td>
+<td>Explanation<br/>+ Steering</td>
 <td>Generates a prompt that<br/>explains patterns in data (<em>Official</em>)</td>
 </tr>
 <tr>
@@ -88,6 +65,12 @@ Dataset wrapper</td>
 <td><a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/d3.ipynb">📖</a>, <a href="http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_dataset_d3">🗂️</a>, <a href="https://github.com/ruiqi-zhong/DescribeDistributionalDifferences">🔗</a>, <a href="https://arxiv.org/abs/2201.12323">📄</a></td>
 <td>Explanation</td>
 <td>Explain the difference between two distributions</td>
+</tr>
+<tr>
+<td style="text-align: left;">SASC</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ㅤㅤ<a href="https://csinva.io/imodelsX/sasc/api.html">🗂️</a>, <a href="https://github.com/microsoft/automated-explanations">🔗</a>, <a href="https://arxiv.org/abs/2305.09863">📄</a></td>
+<td>Explanation</td>
+<td>Explain a black-box text module<br/>using an LLM (<em>Official</em>)</td>
 </tr>
 <tr>
 <td style="text-align: left;">AutoPrompt</td>
@@ -108,12 +91,6 @@ Dataset wrapper</td>
 <td>Decision tree</td>
 <td>Fit better decision tree using an LLM<br/>to expand features (<em>Official</em>)</td>
 </tr>
-<tr>
-<td style="text-align: left;">SASC</td>
-<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ㅤㅤ<a href="https://csinva.io/imodelsX/sasc/api.html">🗂️</a>, <a href="https://github.com/microsoft/automated-explanations">🔗</a>, <a href="https://arxiv.org/abs/2305.09863">📄</a></td>
-<td>Explanation</td>
-<td>Explain a black-box text module<br/>using an LLM (<em>Official</em>)</td>
-</tr>
 </tbody>
 </table>
 <p align="center">
@@ -121,73 +98,39 @@ Dataset wrapper</td>
 </br>
 ⌛ We plan to support other interpretable algorithms like <a href="https://arxiv.org/abs/2205.12548">RLPrompt</a>, <a href="https://arxiv.org/abs/2007.04612">CBMs</a>, and <a href="https://arxiv.org/abs/2004.00221">NBDT</a>. If you want to contribute an algorithm, feel free to open a PR 😄
 </p>
+<p><strong>General utilities</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Model</th>
+<th>Reference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="https://csinva.io/imodelsX/llm.html">🗂️</a>
+LLM wrapper</td>
+<td>Easily call different LLMs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="https://csinva.io/imodelsX/data.html">🗂️</a>
+Dataset wrapper</td>
+<td>Download minimially processed huggingface datasets</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="https://csinva.io/imodelsX/linear_ngram.html">🗂️</a> Bag of Ngrams</td>
+<td>Learn a linear model of ngrams</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="https://csinva.io/imodelsX/linear_finetune.html">🗂️</a> Linear Finetune</td>
+<td>Finetune a single linear layer on top of LLM embeddings</td>
+</tr>
+</tbody>
+</table>
 <h1 id="quickstart">Quickstart</h1>
 <p><strong>Installation</strong>: <code>pip install <a title="imodelsx" href="#imodelsx">imodelsx</a></code> (or, for more control, clone and install from source)</p>
 <p><strong>Demos</strong>: see the <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">demo notebooks</a></p>
-<h1 id="general-utilities">General utilities</h1>
-<h3 id="easy-baselines">Easy baselines</h3>
-<p>Easy-to-fit baselines that follows the sklearn API.</p>
-<pre><code class="language-python">from imodelsx import LinearFinetuneClassifier, LinearNgramClassifier
-# fit a simple one-layer finetune on top of LLM embeddings
-m = LinearFinetuneClassifier(
-    checkpoint='distilbert-base-uncased',
-)
-m.fit(dset['text'], dset['label'])
-preds = m.predict(dset_val['text'])
-acc = (preds == dset_val['label']).mean()
-print('validation acc', acc)
-</code></pre>
-<h3 id="llm-wrapper">LLM wrapper</h3>
-<p>Easy API for calling different language models with caching (much more lightweight than <a href="https://github.com/langchain-ai/langchain">langchain</a>).</p>
-<pre><code class="language-python">import imodelsx.llm
-# supports any huggingface checkpoint or openai checkpoint (including chat models)
-llm = imodelsx.llm.get_llm(
-    checkpoint=&quot;gpt2-xl&quot;,  # text-davinci-003, gpt-3.5-turbo, ...
-    CACHE_DIR=&quot;.cache&quot;,
-)
-out = llm(&quot;May the Force be&quot;)
-llm(&quot;May the Force be&quot;) # when computing the same string again, uses the cache
-</code></pre>
-<h3 id="data-wrapper">Data wrapper</h3>
-<p>API for loading huggingface datasets with basic preprocessing.</p>
-<pre><code class="language-python">import imodelsx.data
-dset, dataset_key_text = imodelsx.data.load_huggingface_dataset('ag_news')
-# Ensures that dset has a split named 'train' and 'validation',
-# and that the input data is contained for each split in a column given by {dataset_key_text}
-</code></pre>
 <h1 id="explainable-models">Explainable models</h1>
-<h3 id="aug-imodels">Aug-imodels</h3>
-<p>Use these just a like a scikit-learn model. During training, they fit better features via LLMs, but at test-time they are extremely fast and completely transparent.</p>
-<pre><code class="language-python">from imodelsx import AugGAMClassifier, AugTreeClassifier, AugGAMRegressor, AugTreeRegressor
-import datasets
-import numpy as np
-
-# set up data
-dset = datasets.load_dataset('rotten_tomatoes')['train']
-dset = dset.select(np.random.choice(len(dset), size=300, replace=False))
-dset_val = datasets.load_dataset('rotten_tomatoes')['validation']
-dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
-
-# fit model
-m = AugGAMClassifier(
-    checkpoint='textattack/distilbert-base-uncased-rotten-tomatoes',
-    ngrams=2, # use bigrams
-)
-m.fit(dset['text'], dset['label'])
-
-# predict
-preds = m.predict(dset_val['text'])
-print('acc_val', np.mean(preds == dset_val['label']))
-
-# interpret
-print('Total ngram coefficients: ', len(m.coefs_dict_))
-print('Most positive ngrams')
-for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1], reverse=True)[:8]:
-    print('\t', k, round(v, 2))
-print('Most negative ngrams')
-for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
-    print('\t', k, round(v, 2))
-</code></pre>
 <h1 id="natural-language-explanations">Natural-language explanations</h1>
 <h3 id="iprompt">iPrompt</h3>
 <pre><code class="language-python">from imodelsx import explain_dataset_iprompt, get_add_two_numbers_dataset
@@ -236,6 +179,69 @@ explanation_dict = explain_module_sasc(
     ngrams=1,
 )
 </code></pre>
+<h3 id="aug-imodels">Aug-imodels</h3>
+<p>Use these just a like a scikit-learn model. During training, they fit better features via LLMs, but at test-time they are extremely fast and completely transparent.</p>
+<pre><code class="language-python">from imodelsx import AugGAMClassifier, AugTreeClassifier, AugGAMRegressor, AugTreeRegressor
+import datasets
+import numpy as np
+
+# set up data
+dset = datasets.load_dataset('rotten_tomatoes')['train']
+dset = dset.select(np.random.choice(len(dset), size=300, replace=False))
+dset_val = datasets.load_dataset('rotten_tomatoes')['validation']
+dset_val = dset_val.select(np.random.choice(len(dset_val), size=300, replace=False))
+
+# fit model
+m = AugGAMClassifier(
+    checkpoint='textattack/distilbert-base-uncased-rotten-tomatoes',
+    ngrams=2, # use bigrams
+)
+m.fit(dset['text'], dset['label'])
+
+# predict
+preds = m.predict(dset_val['text'])
+print('acc_val', np.mean(preds == dset_val['label']))
+
+# interpret
+print('Total ngram coefficients: ', len(m.coefs_dict_))
+print('Most positive ngrams')
+for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1], reverse=True)[:8]:
+    print('\t', k, round(v, 2))
+print('Most negative ngrams')
+for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
+    print('\t', k, round(v, 2))
+</code></pre>
+<h1 id="general-utilities">General utilities</h1>
+<h3 id="easy-baselines">Easy baselines</h3>
+<p>Easy-to-fit baselines that follow the sklearn API.</p>
+<pre><code class="language-python">from imodelsx import LinearFinetuneClassifier, LinearNgramClassifier
+# fit a simple one-layer finetune on top of LLM embeddings
+m = LinearFinetuneClassifier(
+    checkpoint='distilbert-base-uncased',
+)
+m.fit(dset['text'], dset['label'])
+preds = m.predict(dset_val['text'])
+acc = (preds == dset_val['label']).mean()
+print('validation acc', acc)
+</code></pre>
+<h3 id="llm-wrapper">LLM wrapper</h3>
+<p>Easy API for calling different language models with caching (much more lightweight than <a href="https://github.com/langchain-ai/langchain">langchain</a>).</p>
+<pre><code class="language-python">import imodelsx.llm
+# supports any huggingface checkpoint or openai checkpoint (including chat models)
+llm = imodelsx.llm.get_llm(
+    checkpoint=&quot;gpt2-xl&quot;,  # text-davinci-003, gpt-3.5-turbo, ...
+    CACHE_DIR=&quot;.cache&quot;,
+)
+out = llm(&quot;May the Force be&quot;)
+llm(&quot;May the Force be&quot;) # when computing the same string again, uses the cache
+</code></pre>
+<h3 id="data-wrapper">Data wrapper</h3>
+<p>API for loading huggingface datasets with basic preprocessing.</p>
+<pre><code class="language-python">import imodelsx.data
+dset, dataset_key_text = imodelsx.data.load_huggingface_dataset('ag_news')
+# Ensures that dset has a split named 'train' and 'validation',
+# and that the input data is contained for each split in a column given by {dataset_key_text}
+</code></pre>
 <h1 id="related-work">Related work</h1>
 <ul>
 <li>imodels package (JOSS 2021 <a href="https://github.com/csinva/imodels">github</a>) - interpretable ML package for concise, transparent, and accurate predictive modeling (sklearn-compatible).</li>
@@ -260,7 +266,8 @@ from .linear_ngram import LinearNgramClassifier, LinearNgramRegressor
 from .d3.d3 import explain_dataset_d3
 from .iprompt.api import explain_dataset_iprompt
 from .iprompt.data import get_add_two_numbers_dataset
-from .sasc.api import explain_module_sasc</code></pre>
+from .sasc.api import explain_module_sasc
+from .treeprompt.treeprompt import TreePromptClassifier</code></pre>
 </details>
 </section>
 <section>
@@ -287,6 +294,10 @@ from .sasc.api import explain_module_sasc</code></pre>
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="imodelsx.dummy_script" href="dummy_script.html">imodelsx.dummy_script</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="imodelsx.embeddings" href="embeddings.html">imodelsx.embeddings</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -322,6 +333,10 @@ from .sasc.api import explain_module_sasc</code></pre>
 <dd>
 <div class="desc"></div>
 </dd>
+<dt><code class="name"><a title="imodelsx.treeprompt" href="treeprompt/index.html">imodelsx.treeprompt</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt><code class="name"><a title="imodelsx.util" href="util.html">imodelsx.util</a></code></dt>
 <dd>
 <div class="desc"></div>
@@ -344,20 +359,18 @@ from .sasc.api import explain_module_sasc</code></pre>
 <div class="toc">
 <ul>
 <li><a href="#quickstart">Quickstart</a></li>
-<li><a href="#general-utilities">General utilities</a><ul>
-<li><a href="#easy-baselines">Easy baselines</a></li>
-<li><a href="#llm-wrapper">LLM wrapper</a></li>
-<li><a href="#data-wrapper">Data wrapper</a></li>
-</ul>
-</li>
-<li><a href="#explainable-models">Explainable models</a><ul>
-<li><a href="#aug-imodels">Aug-imodels</a></li>
-</ul>
-</li>
+<li><a href="#explainable-models">Explainable models</a></li>
 <li><a href="#natural-language-explanations">Natural-language explanations</a><ul>
 <li><a href="#iprompt">iPrompt</a></li>
 <li><a href="#d3-describedistributionaldifferences">D3 (DescribeDistributionalDifferences)</a></li>
 <li><a href="#sasc">SASC</a></li>
+<li><a href="#aug-imodels">Aug-imodels</a></li>
+</ul>
+</li>
+<li><a href="#general-utilities">General utilities</a><ul>
+<li><a href="#easy-baselines">Easy baselines</a></li>
+<li><a href="#llm-wrapper">LLM wrapper</a></li>
+<li><a href="#data-wrapper">Data wrapper</a></li>
 </ul>
 </li>
 <li><a href="#related-work">Related work</a></li>
@@ -372,6 +385,7 @@ from .sasc.api import explain_module_sasc</code></pre>
 <li><code><a title="imodelsx.d3" href="d3/index.html">imodelsx.d3</a></code></li>
 <li><code><a title="imodelsx.data" href="data.html">imodelsx.data</a></code></li>
 <li><code><a title="imodelsx.dummy_script" href="dummy_script.html">imodelsx.dummy_script</a></code></li>
+<li><code><a title="imodelsx.embeddings" href="embeddings.html">imodelsx.embeddings</a></code></li>
 <li><code><a title="imodelsx.iprompt" href="iprompt/index.html">imodelsx.iprompt</a></code></li>
 <li><code><a title="imodelsx.linear_finetune" href="linear_finetune.html">imodelsx.linear_finetune</a></code></li>
 <li><code><a title="imodelsx.linear_ngram" href="linear_ngram.html">imodelsx.linear_ngram</a></code></li>
@@ -380,6 +394,7 @@ from .sasc.api import explain_module_sasc</code></pre>
 <li><code><a title="imodelsx.process_results" href="process_results.html">imodelsx.process_results</a></code></li>
 <li><code><a title="imodelsx.sasc" href="sasc/index.html">imodelsx.sasc</a></code></li>
 <li><code><a title="imodelsx.submit_utils" href="submit_utils.html">imodelsx.submit_utils</a></code></li>
+<li><code><a title="imodelsx.treeprompt" href="treeprompt/index.html">imodelsx.treeprompt</a></code></li>
 <li><code><a title="imodelsx.util" href="util.html">imodelsx.util</a></code></li>
 <li><code><a title="imodelsx.viz" href="viz.html">imodelsx.viz</a></code></li>
 </ul>
