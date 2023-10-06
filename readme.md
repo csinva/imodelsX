@@ -19,9 +19,9 @@
 | :-------------------------- | ------------------------------------------------------------ | ------- | ------------------------------------------------------------ |
 | Tree-Prompt            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/tree_prompt.ipynb), [🗂️](http://csinva.io/imodelsX/treeprompt/treeprompt.html), [🔗](https://github.com/csinva/tree-prompt/tree/main), [📄]() | Explanation<br/>+ Steering | Generates a tree of prompts to<br/>steer an LLM (*Official*) |
 | iPrompt            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/iprompt.ipynb), [🗂️](http://csinva.io/imodelsX/iprompt/api.html#imodelsx.iprompt.api.explain_dataset_iprompt), [🔗](https://github.com/csinva/interpretable-autoprompting), [📄](https://arxiv.org/abs/2210.01848) | Explanation<br/>+ Steering | Generates a prompt that<br/>explains patterns in data (*Official*) |
+| AutoPrompt            | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  ㅤㅤ[🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) | Explanation<br/>+ Steering | Find a natural-language prompt<br/>using input-gradients (⌛ In progress)|
 | D3            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/d3.ipynb), [🗂️](http://csinva.io/imodelsX/d3/d3.html#imodelsx.d3.d3.explain_dataset_d3), [🔗](https://github.com/ruiqi-zhong/DescribeDistributionalDifferences), [📄](https://arxiv.org/abs/2201.12323) | Explanation | Explain the difference between two distributions |
 | SASC            |  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ㅤㅤ[🗂️](https://csinva.io/imodelsX/sasc/api.html), [🔗](https://github.com/microsoft/automated-explanations), [📄](https://arxiv.org/abs/2305.09863) | Explanation | Explain a black-box text module<br/>using an LLM (*Official*) |
-| AutoPrompt            | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  ㅤㅤ[🗂️](), [🔗](https://github.com/ucinlp/autoprompt), [📄](https://arxiv.org/abs/2010.15980) | Explanation | Find a natural-language prompt<br/>using input-gradients (⌛ In progress)|
 | Aug-GAM            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/aug_imodels.ipynb), [🗂️](https://csinva.io/imodelsX/auggam/auggam.html), [🔗](https://github.com/microsoft/aug-models), [📄](https://arxiv.org/abs/2209.11799) | Linear model | Fit better linear model using an LLM<br/>to extract embeddings (*Official*) |
 | Aug-Tree            | [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/aug_imodels.ipynb), [🗂️](https://csinva.io/imodelsX/augtree/augtree.html), [🔗](https://github.com/microsoft/aug-models), [📄](https://arxiv.org/abs/2209.11799) | Decision tree | Fit better decision tree using an LLM<br/>to expand features (*Official*) |
 
@@ -47,10 +47,65 @@
 **Demos**: see the [demo notebooks](https://github.com/csinva/imodelsX/tree/master/demo_notebooks)
 
 
-
-# Explainable models
-
 # Natural-language explanations
+
+### Tree-prompt
+```python
+from imodelsx import TreePromptClassifier
+import datasets
+import numpy as np
+from sklearn.tree import plot_tree
+import matplotlib.pyplot as plt
+
+# set up data
+rng = np.random.default_rng(seed=42)
+dset_train = datasets.load_dataset('rotten_tomatoes')['train']
+dset_train = dset_train.select(rng.choice(
+    len(dset_train), size=100, replace=False))
+dset_val = datasets.load_dataset('rotten_tomatoes')['validation']
+dset_val = dset_val.select(rng.choice(
+    len(dset_val), size=100, replace=False))
+
+# set up arguments
+prompts = [
+    "This movie is",
+    " Positive or Negative? The movie was",
+    " The sentiment of the movie was",
+    " The plot of the movie was really",
+    " The acting in the movie was",
+]
+verbalizer = {0: " Negative.", 1: " Positive."}
+checkpoint = "gpt2"
+
+# fit model
+m = TreePromptClassifier(
+    checkpoint=checkpoint,
+    prompts=prompts,
+    verbalizer=verbalizer,
+    cache_prompt_features_dir=None,  # 'cache_prompt_features_dir/gp2',
+)
+m.fit(dset_train["text"], dset_train["label"])
+
+
+# compute accuracy
+preds = m.predict(dset_val['text'])
+print('\nTree-Prompt acc (val) ->',
+      np.mean(preds == dset_val['label']))  # -> 0.7
+
+# compare to accuracy for individual prompts
+for i, prompt in enumerate(prompts):
+    print(i, prompt, '->', m.prompt_accs_[i])  # -> 0.65, 0.5, 0.5, 0.56, 0.51
+
+# visualize decision tree
+plot_tree(
+    m.clf_,
+    fontsize=10,
+    feature_names=m.feature_names_,
+    class_names=list(verbalizer.values()),
+    filled=True,
+)
+plt.show()
+```
 
 ### iPrompt
 
@@ -108,7 +163,7 @@ explanation_dict = explain_module_sasc(
 )
 ```
 
-### Aug-imodels
+# Aug-imodels
 Use these just a like a scikit-learn model. During training, they fit better features via LLMs, but at test-time they are extremely fast and completely transparent.
 
 ```python
