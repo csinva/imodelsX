@@ -8,6 +8,7 @@ with open(path.join(path_to_repo, 'readme.md'), encoding='utf-8') as f:
 
 required_pypi = [
     'datasets',
+    'dict_hash',
     'imodels',
     'langchain',
     'numpy',
@@ -19,8 +20,10 @@ required_pypi = [
     'tqdm',
     'transformers[torch] >= 4.23.1',
 
+
     # 'InstructorEmbedding', # embeddings for emb_diff_module
     # 'sentence-transformers', # embeddings for emb_diff_module
+    # pdoc3 # for generating docs
 ]
 
 setuptools.setup(
