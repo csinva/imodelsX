@@ -22,24 +22,26 @@ class PromptStump:
         args=None,
         prompt: str = None,
         tokenizer=None,
-        max_features=10,
-        assert_checks: bool = False,
+        prompt_template: str = "{example}{prompt}",
+        cache_key_values: bool = False,
         verbose: bool = True,
         model: AutoModelForCausalLM = None,
         checkpoint: str = "EleutherAI/gpt-j-6B",
         verbalizer: Dict[int, str] = {0: " Negative.", 1: " Positive."},
         batch_size: int = 1,
     ):
-        """Fit a single stump.
-        Can use tabular features...
-            Currently only supports binary classification with binary features.
+        """Given a prompt, extract its outputs
+
         Params
         ------
-        args: contains some parameters passed through namespace
+        args: contains some parameters passed through namespace (can ignore these)
         prompt: str
             the prompt to use (optional)
-        max_features: int
-            used by StumpTabular to decide how many features to save
+        prompt_template: str
+            template for the prompt, for different prompt styles (e.g. few-shot), may want to place {prompt} before {example}
+            or you may want to add some text before the verbalizer, e.g. {example}{prompt} Output:
+        cache_key_values: bool
+            Whether to cache key values (only possible when prompt does not start with {example})
         checkpoint: str
             the underlying model used for prediction
         model: AutoModelForCausalLM
@@ -56,9 +58,9 @@ class PromptStump:
         else:
             self.args = args
         self.prompt = prompt
-        self.assert_checks = assert_checks
+        self.prompt_template = prompt_template
+        self.cache_key_values = cache_key_values
         self.verbose = verbose
-        self.max_features = max_features
         self.checkpoint = checkpoint
         self.model = model
         if tokenizer is None:
@@ -66,45 +68,10 @@ class PromptStump:
         else:
             self.tokenizer = tokenizer
         self.batch_size = batch_size
-
-        # tree stuff
-        self.child_left = None
-        self.child_right = None
         self.verbalizer = verbalizer
 
         if self.verbose:
             logging.info(f"Loading model {self.checkpoint}")
-
-    def fit(self, X_text: List[str], y, feature_names=None):
-        # check input and set some attributes
-        assert len(np.unique(y)) > 1, "y should have more than 1 unique value"
-        self.feature_names = feature_names
-        if isinstance(self.feature_names, list):
-            self.feature_names = np.array(self.feature_names).flatten()
-
-        # actually run fitting
-        input_strings = X_text
-        output_strings = [self.verbalizer[int(yi)] for yi in y]
-
-        # set value (calls self.predict, which uses self.prompt)
-        self._set_value_acc_samples(X_text, y)
-
-        return self
-
-    def __getstate__(self):
-        """Get the stump but prevent certain attributes from being pickled.
-
-        See also https://stackoverflow.com/a/54139237/2287177
-        """
-        state = self.__dict__.copy()
-        # Don't pickle big things
-        if "model" in state:
-            del state["model"]
-        if "tokenizer" in state:
-            del state["tokenizer"]
-        if "feature_names" in state:
-            del state["feature_names"]
-        return state
 
     def predict(self, X_text: List[str]) -> np.ndarray[int]:
         preds_proba = self.predict_proba(X_text)
@@ -122,20 +89,14 @@ class PromptStump:
         assert len(set(target_token_ids)) == len(
             set(target_strs)
         ), f"error: target_token_ids {set(target_token_ids)} not unique to target strings {set(target_strs)}"
+        text_inputs = [self.prompt_template.format(
+            example=x, prompt=self.prompt) for x in X_text]
 
-        if self.args.prompt_source == "data_demonstrations":
-            template = self.args.template_data_demonstrations
-            preds = self._get_logit_for_target_tokens_batched(
-                [self.prompt + template % (x, "") for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
-        else:
-            preds = self._get_logit_for_target_tokens_batched(
-                [x + self.prompt for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
+        preds = self._get_logit_for_target_tokens_batched(
+            text_inputs,
+            target_token_ids,
+            batch_size=self.batch_size,
+        )
         assert preds.shape == (len(X_text), len(target_token_ids)), (
             "preds shape was"
             + str(preds.shape)
@@ -157,21 +118,16 @@ class PromptStump:
             set(target_strs)
         ), f"error: target_token_ids {set(target_token_ids)} not unique to target strings {set(target_strs)}"
 
-        if self.args.prompt_source == "data_demonstrations":
-            template = self.args.template_data_demonstrations
-            preds = self._get_logit_for_target_tokens_batched_with_cache(
-                past_key_values,
-                [template % (x, "") for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
-        else:
-            raise NotImplementedError
-            preds = self._get_logit_for_target_tokens_batched(
-                [x + self.prompt for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
+        text_inputs = [self.prompt_template.format(
+            example=x, prompt=self.prompt) for x in X_text]
+
+        preds = self._get_logit_for_target_tokens_batched_with_cache(
+            past_key_values,
+            text_inputs,
+            target_token_ids,
+            batch_size=self.batch_size,
+        )
+
         assert preds.shape == (len(X_text), len(target_token_ids)), (
             "preds shape was"
             + str(preds.shape)
@@ -188,87 +144,67 @@ class PromptStump:
         self.tokenizer.padding = True
 
         self.tokenizer.pad_token = self.tokenizer.eos_token
-        if (
-            self.args.prompt_source == "data_demonstrations"
-            or self.args.prompt_source == "data_demonstrations_knn"
-        ):
-            p = self.prompt
-            if self.args.prompt_source == "data_demonstrations_knn":
-                p = self.prompt[0]
-            template = self.args.template_data_demonstrations
-            if self.args.dataset_name.startswith("knnp__"):
-                max_len_verb = max(
-                    len(self.tokenizer.encode(v)) for v in self.verbalizer.values()
-                )
-                max_len_input = (
-                    max_len_verb
-                    + max(len(self.tokenizer.encode(s)) for s in X_text)
-                    + 1
-                )
-            else:
-                max_len_input = -1
-                for v in self.verbalizer.values():
-                    max_len_input = max(
-                        max_len_input,
-                        max(
-                            [
-                                len(self.tokenizer.encode(template % (s, v)))
-                                for s in X_text[:1000]
-                            ]
-                        ),
-                    )
-            try:
-                max_total_len = self.model.config.n_positions
-            except:
-                max_total_len = self.model.config.max_position_embeddings
-            max_len_prompt = max_total_len - max_len_input
-            if (
-                True
-            ):  #'dbpedia' in self.args.dataset_name or max_len_prompt < 0: # dbpedia
-                print("max len prompt less than 0, truncating to the left")
-                max_len_input = -1
-                for v in self.verbalizer.values():
-                    a = [
-                        len(self.tokenizer.encode(template % (s, v)))
-                        for s in X_text[:1000]
-                    ]
-                    max_len_input = max(max_len_input, np.percentile(a, 95))
-            max_len_input = int(math.ceil(max_len_input))
-            max_len_prompt = max_total_len - max_len_input
-            self.max_len_input = max_len_input
-            print(f"max_len_prompt: {max_len_prompt}, max_len_input: {max_len_input}")
-            assert max_len_prompt > 0
-            inputs = self.tokenizer(
-                [
-                    p,
-                ],
-                return_tensors="pt",
-                padding=False,
-                truncation=True,
-                max_length=max_len_prompt,
-                return_attention_mask=True,
-            ).to(self.model.device)
 
-            # shape is (batch_size, seq_len, vocab_size)
-            with torch.no_grad():
-                outputs = self.model(**inputs)
-            return outputs["past_key_values"]
-        else:
-            raise NotImplementedError
-            preds = self._get_logit_for_target_tokens_batched(
-                [x + self.prompt for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
+        p = self.prompt
+        template = self.args.template_data_demonstrations
+        if self.args.dataset_name.startswith("knnp__"):
+            max_len_verb = max(
+                len(self.tokenizer.encode(v)) for v in self.verbalizer.values()
             )
-        assert preds.shape == (len(X_text), len(target_token_ids)), (
-            "preds shape was"
-            + str(preds.shape)
-            + " but should have been "
-            + str((len(X_text), len(target_token_ids)))
-        )
+            max_len_input = (
+                max_len_verb
+                + max(len(self.tokenizer.encode(s)) for s in X_text)
+                + 1
+            )
+        else:
+            max_len_input = -1
+            for v in self.verbalizer.values():
+                max_len_input = max(
+                    max_len_input,
+                    max(
+                        [
+                            len(self.tokenizer.encode(template % (s, v)))
+                            for s in X_text[:1000]
+                        ]
+                    ),
+                )
+        try:
+            max_total_len = self.model.config.n_positions
+        except:
+            max_total_len = self.model.config.max_position_embeddings
+        max_len_prompt = max_total_len - max_len_input
+        if (
+            True
+        ):  # 'dbpedia' in self.args.dataset_name or max_len_prompt < 0: # dbpedia
+            print("max len prompt less than 0, truncating to the left")
+            max_len_input = -1
+            for v in self.verbalizer.values():
+                a = [
+                    len(self.tokenizer.encode(template % (s, v)))
+                    for s in X_text[:1000]
+                ]
+                max_len_input = max(max_len_input, np.percentile(a, 95))
+        max_len_input = int(math.ceil(max_len_input))
+        max_len_prompt = max_total_len - max_len_input
+        self.max_len_input = max_len_input
+        print(
+            f"max_len_prompt: {max_len_prompt}, max_len_input: {max_len_input}")
+        assert max_len_prompt > 0
+        inputs = self.tokenizer(
+            [
+                p,
+            ],
+            return_tensors="pt",
+            padding=False,
+            truncation=True,
+            max_length=max_len_prompt,
+            return_attention_mask=True,
+        ).to(self.model.device)
 
-        # return the class with the highest logit
-        return softmax(preds, axis=1)
+        # shape is (batch_size, seq_len, vocab_size)
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+        return outputs["past_key_values"]
 
     def _get_logit_for_target_tokens_batched(
         self, prompts: List[str], target_token_ids: List[int], batch_size: int = 64
@@ -321,7 +257,8 @@ class PromptStump:
                 token_output_position = token_output_positions[i].item() - 1
                 logit_targets_list.append(
                     [
-                        logits[i, token_output_position, token_output_id].item()
+                        logits[i, token_output_position,
+                               token_output_id].item()
                         for token_output_id in target_token_ids
                     ]
                 )
@@ -364,8 +301,10 @@ class PromptStump:
             if len(prompts_batch) != past_key_values_new[0][0].shape[0]:
                 for i in range(len(past_key_values)):
                     past_key_values_new[i] = [
-                        past_key_values[i][0].expand(len(prompts_batch), -1, -1, -1),
-                        past_key_values[i][1].expand(len(prompts_batch), -1, -1, -1),
+                        past_key_values[i][0].expand(
+                            len(prompts_batch), -1, -1, -1),
+                        past_key_values[i][1].expand(
+                            len(prompts_batch), -1, -1, -1),
                     ]
             self.tokenizer.padding = True
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -392,16 +331,19 @@ class PromptStump:
 
             # shape is (batch_size, seq_len, vocab_size)
             with torch.no_grad():
-                outputs = self.model(**inputs, past_key_values=past_key_values_new)
+                outputs = self.model(
+                    **inputs, past_key_values=past_key_values_new)
             logits = outputs["logits"]
             token_output_positions = (
-                inputs["attention_mask"].sum(axis=1) - past_key_values[0][0].shape[-2]
+                inputs["attention_mask"].sum(
+                    axis=1) - past_key_values[0][0].shape[-2]
             )
             for i in range(len(prompts_batch)):
                 token_output_position = token_output_positions[i].item() - 1
                 logit_targets_list.append(
                     [
-                        logits[i, token_output_position, token_output_id].item()
+                        logits[i, token_output_position,
+                               token_output_id].item()
                         for token_output_id in target_token_ids
                     ]
                 )
@@ -420,20 +362,3 @@ class PromptStump:
 
     def __str__(self):
         return f"PromptStump(val={self.value_mean:0.2f} n={np.sum(self.n_samples)} prompt={self.prompt})"
-
-    def get_str_simple(self):
-        return self.prompt
-
-    def _set_value_acc_samples(self, X_text, y):
-        """Set value and accuracy of stump."""
-        idxs_right = self.predict(X_text).astype(bool)
-        n_right = idxs_right.sum()
-        if n_right == 0 or n_right == y.size:
-            self.failed_to_split = True
-            return
-        else:
-            self.failed_to_split = False
-        self.value = [np.mean(y[~idxs_right]), np.mean(y[idxs_right])]
-        self.value_mean = np.mean(y)
-        self.n_samples = [y.size - idxs_right.sum(), idxs_right.sum()]
-        self.acc = accuracy_score(y, 1 * idxs_right)

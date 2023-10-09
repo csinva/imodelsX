@@ -26,17 +26,28 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
         verbalizer: Dict[int, str] = {0: " Negative.", 1: " Positive."},
         tree_kwargs: Dict = {"max_leaf_nodes": 3},
         batch_size: int = 1,
+        prompt_template: str = "{example}{prompt}",
         cache_prompt_features_dir=join("cache_prompt_features"),
         cache_key_values: bool = False,
         device=None,
         verbose: bool = True,
         random_state: int = 42,
     ):
+        '''
+        Params
+        ------
+        prompt_template: str
+            template for the prompt, for different prompt styles (e.g. few-shot), may want to place {prompt} before {example}
+             or you may want to add some text before the verbalizer, e.g. {example}{prompt} Output:
+        cache_key_values: bool
+            Whether to cache key values (only possible when prompt does not start with {example})
+        '''
         self.checkpoint = checkpoint
         self.prompts = prompts
         self.verbalizer = verbalizer
         self.tree_kwargs = tree_kwargs
         self.batch_size = batch_size
+        self.prompt_template = prompt_template
         self.cache_prompt_features_dir = cache_prompt_features_dir
         self.cache_key_values = cache_key_values
         self.device = device
@@ -59,8 +70,8 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
         if len(np.unique(y)) > 3:
             print("Converting to one-hot")
             self.enc_ = OneHotEncoder(handle_unknown="ignore")
-            prompt_features = enc.fit_transform(prompt_features)
-            self.feature_names_ = enc.get_feature_names_out(self.prompts)
+            prompt_features = self.enc_.fit_transform(prompt_features)
+            self.feature_names_ = self.enc_.get_feature_names_out(self.prompts)
         else:
             self.feature_names_ = self.prompts
 
@@ -89,7 +100,8 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
             loaded_from_cache = False
             if self.cache_prompt_features_dir is not None:
                 os.makedirs(self.cache_prompt_features_dir, exist_ok=True)
-                args_dict_cache = {"prompt": prompt}
+                args_dict_cache = {"prompt": prompt,
+                                   "X_len": len(X), "ex0": X[0]}
                 save_dir_unique_hash = sha256(args_dict_cache)
                 cache_file = join(
                     self.cache_prompt_features_dir, f"{save_dir_unique_hash}.pkl"
@@ -111,6 +123,8 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
                         checkpoint=self.checkpoint,
                         verbalizer=self.verbalizer,
                         batch_size=self.batch_size,
+                        prompt_template=self.prompt_template,
+                        cache_key_values=self.cache_key_values,
                     )
 
                 # calculate prompt_features
@@ -131,7 +145,7 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
                 past_key_values = None
                 if self.cache_key_values:
                     stump.prompt = prompt
-                    past_key_values = stump.calc_key_values(X_train_text)
+                    past_key_values = stump.calc_key_values(X)
                 prompt_features_i = _calc_features_single_prompt(
                     X, stump, prompt, past_key_values=past_key_values
                 )
@@ -160,46 +174,3 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
 
     def predict(self, X):
         return self.predict_proba(X).argmax(axis=1)
-
-
-if __name__ == "__main__":
-    # load data
-    rng = np.random.default_rng(42)
-    dset_train = datasets.load_dataset("rotten_tomatoes")["train"]
-    dset_train = dset_train.select(rng.choice(
-        len(dset_train), size=100, replace=False))
-    dset_val = datasets.load_dataset("rotten_tomatoes")["validation"]
-    dset_val = dset_val.select(rng.choice(
-        len(dset_val), size=100, replace=False))
-
-    # example fit
-    prompts = [
-        "This movie is",
-        " Positive or Negative? The movie was",
-        " The sentiment of the movie was",
-        " The plot of the movie was really",
-        " The acting in the movie was",
-    ]
-    verbalizer = {0: " Negative.", 1: " Positive."}
-    m = TreePromptClassifier(
-        checkpoint="gpt2",
-        prompts=prompts,
-        verbalizer=verbalizer,
-        cache_prompt_features_dir=None,  # 'cache_prompt_features_dir/gp2',
-    )
-    m.fit(dset_train["text"], dset_train["label"])
-
-    acc_test = np.mean(m.predict(dset_val["text"]) == dset_val["label"])
-    print("acc_test", acc_test)
-
-    # visualize decision tree
-    # plot_tree(
-    #     m.clf_,
-    #     fontsize=10,
-    #     feature_names=m.feature_names_,
-    #     class_names=list(verbalizer.values()),
-    #     filled=True,
-    # )
-    # plt.show()
-
-    # pd.DataFrame({'prompt': prompts, 'acc': m.prompt_accs_})
