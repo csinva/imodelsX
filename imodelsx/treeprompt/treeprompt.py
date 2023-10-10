@@ -16,6 +16,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.preprocessing import OneHotEncoder
 
 import imodelsx.treeprompt.stump
+import imodelsx.llm
 
 
 class TreePromptClassifier(BaseEstimator, ClassifierMixin):

@@ -5,14 +5,13 @@ import logging
 import math
 import random
 import imodels
-import imodelsx.util
-import imodelsx.metrics
 import numpy as np
 from scipy.special import softmax
 from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
 import torch.cuda
 import tqdm
+import imodelsx.llm
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
@@ -359,6 +358,3 @@ class PromptStump:
         tokens = self.tokenizer(prompt)["input_ids"]
         tokens = [t for t in tokens if t not in self.tokenizer.all_special_ids]
         return tokens[0]
-
-    def __str__(self):
-        return f"PromptStump(val={self.value_mean:0.2f} n={np.sum(self.n_samples)} prompt={self.prompt})"
