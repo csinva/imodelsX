@@ -1,22 +1,20 @@
-import datasets
-import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
-from spacy.lang.en import English
 import imodelsx.data
 import imodelsx.augtree.utils
+
 
 def convert_text_data_to_counts_array(
     X_train, X_test, ngrams=2, all_ngrams=True,
     tokenizer=None,
-    ):
+):
     if tokenizer == None:
         tokenizer = imodelsx.augtree.utils.get_spacy_tokenizer()
-        
+
     if all_ngrams:
-        ngram_range=(1, ngrams)
+        ngram_range = (1, ngrams)
     else:
-        ngram_range=(ngrams, ngrams)
+        ngram_range = (ngrams, ngrams)
 
     v = CountVectorizer(
         ngram_range=ngram_range,

@@ -13,7 +13,6 @@ from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.linear_model import LogisticRegressionCV, RidgeCV
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
-from spacy.lang.en import English
 from sklearn.preprocessing import StandardScaler
 import transformers
 import imodelsx.auggam.embed
@@ -78,6 +77,7 @@ class AugGAM(BaseEstimator):
         self.checkpoint = checkpoint
         self.ngrams = ngrams
         if tokenizer_ngrams == None:
+            from spacy.lang.en import English
             self.tokenizer_ngrams = English().tokenizer
         else:
             self.tokenizer_ngrams = tokenizer_ngrams

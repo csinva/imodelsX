@@ -1,5 +1,3 @@
-from transformers import BertModel, DistilBertModel
-from transformers import AutoModelForCausalLM
 from os.path import join as oj
 from datasets import Dataset
 from tqdm import tqdm
@@ -10,6 +8,8 @@ import imodelsx.util
 
 
 def get_model(checkpoint):
+    from transformers import BertModel, DistilBertModel
+    from transformers import AutoModelForCausalLM
     if "distilbert" in checkpoint.lower():
         model = DistilBertModel.from_pretrained(checkpoint)
     elif "bert-base" in checkpoint.lower() or "BERT" in checkpoint:
@@ -31,7 +31,8 @@ def preprocess_gpt_token_batch(seqs, tokenizer_embeddings):
     """
     # batch_size = len(seqs)
 
-    token_ids = [tokenizer_embeddings.encode(s, add_special_tokens=False) for s in seqs]
+    token_ids = [tokenizer_embeddings.encode(
+        s, add_special_tokens=False) for s in seqs]
     prompt_lengths = [len(s) for s in token_ids]
     max_prompt_len = max(prompt_lengths)
 

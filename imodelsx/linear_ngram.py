@@ -8,7 +8,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.linear_model import LogisticRegressionCV, RidgeCV
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
-from spacy.lang.en import English
+# from spacy.lang.en import English
 from scipy.sparse import issparse
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
@@ -110,11 +110,13 @@ class LinearNgram(BaseEstimator):
         # get vectorizer
         if self.checkpoint == "countvectorizer":
             self.vectorizer = CountVectorizer(
-                tokenizer=self.tokenizer, ngram_range=(lower_ngram, self.ngrams)
+                tokenizer=self.tokenizer, ngram_range=(
+                    lower_ngram, self.ngrams)
             )
         elif self.checkpoint == "tfidfvectorizer":
             self.vectorizer = TfidfVectorizer(
-                tokenizer=self.tokenizer, ngram_range=(lower_ngram, self.ngrams)
+                tokenizer=self.tokenizer, ngram_range=(
+                    lower_ngram, self.ngrams)
             )
 
         # get embs

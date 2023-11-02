@@ -11,10 +11,7 @@ from imodelsx.augtree.utils import clean_str
 from os.path import join
 import pickle as pkl
 import sklearn.metrics
-# import fire
-import torch.cuda
 from scipy.spatial import distance
-# from numba import jit
 
 
 CHECKPOINTS_DICT = {
@@ -25,25 +22,28 @@ CHECKPOINTS_DICT = {
 }
 
 # @jit(nopython=True)
+
+
 def pairwise_distances(X: np.ndarray) -> np.ndarray:
     n = X.shape[0]
     dists = np.zeros((n, n))
     for i in tqdm(range(n)):
-    # for i in range(n):
+        # for i in range(n):
         vec_i = X[i]
         dists[i] = np.linalg.norm(X - vec_i, axis=1)
     return dists
 
+
 class EmbsManager:
     def __init__(self,
-        save_dir_embs='/home/chansingh/llm-tree/results/embs_cache',
-        dataset_name: str='financial_phrasebank',
-        # checkpoint: str='ahmedrachid/FinancialBERT-Sentiment-Analysis',
-        ngrams: int=2,
-        # metric: str='euclidean',
-        n_keep: int=200,
-        n_jobs: int=60,
-    ):
+                 save_dir_embs='/home/chansingh/llm-tree/results/embs_cache',
+                 dataset_name: str = 'financial_phrasebank',
+                 # checkpoint: str='ahmedrachid/FinancialBERT-Sentiment-Analysis',
+                 ngrams: int = 2,
+                 # metric: str='euclidean',
+                 n_keep: int = 200,
+                 n_jobs: int = 60,
+                 ):
         '''
         Params
         ------
@@ -59,10 +59,12 @@ class EmbsManager:
         self.n_jobs = n_jobs
 
         # cache embeddings
-        dir_name_top = join(save_dir_embs, f'{clean_str(dataset_name)}___ngrams={ngrams}')
+        dir_name_top = join(
+            save_dir_embs, f'{clean_str(dataset_name)}___ngrams={ngrams}')
         dir_name_checkpoint = join(dir_name_top, clean_str(self.checkpoint))
         fname_vocab = join(dir_name_top, 'vocab.pkl')
-        fname_mappings = join(dir_name_checkpoint, f'mappings_{"euclidean"}.npy')
+        fname_mappings = join(dir_name_checkpoint,
+                              f'mappings_{"euclidean"}.npy')
         os.makedirs(dir_name_checkpoint, exist_ok=True)
         if not os.path.exists(fname_mappings):
             print(fname_mappings, 'not found')
@@ -77,9 +79,13 @@ class EmbsManager:
         return
 
     def _compute_mappings(self, fname_vocab: str, dir_name_checkpoint: str):
+        import torch.cuda
+        
         # get raw data strings
-        dset, dataset_key_text = imodelsx.data.load_huggingface_dataset(self.dataset_name, binary_classification=True)
-        X = dset['train'][dataset_key_text] + dset['validation'][dataset_key_text]
+        dset, dataset_key_text = imodelsx.data.load_huggingface_dataset(
+            self.dataset_name, binary_classification=True)
+        X = dset['train'][dataset_key_text] + \
+            dset['validation'][dataset_key_text]
         tokenizer = imodelsx.augtree.utils.get_spacy_tokenizer()
 
         # get ngrams list
@@ -108,7 +114,7 @@ class EmbsManager:
         print(f'computing embedding similarities...')
         # (N, D) -> (N, N)
         # pairwise_dists = sklearn.metrics.pairwise_distances(
-            # embs, metric=metric, n_jobs=self.n_jobs)
+        # embs, metric=metric, n_jobs=self.n_jobs)
         pairwise_dists = pairwise_distances(embs)
         pairwise_dists[np.eye(pairwise_dists.shape[0]).astype(int)] = 1e10
 
@@ -124,15 +130,13 @@ class EmbsManager:
         cache_file = join(dir_name_checkpoint, f'mappings_{"euclidean"}.npy')
         with open(cache_file, 'wb') as f:
             np.save(f, args)
-        
-
 
     def expand_keyword(self, keyword: str, n_expands=50) -> List[str]:
         '''Expand ngram using similar keywords
         '''
         # self.ngrams_list is an array of ngrams
         # self.mappings is a numpy array of indexes into ngrams_list
-        
+
         # find index where keyword occurs in ngrams_arr
         find_keyword = self.ngrams_arr == keyword
         # print(self.ngrams_arr[500:900])
@@ -149,7 +153,7 @@ class EmbsManager:
             keywords_expanded = self.ngrams_arr[idxs_expanded]
             # print(f'{keyword=} {keywords_expanded=}')
             return keywords_expanded
-        
+
 
 def test_dists():
     # sample embeddings matrix
@@ -163,11 +167,12 @@ def test_dists():
     # dists_cos = pairwise_distances(X, metric='cosine').round(2)
     assert np.min(dists_eucl) >= 0
     # assert np.min(dists_cos) >= 0
-    dists_eucl_ref = sklearn.metrics.pairwise_distances(X, metric='euclidean').round(2)
+    dists_eucl_ref = sklearn.metrics.pairwise_distances(
+        X, metric='euclidean').round(2)
     print('dists_eucl', dists_eucl)
     print('dists_eucl_ref', dists_eucl_ref)
     assert np.allclose(dists_eucl, dists_eucl_ref)
-    
+
 
 # if __name__ == '__main__':
     # test_dists()
@@ -178,4 +183,3 @@ def test_dists():
     #     dataset_name='financial_phrasebank',
     #     checkpoint='ahmedrachid/FinancialBERT-Sentiment-Analysis'
     # ).expand_keyword('great')
-

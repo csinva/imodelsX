@@ -8,7 +8,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.linear_model import LogisticRegressionCV, RidgeCV
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
-from spacy.lang.en import English
+# from spacy.lang.en import English
 from scipy.sparse import issparse
 from sklearn.preprocessing import StandardScaler
 import transformers
@@ -81,8 +81,10 @@ class LinearFinetune(BaseEstimator):
         self._initialize_checkpoint_and_tokenizer()
 
     def _initialize_checkpoint_and_tokenizer(self):
-        self.model = transformers.AutoModel.from_pretrained(self.checkpoint).to(device)
-        self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.checkpoint)
+        self.model = transformers.AutoModel.from_pretrained(
+            self.checkpoint).to(device)
+        self.tokenizer = transformers.AutoTokenizer.from_pretrained(
+            self.checkpoint)
 
     def fit(
         self,
@@ -113,13 +115,15 @@ class LinearFinetune(BaseEstimator):
         if self.cache_embs_dir is not None and os.path.exists(
             os.path.join(self.cache_embs_dir, "embs.pkl")
         ):
-            embs = pkl.load(open(os.path.join(self.cache_embs_dir, "embs.pkl"), "rb"))
+            embs = pkl.load(
+                open(os.path.join(self.cache_embs_dir, "embs.pkl"), "rb"))
         else:
             embs = self._get_embs(X_text)
             if self.cache_embs_dir is not None:
                 os.makedirs(self.cache_embs_dir, exist_ok=True)
                 pkl.dump(
-                    embs, open(os.path.join(self.cache_embs_dir, "embs.pkl"), "wb")
+                    embs, open(os.path.join(
+                        self.cache_embs_dir, "embs.pkl"), "wb")
                 )
         if self.normalize_embs:
             self.normalizer = StandardScaler()
