@@ -1,4 +1,4 @@
-from imodelsx import AugGAMClassifier
+from imodelsx import AugLinearClassifier
 import datasets
 import numpy as np
 
@@ -11,7 +11,7 @@ if __name__ == '__main__':
         len(dset_val), size=10, replace=False))
 
     # fit model
-    m = AugGAMClassifier(
+    m = AugLinearClassifier(
         checkpoint='textattack/distilbert-base-uncased-rotten-tomatoes',
         ngrams=2,
         all_ngrams=True,  # also use lower-order ngrams
@@ -27,8 +27,10 @@ if __name__ == '__main__':
     # check results when varying batch size
     m.fit(dset['text'], dset['label'], batch_size=16)
     preds_check = m.predict(dset_val['text'])
-    assert np.allclose(preds, preds_check), 'predictions should be same when varying batch size'
-    assert np.allclose(np.array(list(m.coefs_dict_.values())), coefs_orig), 'coefs should be same when varying batch size'
+    assert np.allclose(
+        preds, preds_check), 'predictions should be same when varying batch size'
+    assert np.allclose(np.array(list(m.coefs_dict_.values())),
+                       coefs_orig), 'coefs should be same when varying batch size'
 
     # interpret
     print('Total ngram coefficients: ', len(m.coefs_dict_))

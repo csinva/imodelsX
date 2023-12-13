@@ -1,9 +1,8 @@
 """
-Simple scikit-learn interface for Emb-GAM.
+Simple scikit-learn interface for Aug-Linear.
 
-
-Aug-GAM: an Interpretable and Efficient Predictor using Pre-trained Language Models
-Chandan Singh & Jianfeng Gao
+Augmenting Interpretable Models with LLMs during Training
+Chandan Singh, Armin Askari, Rich Caruana, Jianfeng Gao
 https://arxiv.org/abs/2209.11799
 """
 from numpy.typing import ArrayLike
@@ -15,7 +14,7 @@ from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
 from sklearn.preprocessing import StandardScaler
 import transformers
-import imodelsx.auggam.embed
+import imodelsx.auglinear.embed
 from tqdm import tqdm
 import os
 import os.path
@@ -29,7 +28,7 @@ from sklearn.exceptions import ConvergenceWarning
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-class AugGAM(BaseEstimator):
+class AugLinear(BaseEstimator):
     def __init__(
         self,
         checkpoint: str = "bert-base-uncased",
@@ -41,11 +40,10 @@ class AugGAM(BaseEstimator):
         random_state=None,
         normalize_embs=False,
         cache_embs_dir: str = None,
-        cache_coefs_dir: str = None,
         fit_with_ngram_decomposition=True,
         instructor_prompt=None,
     ):
-        """AugGAM-GAM Class - use either AugGAMClassifier or AugGAMRegressor rather than initializing this class directly.
+        """AugLinear Class - use either AugLinearClassifier or AugLinearRegressor rather than initializing this class directly.
 
         Parameters
         ----------
@@ -68,7 +66,7 @@ class AugGAM(BaseEstimator):
         cache_embs_dir: str = None,
             if not None, directory to save embeddings into
         fit_with_ngram_decomposition
-            whether to fit to emb-gam style (using sum of embeddings of each ngram)
+            whether to fit to aug-linear style (using sum of embeddings of each ngram)
             if False, fits a typical model and uses ngram decomposition only for prediction / testing
             Usually, setting this to False will considerably impede performance
         instructor_prompt
@@ -166,7 +164,7 @@ class AugGAM(BaseEstimator):
     def _get_embs_summed(self, X, model, tokenizer_embeddings, batch_size):
         embs = []
         for x in tqdm(X):
-            emb = imodelsx.auggam.embed.embed_and_sum_function(
+            emb = imodelsx.auglinear.embed.embed_and_sum_function(
                 x,
                 model=model,
                 ngrams=self.ngrams,
@@ -276,6 +274,7 @@ class AugGAM(BaseEstimator):
             linear_coef = embs @ coef_embs
 
         # save coefs
+        linear_coef = linear_coef.squeeze()
         self.coefs_dict_ = {
             **coefs_dict_old,
             **{ngrams_list[i]: linear_coef[i] for i in range(len(ngrams_list))},
@@ -302,7 +301,7 @@ class AugGAM(BaseEstimator):
             embs = np.vstack(embs).squeeze()
 
         else:
-            embs = imodelsx.auggam.embed.embed_and_sum_function(
+            embs = imodelsx.auglinear.embed.embed_and_sum_function(
                 ngrams_list,
                 model=model,
                 ngrams=None,
@@ -347,12 +346,14 @@ class AugGAM(BaseEstimator):
         """For regression returns continuous output.
         For classification, returns discrete output.
         """
+
         check_is_fitted(self)
         preds = self._predict_cached(X, warn=warn)
         if isinstance(self, RegressorMixin):
             return preds
         elif isinstance(self, ClassifierMixin):
-            if preds.ndim > 1:  # multiclass classification
+            # multiclass classification
+            if preds.ndim > 1:
                 return np.argmax(preds, axis=1)
             else:
                 return (preds + self.linear.intercept_ > 0).astype(int)
@@ -398,14 +399,14 @@ class AugGAM(BaseEstimator):
 For better performance, call cache_linear_coefs on the test dataset \
 before calling predict."
             )
-        return np.array(preds)
+        return np.array(preds).squeeze()
 
 
-class AugGAMRegressor(AugGAM, RegressorMixin):
+class AugLinearRegressor(AugLinear, RegressorMixin):
     ...
 
 
-class AugGAMClassifier(AugGAM, ClassifierMixin):
+class AugLinearClassifier(AugLinear, ClassifierMixin):
     ...
 
 

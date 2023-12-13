@@ -2,7 +2,7 @@
 .. include:: ../readme.md
 """
 
-from .auggam.auggam import AugGAMClassifier, AugGAMRegressor
+from .auglinear.auglinear import AugLinearClassifier, AugLinearRegressor
 from .augtree.augtree import AugTreeClassifier, AugTreeRegressor
 from .linear_finetune import LinearFinetuneClassifier, LinearFinetuneRegressor
 from .linear_ngram import LinearNgramClassifier, LinearNgramRegressor
