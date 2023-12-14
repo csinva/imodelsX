@@ -17,6 +17,7 @@ import transformers
 import imodelsx.auglinear.embed
 from tqdm import tqdm
 import os
+from typing import Dict
 import os.path
 import warnings
 import pickle as pkl
@@ -42,6 +43,7 @@ class AugLinear(BaseEstimator):
         cache_embs_dir: str = None,
         fit_with_ngram_decomposition=True,
         instructor_prompt=None,
+        zeroshot_class_dict: Dict[int, str] = None,
     ):
         """AugLinear Class - use either AugLinearClassifier or AugLinearRegressor rather than initializing this class directly.
 
@@ -71,6 +73,9 @@ class AugLinear(BaseEstimator):
             Usually, setting this to False will considerably impede performance
         instructor_prompt
             if not None, use instructor-xl with this prompt
+        zeroshot_class_dict
+            Maps class numbers to names of the class to use to compute the embedding
+            Ex. {0: 'negative', 1: 'positive'}
         """
         self.checkpoint = checkpoint
         self.ngrams = ngrams
@@ -87,6 +92,7 @@ class AugLinear(BaseEstimator):
         self.cache_embs_dir = cache_embs_dir
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
         self.instructor_prompt = instructor_prompt
+        self.zeroshot_class_dict = zeroshot_class_dict
 
     def fit(
         self,
@@ -119,6 +125,20 @@ class AugLinear(BaseEstimator):
             print("initializing model...")
         model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
+        # set up linear model
+        warnings.filterwarnings("ignore", category=ConvergenceWarning)
+        if verbose:
+            print("set up linear model...")
+        if isinstance(self, ClassifierMixin):
+            self.linear = LogisticRegressionCV()
+        elif isinstance(self, RegressorMixin):
+            self.linear = RidgeCV()
+
+        # if zero-shot, then set linear and return
+        if self.zeroshot_class_dict is not None:
+            self._fit_zeroshot(model, tokenizer_embeddings, verbose=verbose)
+            return self
+
         # get embs
         if verbose:
             print("calculating embeddings...")
@@ -144,13 +164,6 @@ class AugLinear(BaseEstimator):
             embs = self.normalizer.fit_transform(embs)
 
         # train linear
-        warnings.filterwarnings("ignore", category=ConvergenceWarning)
-        if verbose:
-            print("training linear model...")
-        if isinstance(self, ClassifierMixin):
-            self.linear = LogisticRegressionCV()
-        elif isinstance(self, RegressorMixin):
-            self.linear = RidgeCV()
         self.linear.fit(embs, y)
 
         # cache linear coefs
@@ -400,6 +413,20 @@ For better performance, call cache_linear_coefs on the test dataset \
 before calling predict."
             )
         return np.array(preds).squeeze()
+
+    def _fit_zeroshot(self, model, tokenizer_embeddings, verbose):
+        if verbose:
+            print("setting up zero-shot linear model...")
+
+        # self.linear.coef_ = np.zeros(
+        #     (len(self.zeroshot_class_dict), model.config.hidden_size)
+        # )
+        # self.linear.intercept_ = np.zeros(len(self.zeroshot_class_dict))
+        # for i, class_name in self.zeroshot_class_dict.items():
+        #     self.linear.intercept_[i] = model.embeddings.word_embeddings.weight[
+        #         model.embeddings.word_embeddings.vocab[class_name].index
+        #     ]
+        return self
 
 
 class AugLinearRegressor(AugLinear, RegressorMixin):
