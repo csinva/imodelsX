@@ -7,9 +7,10 @@ https://arxiv.org/abs/2209.11799
 """
 from numpy.typing import ArrayLike
 import numpy as np
+import numpy.linalg
 from scipy.special import softmax
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
-from sklearn.linear_model import LogisticRegressionCV, RidgeCV
+from sklearn.linear_model import LogisticRegression, LogisticRegressionCV, RidgeCV, Ridge
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
 from sklearn.preprocessing import StandardScaler
@@ -17,14 +18,15 @@ import transformers
 import imodelsx.auglinear.embed
 from tqdm import tqdm
 import os
+from copy import deepcopy
 from typing import Dict
 import os.path
 import warnings
 import pickle as pkl
 from os.path import join
 import torch
-from transformers import LlamaModel, LlamaTokenizer
 from sklearn.exceptions import ConvergenceWarning
+from imodelsx.auglinear.embed import _clean_np_array
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -44,6 +46,7 @@ class AugLinear(BaseEstimator):
         fit_with_ngram_decomposition=True,
         instructor_prompt=None,
         zeroshot_class_dict: Dict[int, str] = None,
+        prune_stopwords: bool = False,
     ):
         """AugLinear Class - use either AugLinearClassifier or AugLinearRegressor rather than initializing this class directly.
 
@@ -76,6 +79,8 @@ class AugLinear(BaseEstimator):
         zeroshot_class_dict
             Maps class numbers to names of the class to use to compute the embedding
             Ex. {0: 'negative', 1: 'positive'}
+        prune_stopwords
+            Whether to prune stopwords and ngrams with length < 3
         """
         self.checkpoint = checkpoint
         self.ngrams = ngrams
@@ -93,6 +98,7 @@ class AugLinear(BaseEstimator):
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
         self.instructor_prompt = instructor_prompt
         self.zeroshot_class_dict = zeroshot_class_dict
+        self.prune_stopwords = prune_stopwords
 
     def fit(
         self,
@@ -125,15 +131,6 @@ class AugLinear(BaseEstimator):
             print("initializing model...")
         model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
-        # set up linear model
-        warnings.filterwarnings("ignore", category=ConvergenceWarning)
-        if verbose:
-            print("set up linear model...")
-        if isinstance(self, ClassifierMixin):
-            self.linear = LogisticRegressionCV()
-        elif isinstance(self, RegressorMixin):
-            self.linear = RidgeCV()
-
         # if zero-shot, then set linear and return
         if self.zeroshot_class_dict is not None:
             self._fit_zeroshot(model, tokenizer_embeddings, verbose=verbose)
@@ -164,6 +161,13 @@ class AugLinear(BaseEstimator):
             embs = self.normalizer.fit_transform(embs)
 
         # train linear
+        warnings.filterwarnings("ignore", category=ConvergenceWarning)
+        if verbose:
+            print("set up linear model...")
+        if isinstance(self, ClassifierMixin):
+            self.linear = LogisticRegressionCV()
+        elif isinstance(self, RegressorMixin):
+            self.linear = RidgeCV()
         self.linear.fit(embs, y)
 
         # cache linear coefs
@@ -174,7 +178,7 @@ class AugLinear(BaseEstimator):
 
         return self
 
-    def _get_embs_summed(self, X, model, tokenizer_embeddings, batch_size):
+    def _get_embs_summed(self, X, model, tokenizer_embeddings, batch_size=8):
         embs = []
         for x in tqdm(X):
             emb = imodelsx.auglinear.embed.embed_and_sum_function(
@@ -189,6 +193,7 @@ class AugLinear(BaseEstimator):
                 fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
                 instructor_prompt=self.instructor_prompt,
                 batch_size=batch_size,
+                prune_stopwords=self.prune_stopwords,
             )
             embs.append(emb["embs"])
         return np.array(embs).squeeze()  # num_examples x embedding_size
@@ -243,7 +248,7 @@ class AugLinear(BaseEstimator):
         """
         model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
-        ngrams_list = self._get_ngrams_list(X)
+        ngrams_list = self._get_unique_ngrams_list(X)
 
         # dont recompute ngrams we already know
         if hasattr(self, "coefs_dict_"):
@@ -295,12 +300,13 @@ class AugLinear(BaseEstimator):
         if verbose:
             print("\tAfter caching, coefs_dict_ len", len(self.coefs_dict_))
 
-    def _get_embs(self, ngrams_list, model, tokenizer_embeddings, batch_size):
+    def _get_embs(self, ngrams_list, model, tokenizer_embeddings, batch_size=8):
         """Get embeddings for a list of ngrams (not summed!)"""
         embs = []
         if self.checkpoint.startswith("hkunlp/instructor-xl"):
             # INSTRUCTION = "Represent the short phrase for sentiment classification: "
             # embs = model.encode([[INSTRUCTION, x_i] for x_i in ngrams_list], batch_size=32)
+            # Note: Instructor embeddings are missing support for some stuff, e.g. prune_stopwords
             embs = []
             batch_size = 32
             for i in tqdm(range(0, len(ngrams_list), batch_size)):
@@ -326,6 +332,7 @@ class AugLinear(BaseEstimator):
                 # only return a single embedding
                 fit_with_ngram_decomposition=False,
                 sum_embeddings=False,
+                prune_stopwords=self.prune_stopwords,
             )["embs"]
             embs = np.array(embs).squeeze()  # num_examples x embedding_size
 
@@ -342,7 +349,7 @@ class AugLinear(BaseEstimator):
         return embs
         """
 
-    def _get_ngrams_list(self, X):
+    def _get_unique_ngrams_list(self, X):
         all_ngrams = set()
         for x in X:
             seqs = imodelsx.util.generate_ngrams_list(
@@ -351,6 +358,7 @@ class AugLinear(BaseEstimator):
                 tokenizer_ngrams=self.tokenizer_ngrams,
                 all_ngrams=self.all_ngrams,
                 min_frequency=self.min_frequency,
+                prune_stopwords=self.prune_stopwords,
             )
             all_ngrams |= set(seqs)
         return sorted(list(all_ngrams))
@@ -383,7 +391,7 @@ class AugLinear(BaseEstimator):
             logits = preds
         return softmax(logits, axis=1)
 
-    def _predict_cached(self, X, warn):
+    def _predict_cached(self, X, warn=False):
         """Predict only the cached coefs in self.coefs_dict_"""
         assert hasattr(self, "coefs_dict_"), "coefs are not cached!"
         preds = []
@@ -399,6 +407,7 @@ class AugLinear(BaseEstimator):
                 ngrams=self.ngrams,
                 tokenizer_ngrams=self.tokenizer_ngrams,
                 all_ngrams=self.all_ngrams,
+                prune_stopwords=self.prune_stopwords,
             )
             for seq in seqs:
                 if seq in self.coefs_dict_:
@@ -417,15 +426,37 @@ before calling predict."
     def _fit_zeroshot(self, model, tokenizer_embeddings, verbose):
         if verbose:
             print("setting up zero-shot linear model...")
+        if len(self.zeroshot_class_dict) > 2:
+            raise NotImplementedError(
+                'Only binary classification supported for zero-shot')
+        embs_dict = {}
+        for i, class_num in enumerate(self.zeroshot_class_dict):
+            class_names = self.zeroshot_class_dict[class_num]
+            if not isinstance(class_names, list):
+                class_names = [class_names]
+            embs_class = (
+                self._get_embs(
+                    class_names,
+                    model, tokenizer_embeddings
+                )
+                .reshape((len(class_names), -1))
+                .mean(axis=0).squeeze()
+            )
+            embs_dict[i] = deepcopy(embs_class)
 
-        # self.linear.coef_ = np.zeros(
-        #     (len(self.zeroshot_class_dict), model.config.hidden_size)
-        # )
-        # self.linear.intercept_ = np.zeros(len(self.zeroshot_class_dict))
-        # for i, class_name in self.zeroshot_class_dict.items():
-        #     self.linear.intercept_[i] = model.embeddings.word_embeddings.weight[
-        #         model.embeddings.word_embeddings.vocab[class_name].index
-        #     ]
+        # take pos class or take difference?
+        emb = embs_dict[1].squeeze()
+        # emb = (embs_dict[1] - embs_dict[0]).squeeze()
+
+        # set up linear model
+        if isinstance(self, ClassifierMixin):
+            self.linear = LogisticRegression()
+        elif isinstance(self, RegressorMixin):
+            self.linear = Ridge()
+        self.linear.coef_ = emb / np.linalg.norm(emb)  # - embs[0]
+        # self.linear.coef_ -= np.mean(self.linear.coef_)
+        # self.linear.coef_ /= np.max(np.abs(self.linear.coef_))
+        self.linear.intercept_ = 0  # -np.mean(np.abs(self.linear.coef_))
         return self
 
 
@@ -435,10 +466,3 @@ class AugLinearRegressor(AugLinear, RegressorMixin):
 
 class AugLinearClassifier(AugLinear, ClassifierMixin):
     ...
-
-
-def _clean_np_array(arr):
-    """Replace inf and nan with 0"""
-    arr[np.isinf(arr)] = 0
-    arr[np.isnan(arr)] = 0
-    return arr

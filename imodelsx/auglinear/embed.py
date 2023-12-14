@@ -66,6 +66,7 @@ def embed_and_sum_function(
     fit_with_ngram_decomposition: bool = True,
     instructor_prompt: str = None,
     sum_embeddings=True,
+    prune_stopwords=False,
 ):
     """Get summed embeddings for a single example
 
@@ -102,6 +103,7 @@ def embed_and_sum_function(
             parsing=parsing,
             nlp_chunks=nlp_chunks,
             all_ngrams=all_ngrams,
+            prune_stopwords=prune_stopwords,
         )
     elif isinstance(sentence, list):
         seqs = sentence
@@ -209,3 +211,10 @@ def embed_and_sum_function(
         embs *= 0
 
     return {"embs": embs, "seq_len": len(seqs)}
+
+
+def _clean_np_array(arr):
+    """Replace inf and nan with 0"""
+    arr[np.isinf(arr)] = 0
+    arr[np.isnan(arr)] = 0
+    return arr

@@ -19,6 +19,7 @@ def generate_ngrams_list(
     pad_starting_ngrams=False,
     pad_ending_ngrams=False,
     min_frequency=1,
+    prune_stopwords=False,
 ):
     """Get list of ngrams from sentence using a tokenizer
 
@@ -40,10 +41,13 @@ def generate_ngrams_list(
     seqs = []
 
     if tokenizer_ngrams is None:
-        tokenizer_ngrams = lambda x: x.split()
+        def tokenizer_ngrams(x): return x.split()
 
     # unigrams
     unigrams_list = [str(x) for x in tokenizer_ngrams(sentence)]
+    if prune_stopwords:
+        unigrams_list = _prune_stopwords(unigrams_list)
+
     if ngrams == 1:
         seqs += unigrams_list
 
@@ -74,14 +78,16 @@ def generate_ngrams_list(
 
     if pad_starting_ngrams:
         assert all_ngrams is False, "pad_starting_ngrams only works when all_ngrams=False"
-        seqs_init = [' '.join(unigrams_list[:ngram_length]) for ngram_length in range(1, ngrams)]
+        seqs_init = [' '.join(unigrams_list[:ngram_length])
+                     for ngram_length in range(1, ngrams)]
         seqs = seqs_init + seqs
 
     if pad_ending_ngrams:
         assert all_ngrams is False, "pad_ending_ngrams only works when all_ngrams=False"
-        seqs_end = [' '.join(unigrams_list[-ngram_length:]) for ngram_length in range(1, ngrams)][::-1]
+        seqs_end = [' '.join(unigrams_list[-ngram_length:])
+                    for ngram_length in range(1, ngrams)][::-1]
         seqs = seqs + seqs_end
-    
+
     freqs = Counter(seqs)
 
     seqs = [seq for seq, freq in freqs.items() if freq >= min_frequency]
@@ -156,3 +162,11 @@ STOPWORDS = {
     'ma', 'mightn', "mightn't", 'mustn', "mustn't", 'needn', "needn't", 'shan', "shan't",
     'shouldn', "shouldn't", 'wasn', "wasn't", 'weren', "weren't", 'won', "won't", 'wouldn', "wouldn't"
 }
+
+
+def _prune_stopwords(words_list, min_length=3):
+    return [
+        word for word in words_list
+        if word.lower() not in STOPWORDS
+        and len(word) >= min_length
+    ]
