@@ -19,7 +19,8 @@ import time
 
 # change these settings before using these classes!
 LLM_CONFIG = {
-    "LLM_REPEAT_DELAY": None,  # how long to wait before recalling a failed llm call (can set to None)
+    # how long to wait before recalling a failed llm call (can set to None)
+    "LLM_REPEAT_DELAY": None,
     "CACHE_DIR": join(
         os.path.expanduser("~"), "clin/CACHE_OPENAI"
     ),  # path to save cached llm outputs
@@ -99,7 +100,8 @@ class LLM_OpenAI:
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         hash_str = hashlib.sha256(prompt.encode()).hexdigest()
-        cache_file = join(self.cache_dir, f"{hash_str}__num_tok={max_new_tokens}.pkl")
+        cache_file = join(
+            self.cache_dir, f"{hash_str}__num_tok={max_new_tokens}.pkl")
         if os.path.exists(cache_file):
             return pkl.load(open(cache_file, "rb"))
 
@@ -130,6 +132,14 @@ class LLM_Chat:
         )
         self.checkpoint = checkpoint
         self.role = role
+        from openai import AzureOpenAI
+        self.client = AzureOpenAI(
+            api_version="2023-07-01-preview",
+            azure_endpoint=open(os.path.expanduser(
+                '~/.AZURE_OPENAI_ENDPOINT')).read().strip(),
+            api_key=open(os.path.expanduser(
+                '~/.AZURE_OPENAI_KEY')).read().strip(),
+        )
 
     @repeatedly_call_with_delay
     def __call__(
@@ -158,8 +168,6 @@ class LLM_Chat:
                 {"role": "user", "content": <<<<<prompts_list>>>>},
             ]
         """
-        import openai
-
         if isinstance(prompts_list, str):
             role = self.role
             if role is None:
@@ -211,13 +219,15 @@ class LLM_Chat:
         if functions is not None:
             kwargs["functions"] = functions
 
-        response = openai.ChatCompletion.create(**kwargs)
+        completion = self.client.chat.completions.create(
+            **kwargs,
+        )
 
         if return_str:
-            response = response["choices"][0]["message"]["content"]
-        # print(response)
+            response = completion.choices[0].message.content
 
         pkl.dump(response, open(cache_file, "wb"))
+
         return response
 
 
@@ -327,17 +337,17 @@ class LLM_HF:
             out_str = self._tokenizer.decode(outputs[0])
             # print('out_str', out_str)
             if "facebook/opt" in self.checkpoint:
-                out_str = out_str[len("</s>") + len(prompt) :]
+                out_str = out_str[len("</s>") + len(prompt):]
             elif "google/flan" in self.checkpoint:
                 # print("full", out_str)
-                out_str = out_str[len("<pad>") : out_str.index("</s>")]
+                out_str = out_str[len("<pad>"): out_str.index("</s>")]
             elif "PMC_LLAMA" in self.checkpoint:
                 # print('here!', out_str)
-                out_str = out_str[len("<unk>") + len(prompt) :]
+                out_str = out_str[len("<unk>") + len(prompt):]
             elif "llama_" in self.checkpoint:
-                out_str = out_str[len("<s>") + len(prompt) :]
+                out_str = out_str[len("<s>") + len(prompt):]
             else:
-                out_str = out_str[len(prompt) :]
+                out_str = out_str[len(prompt):]
 
             if stop is not None and isinstance(stop, str) and stop in out_str:
                 out_str = out_str[: out_str.index(stop)]
