@@ -70,6 +70,8 @@ def repeatedly_call_with_delay(llm_call):
                     return None
                 elif "maximum context length" in e:
                     return None
+                elif 'content management policy' in e:
+                    return None
                 if delay is None:
                     raise e
                 else:
