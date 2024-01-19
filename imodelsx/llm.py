@@ -17,6 +17,14 @@ import hashlib
 import torch
 import time
 
+
+'''
+Example usage:
+
+llm = imodelsx.llm.get_llm('meta-llama/Llama-2-7b-hf')
+llm('may the force be') # returns ' with you'    
+'''
+
 # change these settings before using these classes!
 LLM_CONFIG = {
     # how long to wait before recalling a failed llm call (can set to None)
@@ -348,6 +356,8 @@ class LLM_HF:
                 out_str = out_str[len("<unk>") + len(prompt):]
             elif "llama_" in self.checkpoint:
                 out_str = out_str[len("<s>") + len(prompt):]
+            elif 'llama' in self.checkpoint and self.checkpoint.endswith('-hf'):
+                out_str = out_str[4 + len(prompt):]
             else:
                 out_str = out_str[len(prompt):]
 
