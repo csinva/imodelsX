@@ -20,8 +20,8 @@ import time
 
 '''
 Example usage:
-
-llm = imodelsx.llm.get_llm('meta-llama/Llama-2-7b-hf')
+checkpoint = 'meta-llama/Llama-2-7b-hf' # gpt-4, gpt-35-turbo, meta-llama/Llama-2-70b-hf, mistralai/Mistral-7B-v0.1
+llm = imodelsx.llm.get_llm(checkpoint)
 llm('may the force be') # returns ' with you'    
 '''
 
@@ -291,6 +291,10 @@ class LLM_HF:
                 device_map="auto",
                 torch_dtype=torch.float16,
             )
+        elif 'microsoft/phi' in checkpoint:
+            self._model = AutoModelForCausalLM.from_pretrained(
+                checkpoint
+            )
         elif checkpoint == "gpt-xl":
             self._model = AutoModelForCausalLM.from_pretrained(checkpoint)
         else:
@@ -311,16 +315,18 @@ class LLM_HF:
         do_sample=False,
         use_cache=True,
     ) -> str:
-        """Warning: stop not actually used"""
+        """Warning: stop is used posthoc but not during generation
+        """
         with torch.no_grad():
             # cache
-            os.makedirs(self.cache_dir, exist_ok=True)
-            hash_str = hashlib.sha256(prompt.encode()).hexdigest()
-            cache_file = join(
-                self.cache_dir, f"{hash_str}__num_tok={max_new_tokens}.pkl"
-            )
-            if os.path.exists(cache_file) and use_cache:
-                return pkl.load(open(cache_file, "rb"))
+            if use_cache:
+                os.makedirs(self.cache_dir, exist_ok=True)
+                hash_str = hashlib.sha256(prompt.encode()).hexdigest()
+                cache_file = join(
+                    self.cache_dir, f"{hash_str}__num_tok={max_new_tokens}.pkl"
+                )
+                if os.path.exists(cache_file):
+                    return pkl.load(open(cache_file, "rb"))
 
             # if stop is not None:
             # raise ValueError("stop kwargs are not permitted.")
@@ -349,22 +355,24 @@ class LLM_HF:
             if "facebook/opt" in self.checkpoint:
                 out_str = out_str[len("</s>") + len(prompt):]
             elif "google/flan" in self.checkpoint:
-                # print("full", out_str)
                 out_str = out_str[len("<pad>"): out_str.index("</s>")]
             elif "PMC_LLAMA" in self.checkpoint:
-                # print('here!', out_str)
                 out_str = out_str[len("<unk>") + len(prompt):]
             elif "llama_" in self.checkpoint:
                 out_str = out_str[len("<s>") + len(prompt):]
             elif 'llama' in self.checkpoint and self.checkpoint.endswith('-hf'):
                 out_str = out_str[4 + len(prompt):]
+            elif 'mistralai' in self.checkpoint:
+                out_str = out_str[4 + len(prompt):]
             else:
                 out_str = out_str[len(prompt):]
 
+            # remove stop from output_str
             if stop is not None and isinstance(stop, str) and stop in out_str:
                 out_str = out_str[: out_str.index(stop)]
 
-            pkl.dump(out_str, open(cache_file, "wb"))
+            if use_cache:
+                pkl.dump(out_str, open(cache_file, "wb"))
             return out_str
 
     def _get_logit_for_target_token(self, prompt: str, target_token_str: str) -> float:

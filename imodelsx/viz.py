@@ -48,11 +48,16 @@ CHECKPOINTS_RENAME_DICT = {
     'gpt2-large': 'GPT-2 (762M)',
     'gpt2-xl': 'GPT-2 (1.5B)',
     'gpt-3.5-turbo': 'ChatGPT',
+    'gpt-35-turbo': 'GPT-3.5 Turbo',
     'gpt-4-0314': 'GPT-4',
+    'gpt-4': 'GPT-4',
     'text-davinci-003': 'GPT-3',
     'llama_7b': 'LLAMA (7B)',
     'meta-llama/Llama-2-7b-hf': 'LLAMA-2 (7B)',
     'meta-llama/Llama-2-13b-hf': 'LLAMA-2 (13B)',
+    'meta-llama/Llama-2-70b-hf': 'LLAMA-2 (70B)',
+    'mistralai/Mistral-7B-v0.1': 'Mistral (7B)',
+    'mistralai/Mixtral-8x7B-v0.1': 'Mixtral (8x7B)',
 }
 
 METRICS_RENAME_DICT = {
