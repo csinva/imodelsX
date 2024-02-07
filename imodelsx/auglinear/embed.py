@@ -80,6 +80,10 @@ def embed_and_sum_function(
         tokenizing for the embedding model
     tokenizer_ngrams
         tokenizing the ngrams (word-based tokenization is more interpretable)
+    layer: str
+            which layer to extract embeddings from
+    batch_size: int
+            batch size for simultaneously running ngrams (for a single example)
     parsing: str
         whether to use parsing rather than extracting all ngrams
     nlp_chunks
@@ -88,6 +92,8 @@ def embed_and_sum_function(
         whether to fit the model with ngram decomposition (if not just use the standard sentence)
     instructor_prompt: str
         if using instructor, the prompt to use
+    all_ngrams: bool
+        whether to include all ngrams of lower order
     """
     if dataset_key_text is not None:
         sentence = example[dataset_key_text]
@@ -140,6 +146,8 @@ def embed_and_sum_function(
 
         for batch in DataLoader(ds, batch_size=batch_size, shuffle=False):
             batch = {k: v.to(model.device) for k, v in batch.items()}
+
+            # print(batch)
 
             with torch.no_grad():
                 output = model(**batch)
