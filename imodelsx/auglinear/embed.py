@@ -8,24 +8,6 @@ import imodelsx.util
 from typing import List
 
 
-def get_model(checkpoint):
-    from transformers import BertModel, DistilBertModel
-    from transformers import AutoModelForCausalLM
-    if "distilbert" in checkpoint.lower():
-        model = DistilBertModel.from_pretrained(checkpoint)
-    elif "bert-base" in checkpoint.lower() or "BERT" in checkpoint:
-        model = BertModel.from_pretrained(checkpoint)
-    elif "gpt" in checkpoint.lower():
-        model = AutoModelForCausalLM.from_pretrained(
-            checkpoint, output_hidden_states=True
-        )
-    try:
-        model = model.cuda()
-    except:
-        pass
-    return model
-
-
 def embed_and_sum_function(
     example,
     model,
@@ -41,7 +23,7 @@ def embed_and_sum_function(
     nlp_chunks=None,
     all_ngrams: bool = False,
     fit_with_ngram_decomposition: bool = True,
-    instructor_prompt: str = "Represent the short phrase for sentiment classification: ",
+    embedding_prompt: str = "Represent the short phrase for sentiment classification: ",
     sum_embeddings=True,
     prune_stopwords=False,
 ):
@@ -67,7 +49,7 @@ def embed_and_sum_function(
         if parsing is not empty string, a parser that extracts specific ngrams
     fit_with_ngram_decomposition
         whether to fit the model with ngram decomposition (if not just use the standard sentence)
-    instructor_prompt: str
+    embedding_prompt: str
         if using instructor, the prompt to use
     all_ngrams: bool
         whether to include all ngrams of lower order
@@ -88,7 +70,7 @@ def embed_and_sum_function(
     embs = []
     if checkpoint.startswith("hkunlp/instructor"):
         embs = model.encode(
-            [[instructor_prompt, x_i] for x_i in seqs], batch_size=batch_size
+            [[embedding_prompt, x_i] for x_i in seqs], batch_size=batch_size
         )
     else:
         tokens = tokenizer_embeddings(
@@ -109,8 +91,10 @@ def embed_and_sum_function(
             elif layer == "last_hidden_state_mean" or layer == "last_hidden_state":
                 # extract (batch_size, seq_len, hidden_size)
                 emb = output["last_hidden_state"]
-            # convert to (batch_size, hidden_size)
-                emb = emb.mean(axis=1)
+
+                # convert to (batch_size, hidden_size)
+                emb = _mean_with_mask(emb, batch["attention_mask"])
+
             elif "hidden_states" in output.keys():
                 # extract (layer x (batch_size, seq_len, hidden_size))
                 h = output["hidden_states"]
@@ -119,7 +103,7 @@ def embed_and_sum_function(
                 emb = h[0]
 
                 # convert to (batch_size, hidden_size)
-                emb = emb.mean(axis=1)
+                emb = _mean_with_mask(emb, batch["attention_mask"])
             else:
                 raise Exception(f"keys: {output.keys()}")
 
@@ -137,6 +121,24 @@ def embed_and_sum_function(
         embs *= 0
 
     return {"embs": embs, "seq_len": len(seqs)}
+
+
+def _mean_with_mask(emb_batch, mask_batch):
+    '''Compute the mean of embeddings ignoring masked tokens
+    '''
+    # create a mask for real tokens
+    expanded_attention_mask = mask_batch.unsqueeze(
+        -1).expand_as(emb_batch)
+
+    # compute the sum of embeddings for real tokens and count the real tokens
+    sum_embeddings = (emb_batch * expanded_attention_mask).sum(1)
+    real_token_counts = expanded_attention_mask.sum(1)
+
+    # avoid division by zero for completely padded sequences by setting count to 1 where it's 0
+    real_token_counts = real_token_counts.masked_fill_(
+        real_token_counts == 0, 1)
+
+    return sum_embeddings / real_token_counts
 
 
 def _get_seqs(

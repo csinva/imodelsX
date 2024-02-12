@@ -45,7 +45,8 @@ class AugLinear(BaseEstimator):
         normalize_embs=False,
         cache_embs_dir: str = None,
         fit_with_ngram_decomposition=True,
-        instructor_prompt="Represent the short phrase for sentiment classification: ",
+        embedding_prompt="Represent the short phrase for sentiment classification: ",
+        token_distr_embedding=False,
         zeroshot_class_dict: Dict[int, str] = None,
         prune_stopwords: bool = False,
     ):
@@ -75,8 +76,10 @@ class AugLinear(BaseEstimator):
             whether to fit to aug-linear style (using sum of embeddings of each ngram)
             if False, fits a typical model and uses ngram decomposition only for prediction / testing
             Usually, setting this to False will considerably impede performance
-        instructor_prompt
+        embedding_prompt
             if checkpoint is an instructor model, use instructor with this prompt
+        token_distr_embedding
+            requires that checkpoint works with AutoModelForCausalLM
         zeroshot_class_dict
             Maps class numbers to names of the class to use to compute the embedding
             Ex. {0: 'negative', 1: 'positive'}
@@ -97,7 +100,8 @@ class AugLinear(BaseEstimator):
         self.normalize_embs = normalize_embs
         self.cache_embs_dir = cache_embs_dir
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
-        self.instructor_prompt = instructor_prompt
+        self.embedding_prompt = embedding_prompt
+        self.token_distr_embedding = token_distr_embedding
         self.zeroshot_class_dict = zeroshot_class_dict
         self.prune_stopwords = prune_stopwords
 
@@ -182,16 +186,20 @@ class AugLinear(BaseEstimator):
     def _get_model_and_tokenizer(self):
         if self.checkpoint.startswith("hkunlp/instructor-xl"):
             from InstructorEmbedding import INSTRUCTOR
-
-            model = INSTRUCTOR(self.checkpoint).to(device)
+            model = INSTRUCTOR(self.checkpoint)
             tokenizer_embeddings = None
         else:
-            model = transformers.AutoModel.from_pretrained(
-                self.checkpoint).to(device)
             tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
                 self.checkpoint
             )
-        return model.eval(), tokenizer_embeddings
+            if self.token_distr_embedding:
+                model = transformers.AutoCausalLM.from_pretrained(
+                    self.checkpoint)
+            else:
+                model = transformers.AutoModel.from_pretrained(
+                    self.checkpoint)
+
+        return model.to(device).eval(), tokenizer_embeddings
 
     def cache_linear_coefs(
         self,
@@ -282,7 +290,7 @@ class AugLinear(BaseEstimator):
         kwargs = dict(
             model=model, tokenizer_embeddings=tokenizer_embeddings, tokenizer_ngrams=self.tokenizer_ngrams,
             checkpoint=self.checkpoint, layer=self.layer, batch_size=batch_size,
-            instructor_prompt=self.instructor_prompt, prune_stopwords=self.prune_stopwords)
+            embedding_prompt=self.embedding_prompt, prune_stopwords=self.prune_stopwords)
 
         if summed:
             embs = []
