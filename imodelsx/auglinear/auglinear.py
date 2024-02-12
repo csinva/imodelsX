@@ -21,6 +21,7 @@ import os
 from copy import deepcopy
 from typing import Dict
 import os.path
+from typing import List
 import warnings
 import pickle as pkl
 from os.path import join
@@ -44,7 +45,7 @@ class AugLinear(BaseEstimator):
         normalize_embs=False,
         cache_embs_dir: str = None,
         fit_with_ngram_decomposition=True,
-        instructor_prompt=None,
+        instructor_prompt="Represent the short phrase for sentiment classification: ",
         zeroshot_class_dict: Dict[int, str] = None,
         prune_stopwords: bool = False,
     ):
@@ -75,7 +76,7 @@ class AugLinear(BaseEstimator):
             if False, fits a typical model and uses ngram decomposition only for prediction / testing
             Usually, setting this to False will considerably impede performance
         instructor_prompt
-            if not None, use instructor-xl with this prompt
+            if checkpoint is an instructor model, use instructor with this prompt
         zeroshot_class_dict
             Maps class numbers to names of the class to use to compute the embedding
             Ex. {0: 'negative', 1: 'positive'}
@@ -146,8 +147,8 @@ class AugLinear(BaseEstimator):
                 open(os.path.join(self.cache_embs_dir, "embs_train.pkl"), "rb")
             )
         else:
-            embs = self._get_embs_summed(
-                X, model, tokenizer_embeddings, batch_size)
+            embs = self._get_embs(
+                X, model, tokenizer_embeddings, batch_size, summed=True)
             if self.cache_embs_dir is not None:
                 os.makedirs(self.cache_embs_dir, exist_ok=True)
                 pkl.dump(
@@ -178,50 +179,19 @@ class AugLinear(BaseEstimator):
 
         return self
 
-    def _get_embs_summed(self, X, model, tokenizer_embeddings, batch_size=8):
-        embs = []
-        for x in tqdm(X):
-            emb = imodelsx.auglinear.embed.embed_and_sum_function(
-                x,
-                model=model,
-                ngrams=self.ngrams,
-                tokenizer_embeddings=tokenizer_embeddings,
-                tokenizer_ngrams=self.tokenizer_ngrams,
-                checkpoint=self.checkpoint,
-                layer=self.layer,
-                all_ngrams=self.all_ngrams,
-                fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
-                instructor_prompt=self.instructor_prompt,
-                batch_size=batch_size,
-                prune_stopwords=self.prune_stopwords,
-            )
-            embs.append(emb["embs"])
-        return np.array(embs).squeeze()  # num_examples x embedding_size
-
     def _get_model_and_tokenizer(self):
         if self.checkpoint.startswith("hkunlp/instructor-xl"):
             from InstructorEmbedding import INSTRUCTOR
 
             model = INSTRUCTOR(self.checkpoint).to(device)
             tokenizer_embeddings = None
-        elif "llama" in self.checkpoint:
-            # path to extracted llama weights
-            LLAMA_DIR = join(os.path.expanduser("~"), "llama")
-            tokenizer_embeddings = transformers.LlamaTokenizer.from_pretrained(
-                join(LLAMA_DIR, self.checkpoint)
-            )
-            model = transformers.LlamaModel.from_pretrained(
-                join(LLAMA_DIR, self.checkpoint),
-                device_map="auto",
-                torch_dtype=torch.float16,
-            )
         else:
             model = transformers.AutoModel.from_pretrained(
                 self.checkpoint).to(device)
             tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
                 self.checkpoint
             )
-        return model, tokenizer_embeddings
+        return model.eval(), tokenizer_embeddings
 
     def cache_linear_coefs(
         self,
@@ -280,6 +250,7 @@ class AugLinear(BaseEstimator):
                     model,
                     tokenizer_embeddings,
                     batch_size,
+                    summed=False
                 )
                 embs = normalize_embs(embs, renormalize_embs)
                 linear_coef[i: i + batch_size_embs] = (embs @ coef_embs).reshape(
@@ -287,7 +258,7 @@ class AugLinear(BaseEstimator):
                 )
         else:
             embs = self._get_embs(ngrams_list, model,
-                                  tokenizer_embeddings, batch_size)
+                                  tokenizer_embeddings, batch_size, summed=False)
             embs = normalize_embs(embs, renormalize_embs)
             linear_coef = embs @ coef_embs
 
@@ -298,56 +269,41 @@ class AugLinear(BaseEstimator):
             **{ngrams_list[i]: linear_coef[i] for i in range(len(ngrams_list))},
         }
         if verbose:
-            print("\tAfter caching, coefs_dict_ len", len(self.coefs_dict_))
+            print(
+                f"\tAfter caching, len(coefs_dict_)={len(self.coefs_dict_)}, up from {len(coefs_dict_old)}")
 
-    def _get_embs(self, ngrams_list, model, tokenizer_embeddings, batch_size=8):
-        """Get embeddings for a list of ngrams (not summed!)"""
-        embs = []
-        if self.checkpoint.startswith("hkunlp/instructor-xl"):
-            # INSTRUCTION = "Represent the short phrase for sentiment classification: "
-            # embs = model.encode([[INSTRUCTION, x_i] for x_i in ngrams_list], batch_size=32)
-            # Note: Instructor embeddings are missing support for some stuff, e.g. prune_stopwords
+    def _get_embs(self, X: List[str], model, tokenizer_embeddings, batch_size=8, summed=True):
+        '''
+        Returns
+        -------
+        embs: np.array
+            num_examples x embedding_size
+        '''
+        kwargs = dict(
+            model=model, tokenizer_embeddings=tokenizer_embeddings, tokenizer_ngrams=self.tokenizer_ngrams,
+            checkpoint=self.checkpoint, layer=self.layer, batch_size=batch_size,
+            instructor_prompt=self.instructor_prompt, prune_stopwords=self.prune_stopwords)
+
+        if summed:
             embs = []
-            batch_size = 32
-            for i in tqdm(range(0, len(ngrams_list), batch_size)):
-                # ngram = ngrams_list[i]
-                # embs.append(model.encode([[INSTRUCTION, ngram]])[0])
-                ngram_batch = ngrams_list[i: i + batch_size]
-                embs_batch = model.encode(
-                    [[self.instructor_prompt, ngram] for ngram in ngram_batch]
+            for x in tqdm(X):
+                emb = imodelsx.auglinear.embed.embed_and_sum_function(
+                    x,
+                    ngrams=self.ngrams,
+                    all_ngrams=self.all_ngrams,
+                    fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
+                    **kwargs,
                 )
-                embs.append(embs_batch)
-            embs = np.vstack(embs).squeeze()
-
+                embs.append(emb["embs"])
+            return _clean_np_array(np.array(embs).squeeze())
         else:
+            # get embedding for a list of ngrams
             embs = imodelsx.auglinear.embed.embed_and_sum_function(
-                ngrams_list,
-                model=model,
-                ngrams=None,
-                tokenizer_embeddings=tokenizer_embeddings,
-                tokenizer_ngrams=self.tokenizer_ngrams,
-                checkpoint=self.checkpoint,
-                layer=self.layer,
-                batch_size=batch_size,
-                # only return a single embedding
-                fit_with_ngram_decomposition=False,
-                sum_embeddings=False,
-                prune_stopwords=self.prune_stopwords,
+                X, ngrams=None, fit_with_ngram_decomposition=False, sum_embeddings=False, **kwargs,
             )["embs"]
-            embs = np.array(embs).squeeze()  # num_examples x embedding_size
-
-        return _clean_np_array(embs)
-
-        """
-        # Faster version that needs more memory
-        tokens = tokenizer(ngrams_list, padding=args.padding,
-                           truncation=True, return_tensors="pt")
-        tokens = tokens.to(device)
-
-        output = model(**tokens) # this takes a while....
-        embs = output['pooler_output'].cpu().detach().numpy()
-        return embs
-        """
+            embs = np.array(embs).squeeze()
+            assert embs.shape[0] == len(X)
+            return _clean_np_array(embs)
 
     def _get_unique_ngrams_list(self, X):
         all_ngrams = set()
@@ -437,7 +393,8 @@ before calling predict."
             embs_class = (
                 self._get_embs(
                     class_names,
-                    model, tokenizer_embeddings
+                    model, tokenizer_embeddings,
+                    summed=False,
                 )
                 .reshape((len(class_names), -1))
                 .mean(axis=0).squeeze()
