@@ -20,6 +20,7 @@ def run_args_list(
     cmd_python: str = 'python',
     script_name: str = '02_train_suffix.py',
     actually_run: bool = True,
+    debug_mode: bool = False,
     shuffle: bool = False,
     reverse: bool = False,
     n_cpus: int = 1,
@@ -38,6 +39,8 @@ def run_args_list(
         Name of script to run
     actually_run: bool
         Whether to actually run the script (otherwise just print the command)
+    debug_mode: bool
+        Whether to open debugger after failure (stops all parallelilization) 
     shuffle: bool
         Whether to shuffle the order of the script calls
     reverse: bool
@@ -63,6 +66,14 @@ def run_args_list(
     if reverse:
         args_list = args_list[::-1]
 
+    # debug mode
+    if debug_mode:
+        cmd_python = 'python -m pdb -c continue'
+        if n_cpus > 1 or n_gpus > 1:
+            print('\n###\n### Debug mode, setting n_cpus=1 and n_gpus=0 ###\n###\n')
+            n_cpus = 1
+            n_gpus = 0
+
     # construct commands
     param_str_list = []
     for args in args_list:
@@ -83,13 +94,13 @@ def run_args_list(
         return
 
     failed_jobs = []
-   
+
     if slurm:
         for i, param_str in enumerate(param_str_list):
             print(
                 f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n' + param_str)
             run_slurm(param_str, slurm_kwargs=slurm_kwargs)
-      
+
     # run serial
     elif n_cpus == 1 and n_gpus == 0:
         for i, param_str in enumerate(param_str_list):
@@ -107,7 +118,6 @@ def run_args_list(
                 failed_jobs.append((i, param_str))
             except Exception as e:
                 print(e)
-
 
     # run parallel on CPUs
     elif n_cpus > 1 and n_gpus == 0:
@@ -182,15 +192,16 @@ def run_args_list(
 def run_slurm(param_str, slurm_kwargs):
     from slurmpy import Slurm
     slurm = Slurm(
-            f"imodelsx_job_{time.time()}",
-            slurm_kwargs=slurm_kwargs,
-            slurm_flags=["requeue"],
-        )
+        f"imodelsx_job_{time.time()}",
+        slurm_kwargs=slurm_kwargs,
+        slurm_flags=["requeue"],
+    )
     slurm.run(
         f"""
         {param_str}
         """
     )
+
 
 def run_on_gpu(param_str, i, n):
     gpu_id = job_queue_multiprocessing.get()
@@ -292,7 +303,8 @@ def _validate_run_arguments(
     gpu_ids: List[int],
 ):
     assert n_cpus > 0, f"n_cpus must be greater than 0, got {n_cpus}"
-    assert not (n_cpus > 1 and len(gpu_ids) > 0), 'Cannot parallelize over cpus and gpus'
+    assert not (n_cpus > 1 and len(gpu_ids) >
+                0), 'Cannot parallelize over cpus and gpus'
     if len(gpu_ids) > 0:
         import torch.cuda
         num_gpus = torch.cuda.device_count()
@@ -300,11 +312,11 @@ def _validate_run_arguments(
                                                                  ), f'gpu_ids {gpu_ids} must be type int or type list'
         if all([isinstance(x, int) for x in gpu_ids]):
             assert all([x >= 0 and x < num_gpus for x in gpu_ids]
-                    ), f'gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}'
+                       ), f'gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}'
         elif all([isinstance(x, list) for x in gpu_ids]):
             gpu_ids_flattened = sum(gpu_ids, [])
             assert all([x >= 0 and x < num_gpus for x in gpu_ids_flattened]
-                    ), f'gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}'
+                       ), f'gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}'
 
 
 if __name__ == '__main__':
