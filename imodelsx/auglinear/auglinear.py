@@ -45,8 +45,9 @@ class AugLinear(BaseEstimator):
         normalize_embs=False,
         cache_embs_dir: str = None,
         fit_with_ngram_decomposition=True,
-        embedding_prompt="Represent the short phrase for sentiment classification: ",
-        token_distr_embedding=False,
+        embedding_prefix="Represent the short phrase for sentiment classification: ",
+        embedding_suffix="",
+        next_token_distr_embedding=False,
         zeroshot_class_dict: Dict[int, str] = None,
         prune_stopwords: bool = False,
     ):
@@ -76,9 +77,11 @@ class AugLinear(BaseEstimator):
             whether to fit to aug-linear style (using sum of embeddings of each ngram)
             if False, fits a typical model and uses ngram decomposition only for prediction / testing
             Usually, setting this to False will considerably impede performance
-        embedding_prompt
-            if checkpoint is an instructor model, use instructor with this prompt
-        token_distr_embedding
+        embedding_prefix
+            if checkpoint is an instructor/autoregressive model, prepend this prompt
+        embedding_suffix
+            if checkpoint is an autoregressive model, append this prompt
+        next_token_distr_embedding
             requires that checkpoint works with AutoModelForCausalLM
         zeroshot_class_dict
             Maps class numbers to names of the class to use to compute the embedding
@@ -100,8 +103,9 @@ class AugLinear(BaseEstimator):
         self.normalize_embs = normalize_embs
         self.cache_embs_dir = cache_embs_dir
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
-        self.embedding_prompt = embedding_prompt
-        self.token_distr_embedding = token_distr_embedding
+        self.embedding_prefix = embedding_prefix
+        self.embedding_suffix = embedding_suffix
+        self.next_token_distr_embedding = next_token_distr_embedding
         self.zeroshot_class_dict = zeroshot_class_dict
         self.prune_stopwords = prune_stopwords
 
@@ -192,9 +196,12 @@ class AugLinear(BaseEstimator):
             tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
                 self.checkpoint
             )
-            if self.token_distr_embedding:
-                model = transformers.AutoCausalLM.from_pretrained(
-                    self.checkpoint)
+            if self.next_token_distr_embedding:
+                model = transformers.AutoModelForCausalLM.from_pretrained(
+                    self.checkpoint,
+                    # device_map="auto",
+                    # torch_dtype=torch.float16
+                )
             else:
                 model = transformers.AutoModel.from_pretrained(
                     self.checkpoint)
@@ -290,7 +297,10 @@ class AugLinear(BaseEstimator):
         kwargs = dict(
             model=model, tokenizer_embeddings=tokenizer_embeddings, tokenizer_ngrams=self.tokenizer_ngrams,
             checkpoint=self.checkpoint, layer=self.layer, batch_size=batch_size,
-            embedding_prompt=self.embedding_prompt, prune_stopwords=self.prune_stopwords)
+            embedding_prefix=self.embedding_prefix, embedding_suffix=self.embedding_suffix,
+            prune_stopwords=self.prune_stopwords,
+            next_token_distr_embedding=self.next_token_distr_embedding
+        )
 
         if summed:
             embs = []
