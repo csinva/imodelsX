@@ -49,6 +49,7 @@ class AugLinear(BaseEstimator):
         embedding_suffix="",
         next_token_distr_embedding=False,
         zeroshot_class_dict: Dict[int, str] = None,
+        zeroshot_strategy: str = 'pos_class',
         prune_stopwords: bool = False,
     ):
         """AugLinear Class - use either AugLinearClassifier or AugLinearRegressor rather than initializing this class directly.
@@ -86,6 +87,8 @@ class AugLinear(BaseEstimator):
         zeroshot_class_dict
             Maps class numbers to names of the class to use to compute the embedding
             Ex. {0: 'negative', 1: 'positive'}
+        zeroshot_strategy
+            'pos_class' or 'difference'
         prune_stopwords
             Whether to prune stopwords and ngrams with length < 3
         """
@@ -107,6 +110,7 @@ class AugLinear(BaseEstimator):
         self.embedding_suffix = embedding_suffix
         self.next_token_distr_embedding = next_token_distr_embedding
         self.zeroshot_class_dict = zeroshot_class_dict
+        self.zeroshot_strategy = zeroshot_strategy
         self.prune_stopwords = prune_stopwords
 
     def fit(
@@ -420,8 +424,10 @@ before calling predict."
             embs_dict[i] = deepcopy(embs_class)
 
         # take pos class or take difference?
-        emb = embs_dict[1].squeeze()
-        # emb = (embs_dict[1] - embs_dict[0]).squeeze()
+        if self.zeroshot_strategy == 'pos_class':
+            emb = embs_dict[1].squeeze()
+        elif self.zeroshot_strategy == 'difference':
+            emb = (embs_dict[1] - embs_dict[0]).squeeze()
 
         # set up linear model
         if isinstance(self, ClassifierMixin):

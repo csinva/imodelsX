@@ -67,7 +67,6 @@ def embed_and_sum_function(
         ngrams, tokenizer_ngrams, parsing, nlp_chunks, all_ngrams, prune_stopwords)
     if next_token_distr_embedding:
         seqs = [f'{embedding_prefix}{x_i}{embedding_suffix}' for x_i in seqs]
-        print('seqs', seqs)
 
     if not checkpoint.startswith("hkunlp/instructor") and (
         not hasattr(tokenizer_embeddings, "pad_token")
@@ -82,7 +81,6 @@ def embed_and_sum_function(
             [[embedding_prefix, x_i] for x_i in seqs], batch_size=batch_size
         )
     else:
-        print('seqs', seqs)
         tokens = tokenizer_embeddings(
             seqs, padding=padding, truncation=True, return_tensors="pt"
         )
