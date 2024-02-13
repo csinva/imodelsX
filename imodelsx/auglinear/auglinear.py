@@ -203,14 +203,14 @@ class AugLinear(BaseEstimator):
             if self.next_token_distr_embedding:
                 model = transformers.AutoModelForCausalLM.from_pretrained(
                     self.checkpoint,
-                    # device_map="auto",
-                    # torch_dtype=torch.float16
+                    device_map="auto",
+                    torch_dtype=torch.float16,
                 )
             else:
                 model = transformers.AutoModel.from_pretrained(
-                    self.checkpoint)
+                    self.checkpoint).to(device)
 
-        return model.to(device).eval(), tokenizer_embeddings
+        return model.eval(), tokenizer_embeddings
 
     def cache_linear_coefs(
         self,

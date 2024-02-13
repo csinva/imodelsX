@@ -17,7 +17,7 @@ def embed_and_sum_function(
     checkpoint: str,
     dataset_key_text: str = None,
     layer: str = "last_hidden_state",
-    padding: str = "max_length",
+    padding: str = True,
     batch_size: int = 8,
     parsing: str = "",
     nlp_chunks=None,
@@ -42,9 +42,9 @@ def embed_and_sum_function(
     tokenizer_ngrams
         tokenizing the ngrams (word-based tokenization is more interpretable)
     layer: str
-            which layer to extract embeddings from
+        which layer to extract embeddings from
     batch_size: int
-            batch size for simultaneously running ngrams (for a single example)
+        batch size for simultaneously running ngrams (for a single example)
     parsing: str
         whether to use parsing rather than extracting all ngrams
     nlp_chunks
