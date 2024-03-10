@@ -25,7 +25,7 @@ def embed_and_sum_function(
     fit_with_ngram_decomposition: bool = True,
     embedding_prefix: str = "Represent the short phrase for sentiment classification: ",
     embedding_suffix: str = "",
-    next_token_distr_embedding: bool = False,
+    embedding_strategy: str = 'mean',
     sum_embeddings=True,
     prune_stopwords=False,
 ):
@@ -55,8 +55,9 @@ def embed_and_sum_function(
         if checkpoint is an instructor/autoregressive model, prepend this prompt
     embedding_suffix
         if checkpoint is an autoregressive model, append this prompt
-    next_token_distr_embedding: bool
-        whether to use the next token distribution as an embedding
+    embedding_strategy: str
+        'mean': compute mean over ngram tokens
+        'next_token_distr': use next token distribution as an embedding (requires AutoModelForCausalLM checkpoint)
     all_ngrams: bool
         whether to include all ngrams of lower order
     """
@@ -65,7 +66,7 @@ def embed_and_sum_function(
     seqs = _get_seqs(
         example, dataset_key_text, fit_with_ngram_decomposition,
         ngrams, tokenizer_ngrams, parsing, nlp_chunks, all_ngrams, prune_stopwords)
-    if next_token_distr_embedding:
+    if embedding_strategy == 'next_token_distr':
         seqs = [f'{embedding_prefix}{x_i}{embedding_suffix}' for x_i in seqs]
 
     if not checkpoint.startswith("hkunlp/instructor") and (
@@ -93,7 +94,7 @@ def embed_and_sum_function(
             with torch.no_grad():
                 output = model(**batch)
             torch.cuda.empty_cache()
-            if next_token_distr_embedding:
+            if embedding_strategy == "next_token_distr":
                 emb = _next_token_distr_with_mask(
                     output["logits"], batch["attention_mask"]
                 )

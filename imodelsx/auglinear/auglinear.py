@@ -13,7 +13,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV, RidgeCV, Ridge
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, QuantileTransformer
 import transformers
 import imodelsx.auglinear.embed
 from tqdm import tqdm
@@ -47,7 +47,7 @@ class AugLinear(BaseEstimator):
         fit_with_ngram_decomposition=True,
         embedding_prefix="Represent the short phrase for sentiment classification: ",
         embedding_suffix="",
-        next_token_distr_embedding=False,
+        embedding_ngram_strategy='mean',
         zeroshot_class_dict: Dict[int, str] = None,
         zeroshot_strategy: str = 'pos_class',
         prune_stopwords: bool = False,
@@ -82,8 +82,9 @@ class AugLinear(BaseEstimator):
             if checkpoint is an instructor/autoregressive model, prepend this prompt
         embedding_suffix
             if checkpoint is an autoregressive model, append this prompt
-        next_token_distr_embedding
-            requires that checkpoint works with AutoModelForCausalLM
+        embedding_ngram_strategy
+            'mean': compute mean over ngram tokens
+            'next_token_distr': use next token distribution as an embedding (requires AutoModelForCausalLM checkpoint)
         zeroshot_class_dict
             Maps class numbers to names of the class to use to compute the embedding
             Ex. {0: 'negative', 1: 'positive'}
@@ -108,7 +109,7 @@ class AugLinear(BaseEstimator):
         self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
         self.embedding_prefix = embedding_prefix
         self.embedding_suffix = embedding_suffix
-        self.next_token_distr_embedding = next_token_distr_embedding
+        self.embedding_ngram_strategy = embedding_ngram_strategy
         self.zeroshot_class_dict = zeroshot_class_dict
         self.zeroshot_strategy = zeroshot_strategy
         self.prune_stopwords = prune_stopwords
@@ -200,7 +201,7 @@ class AugLinear(BaseEstimator):
             tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
                 self.checkpoint
             )
-            if self.next_token_distr_embedding:
+            if self.embedding_ngram_strategy == 'next_token_distr':
                 model = transformers.AutoModelForCausalLM.from_pretrained(
                     self.checkpoint,
                     device_map="auto",
@@ -217,7 +218,7 @@ class AugLinear(BaseEstimator):
         X: ArrayLike,
         model=None,
         tokenizer_embeddings=None,
-        renormalize_embs: bool = False,
+        renormalize_embs_strategy: str = None,
         batch_size: int = 8,
         verbose: bool = True,
         batch_size_embs: int = 512,
@@ -227,14 +228,17 @@ class AugLinear(BaseEstimator):
 
         Params
         ------
-        renormalize_embs
+        renormalize_embs_strategy
             whether to renormalize embeddings before fitting linear model
             (useful if getting a test set that is different from the training)
+            values: 'StandardScaler', 'QuantileTransformer'
         batch_size
             batch size to use for calculating embeddings (on gpu at same time)
         batch_size_embs
             batch size to use for number of embeddings stored (on cpu at same time)
         """
+        assert renormalize_embs_strategy in [
+            None, "StandardScaler", "QuantileTransformer", 'None']
         model, tokenizer_embeddings = self._get_model_and_tokenizer()
 
         ngrams_list = self._get_unique_ngrams_list(X)
@@ -250,9 +254,12 @@ class AugLinear(BaseEstimator):
             print("\tNothing to update!")
             return
 
-        def normalize_embs(embs, renormalize_embs):
-            if renormalize_embs:
-                embs = StandardScaler().fit_transform(embs)
+        def normalize_embs(embs, renormalize_embs_strategy):
+            if renormalize_embs_strategy in ["StandardScaler", "QuantileTransformer"]:
+                if renormalize_embs_strategy == "StandardScaler":
+                    embs = StandardScaler().fit_transform(embs)
+                elif renormalize_embs_strategy == "QuantileTransformer":
+                    embs = QuantileTransformer().fit_transform(embs)
             elif self.normalize_embs:
                 embs = self.normalizer.transform(embs)
             return _clean_np_array(embs)
@@ -271,14 +278,14 @@ class AugLinear(BaseEstimator):
                     batch_size,
                     summed=False
                 )
-                embs = normalize_embs(embs, renormalize_embs)
+                embs = normalize_embs(embs, renormalize_embs_strategy)
                 linear_coef[i: i + batch_size_embs] = (embs @ coef_embs).reshape(
                     -1, n_outputs
                 )
         else:
             embs = self._get_embs(ngrams_list, model,
                                   tokenizer_embeddings, batch_size, summed=False)
-            embs = normalize_embs(embs, renormalize_embs)
+            embs = normalize_embs(embs, renormalize_embs_strategy)
             linear_coef = embs @ coef_embs
 
         # save coefs
@@ -303,7 +310,7 @@ class AugLinear(BaseEstimator):
             checkpoint=self.checkpoint, layer=self.layer, batch_size=batch_size,
             embedding_prefix=self.embedding_prefix, embedding_suffix=self.embedding_suffix,
             prune_stopwords=self.prune_stopwords,
-            next_token_distr_embedding=self.next_token_distr_embedding
+            embedding_strategy=self.embedding_ngram_strategy
         )
 
         if summed:

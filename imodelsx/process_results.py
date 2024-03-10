@@ -145,7 +145,7 @@ def average_over_seeds(
 
     df_avg = (
         df.groupby(by=group_keys)[numeric_keys].aggregate(
-            [np.mean, sem]).reset_index()
+            ['mean', sem]).reset_index()
     )
     df_avg.columns = [x[0] + "_err" if x[1] == "sem" else x[0]
                       for x in df_avg.columns]
