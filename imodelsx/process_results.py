@@ -157,9 +157,12 @@ def remove_columns_with_static_values(df: pd.DataFrame):
     return df.loc[:, df.nunique() > 1]
 
 
-def get_experiment_keys(df, experiment_filename):
-    return [
+def get_experiment_keys(df, experiment_filename, exclude_seed=False):
+    experiment_keys = [
         k
         for k in get_main_args_list(experiment_filename=experiment_filename)
-        if not k == "seed" and k in df.columns and len(df[k].unique()) > 1
+        if k in df.columns and len(df[k].unique()) > 1
     ]
+    if exclude_seed:
+        experiment_keys = [k for k in experiment_keys if k != "seed"]
+    return experiment_keys
