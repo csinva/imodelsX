@@ -325,7 +325,6 @@ class LLM_HF:
             if use_cache:
                 os.makedirs(self.cache_dir, exist_ok=True)
                 hash_str = hashlib.sha256(str(prompt).encode()).hexdigest()
-                print(str(prompt), hash_str)
                 cache_file = join(
                     self.cache_dir, f"{hash_str}__num_tok={max_new_tokens}.pkl"
                 )
