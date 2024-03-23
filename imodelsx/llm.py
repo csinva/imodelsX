@@ -6,7 +6,7 @@ import transformers
 from transformers import AutoConfig, AutoModel, AutoTokenizer, AutoModelForCausalLM
 import re
 from transformers import LlamaForCausalLM, LlamaTokenizer
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, Union
 import numpy as np
 import os.path
 from os.path import join, dirname
@@ -244,13 +244,12 @@ class LLM_Chat:
 def load_tokenizer(checkpoint: str) -> transformers.PreTrainedTokenizer:
     if "facebook/opt" in checkpoint:
         # opt can't use fast tokenizer
-        return AutoTokenizer.from_pretrained(checkpoint, use_fast=False)
-    elif "llama_" in checkpoint:
-        return transformers.LlamaTokenizer.from_pretrained(join(LLAMA_DIR, checkpoint))
+        return AutoTokenizer.from_pretrained(checkpoint, use_fast=False, padding_side='left')
     elif "PMC_LLAMA" in checkpoint:
-        return transformers.LlamaTokenizer.from_pretrained("chaoyi-wu/PMC_LLAMA_7B")
+        return transformers.LlamaTokenizer.from_pretrained("chaoyi-wu/PMC_LLAMA_7B", padding_side='left')
     else:
-        return AutoTokenizer.from_pretrained(checkpoint)  # , use_fast=True)
+        # , use_fast=True)
+        return AutoTokenizer.from_pretrained(checkpoint, padding_side='left')
     # return AutoTokenizer.from_pretrained(checkpoint,
     # token=os.environ.get("LLAMA_TOKEN"),)
 
@@ -309,38 +308,51 @@ class LLM_HF:
 
     def __call__(
         self,
-        prompt: str,
+        prompt: Union[str, List[str]],
         stop: str = None,
         max_new_tokens=20,
         do_sample=False,
         use_cache=True,
-    ) -> str:
-        """Warning: stop is used posthoc but not during generation
+        verbose=False,
+        # batch_size=1,
+    ) -> Union[str, List[str]]:
+        """Warning: stop is used posthoc but not during generation.
+        Be careful, caching can take up a lot of memory....
         """
+        input_is_str = isinstance(prompt, str)
         with torch.no_grad():
             # cache
             if use_cache:
                 os.makedirs(self.cache_dir, exist_ok=True)
-                hash_str = hashlib.sha256(prompt.encode()).hexdigest()
+                hash_str = hashlib.sha256(str(prompt).encode()).hexdigest()
+                print(str(prompt), hash_str)
                 cache_file = join(
                     self.cache_dir, f"{hash_str}__num_tok={max_new_tokens}.pkl"
                 )
+
                 if os.path.exists(cache_file):
+                    if verbose:
+                        print("cached!")
                     return pkl.load(open(cache_file, "rb"))
+                if verbose:
+                    print("not cached...")
 
             # if stop is not None:
             # raise ValueError("stop kwargs are not permitted.")
+            if self._tokenizer.pad_token_id is None:
+                self._tokenizer.pad_token_id = self._tokenizer.eos_token_id
             inputs = self._tokenizer(
-                prompt, return_tensors="pt", return_attention_mask=True
+                prompt, return_tensors="pt",
+                return_attention_mask=True, padding=True,
+                truncation=False,
             ).to(
                 self._model.device
             )  # .input_ids.to("cuda")
             # stopping_criteria = StoppingCriteriaList([MaxLengthCriteria(max_length=max_tokens)])
             # outputs = self._model.generate(input_ids, max_length=max_tokens, stopping_criteria=stopping_criteria)
             # print('pad_token', self._tokenizer.pad_token)
-            if self._tokenizer.pad_token_id is None:
-                self._tokenizer.pad_token_id = self._tokenizer.eos_token_id
-                torch.manual_seed(0)
+
+            # torch.manual_seed(0)
             outputs = self._model.generate(
                 **inputs,
                 max_new_tokens=max_new_tokens,
@@ -348,32 +360,27 @@ class LLM_HF:
                 # pad_token=self._tokenizer.pad_token,
                 pad_token_id=self._tokenizer.pad_token_id,
                 # top_p=0.92,
+                # temperature=0,
                 # top_k=0
             )
-            out_str = self._tokenizer.decode(outputs[0])
-            # print('out_str', out_str)
-            if "facebook/opt" in self.checkpoint:
-                out_str = out_str[len("</s>") + len(prompt):]
-            elif "google/flan" in self.checkpoint:
-                out_str = out_str[len("<pad>"): out_str.index("</s>")]
-            elif "PMC_LLAMA" in self.checkpoint:
-                out_str = out_str[len("<unk>") + len(prompt):]
-            elif "llama_" in self.checkpoint:
-                out_str = out_str[len("<s>") + len(prompt):]
-            elif 'llama' in self.checkpoint and self.checkpoint.endswith('-hf'):
-                out_str = out_str[4 + len(prompt):]
-            elif 'mistralai' in self.checkpoint:
-                out_str = out_str[4 + len(prompt):]
-            else:
+            if input_is_str:
+                out_str = self._tokenizer.decode(
+                    outputs[0], skip_special_tokens=True)
                 out_str = out_str[len(prompt):]
-
-            # remove stop from output_str
-            if stop is not None and isinstance(stop, str) and stop in out_str:
-                out_str = out_str[: out_str.index(stop)]
-
-            if use_cache:
-                pkl.dump(out_str, open(cache_file, "wb"))
-            return out_str
+                if use_cache:
+                    pkl.dump(out_str, open(cache_file, "wb"))
+                return out_str
+            else:
+                out_strs = []
+                for i in range(outputs.shape[0]):
+                    out_tokens = outputs[i]
+                    out_str = self._tokenizer.decode(
+                        out_tokens, skip_special_tokens=True)
+                    out_str = out_str[len(prompt[i]):]
+                    out_strs.append(out_str)
+                if use_cache:
+                    pkl.dump(out_strs, open(cache_file, "wb"))
+                return out_strs
 
     def _get_logit_for_target_token(self, prompt: str, target_token_str: str) -> float:
         """Get logits target_token_str
