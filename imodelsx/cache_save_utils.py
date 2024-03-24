@@ -9,6 +9,7 @@ from dict_hash import sha256
 This file probably does not need to be edited.
 """
 
+
 def save_json(args={}, save_dir='results', fname='params.json', r={}):
     os.makedirs(save_dir, exist_ok=True)
     with open(os.path.join(save_dir, fname), 'w') as f:
@@ -37,7 +38,7 @@ def get_save_dir_unique(parser, parser_without_computational_args, args, save_di
     }
     save_dir_unique_hash = sha256(args_cache)
     save_dir = os.path.join(
-        save_dir_base, save_dir_unique_hash) # + save_dir_random_suffix)
+        save_dir_base, save_dir_unique_hash)  # + save_dir_random_suffix)
 
     already_cached = check_cached(save_dir_unique_hash, save_dir_base)
     return already_cached, save_dir
@@ -51,14 +52,13 @@ def check_cached(save_dir_unique_hash, save_dir, fname_results='results.pkl') ->
         return False
     exp_dirs = [d for d in os.listdir(save_dir)
                 if os.path.isdir(join(save_dir, d))]
-    
+
     logging.debug('checking for cached run...')
     for exp_dir in tqdm(exp_dirs):
         try:
             if exp_dir.startswith(save_dir_unique_hash):
-                params_file = join(save_dir, exp_dir, 'params.json')
-                results_final_file = join(save_dir, exp_dir, 'results.pkl')
-                if os.path.exists(params_file) and os.path.exists(results_final_file):
+                results_final_file = join(save_dir, exp_dir, fname_results)
+                if os.path.exists(results_final_file):
                     return True
         except:
             pass
