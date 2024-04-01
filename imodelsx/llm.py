@@ -367,8 +367,7 @@ class LLM_HF:
                 truncation=False,
             ).to(self._model.device)
 
-            # torch.manual_seed(0)
-            if return_next_token_prob_scores:
+            if return_next_token_prob_scores or target_token_strs or return_top_target_token_str:
                 outputs = self._model.generate(
                     **inputs,
                     max_new_tokens=1,
@@ -380,29 +379,31 @@ class LLM_HF:
                 next_token_probs = next_token_logits.softmax(
                     axis=-1).detach().cpu().numpy()
 
-                if target_token_strs is not None:
-                    target_token_ids = self._check_target_token_strs(
-                        target_token_strs)
-                    if return_top_target_token_str:
-                        selected_tokens = next_token_probs[:, np.array(
-                            target_token_ids)].squeeze().argmax(axis=-1)
-                        out_strs = [
-                            target_token_strs[selected_tokens[i]]
-                            for i in range(len(selected_tokens))
-                        ]
-                        if use_cache:
-                            pkl.dump(out_strs, open(cache_file, "wb"))
-                        return out_strs
-                    else:
-                        out_dict_list = [
-                            {target_token_strs[i]: next_token_probs[prompt_num, target_token_ids[i]]
-                             for i in range(len(target_token_strs))
-                             }
-                            for prompt_num in range(len(prompt))
-                        ]
-                        return out_dict_list
-                else:
+                if target_token_strs is None:
                     return next_token_probs
+
+                target_token_ids = self._check_target_token_strs(
+                    target_token_strs)
+                if return_top_target_token_str:
+                    selected_tokens = next_token_probs[:, np.array(
+                        target_token_ids)].squeeze().argmax(axis=-1)
+                    out_strs = [
+                        target_token_strs[selected_tokens[i]]
+                        for i in range(len(selected_tokens))
+                    ]
+                    if len(out_strs) == 1:
+                        out_strs = out_strs[0]
+                    if use_cache:
+                        pkl.dump(out_strs, open(cache_file, "wb"))
+                    return out_strs
+                else:
+                    out_dict_list = [
+                        {target_token_strs[i]: next_token_probs[prompt_num, target_token_ids[i]]
+                            for i in range(len(target_token_strs))
+                         }
+                        for prompt_num in range(len(prompt))
+                    ]
+                    return out_dict_list
             else:
                 outputs = self._model.generate(
                     **inputs,
@@ -433,11 +434,10 @@ class LLM_HF:
                 return out_strs
 
     def _check_target_token_strs(self, target_token_strs, override_token_with_first_token_id=False):
-        # deal with target_token_strs.... ######################
         if isinstance(target_token_strs, str):
             target_token_strs = [target_token_strs]
 
-        target_token_ids = [self._tokenizer(target_token_str)["input_ids"]
+        target_token_ids = [self._tokenizer(target_token_str, add_special_tokens=False)["input_ids"]
                             for target_token_str in target_token_strs]
 
         # Check that the target token is in the vocab

@@ -8,7 +8,10 @@ from functools import reduce
 from itertools import repeat
 import time
 import traceback
+import os
 from os.path import dirname, join
+
+from dict_hash import sha256
 submit_utils_dir = dirname(__file__)
 """Handles utilities for job sweeps,
 focused on embarassingly parallel sweeps on a single machine.
@@ -28,6 +31,7 @@ def run_args_list(
     repeat_failed_jobs: bool = False,
     slurm: bool = False,
     slurm_kwargs: Optional[Dict] = None,
+    amlt_kwargs: Optional[Dict] = None,
 ):
     """
     Params
@@ -56,9 +60,14 @@ def run_args_list(
         Whether to run on SLURM (defaults to False)
     slurm_kwargs: Optional[Dict]
         kwargs for slurm
+    amlt_kwargs: Optional[Dict]
+        kwargs for amlt (will override everything else)
     """
-    n_gpus = len(gpu_ids)
-    _validate_run_arguments(n_cpus, gpu_ids)
+    if amlt_kwargs is not None:
+        print('Running on AMLT with', amlt_kwargs)
+    else:
+        n_gpus = len(gpu_ids)
+        _validate_run_arguments(n_cpus, gpu_ids)
 
     # adjust order
     if shuffle:
@@ -75,15 +84,8 @@ def run_args_list(
             n_gpus = 0
 
     # construct commands
-    param_str_list = []
-    for args in args_list:
-        param_str = cmd_python + ' ' + script_name + ' '
-        for k, v in args.items():
-            if isinstance(v, list):
-                param_str += '--' + k + ' ' + ' '.join(v) + ' '
-            else:
-                param_str += '--' + k + ' ' + str(v) + ' '
-        param_str_list.append(param_str)
+    param_str_list = [_param_str_from_args(
+        args, cmd_python, script_name) for args in args_list]
 
     # just print and exit
     if not actually_run:
@@ -100,6 +102,32 @@ def run_args_list(
             print(
                 f'\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n' + param_str)
             run_slurm(param_str, slurm_kwargs=slurm_kwargs)
+        return
+    elif amlt_kwargs is not None:
+        assert 'amlt_file' in amlt_kwargs
+        sku = amlt_kwargs.get('sku', 'G1')
+        amlt_dir = dirname(amlt_kwargs['amlt_file'])
+
+        amlt_text = open(amlt_kwargs['amlt_file'], 'r').read()
+        script_name = script_name.replace(amlt_dir, '').strip('/')
+        param_str_list = [_param_str_from_args(
+            args, 'python', script_name) for args in args_list]
+
+        logs_dir = join(amlt_dir, 'logs')
+        os.makedirs(logs_dir, exist_ok=True)
+        for i, param_str in enumerate(param_str_list):
+            out_file = join(logs_dir, sha256(
+                {'s': param_str_list[i]}) + '.yaml')
+            s = amlt_text.format(
+                param_str=param_str_list[i],
+                sku=sku
+            ).replace('$CONFIG_DIR', '$CONFIG_DIR/..')
+            with open(out_file, 'w') as f:
+                f.write(s)
+            subprocess.run(
+                f'amlt run {out_file}', shell=True, check=True,
+            )
+        return
 
     # run serial
     elif n_cpus == 1 and n_gpus == 0:
@@ -201,6 +229,16 @@ def run_slurm(param_str, slurm_kwargs):
         {param_str}
         """
     )
+
+
+def _param_str_from_args(args, cmd_python, script_name):
+    param_str = cmd_python + ' ' + script_name + ' '
+    for k, v in args.items():
+        if isinstance(v, list):
+            param_str += '--' + k + ' ' + ' '.join(v) + ' '
+        else:
+            param_str += '--' + k + ' ' + str(v) + ' '
+    return param_str
 
 
 def run_on_gpu(param_str, i, n):
