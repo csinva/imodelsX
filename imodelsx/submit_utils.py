@@ -106,9 +106,10 @@ def run_args_list(
     elif amlt_kwargs is not None:
         assert 'amlt_file' in amlt_kwargs
         sku = amlt_kwargs.get('sku', 'G1')
+        process_count_per_node = amlt_kwargs.get('process_count_per_node', 1)
         amlt_dir = dirname(amlt_kwargs['amlt_file'])
-
         amlt_text = open(amlt_kwargs['amlt_file'], 'r').read()
+        assert amlt_text.endswith('jobs:'), 'amlt file must end with jobs:'
         script_name = script_name.replace(amlt_dir, '').strip('/')
         param_str_list = [_param_str_from_args(
             args, 'python', script_name) for args in args_list]
@@ -119,21 +120,31 @@ def run_args_list(
                 for param_str in param_str_list
             ]
 
-        # save yaml files in logs dir and run with amlt
+        # save yaml file with multiple jobs in logs dir and run with amlt
         logs_dir = join(amlt_dir, 'logs')
         os.makedirs(logs_dir, exist_ok=True)
+        job_template = '''
+- name: {name}
+  process_count_per_node: {process_count_per_node}
+  sku: {sku}
+  command:
+  - {param_str}'''
+        out_file = join(logs_dir, sha256({'s': str(param_str_list)}) + '.yaml')
+        s = amlt_text
         for i, param_str in enumerate(param_str_list):
-            out_file = join(logs_dir, sha256(
-                {'s': param_str_list[i]}) + '.yaml')
-            s = amlt_text.format(
-                param_str=param_str_list[i],
-                sku=sku
-            ).replace('$CONFIG_DIR', '$CONFIG_DIR/..')
-            with open(out_file, 'w') as f:
-                f.write(s)
-            subprocess.run(
-                f'amlt run {out_file}', shell=True, check=True,
+            job_text = job_template.format(
+                name=f'job_{i}',
+                process_count_per_node=process_count_per_node,
+                sku=sku,
+                param_str=param_str
             )
+            s = s + job_text
+        s = s.replace('$CONFIG_DIR', '$CONFIG_DIR/..')
+        with open(out_file, 'w') as f:
+            f.write(s)
+        subprocess.run(
+            f'amlt run {out_file}', shell=True, check=True,
+        )
         return
 
     # run serial
