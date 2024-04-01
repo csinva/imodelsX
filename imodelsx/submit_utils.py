@@ -112,7 +112,14 @@ def run_args_list(
         script_name = script_name.replace(amlt_dir, '').strip('/')
         param_str_list = [_param_str_from_args(
             args, 'python', script_name) for args in args_list]
+        if 'mnt_rename' in amlt_kwargs:
+            param_str_list = [
+                param_str.replace(
+                    amlt_kwargs['mnt_rename'][0], amlt_kwargs['mnt_rename'][1])
+                for param_str in param_str_list
+            ]
 
+        # save yaml files in logs dir and run with amlt
         logs_dir = join(amlt_dir, 'logs')
         os.makedirs(logs_dir, exist_ok=True)
         for i, param_str in enumerate(param_str_list):
