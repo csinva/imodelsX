@@ -17,7 +17,11 @@ import hashlib
 import torch
 import time
 
-
+HF_TOKEN = None
+if 'HF_TOKEN' in os.environ:
+    HF_TOKEN = os.environ.get("HF_TOKEN")
+elif os.path.exists('~/.HF_TOKEN'):
+    HF_TOKEN = open(os.path.expanduser('~/.HF_TOKEN'), 'r').read().strip()
 '''
 Example usage:
 checkpoint = 'meta-llama/Llama-2-7b-hf' # gpt-4, gpt-35-turbo, meta-llama/Llama-2-70b-hf, mistralai/Mistral-7B-v0.1
@@ -244,14 +248,12 @@ class LLM_Chat:
 def load_tokenizer(checkpoint: str) -> transformers.PreTrainedTokenizer:
     if "facebook/opt" in checkpoint:
         # opt can't use fast tokenizer
-        return AutoTokenizer.from_pretrained(checkpoint, use_fast=False, padding_side='left')
+        return AutoTokenizer.from_pretrained(checkpoint, use_fast=False, padding_side='left', token=HF_TOKEN)
     elif "PMC_LLAMA" in checkpoint:
-        return transformers.LlamaTokenizer.from_pretrained("chaoyi-wu/PMC_LLAMA_7B", padding_side='left')
+        return transformers.LlamaTokenizer.from_pretrained("chaoyi-wu/PMC_LLAMA_7B", padding_side='left', token=HF_TOKEN)
     else:
         # , use_fast=True)
-        return AutoTokenizer.from_pretrained(checkpoint, padding_side='left')
-    # return AutoTokenizer.from_pretrained(checkpoint,
-    # token=os.environ.get("LLAMA_TOKEN"),)
+        return AutoTokenizer.from_pretrained(checkpoint, padding_side='left', token=HF_TOKEN)
 
 
 class LLM_HF:
@@ -277,11 +279,11 @@ class LLM_HF:
                 **kwargs,
             )
         elif "llama-2" in checkpoint.lower():
-            self._model = transformers.AutoModelForCausalLM.from_pretrained(
+            self._model = AutoModelForCausalLM.from_pretrained(
                 checkpoint,
                 torch_dtype=torch.float16,
                 device_map="auto",
-                token=os.environ.get("LLAMA_TOKEN"),
+                token=HF_TOKEN,
                 offload_folder="offload",
             )
         elif "llama_" in checkpoint:
@@ -298,7 +300,8 @@ class LLM_HF:
             self._model = AutoModelForCausalLM.from_pretrained(checkpoint)
         else:
             self._model = AutoModelForCausalLM.from_pretrained(
-                checkpoint, device_map="auto", torch_dtype=torch.float16
+                checkpoint, device_map="auto", torch_dtype=torch.float16,
+                token=HF_TOKEN,
             )
         self.checkpoint = checkpoint
         self.cache_dir = join(
