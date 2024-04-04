@@ -95,7 +95,7 @@ def fill_missing_args_with_default(df, experiment_filename="01_train_model.py"):
 def delete_runs_in_dataframe(
     df: pd.DataFrame, actually_delete=False,
     directory_key="save_dir_unique",
-    save_dir_prefix_replace=('/mntv1', '/home/chansingh/mntv1')
+    # save_dir_prefix_replace=('/mntv1', '/home/chansingh/mntv1')
 ):
     """Deletes stored results for all runs in the dataframe r."""
     if not actually_delete:
@@ -107,11 +107,11 @@ def delete_runs_in_dataframe(
     num_deleted = 0
     for i in tqdm(range(df.shape[0])):
         save_dir = df.iloc[i][directory_key]
-        if save_dir_prefix_replace is not None:
-            if save_dir.startswith(save_dir_prefix_replace[0]):
-                save_dir = save_dir.replace(
-                    save_dir_prefix_replace[0], save_dir_prefix_replace[1]
-                )
+        # if save_dir_prefix_replace is not None:
+        #     if save_dir.startswith(save_dir_prefix_replace[0]):
+        #         save_dir = save_dir.replace(
+        #             save_dir_prefix_replace[0], save_dir_prefix_replace[1]
+        #         )
         try:
             os.system(f"rm -rf {save_dir}")
             num_deleted += 1

@@ -89,7 +89,7 @@ def run_args_list(
     # assign unique seeds
     if unique_seeds:
         for i, args in enumerate(args_list):
-            args_list[i]['seed'] = random.randint(1, 1e6)
+            args_list[i]['seed'] = random.randint(1, int(1e6))
 
     # construct commands
     param_str_list = [_param_str_from_args(
@@ -299,7 +299,7 @@ def run_on_gpu(param_str, i, n):
 
 def get_args_list(
     params_shared_dict: Dict[str, List],
-    params_coupled_dict: Dict[Tuple[str], List[Tuple]],
+    params_coupled_dict: Dict[Tuple[str], List[Tuple]] = {},
 ) -> List[Dict[str, Any]]:
     _validate_arguments(params_shared_dict, params_coupled_dict)
 
@@ -342,6 +342,8 @@ def _validate_arguments(
     params_coupled_dict: Dict[Tuple[str], List[Tuple]],
 ):
     for k, v in params_shared_dict.items():
+        if isinstance(v, range):
+            v = list(v)
         assert isinstance(
             k, str), f"params_shared_dict key {k} must be type list, got type {type(k)}"
         assert isinstance(
