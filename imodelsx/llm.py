@@ -325,6 +325,8 @@ class LLM_HF:
         """Warning: stop is used posthoc but not during generation.
         Be careful, caching can take up a lot of memory....
 
+        Example mistral-instruct prompt: "<s>[INST]'Input text: {example}\nQuestion: {question} Answer yes or no.[/INST]"
+
 
         Params
         ------
@@ -420,7 +422,11 @@ class LLM_HF:
             if input_is_str:
                 out_str = self._tokenizer.decode(
                     outputs[0], skip_special_tokens=True)
-                out_str = out_str[len(prompt):]
+                if 'mistral' in self.checkpoint and 'Instruct' in self.checkpoint:
+                    out_str = out_str[len(prompt) - 2:]
+                else:
+                    out_str = out_str[len(prompt):]
+
                 if use_cache:
                     pkl.dump(out_str, open(cache_file, "wb"))
                 return out_str
@@ -430,7 +436,10 @@ class LLM_HF:
                     out_tokens = outputs[i]
                     out_str = self._tokenizer.decode(
                         out_tokens, skip_special_tokens=True)
-                    out_str = out_str[len(prompt[i]):]
+                    if 'mistral' in self.checkpoint and 'Instruct' in self.checkpoint:
+                        out_str = out_str[len(prompt[i]) - 2:]
+                    else:
+                        out_str = out_str[len(prompt[i]):]
                     out_strs.append(out_str)
                 if use_cache:
                     pkl.dump(out_strs, open(cache_file, "wb"))
