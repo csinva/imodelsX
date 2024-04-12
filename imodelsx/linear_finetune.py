@@ -18,6 +18,7 @@ import os.path
 import warnings
 import pickle as pkl
 import torch
+import torch.nn
 from sklearn.exceptions import ConvergenceWarning
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -176,6 +177,20 @@ class LinearFinetune(BaseEstimator):
             embs = self.normalizer.transform(embs)
         return self.linear.predict_proba(embs)
 
+    def _export_to_pytorch(self):
+        assert self.normalize_embs == False, "not implemented"
+        weights = self.linear.coef_
+        intercept = self.linear.intercept_
+        torch_model = LinearModelPytorch(
+            in_features=weights.shape[1],
+            out_classes=weights.shape[0],
+        )
+        torch_model.linear.weight = torch.nn.Parameter(
+            torch.tensor(weights, dtype=torch.float32))
+        torch_model.linear.bias = torch.nn.Parameter(
+            torch.tensor(intercept, dtype=torch.float32))
+        return torch_model
+
 
 class LinearFinetuneRegressor(LinearFinetune, RegressorMixin):
     ...
@@ -185,12 +200,27 @@ class LinearFinetuneClassifier(LinearFinetune, ClassifierMixin):
     ...
 
 
+class LinearModelPytorch(torch.nn.Module):
+    def __init__(self, in_features, out_classes):
+        super(LinearModelPytorch, self).__init__()
+        self.linear = torch.nn.Linear(in_features, out_classes)
+
+    def forward(self, x):
+        return self.linear(x)
+
+
+def sigmoid(z):
+    """Apply the sigmoid function."""
+    return 1 / (1 + np.exp(-z))
+
+
 if __name__ == "__main__":
     import imodelsx.data
 
     dset, k = imodelsx.data.load_huggingface_dataset(
-        "rotten_tomatoes", binary_classification=False, subsample_frac=0.1
+        "rotten_tomatoes", subsample_frac=0.01
     )
+    text_test = dset["test"]["text"][:100]
     print(dset)
     print(dset["train"])
     print(np.unique(dset["train"]["label"]))
@@ -198,13 +228,19 @@ if __name__ == "__main__":
     clf = LinearFinetuneClassifier()
     clf.fit(dset["train"]["text"], dset["train"]["label"])
 
-    print("predicting")
-    preds = clf.predict(dset["test"]["text"])
-    print(preds.shape)
-
     print("predicting proba")
-    preds_proba = clf.predict_proba(dset["test"]["text"])
+    preds_proba = clf.predict_proba(text_test)
     print(preds_proba.shape)
+
+    print('predicting proba pytorch')
+    clf_pytorch = clf._export_to_pytorch()
+    preds_pytorch = clf_pytorch(torch.tensor(clf._get_embs(text_test)))
+    preds_proba_pytorch = sigmoid(preds_pytorch.detach().numpy())
+    assert np.allclose(preds_proba[:, 1].flatten(
+    ), preds_proba_pytorch.flatten(), atol=1e-3)
+
+    print("predicting")
+    preds = clf.predict(text_test)
 
     assert preds_proba.shape[0] == preds.shape[0]
     print(
