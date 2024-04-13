@@ -105,6 +105,8 @@ class LLM_OpenAI:
         self,
         prompt: str,
         max_new_tokens=250,
+        frequency_penalty=0.25,  # maximum is 2
+        temperature=0.1,
         do_sample=True,
         stop=None,
         return_str=True,
@@ -123,9 +125,9 @@ class LLM_OpenAI:
             engine=self.checkpoint,
             prompt=prompt,
             max_tokens=max_new_tokens,
-            temperature=0.1,
+            temperature=temperature,
             top_p=1,
-            frequency_penalty=0.25,  # maximum is 2
+            frequency_penalty=frequency_penalty,
             presence_penalty=0,
             stop=stop,
             # stop=["101"]
