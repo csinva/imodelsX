@@ -90,7 +90,7 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
 
     def _calc_prompt_features(self, X, prompts):
         prompt_features = np.zeros((len(X), len(prompts)))
-        llm = imodelsx.llm.get_llm(self.checkpoint)._model
+        llm = imodelsx.llm.get_llm(self.checkpoint).model_
         if self.device is not None:
             llm = llm.to(self.device)
         stump = None

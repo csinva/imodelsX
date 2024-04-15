@@ -1,3 +1,4 @@
+from copy import deepcopy
 import json
 from transformers import (
     T5ForConditionalGeneration,
@@ -250,17 +251,24 @@ class LLM_Chat:
 def load_tokenizer(checkpoint: str) -> transformers.PreTrainedTokenizer:
     if "facebook/opt" in checkpoint:
         # opt can't use fast tokenizer
-        return AutoTokenizer.from_pretrained(checkpoint, use_fast=False, padding_side='left', token=HF_TOKEN)
+        tokenizer = AutoTokenizer.from_pretrained(
+            checkpoint, use_fast=False, padding_side='left', token=HF_TOKEN)
     elif "PMC_LLAMA" in checkpoint:
-        return transformers.LlamaTokenizer.from_pretrained("chaoyi-wu/PMC_LLAMA_7B", padding_side='left', token=HF_TOKEN)
+        tokenizer = transformers.LlamaTokenizer.from_pretrained(
+            "chaoyi-wu/PMC_LLAMA_7B", padding_side='left', token=HF_TOKEN)
     else:
         # , use_fast=True)
-        return AutoTokenizer.from_pretrained(checkpoint, padding_side='left', token=HF_TOKEN)
+        tokenizer = AutoTokenizer.from_pretrained(
+            checkpoint, padding_side='left', token=HF_TOKEN)
+
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+    return tokenizer
 
 
 class LLM_HF:
     def __init__(self, checkpoint, seed, CACHE_DIR, LLAMA_DIR=None):
-        self._tokenizer = load_tokenizer(checkpoint)
+        self.tokenizer_ = load_tokenizer(checkpoint)
 
         # set checkpoint
         kwargs = {
@@ -270,18 +278,18 @@ class LLM_HF:
             "low_cpu_mem_usage": True,
         }
         if "google/flan" in checkpoint:
-            self._model = T5ForConditionalGeneration.from_pretrained(
+            self.model_ = T5ForConditionalGeneration.from_pretrained(
                 checkpoint, device_map="auto", torch_dtype=torch.float16
             )
         elif checkpoint == "EleutherAI/gpt-j-6B":
-            self._model = AutoModelForCausalLM.from_pretrained(
+            self.model_ = AutoModelForCausalLM.from_pretrained(
                 checkpoint,
                 revision="float16",
                 torch_dtype=torch.float16,
                 **kwargs,
             )
         elif "llama-2" in checkpoint.lower():
-            self._model = AutoModelForCausalLM.from_pretrained(
+            self.model_ = AutoModelForCausalLM.from_pretrained(
                 checkpoint,
                 torch_dtype=torch.float16,
                 device_map="auto",
@@ -289,19 +297,19 @@ class LLM_HF:
                 offload_folder="offload",
             )
         elif "llama_" in checkpoint:
-            self._model = transformers.LlamaForCausalLM.from_pretrained(
+            self.model_ = transformers.LlamaForCausalLM.from_pretrained(
                 join(LLAMA_DIR, checkpoint),
                 device_map="auto",
                 torch_dtype=torch.float16,
             )
         elif 'microsoft/phi' in checkpoint:
-            self._model = AutoModelForCausalLM.from_pretrained(
+            self.model_ = AutoModelForCausalLM.from_pretrained(
                 checkpoint
             )
         elif checkpoint == "gpt-xl":
-            self._model = AutoModelForCausalLM.from_pretrained(checkpoint)
+            self.model_ = AutoModelForCausalLM.from_pretrained(checkpoint)
         else:
-            self._model = AutoModelForCausalLM.from_pretrained(
+            self.model_ = AutoModelForCausalLM.from_pretrained(
                 checkpoint, device_map="auto", torch_dtype=torch.float16,
                 token=HF_TOKEN,
             )
@@ -365,20 +373,18 @@ class LLM_HF:
 
             # if stop is not None:
             # raise ValueError("stop kwargs are not permitted.")
-            if self._tokenizer.pad_token_id is None:
-                self._tokenizer.pad_token_id = self._tokenizer.eos_token_id
-            inputs = self._tokenizer(
+            inputs = self.tokenizer_(
                 prompt, return_tensors="pt",
                 return_attention_mask=True,
                 padding=True,
                 truncation=False,
-            ).to(self._model.device)
+            ).to(self.model_.device)
 
             if return_next_token_prob_scores or target_token_strs or return_top_target_token_str:
-                outputs = self._model.generate(
+                outputs = self.model_.generate(
                     **inputs,
                     max_new_tokens=1,
-                    pad_token_id=self._tokenizer.pad_token_id,
+                    pad_token_id=self.tokenizer_.pad_token_id,
                     output_logits=True,
                     return_dict_in_generate=True,
                 )
@@ -412,17 +418,17 @@ class LLM_HF:
                     ]
                     return out_dict_list
             else:
-                outputs = self._model.generate(
+                outputs = self.model_.generate(
                     **inputs,
                     max_new_tokens=max_new_tokens,
                     do_sample=do_sample,
-                    pad_token_id=self._tokenizer.pad_token_id,
+                    pad_token_id=self.tokenizer_.pad_token_id,
                 )
                 # top_p=0.92,
                 # temperature=0,
                 # top_k=0
             if input_is_str:
-                out_str = self._tokenizer.decode(
+                out_str = self.tokenizer_.decode(
                     outputs[0], skip_special_tokens=True)
                 if 'mistral' in self.checkpoint and 'Instruct' in self.checkpoint:
                     out_str = out_str[len(prompt) - 2:]
@@ -436,7 +442,7 @@ class LLM_HF:
                 out_strs = []
                 for i in range(outputs.shape[0]):
                     out_tokens = outputs[i]
-                    out_str = self._tokenizer.decode(
+                    out_str = self.tokenizer_.decode(
                         out_tokens, skip_special_tokens=True)
                     if 'mistral' in self.checkpoint and 'Instruct' in self.checkpoint:
                         out_str = out_str[len(prompt[i]) - 2:]
@@ -451,7 +457,7 @@ class LLM_HF:
         if isinstance(target_token_strs, str):
             target_token_strs = [target_token_strs]
 
-        target_token_ids = [self._tokenizer(target_token_str, add_special_tokens=False)["input_ids"]
+        target_token_ids = [self.tokenizer_(target_token_str, add_special_tokens=False)["input_ids"]
                             for target_token_str in target_token_strs]
 
         # Check that the target token is in the vocab
@@ -464,9 +470,32 @@ class LLM_HF:
                 if len(target_token_ids[i]) > 1:
                     raise ValueError(
                         f"target_token_str {target_token_strs[i]} has multiple tokens: " +
-                        str([self._tokenizer.decode(target_token_id)
+                        str([self.tokenizer_.decode(target_token_id)
                             for target_token_id in target_token_ids[i]]))
         return target_token_ids
+
+
+class LLMEmbs:
+    def __init__(self, checkpoint):
+        self.tokenizer_ = load_tokenizer(checkpoint)
+        self.model_ = AutoModel.from_pretrained(
+            checkpoint, output_hidden_states=True)
+
+    def get_embs(self, texts: List[str], layer_idx: int = 18, batch_size=16):
+        embs = []
+        for i in range(0, len(texts), batch_size):
+            inputs = self.tokenizer_(
+                texts[i:i + batch_size], return_tensors='pt', padding=True)
+            hidden_states = self.model_(**inputs).hidden_states
+
+            # layers x batch x tokens x features
+            emb = hidden_states[layer_idx].detach().numpy()
+
+            # get emb from last token
+            emb = emb[:, -1, :]
+            embs.append(deepcopy(emb))
+        embs = np.concatenate(embs)
+        return embs
 
 
 if __name__ == "__main__":
@@ -508,7 +537,7 @@ if __name__ == "__main__":
     # ans = llm(prompts, return_next_token_prob_scores=True,
     #           use_cache=False, target_token_strs=target_token_strs)
 
-    # FORCE WORDSSSSSSSSS ##########
+    # FORCE WORDS ##########
     llm = get_llm("gpt2")
     prompts = ['roses are red, violets are',
                'may the force be with', 'trees are usually']
