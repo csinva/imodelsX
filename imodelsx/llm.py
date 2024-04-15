@@ -17,6 +17,7 @@ from scipy.special import softmax
 import hashlib
 import torch
 import time
+from tqdm import tqdm
 
 HF_TOKEN = None
 if 'HF_TOKEN' in os.environ:
@@ -481,9 +482,11 @@ class LLMEmbs:
         self.model_ = AutoModel.from_pretrained(
             checkpoint, output_hidden_states=True)
 
-    def get_embs(self, texts: List[str], layer_idx: int = 18, batch_size=16):
+    def __call__(self, texts: List[str], layer_idx: int = 18, batch_size=16):
+        '''Returns embeddings
+        '''
         embs = []
-        for i in range(0, len(texts), batch_size):
+        for i in tqdm(range(0, len(texts), batch_size)):
             inputs = self.tokenizer_(
                 texts[i:i + batch_size], return_tensors='pt', padding=True)
             hidden_states = self.model_(**inputs).hidden_states
