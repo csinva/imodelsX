@@ -480,7 +480,9 @@ class LLMEmbs:
     def __init__(self, checkpoint):
         self.tokenizer_ = load_tokenizer(checkpoint)
         self.model_ = AutoModel.from_pretrained(
-            checkpoint, output_hidden_states=True)
+            checkpoint, output_hidden_states=True,
+            device_map="auto",
+            torch_dtype=torch.float16,)
 
     def __call__(self, texts: List[str], layer_idx: int = 18, batch_size=16):
         '''Returns embeddings
@@ -488,11 +490,11 @@ class LLMEmbs:
         embs = []
         for i in tqdm(range(0, len(texts), batch_size)):
             inputs = self.tokenizer_(
-                texts[i:i + batch_size], return_tensors='pt', padding=True)
+                texts[i:i + batch_size], return_tensors='pt', padding=True).to(self.model_.device)
             hidden_states = self.model_(**inputs).hidden_states
 
             # layers x batch x tokens x features
-            emb = hidden_states[layer_idx].detach().numpy()
+            emb = hidden_states[layer_idx].detach().cpu().numpy()
 
             # get emb from last token
             emb = emb[:, -1, :]
