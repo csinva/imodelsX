@@ -323,7 +323,8 @@ class LLM_HF_Pipeline:
         self.pipeline_ = transformers.pipeline(
             "text-generation",
             model=checkpoint,
-            model_kwargs={"torch_dtype": torch.bfloat16},
+            # model_kwargs={"torch_dtype": torch.bfloat16},
+            model_kwargs={'torch_dtype': torch.float16},
             device_map="auto"
         )
         self.cache_dir = join(CACHE_DIR)
