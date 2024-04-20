@@ -355,8 +355,9 @@ class LLM_HF_Pipeline:
         outputs = self.pipeline_(
             prompt,
             max_new_tokens=max_new_tokens,
+            pad_token_id=self.pipeline_.tokenizer.eos_token_id,
         )
-        print('outs', outputs)
+        # print('outs', outputs)
         if isinstance(prompt, str):
             texts = outputs[0]["generated_text"][len(prompt):]
         else:

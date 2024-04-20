@@ -26,7 +26,7 @@ def run_args_list(
     debug_mode: bool = False,
     shuffle: bool = False,
     reverse: bool = False,
-    unique_seeds: bool = False,
+    unique_seeds: str = None,
     n_cpus: int = 1,
     gpu_ids: Union[List[int], List[List[int]]] = [],
     repeat_failed_jobs: bool = False,
@@ -50,8 +50,8 @@ def run_args_list(
         Whether to shuffle the order of the script calls
     reverse: bool
         Whether to reverse the order of the script calls
-    unique_seeds: bool
-        Whether to assign random, unique seeds to each run
+    unique_seeds: str
+        Whether to assign random, unique values to each parameter with this value
     n_cpus: int
         Number of cpus to use (if >1, parallelizes over local machine)
     gpu_ids: List[int], List[List[int]]
@@ -89,7 +89,7 @@ def run_args_list(
     # assign unique seeds
     if unique_seeds:
         for i, args in enumerate(args_list):
-            args_list[i]['seed'] = random.randint(1, int(1e6))
+            args_list[i]['seed_stories'] = random.randint(1, int(1e6))
 
     # construct commands
     param_str_list = [_param_str_from_args(
