@@ -16,7 +16,7 @@ import json
 repo_dir = dirname(dirname(os.path.abspath(__file__)))
 
 
-def get_results_df(results_dir, use_cached=False, results_fname='results.pkl') -> pd.DataFrame:
+def get_results_df(results_dir, use_cached=False, results_fname='results.pkl', save_pickle=False) -> pd.DataFrame:
     """Load results from a directory of experiments,
     each experiments is a row in the dataframe
     """
@@ -46,7 +46,8 @@ def get_results_df(results_dir, use_cached=False, results_fname='results.pkl') -
             print(
                 f'Error loading {join(results_dir, dir_name, results_fname)}')
     r = pd.concat(results_list, axis=1).T.infer_objects()
-    r.to_pickle(fname)
+    if save_pickle:
+        r.to_pickle(fname)
     return r
 
 

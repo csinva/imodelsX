@@ -26,9 +26,10 @@ elif os.path.exists('~/.HF_TOKEN'):
     HF_TOKEN = open(os.path.expanduser('~/.HF_TOKEN'), 'r').read().strip()
 '''
 Example usage:
-checkpoint = 'meta-llama/Llama-2-7b-hf' # gpt-4, gpt-35-turbo, meta-llama/Llama-2-70b-hf, mistralai/Mistral-7B-v0.1
+# gpt-4, gpt-35-turbo, meta-llama/Llama-2-70b-hf, mistralai/Mistral-7B-v0.1
+checkpoint = 'meta-llama/Llama-2-7b-hf'
 llm = imodelsx.llm.get_llm(checkpoint)
-llm('may the force be') # returns ' with you'    
+llm('may the force be') # returns ' with you'
 '''
 
 # change these settings before using these classes!
@@ -60,6 +61,8 @@ def get_llm(
         return LLM_OpenAI(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR)
     elif checkpoint.startswith("gpt-3") or checkpoint.startswith("gpt-4"):
         return LLM_Chat(checkpoint, seed, role, CACHE_DIR)
+    elif 'Meta-Llama-3-8B' in checkpoint and 'Instruct' in checkpoint:
+        return LLM_HF_Pipeline(checkpoint, CACHE_DIR)
     else:
         # warning: this sets torch.manual_seed(seed)
         return LLM_HF(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR, LLAMA_DIR=LLAMA_DIR)
@@ -176,7 +179,8 @@ class LLM_Chat:
             Example: [
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": "Who won the world series in 2020?"},
-                {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
+                {"role": "assistant",
+                    "content": "The Los Angeles Dodgers won the World Series in 2020."},
                 {"role": "user", "content": "Where was it played?"}
             ]
         prompts_list: str
@@ -260,60 +264,114 @@ def load_tokenizer(checkpoint: str) -> transformers.PreTrainedTokenizer:
     else:
         # , use_fast=True)
         tokenizer = AutoTokenizer.from_pretrained(
-            checkpoint, padding_side='left', token=HF_TOKEN)
+            checkpoint, padding_side='left', use_fast=True, token=HF_TOKEN)
 
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
     return tokenizer
 
 
+def load_hf_model(checkpoint: str) -> transformers.PreTrainedModel:
+    # set checkpoint
+    kwargs = {
+        "pretrained_model_name_or_path": checkpoint,
+        "output_hidden_states": False,
+        # "pad_token_id": tokenizer.eos_token_id,
+        "low_cpu_mem_usage": True,
+    }
+    if "google/flan" in checkpoint:
+        return T5ForConditionalGeneration.from_pretrained(
+            checkpoint, device_map="auto", torch_dtype=torch.float16
+        )
+    elif checkpoint == "EleutherAI/gpt-j-6B":
+        return AutoModelForCausalLM.from_pretrained(
+            checkpoint,
+            revision="float16",
+            torch_dtype=torch.float16,
+            **kwargs,
+        )
+    elif "llama-2" in checkpoint.lower():
+        return AutoModelForCausalLM.from_pretrained(
+            checkpoint,
+            torch_dtype=torch.float16,
+            device_map="auto",
+            token=HF_TOKEN,
+            offload_folder="offload",
+        )
+    elif "llama_" in checkpoint:
+        return transformers.LlamaForCausalLM.from_pretrained(
+            join(LLAMA_DIR, checkpoint),
+            device_map="auto",
+            torch_dtype=torch.float16,
+        )
+    elif 'microsoft/phi' in checkpoint:
+        return AutoModelForCausalLM.from_pretrained(
+            checkpoint
+        )
+    elif checkpoint == "gpt-xl":
+        return AutoModelForCausalLM.from_pretrained(checkpoint)
+    else:
+        return AutoModelForCausalLM.from_pretrained(
+            checkpoint, device_map="auto", torch_dtype=torch.float16,
+            token=HF_TOKEN,
+        )
+
+
+class LLM_HF_Pipeline:
+    def __init__(self, checkpoint, CACHE_DIR):
+
+        self.pipeline_ = transformers.pipeline(
+            "text-generation",
+            model=checkpoint,
+            model_kwargs={"torch_dtype": torch.bfloat16},
+            device_map="auto"
+        )
+        self.cache_dir = join(CACHE_DIR)
+
+    def __call__(
+        self,
+        prompt: Union[str, List[str]],
+        max_new_tokens=20,
+        use_cache=True,
+        verbose=False,
+    ):
+
+        if use_cache:
+            os.makedirs(self.cache_dir, exist_ok=True)
+            hash_str = hashlib.sha256(str(prompt).encode()).hexdigest()
+            cache_file = join(
+                self.cache_dir, f"{hash_str}__num_tok={max_new_tokens}.pkl"
+            )
+
+            if os.path.exists(cache_file):
+                if verbose:
+                    print("cached!")
+                try:
+                    return pkl.load(open(cache_file, "rb"))
+                except:
+                    print('failed to load cache so rerunning...')
+            if verbose:
+                print("not cached...")
+        outputs = self.pipeline_(
+            prompt,
+            max_new_tokens=max_new_tokens,
+        )
+        print('outs', outputs)
+        if isinstance(prompt, str):
+            texts = outputs[0]["generated_text"][len(prompt):]
+        else:
+            texts = [outputs[i][0]['generated_text']
+                     [len(prompt[i]):] for i in range(len(outputs))]
+
+        if use_cache:
+            pkl.dump(texts, open(cache_file, "wb"))
+        return texts
+
+
 class LLM_HF:
     def __init__(self, checkpoint, seed, CACHE_DIR, LLAMA_DIR=None):
         self.tokenizer_ = load_tokenizer(checkpoint)
-
-        # set checkpoint
-        kwargs = {
-            "pretrained_model_name_or_path": checkpoint,
-            "output_hidden_states": False,
-            # "pad_token_id": tokenizer.eos_token_id,
-            "low_cpu_mem_usage": True,
-        }
-        if "google/flan" in checkpoint:
-            self.model_ = T5ForConditionalGeneration.from_pretrained(
-                checkpoint, device_map="auto", torch_dtype=torch.float16
-            )
-        elif checkpoint == "EleutherAI/gpt-j-6B":
-            self.model_ = AutoModelForCausalLM.from_pretrained(
-                checkpoint,
-                revision="float16",
-                torch_dtype=torch.float16,
-                **kwargs,
-            )
-        elif "llama-2" in checkpoint.lower():
-            self.model_ = AutoModelForCausalLM.from_pretrained(
-                checkpoint,
-                torch_dtype=torch.float16,
-                device_map="auto",
-                token=HF_TOKEN,
-                offload_folder="offload",
-            )
-        elif "llama_" in checkpoint:
-            self.model_ = transformers.LlamaForCausalLM.from_pretrained(
-                join(LLAMA_DIR, checkpoint),
-                device_map="auto",
-                torch_dtype=torch.float16,
-            )
-        elif 'microsoft/phi' in checkpoint:
-            self.model_ = AutoModelForCausalLM.from_pretrained(
-                checkpoint
-            )
-        elif checkpoint == "gpt-xl":
-            self.model_ = AutoModelForCausalLM.from_pretrained(checkpoint)
-        else:
-            self.model_ = AutoModelForCausalLM.from_pretrained(
-                checkpoint, device_map="auto", torch_dtype=torch.float16,
-                token=HF_TOKEN,
-            )
+        self.model_ = load_hf_model(checkpoint)
         self.checkpoint = checkpoint
         self.cache_dir = join(
             CACHE_DIR, "cache_hf", f'{checkpoint.replace("/", "_")}___{seed}'
@@ -431,8 +489,11 @@ class LLM_HF:
             if input_is_str:
                 out_str = self.tokenizer_.decode(
                     outputs[0], skip_special_tokens=True)
+                # print('out_str', out_str)
                 if 'mistral' in self.checkpoint and 'Instruct' in self.checkpoint:
                     out_str = out_str[len(prompt) - 2:]
+                elif 'Meta-Llama-3' in self.checkpoint and 'Instruct' in self.checkpoint:
+                    out_str = out_str[len(prompt) - 145:]
                 else:
                     out_str = out_str[len(prompt):]
 
@@ -447,6 +508,9 @@ class LLM_HF:
                         out_tokens, skip_special_tokens=True)
                     if 'mistral' in self.checkpoint and 'Instruct' in self.checkpoint:
                         out_str = out_str[len(prompt[i]) - 2:]
+                    elif 'Meta-Llama-3' in self.checkpoint and 'Instruct' in self.checkpoint:
+                        # print('here')
+                        out_str = out_str[len(prompt) + 187:]
                     else:
                         out_str = out_str[len(prompt[i]):]
                     out_strs.append(out_str)
