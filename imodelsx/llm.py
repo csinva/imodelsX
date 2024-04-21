@@ -3,6 +3,7 @@ import json
 from transformers import (
     T5ForConditionalGeneration,
 )
+from datasets import Dataset
 import transformers
 from transformers import AutoConfig, AutoModel, AutoTokenizer, AutoModelForCausalLM
 import re
@@ -327,6 +328,8 @@ class LLM_HF_Pipeline:
             model_kwargs={'torch_dtype': torch.float16},
             device_map="auto"
         )
+        self.pipeline_.tokenizer.pad_token_id = self.pipeline_.tokenizer.eos_token_id
+        self.pipeline_.tokenizer.padding_side = 'left'
         self.cache_dir = join(CACHE_DIR)
 
     def __call__(
@@ -335,6 +338,7 @@ class LLM_HF_Pipeline:
         max_new_tokens=20,
         use_cache=True,
         verbose=False,
+        batch_size=64,
     ):
 
         if use_cache:
@@ -356,7 +360,7 @@ class LLM_HF_Pipeline:
         outputs = self.pipeline_(
             prompt,
             max_new_tokens=max_new_tokens,
-            pad_token_id=self.pipeline_.tokenizer.eos_token_id,
+            batch_size=batch_size,
         )
         # print('outs', outputs)
         if isinstance(prompt, str):
