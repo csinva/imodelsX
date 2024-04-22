@@ -21,8 +21,6 @@ import torch
 import torch.nn
 from sklearn.exceptions import ConvergenceWarning
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
 
 class LinearFinetune(BaseEstimator):
     def __init__(
@@ -33,6 +31,7 @@ class LinearFinetune(BaseEstimator):
         normalize_embs=False,
         cache_embs_dir: str = None,
         verbose: int = 0,
+        device="cuda" if torch.cuda.is_available() else "cpu"
     ):
         """LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.
 
@@ -79,11 +78,12 @@ class LinearFinetune(BaseEstimator):
         self.normalize_embs = normalize_embs
         self.cache_embs_dir = cache_embs_dir
         self.verbose = verbose
+        self.device = device
         self._initialize_checkpoint_and_tokenizer()
 
     def _initialize_checkpoint_and_tokenizer(self):
         self.model = transformers.AutoModel.from_pretrained(
-            self.checkpoint).to(device)
+            self.checkpoint).to(self.device)
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(
             self.checkpoint)
 
