@@ -62,7 +62,7 @@ def get_llm(
         return LLM_OpenAI(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR)
     elif checkpoint.startswith("gpt-3") or checkpoint.startswith("gpt-4"):
         return LLM_Chat(checkpoint, seed, role, CACHE_DIR)
-    elif 'Meta-Llama-3-8B' in checkpoint and 'Instruct' in checkpoint:
+    elif 'Meta-Llama-3' in checkpoint and 'Instruct' in checkpoint:
         return LLM_HF_Pipeline(checkpoint, CACHE_DIR)
     else:
         # warning: this sets torch.manual_seed(seed)
@@ -325,6 +325,7 @@ class LLM_HF_Pipeline:
             "text-generation",
             model=checkpoint,
             # model_kwargs={"torch_dtype": torch.bfloat16},
+            # , 'device_map': "auto"},
             model_kwargs={'torch_dtype': torch.float16},
             device_map="auto"
         )
@@ -366,6 +367,7 @@ class LLM_HF_Pipeline:
         if isinstance(prompt, str):
             texts = outputs[0]["generated_text"][len(prompt):]
         else:
+            print('out0', repr(outputs[0][0]['generated_text']))
             texts = [outputs[i][0]['generated_text']
                      [len(prompt[i]):] for i in range(len(outputs))]
 
