@@ -363,11 +363,9 @@ class LLM_HF_Pipeline:
             max_new_tokens=max_new_tokens,
             batch_size=batch_size,
         )
-        # print('outs', outputs)
         if isinstance(prompt, str):
             texts = outputs[0]["generated_text"][len(prompt):]
         else:
-            print('out0', repr(outputs[0][0]['generated_text']))
             texts = [outputs[i][0]['generated_text']
                      [len(prompt[i]):] for i in range(len(outputs))]
 
@@ -397,7 +395,7 @@ class LLM_HF:
         return_next_token_prob_scores=False,
         target_token_strs: List[str] = None,
         return_top_target_token_str: bool = False,
-        # batch_size=1,
+        batch_size=1,
     ) -> Union[str, List[str]]:
         """Warning: stop is used posthoc but not during generation.
         Be careful, caching can take up a lot of memory....
