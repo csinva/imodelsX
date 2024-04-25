@@ -362,6 +362,8 @@ class LLM_HF_Pipeline:
             prompt,
             max_new_tokens=max_new_tokens,
             batch_size=batch_size,
+            # temperature=0,
+            do_sample=False,
         )
         if isinstance(prompt, str):
             texts = outputs[0]["generated_text"][len(prompt):]
