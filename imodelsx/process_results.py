@@ -87,9 +87,11 @@ def fill_missing_args_with_default(df, experiment_filename="01_train_model.py"):
     for k, v in args_dict.items():
         if k not in df.columns:
             df[k] = v
-        if v is None:
-            v = "None"
-        df[k] = df[k].fillna(v)
+        else:
+            if v is None:
+                df[k] = df[k].fillna(np.nan)
+            else:
+                df[k] = df[k].fillna(v)
     return df
 
 

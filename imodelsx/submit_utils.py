@@ -141,7 +141,7 @@ def run_args_list(
         s = amlt_text
         for i, param_str in enumerate(param_str_list):
             job_text = job_template.format(
-                name=f'job_{i}',
+                name=f'{sku}_job_{i}',
                 process_count_per_node=process_count_per_node,
                 sku=sku,
                 param_str=param_str
