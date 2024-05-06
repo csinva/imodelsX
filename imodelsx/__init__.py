@@ -11,3 +11,4 @@ from .iprompt.api import explain_dataset_iprompt
 from .iprompt.data import get_add_two_numbers_dataset
 from .sasc.api import explain_module_sasc
 from .treeprompt.treeprompt import TreePromptClassifier
+from .kan.kan_sklearn import KANClassifier, KANGAMClassifier, KANRegressor, KANGAMRegressor

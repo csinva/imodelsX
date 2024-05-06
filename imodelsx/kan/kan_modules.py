@@ -1,4 +1,4 @@
-'''Code for KanLinear and KAN taken from https://github.com/Blealtan/efficient-kan/tree/master
+'''Code for KanLinearModule and KANModule taken from https://github.com/Blealtan/efficient-kan/tree/master
 Original implementation at https://github.com/KindXiaoming/pykan
 Original paper: "KAN: Kolmogorov-Arnold Networks" https://arxiv.org/abs/2404.19756
 '''
@@ -16,7 +16,7 @@ import torch.optim as optim
 from tqdm import tqdm
 
 
-class KANLinear(torch.nn.Module):
+class KANLinearModule(torch.nn.Module):
     def __init__(
         self,
         in_features,
@@ -31,7 +31,7 @@ class KANLinear(torch.nn.Module):
         grid_eps=0.02,
         grid_range=[-1, 1],
     ):
-        super(KANLinear, self).__init__()
+        super(KANLinearModule, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.grid_size = grid_size
@@ -255,7 +255,7 @@ class KANLinear(torch.nn.Module):
         )
 
 
-class KAN(torch.nn.Module):
+class KANModule(torch.nn.Module):
     def __init__(
         self,
         layers_hidden,
@@ -268,14 +268,14 @@ class KAN(torch.nn.Module):
         grid_eps=0.02,
         grid_range=[-1, 1],
     ):
-        super(KAN, self).__init__()
+        super(KANModule, self).__init__()
         self.grid_size = grid_size
         self.spline_order = spline_order
 
         self.layers = torch.nn.ModuleList()
         for in_features, out_features in zip(layers_hidden, layers_hidden[1:]):
             self.layers.append(
-                KANLinear(
+                KANLinearModule(
                     in_features,
                     out_features,
                     grid_size=grid_size,
@@ -304,125 +304,34 @@ class KAN(torch.nn.Module):
         )
 
 
-class KANsklearn(BaseEstimator):
-    def __init__(self, hidden_layer_size=64,
-                 device='cpu', regularize_activation=1.0, regularize_entropy=1.0):
-        '''
-        Params
-        ------
-        hidden_layer_size : int
-            Number of neurons in the hidden layer.
-        '''
-        self.hidden_layer_size = hidden_layer_size
-        self.device = device
-        self.regularize_activation = regularize_activation
-        self.regularize_entropy = regularize_entropy
+class KANGAMModule(torch.nn.Module):
+    '''Learn a KAN model on each individual input feature
+    '''
 
-    def fit(self, X, y, batch_size=512, lr=1e-3, weight_decay=1e-4, gamma=0.8):
-        if isinstance(self, ClassifierMixin):
-            check_classification_targets(y)
-            self.classes_, y = np.unique(y, return_inverse=True)
-            num_outputs = len(self.classes_)
-            y = torch.tensor(y, dtype=torch.long)
-        else:
-            num_outputs = 1
-            y = torch.tensor(y, dtype=torch.float32)
-        X = torch.tensor(X, dtype=torch.float32)
-        num_features = X.shape[1]
-        self.model = KAN(
-            layers_hidden=[num_features,
-                           self.hidden_layer_size, num_outputs]
-        ).to(self.device)
+    def __init__(self, num_features, hidden_layer_size, n_classes, **kwargs):
+        super(KANGAMModule, self).__init__()
+        self.models = torch.nn.ModuleList([
+            KANModule(
+                layers_hidden=[1, hidden_layer_size, 1],
+                **kwargs)
+            for _ in range(num_features)
+        ])
+        self.linear = torch.nn.Linear(num_features, n_classes)
 
-        X_train, X_tune, y_train, y_tune = train_test_split(
-            X, y, test_size=0.2, random_state=42)
+    def forward(self, x: torch.Tensor, update_grid=False):
 
-        dset_train = torch.utils.data.TensorDataset(X_train, y_train)
-        dset_tune = torch.utils.data.TensorDataset(X_tune, y_tune)
-        loader_train = DataLoader(
-            dset_train, batch_size=batch_size, shuffle=True)
-        loader_tune = DataLoader(
-            dset_tune, batch_size=batch_size, shuffle=False)
+        features = torch.stack(
+            [model(x[:, i:i + 1], update_grid)
+             for i, model in enumerate(self.models)],
+            dim=1)
 
-        optimizer = optim.AdamW(self.model.parameters(),
-                                lr=lr, weight_decay=weight_decay)
-        scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
+        features = features.view(x.size(0), -1)
+        return self.linear(features)
 
-        # Define loss
-        if isinstance(self, ClassifierMixin):
-            criterion = nn.CrossEntropyLoss()
-        else:
-            criterion = nn.MSELoss()
-        tune_losses = []
-        for epoch in tqdm(range(100)):
-            self.model.train()
-            for x, labs in loader_train:
-                x = x.view(-1, num_features).to(self.device)
-                optimizer.zero_grad()
-                output = self.model(x).squeeze()
-                loss = criterion(output, labs.to(self.device).squeeze())
-                loss += self.model.regularization_loss(
-                    self.regularize_activation, self.regularize_entropy)
-
-                loss.backward()
-                optimizer.step()
-
-            # Validation
-            self.model.eval()
-            tune_loss = 0
-            with torch.no_grad():
-                for x, labs in loader_tune:
-                    x = x.view(-1, num_features).to(self.device)
-                    output = self.model(x).squeeze()
-                    tune_loss += criterion(output,
-                                           labs.to(self.device).squeeze()).item()
-            tune_loss /= len(loader_tune)
-            tune_losses.append(tune_loss)
-            scheduler.step()
-
-            # apply early stopping
-            if len(tune_losses) > 3 and tune_losses[-1] > tune_losses[-2]:
-                print("Early stopping")
-                return self
-
-        return self
-
-    @torch.no_grad()
-    def predict(self, X):
-        X = torch.tensor(X, dtype=torch.float32).to(self.device)
-        output = self.model(X)
-        if isinstance(self, ClassifierMixin):
-            return self.classes_[output.argmax(dim=1).cpu().numpy()]
-        else:
-            return output.cpu().numpy()
-
-
-class KANClassifier(KANsklearn, ClassifierMixin):
-    @torch.no_grad()
-    def predict_proba(self, X):
-        X = torch.tensor(X, dtype=torch.float32).to(self.device)
-        output = self.model(X)
-        return torch.nn.functional.softmax(output, dim=1).cpu().numpy()
-
-
-class KANRegressor(KANsklearn, RegressorMixin):
-    pass
-
-
-if __name__ == '__main__':
-    from sklearn.datasets import make_classification, make_regression
-    from sklearn.metrics import accuracy_score
-    X, y = make_classification(n_samples=1000, n_features=20, n_informative=2)
-    model = KANClassifier(hidden_layer_size=64, device='cpu',
-                          regularize_activation=1.0, regularize_entropy=1.0)
-    model.fit(X, y)
-    y_pred = model.predict(X)
-    print('Test acc', accuracy_score(y, y_pred))
-
-    # now try regression
-    X, y = make_regression(n_samples=1000, n_features=20, n_informative=2)
-    model = KANRegressor(hidden_layer_size=64, device='cpu',
-                         regularize_activation=1.0, regularize_entropy=1.0)
-    model.fit(X, y)
-    y_pred = model.predict(X)
-    print('Test correlation', np.corrcoef(y, y_pred.flatten())[0, 1])
+    def regularization_loss(self, regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=1.0):
+        return sum(
+            layer.regularization_loss(
+                regularize_activation, regularize_entropy)
+            for model in self.models
+            for layer in model.layers
+        ) + regularize_ridge * self.linear.weight.norm(p=2)
