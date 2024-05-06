@@ -45,6 +45,7 @@ def generate_ngrams_list(
     pad_starting_ngrams=False,
     pad_ending_ngrams=False,
     min_frequency=1,
+    prune_stopwords=False,
 ):
     &#34;&#34;&#34;Get list of ngrams from sentence using a tokenizer
 
@@ -66,10 +67,13 @@ def generate_ngrams_list(
     seqs = []
 
     if tokenizer_ngrams is None:
-        tokenizer_ngrams = lambda x: x.split()
+        def tokenizer_ngrams(x): return x.split()
 
     # unigrams
     unigrams_list = [str(x) for x in tokenizer_ngrams(sentence)]
+    if prune_stopwords:
+        unigrams_list = _prune_stopwords(unigrams_list)
+
     if ngrams == 1:
         seqs += unigrams_list
 
@@ -100,14 +104,16 @@ def generate_ngrams_list(
 
     if pad_starting_ngrams:
         assert all_ngrams is False, &#34;pad_starting_ngrams only works when all_ngrams=False&#34;
-        seqs_init = [&#39; &#39;.join(unigrams_list[:ngram_length]) for ngram_length in range(1, ngrams)]
+        seqs_init = [&#39; &#39;.join(unigrams_list[:ngram_length])
+                     for ngram_length in range(1, ngrams)]
         seqs = seqs_init + seqs
 
     if pad_ending_ngrams:
         assert all_ngrams is False, &#34;pad_ending_ngrams only works when all_ngrams=False&#34;
-        seqs_end = [&#39; &#39;.join(unigrams_list[-ngram_length:]) for ngram_length in range(1, ngrams)][::-1]
+        seqs_end = [&#39; &#39;.join(unigrams_list[-ngram_length:])
+                    for ngram_length in range(1, ngrams)][::-1]
         seqs = seqs + seqs_end
-    
+
     freqs = Counter(seqs)
 
     seqs = [seq for seq, freq in freqs.items() if freq &gt;= min_frequency]
@@ -181,7 +187,15 @@ STOPWORDS = {
     &#39;doesn&#39;, &#34;doesn&#39;t&#34;, &#39;hadn&#39;, &#34;hadn&#39;t&#34;, &#39;hasn&#39;, &#34;hasn&#39;t&#34;, &#39;haven&#39;, &#34;haven&#39;t&#34;, &#39;isn&#39;, &#34;isn&#39;t&#34;,
     &#39;ma&#39;, &#39;mightn&#39;, &#34;mightn&#39;t&#34;, &#39;mustn&#39;, &#34;mustn&#39;t&#34;, &#39;needn&#39;, &#34;needn&#39;t&#34;, &#39;shan&#39;, &#34;shan&#39;t&#34;,
     &#39;shouldn&#39;, &#34;shouldn&#39;t&#34;, &#39;wasn&#39;, &#34;wasn&#39;t&#34;, &#39;weren&#39;, &#34;weren&#39;t&#34;, &#39;won&#39;, &#34;won&#39;t&#34;, &#39;wouldn&#39;, &#34;wouldn&#39;t&#34;
-}</code></pre>
+}
+
+
+def _prune_stopwords(words_list, min_length=3):
+    return [
+        word for word in words_list
+        if word.lower() not in STOPWORDS
+        and len(word) &gt;= min_length
+    ]</code></pre>
 </details>
 </section>
 <section>
@@ -192,7 +206,7 @@ STOPWORDS = {
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="imodelsx.util.generate_ngrams_list"><code class="name flex">
-<span>def <span class="ident">generate_ngrams_list</span></span>(<span>sentence: str, ngrams: int, tokenizer_ngrams=None, all_ngrams=False, parsing: str = '', nlp_chunks=None, pad_starting_ngrams=False, pad_ending_ngrams=False, min_frequency=1)</span>
+<span>def <span class="ident">generate_ngrams_list</span></span>(<span>sentence: str, ngrams: int, tokenizer_ngrams=None, all_ngrams=False, parsing: str = '', nlp_chunks=None, pad_starting_ngrams=False, pad_ending_ngrams=False, min_frequency=1, prune_stopwords=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Get list of ngrams from sentence using a tokenizer</p>
@@ -222,6 +236,7 @@ minimum frequency to be considered for the ngrams_list</p></div>
     pad_starting_ngrams=False,
     pad_ending_ngrams=False,
     min_frequency=1,
+    prune_stopwords=False,
 ):
     &#34;&#34;&#34;Get list of ngrams from sentence using a tokenizer
 
@@ -243,10 +258,13 @@ minimum frequency to be considered for the ngrams_list</p></div>
     seqs = []
 
     if tokenizer_ngrams is None:
-        tokenizer_ngrams = lambda x: x.split()
+        def tokenizer_ngrams(x): return x.split()
 
     # unigrams
     unigrams_list = [str(x) for x in tokenizer_ngrams(sentence)]
+    if prune_stopwords:
+        unigrams_list = _prune_stopwords(unigrams_list)
+
     if ngrams == 1:
         seqs += unigrams_list
 
@@ -277,14 +295,16 @@ minimum frequency to be considered for the ngrams_list</p></div>
 
     if pad_starting_ngrams:
         assert all_ngrams is False, &#34;pad_starting_ngrams only works when all_ngrams=False&#34;
-        seqs_init = [&#39; &#39;.join(unigrams_list[:ngram_length]) for ngram_length in range(1, ngrams)]
+        seqs_init = [&#39; &#39;.join(unigrams_list[:ngram_length])
+                     for ngram_length in range(1, ngrams)]
         seqs = seqs_init + seqs
 
     if pad_ending_ngrams:
         assert all_ngrams is False, &#34;pad_ending_ngrams only works when all_ngrams=False&#34;
-        seqs_end = [&#39; &#39;.join(unigrams_list[-ngram_length:]) for ngram_length in range(1, ngrams)][::-1]
+        seqs_end = [&#39; &#39;.join(unigrams_list[-ngram_length:])
+                    for ngram_length in range(1, ngrams)][::-1]
         seqs = seqs + seqs_end
-    
+
     freqs = Counter(seqs)
 
     seqs = [seq for seq, freq in freqs.items() if freq &gt;= min_frequency]

@@ -37,7 +37,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.linear_model import LogisticRegressionCV, RidgeCV
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
-from spacy.lang.en import English
+# from spacy.lang.en import English
 from scipy.sparse import issparse
 from sklearn.preprocessing import StandardScaler
 import transformers
@@ -47,9 +47,8 @@ import os.path
 import warnings
 import pickle as pkl
 import torch
+import torch.nn
 from sklearn.exceptions import ConvergenceWarning
-
-device = &#34;cuda&#34; if torch.cuda.is_available() else &#34;cpu&#34;
 
 
 class LinearFinetune(BaseEstimator):
@@ -61,6 +60,7 @@ class LinearFinetune(BaseEstimator):
         normalize_embs=False,
         cache_embs_dir: str = None,
         verbose: int = 0,
+        device=&#34;cuda&#34; if torch.cuda.is_available() else &#34;cpu&#34;
     ):
         &#34;&#34;&#34;LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.
 
@@ -107,11 +107,14 @@ class LinearFinetune(BaseEstimator):
         self.normalize_embs = normalize_embs
         self.cache_embs_dir = cache_embs_dir
         self.verbose = verbose
+        self.device = device
         self._initialize_checkpoint_and_tokenizer()
 
     def _initialize_checkpoint_and_tokenizer(self):
-        self.model = transformers.AutoModel.from_pretrained(self.checkpoint).to(device)
-        self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.checkpoint)
+        self.model = transformers.AutoModel.from_pretrained(
+            self.checkpoint).to(self.device)
+        self.tokenizer = transformers.AutoTokenizer.from_pretrained(
+            self.checkpoint)
 
     def fit(
         self,
@@ -142,13 +145,15 @@ class LinearFinetune(BaseEstimator):
         if self.cache_embs_dir is not None and os.path.exists(
             os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;)
         ):
-            embs = pkl.load(open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
+            embs = pkl.load(
+                open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
         else:
             embs = self._get_embs(X_text)
             if self.cache_embs_dir is not None:
                 os.makedirs(self.cache_embs_dir, exist_ok=True)
                 pkl.dump(
-                    embs, open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;)
+                    embs, open(os.path.join(
+                        self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;)
                 )
         if self.normalize_embs:
             self.normalizer = StandardScaler()
@@ -201,6 +206,20 @@ class LinearFinetune(BaseEstimator):
             embs = self.normalizer.transform(embs)
         return self.linear.predict_proba(embs)
 
+    def _export_to_pytorch(self):
+        assert self.normalize_embs == False, &#34;not implemented&#34;
+        weights = self.linear.coef_
+        intercept = self.linear.intercept_
+        torch_model = LinearModelPytorch(
+            in_features=weights.shape[1],
+            out_classes=weights.shape[0],
+        )
+        torch_model.linear.weight = torch.nn.Parameter(
+            torch.tensor(weights, dtype=torch.float32))
+        torch_model.linear.bias = torch.nn.Parameter(
+            torch.tensor(intercept, dtype=torch.float32))
+        return torch_model
+
 
 class LinearFinetuneRegressor(LinearFinetune, RegressorMixin):
     ...
@@ -210,12 +229,27 @@ class LinearFinetuneClassifier(LinearFinetune, ClassifierMixin):
     ...
 
 
+class LinearModelPytorch(torch.nn.Module):
+    def __init__(self, in_features, out_classes):
+        super(LinearModelPytorch, self).__init__()
+        self.linear = torch.nn.Linear(in_features, out_classes)
+
+    def forward(self, x):
+        return self.linear(x)
+
+
+def sigmoid(z):
+    &#34;&#34;&#34;Apply the sigmoid function.&#34;&#34;&#34;
+    return 1 / (1 + np.exp(-z))
+
+
 if __name__ == &#34;__main__&#34;:
     import imodelsx.data
 
     dset, k = imodelsx.data.load_huggingface_dataset(
-        &#34;rotten_tomatoes&#34;, binary_classification=False, subsample_frac=0.1
+        &#34;rotten_tomatoes&#34;, subsample_frac=0.01
     )
+    text_test = dset[&#34;test&#34;][&#34;text&#34;][:100]
     print(dset)
     print(dset[&#34;train&#34;])
     print(np.unique(dset[&#34;train&#34;][&#34;label&#34;]))
@@ -223,13 +257,19 @@ if __name__ == &#34;__main__&#34;:
     clf = LinearFinetuneClassifier()
     clf.fit(dset[&#34;train&#34;][&#34;text&#34;], dset[&#34;train&#34;][&#34;label&#34;])
 
-    print(&#34;predicting&#34;)
-    preds = clf.predict(dset[&#34;test&#34;][&#34;text&#34;])
-    print(preds.shape)
-
     print(&#34;predicting proba&#34;)
-    preds_proba = clf.predict_proba(dset[&#34;test&#34;][&#34;text&#34;])
+    preds_proba = clf.predict_proba(text_test)
     print(preds_proba.shape)
+
+    print(&#39;predicting proba pytorch&#39;)
+    clf_pytorch = clf._export_to_pytorch()
+    preds_pytorch = clf_pytorch(torch.tensor(clf._get_embs(text_test)))
+    preds_proba_pytorch = sigmoid(preds_pytorch.detach().numpy())
+    assert np.allclose(preds_proba[:, 1].flatten(
+    ), preds_proba_pytorch.flatten(), atol=1e-3)
+
+    print(&#34;predicting&#34;)
+    preds = clf.predict(text_test)
 
     assert preds_proba.shape[0] == preds.shape[0]
     print(
@@ -244,20 +284,68 @@ if __name__ == &#34;__main__&#34;:
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="imodelsx.linear_finetune.sigmoid"><code class="name flex">
+<span>def <span class="ident">sigmoid</span></span>(<span>z)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Apply the sigmoid function.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sigmoid(z):
+    &#34;&#34;&#34;Apply the sigmoid function.&#34;&#34;&#34;
+    return 1 / (1 + np.exp(-z))</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
 <dt id="imodelsx.linear_finetune.LinearFinetune"><code class="flex name class">
 <span>class <span class="ident">LinearFinetune</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False, cache_embs_dir: str = None, verbose: int = 0)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False, cache_embs_dir: str = None, verbose: int = 0, device='cuda')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
+<p>Inheriting from this class provides default implementations of:</p>
+<ul>
+<li>setting and getting parameters used by <code>GridSearchCV</code> and friends;</li>
+<li>textual and HTML representation displayed in terminals and IDEs;</li>
+<li>estimator serialization;</li>
+<li>parameters validation;</li>
+<li>data validation;</li>
+<li>feature names validation.</li>
+</ul>
+<p>Read more in the :ref:<code>User Guide &lt;rolling_your_own_estimator&gt;</code>.</p>
 <h2 id="notes">Notes</h2>
 <p>All estimators should specify all the parameters that can be set
 at the class level in their <code>__init__</code> as explicit keyword
 arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
+<h2 id="examples">Examples</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; import numpy as np
+&gt;&gt;&gt; from sklearn.base import BaseEstimator
+&gt;&gt;&gt; class MyEstimator(BaseEstimator):
+...     def __init__(self, *, param=1):
+...         self.param = param
+...     def fit(self, X, y=None):
+...         self.is_fitted_ = True
+...         return self
+...     def predict(self, X):
+...         return np.full(shape=X.shape[0], fill_value=self.param)
+&gt;&gt;&gt; estimator = MyEstimator(param=2)
+&gt;&gt;&gt; estimator.get_params()
+{'param': 2}
+&gt;&gt;&gt; X = np.array([[1, 2], [2, 3], [3, 4]])
+&gt;&gt;&gt; y = np.array([1, 0, 1])
+&gt;&gt;&gt; estimator.fit(X, y).predict(X)
+array([2, 2, 2])
+&gt;&gt;&gt; estimator.set_params(param=3).fit(X, y).predict(X)
+array([3, 3, 3])
+</code></pre>
 <p>LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -306,6 +394,7 @@ print('validation acc', acc)
         normalize_embs=False,
         cache_embs_dir: str = None,
         verbose: int = 0,
+        device=&#34;cuda&#34; if torch.cuda.is_available() else &#34;cpu&#34;
     ):
         &#34;&#34;&#34;LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.
 
@@ -352,11 +441,14 @@ print('validation acc', acc)
         self.normalize_embs = normalize_embs
         self.cache_embs_dir = cache_embs_dir
         self.verbose = verbose
+        self.device = device
         self._initialize_checkpoint_and_tokenizer()
 
     def _initialize_checkpoint_and_tokenizer(self):
-        self.model = transformers.AutoModel.from_pretrained(self.checkpoint).to(device)
-        self.tokenizer = transformers.AutoTokenizer.from_pretrained(self.checkpoint)
+        self.model = transformers.AutoModel.from_pretrained(
+            self.checkpoint).to(self.device)
+        self.tokenizer = transformers.AutoTokenizer.from_pretrained(
+            self.checkpoint)
 
     def fit(
         self,
@@ -387,13 +479,15 @@ print('validation acc', acc)
         if self.cache_embs_dir is not None and os.path.exists(
             os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;)
         ):
-            embs = pkl.load(open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
+            embs = pkl.load(
+                open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
         else:
             embs = self._get_embs(X_text)
             if self.cache_embs_dir is not None:
                 os.makedirs(self.cache_embs_dir, exist_ok=True)
                 pkl.dump(
-                    embs, open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;)
+                    embs, open(os.path.join(
+                        self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;)
                 )
         if self.normalize_embs:
             self.normalizer = StandardScaler()
@@ -444,11 +538,26 @@ print('validation acc', acc)
         embs = self._get_embs(X_text)
         if self.normalize_embs:
             embs = self.normalizer.transform(embs)
-        return self.linear.predict_proba(embs)</code></pre>
+        return self.linear.predict_proba(embs)
+
+    def _export_to_pytorch(self):
+        assert self.normalize_embs == False, &#34;not implemented&#34;
+        weights = self.linear.coef_
+        intercept = self.linear.intercept_
+        torch_model = LinearModelPytorch(
+            in_features=weights.shape[1],
+            out_classes=weights.shape[0],
+        )
+        torch_model.linear.weight = torch.nn.Parameter(
+            torch.tensor(weights, dtype=torch.float32))
+        torch_model.linear.bias = torch.nn.Parameter(
+            torch.tensor(intercept, dtype=torch.float32))
+        return torch_model</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>sklearn.base.BaseEstimator</li>
+<li>sklearn.utils._estimator_html_repr._HTMLDocumentationLinkMixin</li>
 <li>sklearn.utils._metadata_requests._MetadataRequester</li>
 </ul>
 <h3>Subclasses</h3>
@@ -503,13 +612,15 @@ print('validation acc', acc)
     if self.cache_embs_dir is not None and os.path.exists(
         os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;)
     ):
-        embs = pkl.load(open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
+        embs = pkl.load(
+            open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;rb&#34;))
     else:
         embs = self._get_embs(X_text)
         if self.cache_embs_dir is not None:
             os.makedirs(self.cache_embs_dir, exist_ok=True)
             pkl.dump(
-                embs, open(os.path.join(self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;)
+                embs, open(os.path.join(
+                    self.cache_embs_dir, &#34;embs.pkl&#34;), &#34;wb&#34;)
             )
     if self.normalize_embs:
         self.normalizer = StandardScaler()
@@ -600,7 +711,7 @@ parameters and not others.</p>
 <p class="admonition-title">Note</p>
 <p>This method is only relevant if this estimator is used as a
 sub-estimator of a meta-estimator, e.g. used inside a
-:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+:class:<code>~sklearn.pipeline.Pipeline</code>. Otherwise it has no effect.</p>
 </div>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -681,7 +792,7 @@ parameters and not others.</p>
 <p class="admonition-title">Note</p>
 <p>This method is only relevant if this estimator is used as a
 sub-estimator of a meta-estimator, e.g. used inside a
-:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+:class:<code>~sklearn.pipeline.Pipeline</code>. Otherwise it has no effect.</p>
 </div>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -762,7 +873,7 @@ parameters and not others.</p>
 <p class="admonition-title">Note</p>
 <p>This method is only relevant if this estimator is used as a
 sub-estimator of a meta-estimator, e.g. used inside a
-:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+:class:<code>~sklearn.pipeline.Pipeline</code>. Otherwise it has no effect.</p>
 </div>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -813,14 +924,45 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 </dd>
 <dt id="imodelsx.linear_finetune.LinearFinetuneClassifier"><code class="flex name class">
 <span>class <span class="ident">LinearFinetuneClassifier</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False, cache_embs_dir: str = None, verbose: int = 0)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False, cache_embs_dir: str = None, verbose: int = 0, device='cuda')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
+<p>Inheriting from this class provides default implementations of:</p>
+<ul>
+<li>setting and getting parameters used by <code>GridSearchCV</code> and friends;</li>
+<li>textual and HTML representation displayed in terminals and IDEs;</li>
+<li>estimator serialization;</li>
+<li>parameters validation;</li>
+<li>data validation;</li>
+<li>feature names validation.</li>
+</ul>
+<p>Read more in the :ref:<code>User Guide &lt;rolling_your_own_estimator&gt;</code>.</p>
 <h2 id="notes">Notes</h2>
 <p>All estimators should specify all the parameters that can be set
 at the class level in their <code>__init__</code> as explicit keyword
 arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
+<h2 id="examples">Examples</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; import numpy as np
+&gt;&gt;&gt; from sklearn.base import BaseEstimator
+&gt;&gt;&gt; class MyEstimator(BaseEstimator):
+...     def __init__(self, *, param=1):
+...         self.param = param
+...     def fit(self, X, y=None):
+...         self.is_fitted_ = True
+...         return self
+...     def predict(self, X):
+...         return np.full(shape=X.shape[0], fill_value=self.param)
+&gt;&gt;&gt; estimator = MyEstimator(param=2)
+&gt;&gt;&gt; estimator.get_params()
+{'param': 2}
+&gt;&gt;&gt; X = np.array([[1, 2], [2, 3], [3, 4]])
+&gt;&gt;&gt; y = np.array([1, 0, 1])
+&gt;&gt;&gt; estimator.fit(X, y).predict(X)
+array([2, 2, 2])
+&gt;&gt;&gt; estimator.set_params(param=3).fit(X, y).predict(X)
+array([3, 3, 3])
+</code></pre>
 <p>LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -867,6 +1009,7 @@ print('validation acc', acc)
 <ul class="hlist">
 <li><a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></li>
 <li>sklearn.base.BaseEstimator</li>
+<li>sklearn.utils._estimator_html_repr._HTMLDocumentationLinkMixin</li>
 <li>sklearn.utils._metadata_requests._MetadataRequester</li>
 <li>sklearn.base.ClassifierMixin</li>
 </ul>
@@ -906,7 +1049,7 @@ parameters and not others.</p>
 <p class="admonition-title">Note</p>
 <p>This method is only relevant if this estimator is used as a
 sub-estimator of a meta-estimator, e.g. used inside a
-:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+:class:<code>~sklearn.pipeline.Pipeline</code>. Otherwise it has no effect.</p>
 </div>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -969,14 +1112,45 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 </dd>
 <dt id="imodelsx.linear_finetune.LinearFinetuneRegressor"><code class="flex name class">
 <span>class <span class="ident">LinearFinetuneRegressor</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False, cache_embs_dir: str = None, verbose: int = 0)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', random_state=None, normalize_embs=False, cache_embs_dir: str = None, verbose: int = 0, device='cuda')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
+<p>Inheriting from this class provides default implementations of:</p>
+<ul>
+<li>setting and getting parameters used by <code>GridSearchCV</code> and friends;</li>
+<li>textual and HTML representation displayed in terminals and IDEs;</li>
+<li>estimator serialization;</li>
+<li>parameters validation;</li>
+<li>data validation;</li>
+<li>feature names validation.</li>
+</ul>
+<p>Read more in the :ref:<code>User Guide &lt;rolling_your_own_estimator&gt;</code>.</p>
 <h2 id="notes">Notes</h2>
 <p>All estimators should specify all the parameters that can be set
 at the class level in their <code>__init__</code> as explicit keyword
 arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
+<h2 id="examples">Examples</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; import numpy as np
+&gt;&gt;&gt; from sklearn.base import BaseEstimator
+&gt;&gt;&gt; class MyEstimator(BaseEstimator):
+...     def __init__(self, *, param=1):
+...         self.param = param
+...     def fit(self, X, y=None):
+...         self.is_fitted_ = True
+...         return self
+...     def predict(self, X):
+...         return np.full(shape=X.shape[0], fill_value=self.param)
+&gt;&gt;&gt; estimator = MyEstimator(param=2)
+&gt;&gt;&gt; estimator.get_params()
+{'param': 2}
+&gt;&gt;&gt; X = np.array([[1, 2], [2, 3], [3, 4]])
+&gt;&gt;&gt; y = np.array([1, 0, 1])
+&gt;&gt;&gt; estimator.fit(X, y).predict(X)
+array([2, 2, 2])
+&gt;&gt;&gt; estimator.set_params(param=3).fit(X, y).predict(X)
+array([3, 3, 3])
+</code></pre>
 <p>LinearFinetune Class - use either LinearFinetuneClassifier or LinearFinetuneRegressor rather than initializing this class directly.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -1023,6 +1197,7 @@ print('validation acc', acc)
 <ul class="hlist">
 <li><a title="imodelsx.linear_finetune.LinearFinetune" href="#imodelsx.linear_finetune.LinearFinetune">LinearFinetune</a></li>
 <li>sklearn.base.BaseEstimator</li>
+<li>sklearn.utils._estimator_html_repr._HTMLDocumentationLinkMixin</li>
 <li>sklearn.utils._metadata_requests._MetadataRequester</li>
 <li>sklearn.base.RegressorMixin</li>
 </ul>
@@ -1062,7 +1237,7 @@ parameters and not others.</p>
 <p class="admonition-title">Note</p>
 <p>This method is only relevant if this estimator is used as a
 sub-estimator of a meta-estimator, e.g. used inside a
-:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+:class:<code>~sklearn.pipeline.Pipeline</code>. Otherwise it has no effect.</p>
 </div>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -1123,6 +1298,80 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 </li>
 </ul>
 </dd>
+<dt id="imodelsx.linear_finetune.LinearModelPytorch"><code class="flex name class">
+<span>class <span class="ident">LinearModelPytorch</span></span>
+<span>(</span><span>in_features, out_classes)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LinearModelPytorch(torch.nn.Module):
+    def __init__(self, in_features, out_classes):
+        super(LinearModelPytorch, self).__init__()
+        self.linear = torch.nn.Linear(in_features, out_classes)
+
+    def forward(self, x):
+        return self.linear(x)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="imodelsx.linear_finetune.LinearModelPytorch.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x):
+    return self.linear(x)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 </dl>
 </section>
 </article>
@@ -1135,6 +1384,11 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="imodelsx" href="index.html">imodelsx</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="imodelsx.linear_finetune.sigmoid" href="#imodelsx.linear_finetune.sigmoid">sigmoid</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
@@ -1160,6 +1414,12 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 <h4><code><a title="imodelsx.linear_finetune.LinearFinetuneRegressor" href="#imodelsx.linear_finetune.LinearFinetuneRegressor">LinearFinetuneRegressor</a></code></h4>
 <ul class="">
 <li><code><a title="imodelsx.linear_finetune.LinearFinetuneRegressor.set_score_request" href="#imodelsx.linear_finetune.LinearFinetuneRegressor.set_score_request">set_score_request</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="imodelsx.linear_finetune.LinearModelPytorch" href="#imodelsx.linear_finetune.LinearModelPytorch">LinearModelPytorch</a></code></h4>
+<ul class="">
+<li><code><a title="imodelsx.linear_finetune.LinearModelPytorch.forward" href="#imodelsx.linear_finetune.LinearModelPytorch.forward">forward</a></code></li>
 </ul>
 </li>
 </ul>

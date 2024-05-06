@@ -33,14 +33,13 @@ import logging
 import math
 import random
 import imodels
-import imodelsx.util
-import imodelsx.metrics
 import numpy as np
 from scipy.special import softmax
 from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
 import torch.cuda
 import tqdm
+import imodelsx.llm
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
@@ -50,24 +49,26 @@ class PromptStump:
         args=None,
         prompt: str = None,
         tokenizer=None,
-        max_features=10,
-        assert_checks: bool = False,
+        prompt_template: str = &#34;{example}{prompt}&#34;,
+        cache_key_values: bool = False,
         verbose: bool = True,
         model: AutoModelForCausalLM = None,
         checkpoint: str = &#34;EleutherAI/gpt-j-6B&#34;,
         verbalizer: Dict[int, str] = {0: &#34; Negative.&#34;, 1: &#34; Positive.&#34;},
         batch_size: int = 1,
     ):
-        &#34;&#34;&#34;Fit a single stump.
-        Can use tabular features...
-            Currently only supports binary classification with binary features.
+        &#34;&#34;&#34;Given a prompt, extract its outputs
+
         Params
         ------
-        args: contains some parameters passed through namespace
+        args: contains some parameters passed through namespace (can ignore these)
         prompt: str
             the prompt to use (optional)
-        max_features: int
-            used by StumpTabular to decide how many features to save
+        prompt_template: str
+            template for the prompt, for different prompt styles (e.g. few-shot), may want to place {prompt} before {example}
+            or you may want to add some text before the verbalizer, e.g. {example}{prompt} Output:
+        cache_key_values: bool
+            Whether to cache key values (only possible when prompt does not start with {example})
         checkpoint: str
             the underlying model used for prediction
         model: AutoModelForCausalLM
@@ -84,9 +85,9 @@ class PromptStump:
         else:
             self.args = args
         self.prompt = prompt
-        self.assert_checks = assert_checks
+        self.prompt_template = prompt_template
+        self.cache_key_values = cache_key_values
         self.verbose = verbose
-        self.max_features = max_features
         self.checkpoint = checkpoint
         self.model = model
         if tokenizer is None:
@@ -94,45 +95,10 @@ class PromptStump:
         else:
             self.tokenizer = tokenizer
         self.batch_size = batch_size
-
-        # tree stuff
-        self.child_left = None
-        self.child_right = None
         self.verbalizer = verbalizer
 
         if self.verbose:
             logging.info(f&#34;Loading model {self.checkpoint}&#34;)
-
-    def fit(self, X_text: List[str], y, feature_names=None):
-        # check input and set some attributes
-        assert len(np.unique(y)) &gt; 1, &#34;y should have more than 1 unique value&#34;
-        self.feature_names = feature_names
-        if isinstance(self.feature_names, list):
-            self.feature_names = np.array(self.feature_names).flatten()
-
-        # actually run fitting
-        input_strings = X_text
-        output_strings = [self.verbalizer[int(yi)] for yi in y]
-
-        # set value (calls self.predict, which uses self.prompt)
-        self._set_value_acc_samples(X_text, y)
-
-        return self
-
-    def __getstate__(self):
-        &#34;&#34;&#34;Get the stump but prevent certain attributes from being pickled.
-
-        See also https://stackoverflow.com/a/54139237/2287177
-        &#34;&#34;&#34;
-        state = self.__dict__.copy()
-        # Don&#39;t pickle big things
-        if &#34;model&#34; in state:
-            del state[&#34;model&#34;]
-        if &#34;tokenizer&#34; in state:
-            del state[&#34;tokenizer&#34;]
-        if &#34;feature_names&#34; in state:
-            del state[&#34;feature_names&#34;]
-        return state
 
     def predict(self, X_text: List[str]) -&gt; np.ndarray[int]:
         preds_proba = self.predict_proba(X_text)
@@ -150,20 +116,14 @@ class PromptStump:
         assert len(set(target_token_ids)) == len(
             set(target_strs)
         ), f&#34;error: target_token_ids {set(target_token_ids)} not unique to target strings {set(target_strs)}&#34;
+        text_inputs = [self.prompt_template.format(
+            example=x, prompt=self.prompt) for x in X_text]
 
-        if self.args.prompt_source == &#34;data_demonstrations&#34;:
-            template = self.args.template_data_demonstrations
-            preds = self._get_logit_for_target_tokens_batched(
-                [self.prompt + template % (x, &#34;&#34;) for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
-        else:
-            preds = self._get_logit_for_target_tokens_batched(
-                [x + self.prompt for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
+        preds = self._get_logit_for_target_tokens_batched(
+            text_inputs,
+            target_token_ids,
+            batch_size=self.batch_size,
+        )
         assert preds.shape == (len(X_text), len(target_token_ids)), (
             &#34;preds shape was&#34;
             + str(preds.shape)
@@ -185,21 +145,16 @@ class PromptStump:
             set(target_strs)
         ), f&#34;error: target_token_ids {set(target_token_ids)} not unique to target strings {set(target_strs)}&#34;
 
-        if self.args.prompt_source == &#34;data_demonstrations&#34;:
-            template = self.args.template_data_demonstrations
-            preds = self._get_logit_for_target_tokens_batched_with_cache(
-                past_key_values,
-                [template % (x, &#34;&#34;) for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
-        else:
-            raise NotImplementedError
-            preds = self._get_logit_for_target_tokens_batched(
-                [x + self.prompt for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
+        text_inputs = [self.prompt_template.format(
+            example=x, prompt=self.prompt) for x in X_text]
+
+        preds = self._get_logit_for_target_tokens_batched_with_cache(
+            past_key_values,
+            text_inputs,
+            target_token_ids,
+            batch_size=self.batch_size,
+        )
+
         assert preds.shape == (len(X_text), len(target_token_ids)), (
             &#34;preds shape was&#34;
             + str(preds.shape)
@@ -216,735 +171,8 @@ class PromptStump:
         self.tokenizer.padding = True
 
         self.tokenizer.pad_token = self.tokenizer.eos_token
-        if (
-            self.args.prompt_source == &#34;data_demonstrations&#34;
-            or self.args.prompt_source == &#34;data_demonstrations_knn&#34;
-        ):
-            p = self.prompt
-            if self.args.prompt_source == &#34;data_demonstrations_knn&#34;:
-                p = self.prompt[0]
-            template = self.args.template_data_demonstrations
-            if self.args.dataset_name.startswith(&#34;knnp__&#34;):
-                max_len_verb = max(
-                    len(self.tokenizer.encode(v)) for v in self.verbalizer.values()
-                )
-                max_len_input = (
-                    max_len_verb
-                    + max(len(self.tokenizer.encode(s)) for s in X_text)
-                    + 1
-                )
-            else:
-                max_len_input = -1
-                for v in self.verbalizer.values():
-                    max_len_input = max(
-                        max_len_input,
-                        max(
-                            [
-                                len(self.tokenizer.encode(template % (s, v)))
-                                for s in X_text[:1000]
-                            ]
-                        ),
-                    )
-            try:
-                max_total_len = self.model.config.n_positions
-            except:
-                max_total_len = self.model.config.max_position_embeddings
-            max_len_prompt = max_total_len - max_len_input
-            if (
-                True
-            ):  #&#39;dbpedia&#39; in self.args.dataset_name or max_len_prompt &lt; 0: # dbpedia
-                print(&#34;max len prompt less than 0, truncating to the left&#34;)
-                max_len_input = -1
-                for v in self.verbalizer.values():
-                    a = [
-                        len(self.tokenizer.encode(template % (s, v)))
-                        for s in X_text[:1000]
-                    ]
-                    max_len_input = max(max_len_input, np.percentile(a, 95))
-            max_len_input = int(math.ceil(max_len_input))
-            max_len_prompt = max_total_len - max_len_input
-            self.max_len_input = max_len_input
-            print(f&#34;max_len_prompt: {max_len_prompt}, max_len_input: {max_len_input}&#34;)
-            assert max_len_prompt &gt; 0
-            inputs = self.tokenizer(
-                [
-                    p,
-                ],
-                return_tensors=&#34;pt&#34;,
-                padding=False,
-                truncation=True,
-                max_length=max_len_prompt,
-                return_attention_mask=True,
-            ).to(self.model.device)
 
-            # shape is (batch_size, seq_len, vocab_size)
-            with torch.no_grad():
-                outputs = self.model(**inputs)
-            return outputs[&#34;past_key_values&#34;]
-        else:
-            raise NotImplementedError
-            preds = self._get_logit_for_target_tokens_batched(
-                [x + self.prompt for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
-        assert preds.shape == (len(X_text), len(target_token_ids)), (
-            &#34;preds shape was&#34;
-            + str(preds.shape)
-            + &#34; but should have been &#34;
-            + str((len(X_text), len(target_token_ids)))
-        )
-
-        # return the class with the highest logit
-        return softmax(preds, axis=1)
-
-    def _get_logit_for_target_tokens_batched(
-        self, prompts: List[str], target_token_ids: List[int], batch_size: int = 64
-    ) -&gt; np.ndarray[float]:
-        &#34;&#34;&#34;Get logits for each target token
-        This can fail when token_output_ids represents multiple tokens
-        So things get mapped to the same id representing &#34;unknown&#34;
-        &#34;&#34;&#34;
-        logit_targets_list = []
-        batch_num = 0
-
-        try:
-            max_total_len = self.model.config.n_positions
-        except:
-            max_total_len = self.model.config.max_position_embeddings
-
-        pbar = tqdm.tqdm(
-            total=len(prompts),
-            leave=False,
-            desc=&#34;getting dataset predictions for top prompt&#34;,
-            colour=&#34;red&#34;,
-        )
-        while True:
-            batch_start = batch_num * batch_size
-            batch_end = (batch_num + 1) * batch_size
-            batch_num += 1
-            pbar.update(batch_size)
-            if batch_start &gt;= len(prompts):
-                return np.array(logit_targets_list)
-
-            prompts_batch = prompts[batch_start:batch_end]
-            self.tokenizer.padding = True
-            self.tokenizer.truncation_side = &#34;left&#34;
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-            inputs = self.tokenizer(
-                prompts_batch,
-                return_tensors=&#34;pt&#34;,
-                padding=True,
-                truncation=True,
-                return_attention_mask=True,
-                max_length=max_total_len,
-            ).to(self.model.device)
-
-            # shape is (batch_size, seq_len, vocab_size)
-            with torch.no_grad():
-                logits = self.model(**inputs)[&#34;logits&#34;]
-
-            token_output_positions = inputs[&#34;attention_mask&#34;].sum(axis=1)
-            for i in range(len(prompts_batch)):
-                token_output_position = token_output_positions[i].item() - 1
-                logit_targets_list.append(
-                    [
-                        logits[i, token_output_position, token_output_id].item()
-                        for token_output_id in target_token_ids
-                    ]
-                )
-
-    def _get_logit_for_target_tokens_batched_with_cache(
-        self,
-        past_key_values,
-        prompts: List[str],
-        target_token_ids: List[int],
-        batch_size: int = 64,
-    ) -&gt; np.ndarray[float]:
-        &#34;&#34;&#34;Get logits for each target token
-        This can fail when token_output_ids represents multiple tokens
-        So things get mapped to the same id representing &#34;unknown&#34;
-        &#34;&#34;&#34;
-        logit_targets_list = []
-        batch_num = 0
-
-        pbar = tqdm.tqdm(
-            total=len(prompts), leave=False, desc=&#34;getting predictions&#34;, colour=&#34;red&#34;
-        )
-
-        past_key_values_new = []
-        for i in range(len(past_key_values)):
-            past_key_values_new.append(
-                [
-                    past_key_values[i][0].expand(batch_size, -1, -1, -1),
-                    past_key_values[i][1].expand(batch_size, -1, -1, -1),
-                ]
-            )
-        while True:
-            batch_start = batch_num * batch_size
-            batch_end = (batch_num + 1) * batch_size
-            batch_num += 1
-            pbar.update(batch_size)
-            if batch_start &gt;= len(prompts):
-                return np.array(logit_targets_list)
-
-            prompts_batch = prompts[batch_start:batch_end]
-            if len(prompts_batch) != past_key_values_new[0][0].shape[0]:
-                for i in range(len(past_key_values)):
-                    past_key_values_new[i] = [
-                        past_key_values[i][0].expand(len(prompts_batch), -1, -1, -1),
-                        past_key_values[i][1].expand(len(prompts_batch), -1, -1, -1),
-                    ]
-            self.tokenizer.padding = True
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-            inputs = self.tokenizer(
-                prompts_batch,
-                return_tensors=&#34;pt&#34;,
-                padding=True,
-                truncation=True,
-                max_length=self.max_len_input,
-                return_attention_mask=True,
-            ).to(self.model.device)
-
-            attention_mask = inputs[&#34;attention_mask&#34;]
-            attention_mask = torch.cat(
-                (
-                    attention_mask.new_zeros(
-                        len(prompts_batch), past_key_values[0][0].shape[-2]
-                    ).fill_(1),
-                    attention_mask,
-                ),
-                dim=-1,
-            )
-            inputs[&#34;attention_mask&#34;] = attention_mask
-
-            # shape is (batch_size, seq_len, vocab_size)
-            with torch.no_grad():
-                outputs = self.model(**inputs, past_key_values=past_key_values_new)
-            logits = outputs[&#34;logits&#34;]
-            token_output_positions = (
-                inputs[&#34;attention_mask&#34;].sum(axis=1) - past_key_values[0][0].shape[-2]
-            )
-            for i in range(len(prompts_batch)):
-                token_output_position = token_output_positions[i].item() - 1
-                logit_targets_list.append(
-                    [
-                        logits[i, token_output_position, token_output_id].item()
-                        for token_output_id in target_token_ids
-                    ]
-                )
-
-    def _get_first_token_id(self, prompt: str) -&gt; str:
-        &#34;&#34;&#34;Get first token id in prompt (after special tokens).
-
-        Need to strip special tokens for LLAMA so we don&#39;t get a special space token at the beginning.
-        &#34;&#34;&#34;
-        if &#34;llama&#34; in self.checkpoint.lower():
-            prompt = prompt.lstrip()
-
-        tokens = self.tokenizer(prompt)[&#34;input_ids&#34;]
-        tokens = [t for t in tokens if t not in self.tokenizer.all_special_ids]
-        return tokens[0]
-
-    def __str__(self):
-        return f&#34;PromptStump(val={self.value_mean:0.2f} n={np.sum(self.n_samples)} prompt={self.prompt})&#34;
-
-    def get_str_simple(self):
-        return self.prompt
-
-    def _set_value_acc_samples(self, X_text, y):
-        &#34;&#34;&#34;Set value and accuracy of stump.&#34;&#34;&#34;
-        idxs_right = self.predict(X_text).astype(bool)
-        n_right = idxs_right.sum()
-        if n_right == 0 or n_right == y.size:
-            self.failed_to_split = True
-            return
-        else:
-            self.failed_to_split = False
-        self.value = [np.mean(y[~idxs_right]), np.mean(y[idxs_right])]
-        self.value_mean = np.mean(y)
-        self.n_samples = [y.size - idxs_right.sum(), idxs_right.sum()]
-        self.acc = accuracy_score(y, 1 * idxs_right)</code></pre>
-</details>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
-<h2 class="section-title" id="header-classes">Classes</h2>
-<dl>
-<dt id="imodelsx.treeprompt.stump.PromptStump"><code class="flex name class">
-<span>class <span class="ident">PromptStump</span></span>
-<span>(</span><span>args=None, prompt: str = None, tokenizer=None, max_features=10, assert_checks: bool = False, verbose: bool = True, model: transformers.models.auto.modeling_auto.AutoModelForCausalLM = None, checkpoint: str = 'EleutherAI/gpt-j-6B', verbalizer: Dict[int, str] = {0: ' Negative.', 1: ' Positive.'}, batch_size: int = 1)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Fit a single stump.
-Can use tabular features&hellip;
-Currently only supports binary classification with binary features.
-Params</p>
-<hr>
-<p>args: contains some parameters passed through namespace
-prompt: str
-the prompt to use (optional)
-max_features: int
-used by StumpTabular to decide how many features to save
-checkpoint: str
-the underlying model used for prediction
-model: AutoModelForCausalLM
-if this is passed, will override checkpoint</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class PromptStump:
-    def __init__(
-        self,
-        args=None,
-        prompt: str = None,
-        tokenizer=None,
-        max_features=10,
-        assert_checks: bool = False,
-        verbose: bool = True,
-        model: AutoModelForCausalLM = None,
-        checkpoint: str = &#34;EleutherAI/gpt-j-6B&#34;,
-        verbalizer: Dict[int, str] = {0: &#34; Negative.&#34;, 1: &#34; Positive.&#34;},
-        batch_size: int = 1,
-    ):
-        &#34;&#34;&#34;Fit a single stump.
-        Can use tabular features...
-            Currently only supports binary classification with binary features.
-        Params
-        ------
-        args: contains some parameters passed through namespace
-        prompt: str
-            the prompt to use (optional)
-        max_features: int
-            used by StumpTabular to decide how many features to save
-        checkpoint: str
-            the underlying model used for prediction
-        model: AutoModelForCausalLM
-            if this is passed, will override checkpoint
-        &#34;&#34;&#34;
-        if args is None:
-
-            class placeholder:
-                prompt_source = None
-                template_data_demonstrations = None
-                dataset_name = &#34;&#34;
-
-            self.args = placeholder()
-        else:
-            self.args = args
-        self.prompt = prompt
-        self.assert_checks = assert_checks
-        self.verbose = verbose
-        self.max_features = max_features
-        self.checkpoint = checkpoint
-        self.model = model
-        if tokenizer is None:
-            self.tokenizer = imodelsx.llm.load_tokenizer(checkpoint)
-        else:
-            self.tokenizer = tokenizer
-        self.batch_size = batch_size
-
-        # tree stuff
-        self.child_left = None
-        self.child_right = None
-        self.verbalizer = verbalizer
-
-        if self.verbose:
-            logging.info(f&#34;Loading model {self.checkpoint}&#34;)
-
-    def fit(self, X_text: List[str], y, feature_names=None):
-        # check input and set some attributes
-        assert len(np.unique(y)) &gt; 1, &#34;y should have more than 1 unique value&#34;
-        self.feature_names = feature_names
-        if isinstance(self.feature_names, list):
-            self.feature_names = np.array(self.feature_names).flatten()
-
-        # actually run fitting
-        input_strings = X_text
-        output_strings = [self.verbalizer[int(yi)] for yi in y]
-
-        # set value (calls self.predict, which uses self.prompt)
-        self._set_value_acc_samples(X_text, y)
-
-        return self
-
-    def __getstate__(self):
-        &#34;&#34;&#34;Get the stump but prevent certain attributes from being pickled.
-
-        See also https://stackoverflow.com/a/54139237/2287177
-        &#34;&#34;&#34;
-        state = self.__dict__.copy()
-        # Don&#39;t pickle big things
-        if &#34;model&#34; in state:
-            del state[&#34;model&#34;]
-        if &#34;tokenizer&#34; in state:
-            del state[&#34;tokenizer&#34;]
-        if &#34;feature_names&#34; in state:
-            del state[&#34;feature_names&#34;]
-        return state
-
-    def predict(self, X_text: List[str]) -&gt; np.ndarray[int]:
-        preds_proba = self.predict_proba(X_text)
-        return np.argmax(preds_proba, axis=1)
-
-    def predict_with_cache(self, X_text: List[str], past_key_values) -&gt; np.ndarray[int]:
-        preds_proba = self.predict_proba_with_cache(X_text, past_key_values)
-        return np.argmax(preds_proba, axis=1)
-
-    def predict_proba(self, X_text: List[str]) -&gt; np.ndarray[float]:
-        target_strs = list(self.verbalizer.values())
-
-        # only predict based on first token of output string
-        target_token_ids = list(map(self._get_first_token_id, target_strs))
-        assert len(set(target_token_ids)) == len(
-            set(target_strs)
-        ), f&#34;error: target_token_ids {set(target_token_ids)} not unique to target strings {set(target_strs)}&#34;
-
-        if self.args.prompt_source == &#34;data_demonstrations&#34;:
-            template = self.args.template_data_demonstrations
-            preds = self._get_logit_for_target_tokens_batched(
-                [self.prompt + template % (x, &#34;&#34;) for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
-        else:
-            preds = self._get_logit_for_target_tokens_batched(
-                [x + self.prompt for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
-        assert preds.shape == (len(X_text), len(target_token_ids)), (
-            &#34;preds shape was&#34;
-            + str(preds.shape)
-            + &#34; but should have been &#34;
-            + str((len(X_text), len(target_token_ids)))
-        )
-
-        # return the class with the highest logit
-        return softmax(preds, axis=1)
-
-    def predict_proba_with_cache(
-        self, X_text: List[str], past_key_values
-    ) -&gt; np.ndarray[float]:
-        target_strs = list(self.verbalizer.values())
-
-        # only predict based on first token of output string
-        target_token_ids = list(map(self._get_first_token_id, target_strs))
-        assert len(set(target_token_ids)) == len(
-            set(target_strs)
-        ), f&#34;error: target_token_ids {set(target_token_ids)} not unique to target strings {set(target_strs)}&#34;
-
-        if self.args.prompt_source == &#34;data_demonstrations&#34;:
-            template = self.args.template_data_demonstrations
-            preds = self._get_logit_for_target_tokens_batched_with_cache(
-                past_key_values,
-                [template % (x, &#34;&#34;) for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
-        else:
-            raise NotImplementedError
-            preds = self._get_logit_for_target_tokens_batched(
-                [x + self.prompt for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
-        assert preds.shape == (len(X_text), len(target_token_ids)), (
-            &#34;preds shape was&#34;
-            + str(preds.shape)
-            + &#34; but should have been &#34;
-            + str((len(X_text), len(target_token_ids)))
-        )
-
-        # return the class with the highest logit
-        return softmax(preds, axis=1)
-
-    def calc_key_values(self, X_text: List[str]):
-        # only predict based on first token of output string
-        self.tokenizer.truncation_side = &#34;left&#34;
-        self.tokenizer.padding = True
-
-        self.tokenizer.pad_token = self.tokenizer.eos_token
-        if (
-            self.args.prompt_source == &#34;data_demonstrations&#34;
-            or self.args.prompt_source == &#34;data_demonstrations_knn&#34;
-        ):
-            p = self.prompt
-            if self.args.prompt_source == &#34;data_demonstrations_knn&#34;:
-                p = self.prompt[0]
-            template = self.args.template_data_demonstrations
-            if self.args.dataset_name.startswith(&#34;knnp__&#34;):
-                max_len_verb = max(
-                    len(self.tokenizer.encode(v)) for v in self.verbalizer.values()
-                )
-                max_len_input = (
-                    max_len_verb
-                    + max(len(self.tokenizer.encode(s)) for s in X_text)
-                    + 1
-                )
-            else:
-                max_len_input = -1
-                for v in self.verbalizer.values():
-                    max_len_input = max(
-                        max_len_input,
-                        max(
-                            [
-                                len(self.tokenizer.encode(template % (s, v)))
-                                for s in X_text[:1000]
-                            ]
-                        ),
-                    )
-            try:
-                max_total_len = self.model.config.n_positions
-            except:
-                max_total_len = self.model.config.max_position_embeddings
-            max_len_prompt = max_total_len - max_len_input
-            if (
-                True
-            ):  #&#39;dbpedia&#39; in self.args.dataset_name or max_len_prompt &lt; 0: # dbpedia
-                print(&#34;max len prompt less than 0, truncating to the left&#34;)
-                max_len_input = -1
-                for v in self.verbalizer.values():
-                    a = [
-                        len(self.tokenizer.encode(template % (s, v)))
-                        for s in X_text[:1000]
-                    ]
-                    max_len_input = max(max_len_input, np.percentile(a, 95))
-            max_len_input = int(math.ceil(max_len_input))
-            max_len_prompt = max_total_len - max_len_input
-            self.max_len_input = max_len_input
-            print(f&#34;max_len_prompt: {max_len_prompt}, max_len_input: {max_len_input}&#34;)
-            assert max_len_prompt &gt; 0
-            inputs = self.tokenizer(
-                [
-                    p,
-                ],
-                return_tensors=&#34;pt&#34;,
-                padding=False,
-                truncation=True,
-                max_length=max_len_prompt,
-                return_attention_mask=True,
-            ).to(self.model.device)
-
-            # shape is (batch_size, seq_len, vocab_size)
-            with torch.no_grad():
-                outputs = self.model(**inputs)
-            return outputs[&#34;past_key_values&#34;]
-        else:
-            raise NotImplementedError
-            preds = self._get_logit_for_target_tokens_batched(
-                [x + self.prompt for x in X_text],
-                target_token_ids,
-                batch_size=self.batch_size,
-            )
-        assert preds.shape == (len(X_text), len(target_token_ids)), (
-            &#34;preds shape was&#34;
-            + str(preds.shape)
-            + &#34; but should have been &#34;
-            + str((len(X_text), len(target_token_ids)))
-        )
-
-        # return the class with the highest logit
-        return softmax(preds, axis=1)
-
-    def _get_logit_for_target_tokens_batched(
-        self, prompts: List[str], target_token_ids: List[int], batch_size: int = 64
-    ) -&gt; np.ndarray[float]:
-        &#34;&#34;&#34;Get logits for each target token
-        This can fail when token_output_ids represents multiple tokens
-        So things get mapped to the same id representing &#34;unknown&#34;
-        &#34;&#34;&#34;
-        logit_targets_list = []
-        batch_num = 0
-
-        try:
-            max_total_len = self.model.config.n_positions
-        except:
-            max_total_len = self.model.config.max_position_embeddings
-
-        pbar = tqdm.tqdm(
-            total=len(prompts),
-            leave=False,
-            desc=&#34;getting dataset predictions for top prompt&#34;,
-            colour=&#34;red&#34;,
-        )
-        while True:
-            batch_start = batch_num * batch_size
-            batch_end = (batch_num + 1) * batch_size
-            batch_num += 1
-            pbar.update(batch_size)
-            if batch_start &gt;= len(prompts):
-                return np.array(logit_targets_list)
-
-            prompts_batch = prompts[batch_start:batch_end]
-            self.tokenizer.padding = True
-            self.tokenizer.truncation_side = &#34;left&#34;
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-            inputs = self.tokenizer(
-                prompts_batch,
-                return_tensors=&#34;pt&#34;,
-                padding=True,
-                truncation=True,
-                return_attention_mask=True,
-                max_length=max_total_len,
-            ).to(self.model.device)
-
-            # shape is (batch_size, seq_len, vocab_size)
-            with torch.no_grad():
-                logits = self.model(**inputs)[&#34;logits&#34;]
-
-            token_output_positions = inputs[&#34;attention_mask&#34;].sum(axis=1)
-            for i in range(len(prompts_batch)):
-                token_output_position = token_output_positions[i].item() - 1
-                logit_targets_list.append(
-                    [
-                        logits[i, token_output_position, token_output_id].item()
-                        for token_output_id in target_token_ids
-                    ]
-                )
-
-    def _get_logit_for_target_tokens_batched_with_cache(
-        self,
-        past_key_values,
-        prompts: List[str],
-        target_token_ids: List[int],
-        batch_size: int = 64,
-    ) -&gt; np.ndarray[float]:
-        &#34;&#34;&#34;Get logits for each target token
-        This can fail when token_output_ids represents multiple tokens
-        So things get mapped to the same id representing &#34;unknown&#34;
-        &#34;&#34;&#34;
-        logit_targets_list = []
-        batch_num = 0
-
-        pbar = tqdm.tqdm(
-            total=len(prompts), leave=False, desc=&#34;getting predictions&#34;, colour=&#34;red&#34;
-        )
-
-        past_key_values_new = []
-        for i in range(len(past_key_values)):
-            past_key_values_new.append(
-                [
-                    past_key_values[i][0].expand(batch_size, -1, -1, -1),
-                    past_key_values[i][1].expand(batch_size, -1, -1, -1),
-                ]
-            )
-        while True:
-            batch_start = batch_num * batch_size
-            batch_end = (batch_num + 1) * batch_size
-            batch_num += 1
-            pbar.update(batch_size)
-            if batch_start &gt;= len(prompts):
-                return np.array(logit_targets_list)
-
-            prompts_batch = prompts[batch_start:batch_end]
-            if len(prompts_batch) != past_key_values_new[0][0].shape[0]:
-                for i in range(len(past_key_values)):
-                    past_key_values_new[i] = [
-                        past_key_values[i][0].expand(len(prompts_batch), -1, -1, -1),
-                        past_key_values[i][1].expand(len(prompts_batch), -1, -1, -1),
-                    ]
-            self.tokenizer.padding = True
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-            inputs = self.tokenizer(
-                prompts_batch,
-                return_tensors=&#34;pt&#34;,
-                padding=True,
-                truncation=True,
-                max_length=self.max_len_input,
-                return_attention_mask=True,
-            ).to(self.model.device)
-
-            attention_mask = inputs[&#34;attention_mask&#34;]
-            attention_mask = torch.cat(
-                (
-                    attention_mask.new_zeros(
-                        len(prompts_batch), past_key_values[0][0].shape[-2]
-                    ).fill_(1),
-                    attention_mask,
-                ),
-                dim=-1,
-            )
-            inputs[&#34;attention_mask&#34;] = attention_mask
-
-            # shape is (batch_size, seq_len, vocab_size)
-            with torch.no_grad():
-                outputs = self.model(**inputs, past_key_values=past_key_values_new)
-            logits = outputs[&#34;logits&#34;]
-            token_output_positions = (
-                inputs[&#34;attention_mask&#34;].sum(axis=1) - past_key_values[0][0].shape[-2]
-            )
-            for i in range(len(prompts_batch)):
-                token_output_position = token_output_positions[i].item() - 1
-                logit_targets_list.append(
-                    [
-                        logits[i, token_output_position, token_output_id].item()
-                        for token_output_id in target_token_ids
-                    ]
-                )
-
-    def _get_first_token_id(self, prompt: str) -&gt; str:
-        &#34;&#34;&#34;Get first token id in prompt (after special tokens).
-
-        Need to strip special tokens for LLAMA so we don&#39;t get a special space token at the beginning.
-        &#34;&#34;&#34;
-        if &#34;llama&#34; in self.checkpoint.lower():
-            prompt = prompt.lstrip()
-
-        tokens = self.tokenizer(prompt)[&#34;input_ids&#34;]
-        tokens = [t for t in tokens if t not in self.tokenizer.all_special_ids]
-        return tokens[0]
-
-    def __str__(self):
-        return f&#34;PromptStump(val={self.value_mean:0.2f} n={np.sum(self.n_samples)} prompt={self.prompt})&#34;
-
-    def get_str_simple(self):
-        return self.prompt
-
-    def _set_value_acc_samples(self, X_text, y):
-        &#34;&#34;&#34;Set value and accuracy of stump.&#34;&#34;&#34;
-        idxs_right = self.predict(X_text).astype(bool)
-        n_right = idxs_right.sum()
-        if n_right == 0 or n_right == y.size:
-            self.failed_to_split = True
-            return
-        else:
-            self.failed_to_split = False
-        self.value = [np.mean(y[~idxs_right]), np.mean(y[idxs_right])]
-        self.value_mean = np.mean(y)
-        self.n_samples = [y.size - idxs_right.sum(), idxs_right.sum()]
-        self.acc = accuracy_score(y, 1 * idxs_right)</code></pre>
-</details>
-<h3>Methods</h3>
-<dl>
-<dt id="imodelsx.treeprompt.stump.PromptStump.calc_key_values"><code class="name flex">
-<span>def <span class="ident">calc_key_values</span></span>(<span>self, X_text: List[str])</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def calc_key_values(self, X_text: List[str]):
-    # only predict based on first token of output string
-    self.tokenizer.truncation_side = &#34;left&#34;
-    self.tokenizer.padding = True
-
-    self.tokenizer.pad_token = self.tokenizer.eos_token
-    if (
-        self.args.prompt_source == &#34;data_demonstrations&#34;
-        or self.args.prompt_source == &#34;data_demonstrations_knn&#34;
-    ):
         p = self.prompt
-        if self.args.prompt_source == &#34;data_demonstrations_knn&#34;:
-            p = self.prompt[0]
         template = self.args.template_data_demonstrations
         if self.args.dataset_name.startswith(&#34;knnp__&#34;):
             max_len_verb = max(
@@ -974,7 +202,7 @@ if this is passed, will override checkpoint</p></div>
         max_len_prompt = max_total_len - max_len_input
         if (
             True
-        ):  #&#39;dbpedia&#39; in self.args.dataset_name or max_len_prompt &lt; 0: # dbpedia
+        ):  # &#39;dbpedia&#39; in self.args.dataset_name or max_len_prompt &lt; 0: # dbpedia
             print(&#34;max len prompt less than 0, truncating to the left&#34;)
             max_len_input = -1
             for v in self.verbalizer.values():
@@ -986,7 +214,8 @@ if this is passed, will override checkpoint</p></div>
         max_len_input = int(math.ceil(max_len_input))
         max_len_prompt = max_total_len - max_len_input
         self.max_len_input = max_len_input
-        print(f&#34;max_len_prompt: {max_len_prompt}, max_len_input: {max_len_input}&#34;)
+        print(
+            f&#34;max_len_prompt: {max_len_prompt}, max_len_input: {max_len_input}&#34;)
         assert max_len_prompt &gt; 0
         inputs = self.tokenizer(
             [
@@ -1003,26 +232,542 @@ if this is passed, will override checkpoint</p></div>
         with torch.no_grad():
             outputs = self.model(**inputs)
         return outputs[&#34;past_key_values&#34;]
-    else:
-        raise NotImplementedError
+
+    def _get_logit_for_target_tokens_batched(
+        self, prompts: List[str], target_token_ids: List[int], batch_size: int = 64
+    ) -&gt; np.ndarray[float]:
+        &#34;&#34;&#34;Get logits for each target token
+        This can fail when token_output_ids represents multiple tokens
+        So things get mapped to the same id representing &#34;unknown&#34;
+        &#34;&#34;&#34;
+        logit_targets_list = []
+        batch_num = 0
+
+        try:
+            max_total_len = self.model.config.n_positions
+        except:
+            max_total_len = self.model.config.max_position_embeddings
+
+        pbar = tqdm.tqdm(
+            total=len(prompts),
+            leave=False,
+            desc=&#34;getting dataset predictions for top prompt&#34;,
+            colour=&#34;red&#34;,
+        )
+        while True:
+            batch_start = batch_num * batch_size
+            batch_end = (batch_num + 1) * batch_size
+            batch_num += 1
+            pbar.update(batch_size)
+            if batch_start &gt;= len(prompts):
+                return np.array(logit_targets_list)
+
+            prompts_batch = prompts[batch_start:batch_end]
+            self.tokenizer.padding = True
+            self.tokenizer.truncation_side = &#34;left&#34;
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+            inputs = self.tokenizer(
+                prompts_batch,
+                return_tensors=&#34;pt&#34;,
+                padding=True,
+                truncation=True,
+                return_attention_mask=True,
+                max_length=max_total_len,
+            ).to(self.model.device)
+
+            # shape is (batch_size, seq_len, vocab_size)
+            with torch.no_grad():
+                logits = self.model(**inputs)[&#34;logits&#34;]
+
+            token_output_positions = inputs[&#34;attention_mask&#34;].sum(axis=1)
+            for i in range(len(prompts_batch)):
+                token_output_position = token_output_positions[i].item() - 1
+                logit_targets_list.append(
+                    [
+                        logits[i, token_output_position,
+                               token_output_id].item()
+                        for token_output_id in target_token_ids
+                    ]
+                )
+
+    def _get_logit_for_target_tokens_batched_with_cache(
+        self,
+        past_key_values,
+        prompts: List[str],
+        target_token_ids: List[int],
+        batch_size: int = 64,
+    ) -&gt; np.ndarray[float]:
+        &#34;&#34;&#34;Get logits for each target token
+        This can fail when token_output_ids represents multiple tokens
+        So things get mapped to the same id representing &#34;unknown&#34;
+        &#34;&#34;&#34;
+        logit_targets_list = []
+        batch_num = 0
+
+        pbar = tqdm.tqdm(
+            total=len(prompts), leave=False, desc=&#34;getting predictions&#34;, colour=&#34;red&#34;
+        )
+
+        past_key_values_new = []
+        for i in range(len(past_key_values)):
+            past_key_values_new.append(
+                [
+                    past_key_values[i][0].expand(batch_size, -1, -1, -1),
+                    past_key_values[i][1].expand(batch_size, -1, -1, -1),
+                ]
+            )
+        while True:
+            batch_start = batch_num * batch_size
+            batch_end = (batch_num + 1) * batch_size
+            batch_num += 1
+            pbar.update(batch_size)
+            if batch_start &gt;= len(prompts):
+                return np.array(logit_targets_list)
+
+            prompts_batch = prompts[batch_start:batch_end]
+            if len(prompts_batch) != past_key_values_new[0][0].shape[0]:
+                for i in range(len(past_key_values)):
+                    past_key_values_new[i] = [
+                        past_key_values[i][0].expand(
+                            len(prompts_batch), -1, -1, -1),
+                        past_key_values[i][1].expand(
+                            len(prompts_batch), -1, -1, -1),
+                    ]
+            self.tokenizer.padding = True
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+            inputs = self.tokenizer(
+                prompts_batch,
+                return_tensors=&#34;pt&#34;,
+                padding=True,
+                truncation=True,
+                max_length=self.max_len_input,
+                return_attention_mask=True,
+            ).to(self.model.device)
+
+            attention_mask = inputs[&#34;attention_mask&#34;]
+            attention_mask = torch.cat(
+                (
+                    attention_mask.new_zeros(
+                        len(prompts_batch), past_key_values[0][0].shape[-2]
+                    ).fill_(1),
+                    attention_mask,
+                ),
+                dim=-1,
+            )
+            inputs[&#34;attention_mask&#34;] = attention_mask
+
+            # shape is (batch_size, seq_len, vocab_size)
+            with torch.no_grad():
+                outputs = self.model(
+                    **inputs, past_key_values=past_key_values_new)
+            logits = outputs[&#34;logits&#34;]
+            token_output_positions = (
+                inputs[&#34;attention_mask&#34;].sum(
+                    axis=1) - past_key_values[0][0].shape[-2]
+            )
+            for i in range(len(prompts_batch)):
+                token_output_position = token_output_positions[i].item() - 1
+                logit_targets_list.append(
+                    [
+                        logits[i, token_output_position,
+                               token_output_id].item()
+                        for token_output_id in target_token_ids
+                    ]
+                )
+
+    def _get_first_token_id(self, prompt: str) -&gt; str:
+        &#34;&#34;&#34;Get first token id in prompt (after special tokens).
+
+        Need to strip special tokens for LLAMA so we don&#39;t get a special space token at the beginning.
+        &#34;&#34;&#34;
+        if &#34;llama&#34; in self.checkpoint.lower():
+            prompt = prompt.lstrip()
+
+        tokens = self.tokenizer(prompt)[&#34;input_ids&#34;]
+        tokens = [t for t in tokens if t not in self.tokenizer.all_special_ids]
+        return tokens[0]</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="imodelsx.treeprompt.stump.PromptStump"><code class="flex name class">
+<span>class <span class="ident">PromptStump</span></span>
+<span>(</span><span>args=None, prompt: str = None, tokenizer=None, prompt_template: str = '{example}{prompt}', cache_key_values: bool = False, verbose: bool = True, model: transformers.models.auto.modeling_auto.AutoModelForCausalLM = None, checkpoint: str = 'EleutherAI/gpt-j-6B', verbalizer: Dict[int, str] = {0: ' Negative.', 1: ' Positive.'}, batch_size: int = 1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Given a prompt, extract its outputs</p>
+<h2 id="params">Params</h2>
+<p>args: contains some parameters passed through namespace (can ignore these)
+prompt: str
+the prompt to use (optional)
+prompt_template: str
+template for the prompt, for different prompt styles (e.g. few-shot), may want to place {prompt} before {example}
+or you may want to add some text before the verbalizer, e.g. {example}{prompt} Output:
+cache_key_values: bool
+Whether to cache key values (only possible when prompt does not start with {example})
+checkpoint: str
+the underlying model used for prediction
+model: AutoModelForCausalLM
+if this is passed, will override checkpoint</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PromptStump:
+    def __init__(
+        self,
+        args=None,
+        prompt: str = None,
+        tokenizer=None,
+        prompt_template: str = &#34;{example}{prompt}&#34;,
+        cache_key_values: bool = False,
+        verbose: bool = True,
+        model: AutoModelForCausalLM = None,
+        checkpoint: str = &#34;EleutherAI/gpt-j-6B&#34;,
+        verbalizer: Dict[int, str] = {0: &#34; Negative.&#34;, 1: &#34; Positive.&#34;},
+        batch_size: int = 1,
+    ):
+        &#34;&#34;&#34;Given a prompt, extract its outputs
+
+        Params
+        ------
+        args: contains some parameters passed through namespace (can ignore these)
+        prompt: str
+            the prompt to use (optional)
+        prompt_template: str
+            template for the prompt, for different prompt styles (e.g. few-shot), may want to place {prompt} before {example}
+            or you may want to add some text before the verbalizer, e.g. {example}{prompt} Output:
+        cache_key_values: bool
+            Whether to cache key values (only possible when prompt does not start with {example})
+        checkpoint: str
+            the underlying model used for prediction
+        model: AutoModelForCausalLM
+            if this is passed, will override checkpoint
+        &#34;&#34;&#34;
+        if args is None:
+
+            class placeholder:
+                prompt_source = None
+                template_data_demonstrations = None
+                dataset_name = &#34;&#34;
+
+            self.args = placeholder()
+        else:
+            self.args = args
+        self.prompt = prompt
+        self.prompt_template = prompt_template
+        self.cache_key_values = cache_key_values
+        self.verbose = verbose
+        self.checkpoint = checkpoint
+        self.model = model
+        if tokenizer is None:
+            self.tokenizer = imodelsx.llm.load_tokenizer(checkpoint)
+        else:
+            self.tokenizer = tokenizer
+        self.batch_size = batch_size
+        self.verbalizer = verbalizer
+
+        if self.verbose:
+            logging.info(f&#34;Loading model {self.checkpoint}&#34;)
+
+    def predict(self, X_text: List[str]) -&gt; np.ndarray[int]:
+        preds_proba = self.predict_proba(X_text)
+        return np.argmax(preds_proba, axis=1)
+
+    def predict_with_cache(self, X_text: List[str], past_key_values) -&gt; np.ndarray[int]:
+        preds_proba = self.predict_proba_with_cache(X_text, past_key_values)
+        return np.argmax(preds_proba, axis=1)
+
+    def predict_proba(self, X_text: List[str]) -&gt; np.ndarray[float]:
+        target_strs = list(self.verbalizer.values())
+
+        # only predict based on first token of output string
+        target_token_ids = list(map(self._get_first_token_id, target_strs))
+        assert len(set(target_token_ids)) == len(
+            set(target_strs)
+        ), f&#34;error: target_token_ids {set(target_token_ids)} not unique to target strings {set(target_strs)}&#34;
+        text_inputs = [self.prompt_template.format(
+            example=x, prompt=self.prompt) for x in X_text]
+
         preds = self._get_logit_for_target_tokens_batched(
-            [x + self.prompt for x in X_text],
+            text_inputs,
             target_token_ids,
             batch_size=self.batch_size,
         )
-    assert preds.shape == (len(X_text), len(target_token_ids)), (
-        &#34;preds shape was&#34;
-        + str(preds.shape)
-        + &#34; but should have been &#34;
-        + str((len(X_text), len(target_token_ids)))
-    )
+        assert preds.shape == (len(X_text), len(target_token_ids)), (
+            &#34;preds shape was&#34;
+            + str(preds.shape)
+            + &#34; but should have been &#34;
+            + str((len(X_text), len(target_token_ids)))
+        )
 
-    # return the class with the highest logit
-    return softmax(preds, axis=1)</code></pre>
+        # return the class with the highest logit
+        return softmax(preds, axis=1)
+
+    def predict_proba_with_cache(
+        self, X_text: List[str], past_key_values
+    ) -&gt; np.ndarray[float]:
+        target_strs = list(self.verbalizer.values())
+
+        # only predict based on first token of output string
+        target_token_ids = list(map(self._get_first_token_id, target_strs))
+        assert len(set(target_token_ids)) == len(
+            set(target_strs)
+        ), f&#34;error: target_token_ids {set(target_token_ids)} not unique to target strings {set(target_strs)}&#34;
+
+        text_inputs = [self.prompt_template.format(
+            example=x, prompt=self.prompt) for x in X_text]
+
+        preds = self._get_logit_for_target_tokens_batched_with_cache(
+            past_key_values,
+            text_inputs,
+            target_token_ids,
+            batch_size=self.batch_size,
+        )
+
+        assert preds.shape == (len(X_text), len(target_token_ids)), (
+            &#34;preds shape was&#34;
+            + str(preds.shape)
+            + &#34; but should have been &#34;
+            + str((len(X_text), len(target_token_ids)))
+        )
+
+        # return the class with the highest logit
+        return softmax(preds, axis=1)
+
+    def calc_key_values(self, X_text: List[str]):
+        # only predict based on first token of output string
+        self.tokenizer.truncation_side = &#34;left&#34;
+        self.tokenizer.padding = True
+
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+
+        p = self.prompt
+        template = self.args.template_data_demonstrations
+        if self.args.dataset_name.startswith(&#34;knnp__&#34;):
+            max_len_verb = max(
+                len(self.tokenizer.encode(v)) for v in self.verbalizer.values()
+            )
+            max_len_input = (
+                max_len_verb
+                + max(len(self.tokenizer.encode(s)) for s in X_text)
+                + 1
+            )
+        else:
+            max_len_input = -1
+            for v in self.verbalizer.values():
+                max_len_input = max(
+                    max_len_input,
+                    max(
+                        [
+                            len(self.tokenizer.encode(template % (s, v)))
+                            for s in X_text[:1000]
+                        ]
+                    ),
+                )
+        try:
+            max_total_len = self.model.config.n_positions
+        except:
+            max_total_len = self.model.config.max_position_embeddings
+        max_len_prompt = max_total_len - max_len_input
+        if (
+            True
+        ):  # &#39;dbpedia&#39; in self.args.dataset_name or max_len_prompt &lt; 0: # dbpedia
+            print(&#34;max len prompt less than 0, truncating to the left&#34;)
+            max_len_input = -1
+            for v in self.verbalizer.values():
+                a = [
+                    len(self.tokenizer.encode(template % (s, v)))
+                    for s in X_text[:1000]
+                ]
+                max_len_input = max(max_len_input, np.percentile(a, 95))
+        max_len_input = int(math.ceil(max_len_input))
+        max_len_prompt = max_total_len - max_len_input
+        self.max_len_input = max_len_input
+        print(
+            f&#34;max_len_prompt: {max_len_prompt}, max_len_input: {max_len_input}&#34;)
+        assert max_len_prompt &gt; 0
+        inputs = self.tokenizer(
+            [
+                p,
+            ],
+            return_tensors=&#34;pt&#34;,
+            padding=False,
+            truncation=True,
+            max_length=max_len_prompt,
+            return_attention_mask=True,
+        ).to(self.model.device)
+
+        # shape is (batch_size, seq_len, vocab_size)
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+        return outputs[&#34;past_key_values&#34;]
+
+    def _get_logit_for_target_tokens_batched(
+        self, prompts: List[str], target_token_ids: List[int], batch_size: int = 64
+    ) -&gt; np.ndarray[float]:
+        &#34;&#34;&#34;Get logits for each target token
+        This can fail when token_output_ids represents multiple tokens
+        So things get mapped to the same id representing &#34;unknown&#34;
+        &#34;&#34;&#34;
+        logit_targets_list = []
+        batch_num = 0
+
+        try:
+            max_total_len = self.model.config.n_positions
+        except:
+            max_total_len = self.model.config.max_position_embeddings
+
+        pbar = tqdm.tqdm(
+            total=len(prompts),
+            leave=False,
+            desc=&#34;getting dataset predictions for top prompt&#34;,
+            colour=&#34;red&#34;,
+        )
+        while True:
+            batch_start = batch_num * batch_size
+            batch_end = (batch_num + 1) * batch_size
+            batch_num += 1
+            pbar.update(batch_size)
+            if batch_start &gt;= len(prompts):
+                return np.array(logit_targets_list)
+
+            prompts_batch = prompts[batch_start:batch_end]
+            self.tokenizer.padding = True
+            self.tokenizer.truncation_side = &#34;left&#34;
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+            inputs = self.tokenizer(
+                prompts_batch,
+                return_tensors=&#34;pt&#34;,
+                padding=True,
+                truncation=True,
+                return_attention_mask=True,
+                max_length=max_total_len,
+            ).to(self.model.device)
+
+            # shape is (batch_size, seq_len, vocab_size)
+            with torch.no_grad():
+                logits = self.model(**inputs)[&#34;logits&#34;]
+
+            token_output_positions = inputs[&#34;attention_mask&#34;].sum(axis=1)
+            for i in range(len(prompts_batch)):
+                token_output_position = token_output_positions[i].item() - 1
+                logit_targets_list.append(
+                    [
+                        logits[i, token_output_position,
+                               token_output_id].item()
+                        for token_output_id in target_token_ids
+                    ]
+                )
+
+    def _get_logit_for_target_tokens_batched_with_cache(
+        self,
+        past_key_values,
+        prompts: List[str],
+        target_token_ids: List[int],
+        batch_size: int = 64,
+    ) -&gt; np.ndarray[float]:
+        &#34;&#34;&#34;Get logits for each target token
+        This can fail when token_output_ids represents multiple tokens
+        So things get mapped to the same id representing &#34;unknown&#34;
+        &#34;&#34;&#34;
+        logit_targets_list = []
+        batch_num = 0
+
+        pbar = tqdm.tqdm(
+            total=len(prompts), leave=False, desc=&#34;getting predictions&#34;, colour=&#34;red&#34;
+        )
+
+        past_key_values_new = []
+        for i in range(len(past_key_values)):
+            past_key_values_new.append(
+                [
+                    past_key_values[i][0].expand(batch_size, -1, -1, -1),
+                    past_key_values[i][1].expand(batch_size, -1, -1, -1),
+                ]
+            )
+        while True:
+            batch_start = batch_num * batch_size
+            batch_end = (batch_num + 1) * batch_size
+            batch_num += 1
+            pbar.update(batch_size)
+            if batch_start &gt;= len(prompts):
+                return np.array(logit_targets_list)
+
+            prompts_batch = prompts[batch_start:batch_end]
+            if len(prompts_batch) != past_key_values_new[0][0].shape[0]:
+                for i in range(len(past_key_values)):
+                    past_key_values_new[i] = [
+                        past_key_values[i][0].expand(
+                            len(prompts_batch), -1, -1, -1),
+                        past_key_values[i][1].expand(
+                            len(prompts_batch), -1, -1, -1),
+                    ]
+            self.tokenizer.padding = True
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+            inputs = self.tokenizer(
+                prompts_batch,
+                return_tensors=&#34;pt&#34;,
+                padding=True,
+                truncation=True,
+                max_length=self.max_len_input,
+                return_attention_mask=True,
+            ).to(self.model.device)
+
+            attention_mask = inputs[&#34;attention_mask&#34;]
+            attention_mask = torch.cat(
+                (
+                    attention_mask.new_zeros(
+                        len(prompts_batch), past_key_values[0][0].shape[-2]
+                    ).fill_(1),
+                    attention_mask,
+                ),
+                dim=-1,
+            )
+            inputs[&#34;attention_mask&#34;] = attention_mask
+
+            # shape is (batch_size, seq_len, vocab_size)
+            with torch.no_grad():
+                outputs = self.model(
+                    **inputs, past_key_values=past_key_values_new)
+            logits = outputs[&#34;logits&#34;]
+            token_output_positions = (
+                inputs[&#34;attention_mask&#34;].sum(
+                    axis=1) - past_key_values[0][0].shape[-2]
+            )
+            for i in range(len(prompts_batch)):
+                token_output_position = token_output_positions[i].item() - 1
+                logit_targets_list.append(
+                    [
+                        logits[i, token_output_position,
+                               token_output_id].item()
+                        for token_output_id in target_token_ids
+                    ]
+                )
+
+    def _get_first_token_id(self, prompt: str) -&gt; str:
+        &#34;&#34;&#34;Get first token id in prompt (after special tokens).
+
+        Need to strip special tokens for LLAMA so we don&#39;t get a special space token at the beginning.
+        &#34;&#34;&#34;
+        if &#34;llama&#34; in self.checkpoint.lower():
+            prompt = prompt.lstrip()
+
+        tokens = self.tokenizer(prompt)[&#34;input_ids&#34;]
+        tokens = [t for t in tokens if t not in self.tokenizer.all_special_ids]
+        return tokens[0]</code></pre>
 </details>
-</dd>
-<dt id="imodelsx.treeprompt.stump.PromptStump.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, X_text: List[str], y, feature_names=None)</span>
+<h3>Methods</h3>
+<dl>
+<dt id="imodelsx.treeprompt.stump.PromptStump.calc_key_values"><code class="name flex">
+<span>def <span class="ident">calc_key_values</span></span>(<span>self, X_text: List[str])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1030,34 +775,73 @@ if this is passed, will override checkpoint</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def fit(self, X_text: List[str], y, feature_names=None):
-    # check input and set some attributes
-    assert len(np.unique(y)) &gt; 1, &#34;y should have more than 1 unique value&#34;
-    self.feature_names = feature_names
-    if isinstance(self.feature_names, list):
-        self.feature_names = np.array(self.feature_names).flatten()
+<pre><code class="python">def calc_key_values(self, X_text: List[str]):
+    # only predict based on first token of output string
+    self.tokenizer.truncation_side = &#34;left&#34;
+    self.tokenizer.padding = True
 
-    # actually run fitting
-    input_strings = X_text
-    output_strings = [self.verbalizer[int(yi)] for yi in y]
+    self.tokenizer.pad_token = self.tokenizer.eos_token
 
-    # set value (calls self.predict, which uses self.prompt)
-    self._set_value_acc_samples(X_text, y)
+    p = self.prompt
+    template = self.args.template_data_demonstrations
+    if self.args.dataset_name.startswith(&#34;knnp__&#34;):
+        max_len_verb = max(
+            len(self.tokenizer.encode(v)) for v in self.verbalizer.values()
+        )
+        max_len_input = (
+            max_len_verb
+            + max(len(self.tokenizer.encode(s)) for s in X_text)
+            + 1
+        )
+    else:
+        max_len_input = -1
+        for v in self.verbalizer.values():
+            max_len_input = max(
+                max_len_input,
+                max(
+                    [
+                        len(self.tokenizer.encode(template % (s, v)))
+                        for s in X_text[:1000]
+                    ]
+                ),
+            )
+    try:
+        max_total_len = self.model.config.n_positions
+    except:
+        max_total_len = self.model.config.max_position_embeddings
+    max_len_prompt = max_total_len - max_len_input
+    if (
+        True
+    ):  # &#39;dbpedia&#39; in self.args.dataset_name or max_len_prompt &lt; 0: # dbpedia
+        print(&#34;max len prompt less than 0, truncating to the left&#34;)
+        max_len_input = -1
+        for v in self.verbalizer.values():
+            a = [
+                len(self.tokenizer.encode(template % (s, v)))
+                for s in X_text[:1000]
+            ]
+            max_len_input = max(max_len_input, np.percentile(a, 95))
+    max_len_input = int(math.ceil(max_len_input))
+    max_len_prompt = max_total_len - max_len_input
+    self.max_len_input = max_len_input
+    print(
+        f&#34;max_len_prompt: {max_len_prompt}, max_len_input: {max_len_input}&#34;)
+    assert max_len_prompt &gt; 0
+    inputs = self.tokenizer(
+        [
+            p,
+        ],
+        return_tensors=&#34;pt&#34;,
+        padding=False,
+        truncation=True,
+        max_length=max_len_prompt,
+        return_attention_mask=True,
+    ).to(self.model.device)
 
-    return self</code></pre>
-</details>
-</dd>
-<dt id="imodelsx.treeprompt.stump.PromptStump.get_str_simple"><code class="name flex">
-<span>def <span class="ident">get_str_simple</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_str_simple(self):
-    return self.prompt</code></pre>
+    # shape is (batch_size, seq_len, vocab_size)
+    with torch.no_grad():
+        outputs = self.model(**inputs)
+    return outputs[&#34;past_key_values&#34;]</code></pre>
 </details>
 </dd>
 <dt id="imodelsx.treeprompt.stump.PromptStump.predict"><code class="name flex">
@@ -1091,20 +875,14 @@ if this is passed, will override checkpoint</p></div>
     assert len(set(target_token_ids)) == len(
         set(target_strs)
     ), f&#34;error: target_token_ids {set(target_token_ids)} not unique to target strings {set(target_strs)}&#34;
+    text_inputs = [self.prompt_template.format(
+        example=x, prompt=self.prompt) for x in X_text]
 
-    if self.args.prompt_source == &#34;data_demonstrations&#34;:
-        template = self.args.template_data_demonstrations
-        preds = self._get_logit_for_target_tokens_batched(
-            [self.prompt + template % (x, &#34;&#34;) for x in X_text],
-            target_token_ids,
-            batch_size=self.batch_size,
-        )
-    else:
-        preds = self._get_logit_for_target_tokens_batched(
-            [x + self.prompt for x in X_text],
-            target_token_ids,
-            batch_size=self.batch_size,
-        )
+    preds = self._get_logit_for_target_tokens_batched(
+        text_inputs,
+        target_token_ids,
+        batch_size=self.batch_size,
+    )
     assert preds.shape == (len(X_text), len(target_token_ids)), (
         &#34;preds shape was&#34;
         + str(preds.shape)
@@ -1136,21 +914,16 @@ if this is passed, will override checkpoint</p></div>
         set(target_strs)
     ), f&#34;error: target_token_ids {set(target_token_ids)} not unique to target strings {set(target_strs)}&#34;
 
-    if self.args.prompt_source == &#34;data_demonstrations&#34;:
-        template = self.args.template_data_demonstrations
-        preds = self._get_logit_for_target_tokens_batched_with_cache(
-            past_key_values,
-            [template % (x, &#34;&#34;) for x in X_text],
-            target_token_ids,
-            batch_size=self.batch_size,
-        )
-    else:
-        raise NotImplementedError
-        preds = self._get_logit_for_target_tokens_batched(
-            [x + self.prompt for x in X_text],
-            target_token_ids,
-            batch_size=self.batch_size,
-        )
+    text_inputs = [self.prompt_template.format(
+        example=x, prompt=self.prompt) for x in X_text]
+
+    preds = self._get_logit_for_target_tokens_batched_with_cache(
+        past_key_values,
+        text_inputs,
+        target_token_ids,
+        batch_size=self.batch_size,
+    )
+
     assert preds.shape == (len(X_text), len(target_token_ids)), (
         &#34;preds shape was&#34;
         + str(preds.shape)
@@ -1198,8 +971,6 @@ if this is passed, will override checkpoint</p></div>
 <h4><code><a title="imodelsx.treeprompt.stump.PromptStump" href="#imodelsx.treeprompt.stump.PromptStump">PromptStump</a></code></h4>
 <ul class="">
 <li><code><a title="imodelsx.treeprompt.stump.PromptStump.calc_key_values" href="#imodelsx.treeprompt.stump.PromptStump.calc_key_values">calc_key_values</a></code></li>
-<li><code><a title="imodelsx.treeprompt.stump.PromptStump.fit" href="#imodelsx.treeprompt.stump.PromptStump.fit">fit</a></code></li>
-<li><code><a title="imodelsx.treeprompt.stump.PromptStump.get_str_simple" href="#imodelsx.treeprompt.stump.PromptStump.get_str_simple">get_str_simple</a></code></li>
 <li><code><a title="imodelsx.treeprompt.stump.PromptStump.predict" href="#imodelsx.treeprompt.stump.PromptStump.predict">predict</a></code></li>
 <li><code><a title="imodelsx.treeprompt.stump.PromptStump.predict_proba" href="#imodelsx.treeprompt.stump.PromptStump.predict_proba">predict_proba</a></code></li>
 <li><code><a title="imodelsx.treeprompt.stump.PromptStump.predict_proba_with_cache" href="#imodelsx.treeprompt.stump.PromptStump.predict_proba_with_cache">predict_proba_with_cache</a></code></li>

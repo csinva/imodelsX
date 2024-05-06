@@ -26,15 +26,17 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import json
+<pre><code class="python">from copy import deepcopy
+import json
 from transformers import (
     T5ForConditionalGeneration,
 )
+from datasets import Dataset
 import transformers
 from transformers import AutoConfig, AutoModel, AutoTokenizer, AutoModelForCausalLM
 import re
 from transformers import LlamaForCausalLM, LlamaTokenizer
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, Union
 import numpy as np
 import os.path
 from os.path import join, dirname
@@ -44,10 +46,25 @@ from scipy.special import softmax
 import hashlib
 import torch
 import time
+from tqdm import tqdm
+
+HF_TOKEN = None
+if &#39;HF_TOKEN&#39; in os.environ:
+    HF_TOKEN = os.environ.get(&#34;HF_TOKEN&#34;)
+elif os.path.exists(&#39;~/.HF_TOKEN&#39;):
+    HF_TOKEN = open(os.path.expanduser(&#39;~/.HF_TOKEN&#39;), &#39;r&#39;).read().strip()
+&#39;&#39;&#39;
+Example usage:
+# gpt-4, gpt-35-turbo, meta-llama/Llama-2-70b-hf, mistralai/Mistral-7B-v0.1
+checkpoint = &#39;meta-llama/Llama-2-7b-hf&#39;
+llm = imodelsx.llm.get_llm(checkpoint)
+llm(&#39;may the force be&#39;) # returns &#39; with you&#39;
+&#39;&#39;&#39;
 
 # change these settings before using these classes!
 LLM_CONFIG = {
-    &#34;LLM_REPEAT_DELAY&#34;: None,  # how long to wait before recalling a failed llm call (can set to None)
+    # how long to wait before recalling a failed llm call (can set to None)
+    &#34;LLM_REPEAT_DELAY&#34;: None,
     &#34;CACHE_DIR&#34;: join(
         os.path.expanduser(&#34;~&#34;), &#34;clin/CACHE_OPENAI&#34;
     ),  # path to save cached llm outputs
@@ -73,6 +90,8 @@ def get_llm(
         return LLM_OpenAI(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR)
     elif checkpoint.startswith(&#34;gpt-3&#34;) or checkpoint.startswith(&#34;gpt-4&#34;):
         return LLM_Chat(checkpoint, seed, role, CACHE_DIR)
+    elif &#39;Meta-Llama-3&#39; in checkpoint and &#39;Instruct&#39; in checkpoint:
+        return LLM_HF_Pipeline(checkpoint, CACHE_DIR)
     else:
         # warning: this sets torch.manual_seed(seed)
         return LLM_HF(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR, LLAMA_DIR=LLAMA_DIR)
@@ -97,6 +116,8 @@ def repeatedly_call_with_delay(llm_call):
                     return None
                 elif &#34;maximum context length&#34; in e:
                     return None
+                elif &#39;content management policy&#39; in e:
+                    return None
                 if delay is None:
                     raise e
                 else:
@@ -118,6 +139,8 @@ class LLM_OpenAI:
         self,
         prompt: str,
         max_new_tokens=250,
+        frequency_penalty=0.25,  # maximum is 2
+        temperature=0.1,
         do_sample=True,
         stop=None,
         return_str=True,
@@ -127,7 +150,8 @@ class LLM_OpenAI:
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         hash_str = hashlib.sha256(prompt.encode()).hexdigest()
-        cache_file = join(self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;)
+        cache_file = join(
+            self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;)
         if os.path.exists(cache_file):
             return pkl.load(open(cache_file, &#34;rb&#34;))
 
@@ -135,9 +159,9 @@ class LLM_OpenAI:
             engine=self.checkpoint,
             prompt=prompt,
             max_tokens=max_new_tokens,
-            temperature=0.1,
+            temperature=temperature,
             top_p=1,
-            frequency_penalty=0.25,  # maximum is 2
+            frequency_penalty=frequency_penalty,
             presence_penalty=0,
             stop=stop,
             # stop=[&#34;101&#34;]
@@ -158,6 +182,14 @@ class LLM_Chat:
         )
         self.checkpoint = checkpoint
         self.role = role
+        from openai import AzureOpenAI
+        self.client = AzureOpenAI(
+            api_version=&#34;2023-07-01-preview&#34;,
+            azure_endpoint=open(os.path.expanduser(
+                &#39;~/.AZURE_OPENAI_ENDPOINT&#39;)).read().strip(),
+            api_key=open(os.path.expanduser(
+                &#39;~/.AZURE_OPENAI_KEY&#39;)).read().strip(),
+        )
 
     @repeatedly_call_with_delay
     def __call__(
@@ -176,7 +208,8 @@ class LLM_Chat:
             Example: [
                 {&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: &#34;You are a helpful assistant.&#34;},
                 {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: &#34;Who won the world series in 2020?&#34;},
-                {&#34;role&#34;: &#34;assistant&#34;, &#34;content&#34;: &#34;The Los Angeles Dodgers won the World Series in 2020.&#34;},
+                {&#34;role&#34;: &#34;assistant&#34;,
+                    &#34;content&#34;: &#34;The Los Angeles Dodgers won the World Series in 2020.&#34;},
                 {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: &#34;Where was it played?&#34;}
             ]
         prompts_list: str
@@ -186,8 +219,6 @@ class LLM_Chat:
                 {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: &lt;&lt;&lt;&lt;&lt;prompts_list&gt;&gt;&gt;&gt;},
             ]
         &#34;&#34;&#34;
-        import openai
-
         if isinstance(prompts_list, str):
             role = self.role
             if role is None:
@@ -239,72 +270,143 @@ class LLM_Chat:
         if functions is not None:
             kwargs[&#34;functions&#34;] = functions
 
-        response = openai.ChatCompletion.create(**kwargs)
+        completion = self.client.chat.completions.create(
+            **kwargs,
+        )
 
         if return_str:
-            response = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
-        # print(response)
+            response = completion.choices[0].message.content
 
         pkl.dump(response, open(cache_file, &#34;wb&#34;))
+
         return response
 
 
 def load_tokenizer(checkpoint: str) -&gt; transformers.PreTrainedTokenizer:
     if &#34;facebook/opt&#34; in checkpoint:
         # opt can&#39;t use fast tokenizer
-        return AutoTokenizer.from_pretrained(checkpoint, use_fast=False)
-    elif &#34;llama_&#34; in checkpoint:
-        return transformers.LlamaTokenizer.from_pretrained(join(LLAMA_DIR, checkpoint))
+        tokenizer = AutoTokenizer.from_pretrained(
+            checkpoint, use_fast=False, padding_side=&#39;left&#39;, token=HF_TOKEN)
     elif &#34;PMC_LLAMA&#34; in checkpoint:
-        return transformers.LlamaTokenizer.from_pretrained(&#34;chaoyi-wu/PMC_LLAMA_7B&#34;)
+        tokenizer = transformers.LlamaTokenizer.from_pretrained(
+            &#34;chaoyi-wu/PMC_LLAMA_7B&#34;, padding_side=&#39;left&#39;, token=HF_TOKEN)
     else:
-        return AutoTokenizer.from_pretrained(checkpoint)  # , use_fast=True)
-    # return AutoTokenizer.from_pretrained(checkpoint,
-    # token=os.environ.get(&#34;LLAMA_TOKEN&#34;),)
+        # , use_fast=True)
+        tokenizer = AutoTokenizer.from_pretrained(
+            checkpoint, padding_side=&#39;left&#39;, use_fast=True, token=HF_TOKEN)
+
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+    return tokenizer
+
+
+def load_hf_model(checkpoint: str) -&gt; transformers.PreTrainedModel:
+    # set checkpoint
+    kwargs = {
+        &#34;pretrained_model_name_or_path&#34;: checkpoint,
+        &#34;output_hidden_states&#34;: False,
+        # &#34;pad_token_id&#34;: tokenizer.eos_token_id,
+        &#34;low_cpu_mem_usage&#34;: True,
+    }
+    if &#34;google/flan&#34; in checkpoint:
+        return T5ForConditionalGeneration.from_pretrained(
+            checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16
+        )
+    elif checkpoint == &#34;EleutherAI/gpt-j-6B&#34;:
+        return AutoModelForCausalLM.from_pretrained(
+            checkpoint,
+            revision=&#34;float16&#34;,
+            torch_dtype=torch.float16,
+            **kwargs,
+        )
+    elif &#34;llama-2&#34; in checkpoint.lower():
+        return AutoModelForCausalLM.from_pretrained(
+            checkpoint,
+            torch_dtype=torch.float16,
+            device_map=&#34;auto&#34;,
+            token=HF_TOKEN,
+            offload_folder=&#34;offload&#34;,
+        )
+    elif &#34;llama_&#34; in checkpoint:
+        return transformers.LlamaForCausalLM.from_pretrained(
+            join(LLAMA_DIR, checkpoint),
+            device_map=&#34;auto&#34;,
+            torch_dtype=torch.float16,
+        )
+    elif &#39;microsoft/phi&#39; in checkpoint:
+        return AutoModelForCausalLM.from_pretrained(
+            checkpoint
+        )
+    elif checkpoint == &#34;gpt-xl&#34;:
+        return AutoModelForCausalLM.from_pretrained(checkpoint)
+    else:
+        return AutoModelForCausalLM.from_pretrained(
+            checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16,
+            token=HF_TOKEN,
+        )
+
+
+class LLM_HF_Pipeline:
+    def __init__(self, checkpoint, CACHE_DIR):
+
+        self.pipeline_ = transformers.pipeline(
+            &#34;text-generation&#34;,
+            model=checkpoint,
+            # model_kwargs={&#34;torch_dtype&#34;: torch.bfloat16},
+            # , &#39;device_map&#39;: &#34;auto&#34;},
+            model_kwargs={&#39;torch_dtype&#39;: torch.float16},
+            device_map=&#34;auto&#34;
+        )
+        self.pipeline_.tokenizer.pad_token_id = self.pipeline_.tokenizer.eos_token_id
+        self.pipeline_.tokenizer.padding_side = &#39;left&#39;
+        self.cache_dir = join(CACHE_DIR)
+
+    def __call__(
+        self,
+        prompt: Union[str, List[str]],
+        max_new_tokens=20,
+        use_cache=True,
+        verbose=False,
+        batch_size=64,
+    ):
+
+        if use_cache:
+            os.makedirs(self.cache_dir, exist_ok=True)
+            hash_str = hashlib.sha256(str(prompt).encode()).hexdigest()
+            cache_file = join(
+                self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;
+            )
+
+            if os.path.exists(cache_file):
+                if verbose:
+                    print(&#34;cached!&#34;)
+                try:
+                    return pkl.load(open(cache_file, &#34;rb&#34;))
+                except:
+                    print(&#39;failed to load cache so rerunning...&#39;)
+            if verbose:
+                print(&#34;not cached...&#34;)
+        outputs = self.pipeline_(
+            prompt,
+            max_new_tokens=max_new_tokens,
+            batch_size=batch_size,
+            do_sample=False,
+        )
+        if isinstance(prompt, str):
+            texts = outputs[0][&#34;generated_text&#34;][len(prompt):]
+        else:
+            texts = [outputs[i][0][&#39;generated_text&#39;]
+                     [len(prompt[i]):] for i in range(len(outputs))]
+
+        if use_cache:
+            pkl.dump(texts, open(cache_file, &#34;wb&#34;))
+        return texts
 
 
 class LLM_HF:
     def __init__(self, checkpoint, seed, CACHE_DIR, LLAMA_DIR=None):
-        self._tokenizer = load_tokenizer(checkpoint)
-
-        # set checkpoint
-        kwargs = {
-            &#34;pretrained_model_name_or_path&#34;: checkpoint,
-            &#34;output_hidden_states&#34;: False,
-            # &#34;pad_token_id&#34;: tokenizer.eos_token_id,
-            &#34;low_cpu_mem_usage&#34;: True,
-        }
-        if &#34;google/flan&#34; in checkpoint:
-            self._model = T5ForConditionalGeneration.from_pretrained(
-                checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16
-            )
-        elif checkpoint == &#34;EleutherAI/gpt-j-6B&#34;:
-            self._model = AutoModelForCausalLM.from_pretrained(
-                checkpoint,
-                revision=&#34;float16&#34;,
-                torch_dtype=torch.float16,
-                **kwargs,
-            )
-        elif &#34;llama-2&#34; in checkpoint.lower():
-            self._model = transformers.AutoModelForCausalLM.from_pretrained(
-                checkpoint,
-                torch_dtype=torch.float16,
-                device_map=&#34;auto&#34;,
-                token=os.environ.get(&#34;LLAMA_TOKEN&#34;),
-                offload_folder=&#34;offload&#34;,
-            )
-        elif &#34;llama_&#34; in checkpoint:
-            self._model = transformers.LlamaForCausalLM.from_pretrained(
-                join(LLAMA_DIR, checkpoint),
-                device_map=&#34;auto&#34;,
-                torch_dtype=torch.float16,
-            )
-        elif checkpoint == &#34;gpt-xl&#34;:
-            self._model = AutoModelForCausalLM.from_pretrained(checkpoint)
-        else:
-            self._model = AutoModelForCausalLM.from_pretrained(
-                checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16
-            )
+        self.tokenizer_ = load_tokenizer(checkpoint)
+        self.model_ = load_hf_model(checkpoint)
         self.checkpoint = checkpoint
         self.cache_dir = join(
             CACHE_DIR, &#34;cache_hf&#34;, f&#39;{checkpoint.replace(&#34;/&#34;, &#34;_&#34;)}___{seed}&#39;
@@ -313,87 +415,191 @@ class LLM_HF:
 
     def __call__(
         self,
-        prompt: str,
+        prompt: Union[str, List[str]],
         stop: str = None,
         max_new_tokens=20,
         do_sample=False,
         use_cache=True,
-    ) -&gt; str:
-        &#34;&#34;&#34;Warning: stop not actually used&#34;&#34;&#34;
+        verbose=False,
+        return_next_token_prob_scores=False,
+        target_token_strs: List[str] = None,
+        return_top_target_token_str: bool = False,
+        batch_size=1,
+    ) -&gt; Union[str, List[str]]:
+        &#34;&#34;&#34;Warning: stop is used posthoc but not during generation.
+        Be careful, caching can take up a lot of memory....
+
+        Example mistral-instruct prompt: &#34;&lt;s&gt;[INST]&#39;Input text: {example}\nQuestion: {question} Answer yes or no.[/INST]&#34;
+
+
+        Params
+        ------
+        return_next_token_prob_scores: bool
+            If this is true, then the function will return the probability of the next token being each of the target_token_strs
+            target_token_strs: List[str]
+                If this is not None and return_next_token_prob_scores is True, then the function will return the probability of the next token being each of the target_token_strs
+                The output will be a list of dictionaries in this case List[Dict[str, float]]
+                return_top_target_token_str: bool
+                    If true and above are true, then just return top token of the above
+                    This is a way to constrain the output (but only for 1 token)
+                    This setting caches but the other two (which do not return strings) do not cache
+
+        &#34;&#34;&#34;
+        input_is_str = isinstance(prompt, str)
         with torch.no_grad():
             # cache
-            os.makedirs(self.cache_dir, exist_ok=True)
-            hash_str = hashlib.sha256(prompt.encode()).hexdigest()
-            cache_file = join(
-                self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;
-            )
-            if os.path.exists(cache_file) and use_cache:
-                return pkl.load(open(cache_file, &#34;rb&#34;))
+            if use_cache:
+                os.makedirs(self.cache_dir, exist_ok=True)
+                hash_str = hashlib.sha256(str(prompt).encode()).hexdigest()
+                cache_file = join(
+                    self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;
+                )
+
+                if os.path.exists(cache_file):
+                    if verbose:
+                        print(&#34;cached!&#34;)
+                    try:
+                        return pkl.load(open(cache_file, &#34;rb&#34;))
+                    except:
+                        print(&#39;failed to load cache so rerunning...&#39;)
+                if verbose:
+                    print(&#34;not cached...&#34;)
 
             # if stop is not None:
             # raise ValueError(&#34;stop kwargs are not permitted.&#34;)
-            inputs = self._tokenizer(
-                prompt, return_tensors=&#34;pt&#34;, return_attention_mask=True
-            ).to(
-                self._model.device
-            )  # .input_ids.to(&#34;cuda&#34;)
-            # stopping_criteria = StoppingCriteriaList([MaxLengthCriteria(max_length=max_tokens)])
-            # outputs = self._model.generate(input_ids, max_length=max_tokens, stopping_criteria=stopping_criteria)
-            # print(&#39;pad_token&#39;, self._tokenizer.pad_token)
-            if self._tokenizer.pad_token_id is None:
-                self._tokenizer.pad_token_id = self._tokenizer.eos_token_id
-                torch.manual_seed(0)
-            outputs = self._model.generate(
-                **inputs,
-                max_new_tokens=max_new_tokens,
-                do_sample=do_sample,
-                # pad_token=self._tokenizer.pad_token,
-                pad_token_id=self._tokenizer.pad_token_id,
-                # top_p=0.92,
-                # top_k=0
-            )
-            out_str = self._tokenizer.decode(outputs[0])
-            # print(&#39;out_str&#39;, out_str)
-            if &#34;facebook/opt&#34; in self.checkpoint:
-                out_str = out_str[len(&#34;&lt;/s&gt;&#34;) + len(prompt) :]
-            elif &#34;google/flan&#34; in self.checkpoint:
-                # print(&#34;full&#34;, out_str)
-                out_str = out_str[len(&#34;&lt;pad&gt;&#34;) : out_str.index(&#34;&lt;/s&gt;&#34;)]
-            elif &#34;PMC_LLAMA&#34; in self.checkpoint:
-                # print(&#39;here!&#39;, out_str)
-                out_str = out_str[len(&#34;&lt;unk&gt;&#34;) + len(prompt) :]
-            elif &#34;llama_&#34; in self.checkpoint:
-                out_str = out_str[len(&#34;&lt;s&gt;&#34;) + len(prompt) :]
+            inputs = self.tokenizer_(
+                prompt, return_tensors=&#34;pt&#34;,
+                return_attention_mask=True,
+                padding=True,
+                truncation=False,
+            ).to(self.model_.device)
+
+            if return_next_token_prob_scores or target_token_strs or return_top_target_token_str:
+                outputs = self.model_.generate(
+                    **inputs,
+                    max_new_tokens=1,
+                    pad_token_id=self.tokenizer_.pad_token_id,
+                    output_logits=True,
+                    return_dict_in_generate=True,
+                )
+                next_token_logits = outputs[&#39;logits&#39;][0]
+                next_token_probs = next_token_logits.softmax(
+                    axis=-1).detach().cpu().numpy()
+
+                if target_token_strs is None:
+                    return next_token_probs
+
+                target_token_ids = self._check_target_token_strs(
+                    target_token_strs)
+                if return_top_target_token_str:
+                    selected_tokens = next_token_probs[:, np.array(
+                        target_token_ids)].squeeze().argmax(axis=-1)
+                    out_strs = [
+                        target_token_strs[selected_tokens[i]]
+                        for i in range(len(selected_tokens))
+                    ]
+                    if len(out_strs) == 1:
+                        out_strs = out_strs[0]
+                    if use_cache:
+                        pkl.dump(out_strs, open(cache_file, &#34;wb&#34;))
+                    return out_strs
+                else:
+                    out_dict_list = [
+                        {target_token_strs[i]: next_token_probs[prompt_num, target_token_ids[i]]
+                            for i in range(len(target_token_strs))
+                         }
+                        for prompt_num in range(len(prompt))
+                    ]
+                    return out_dict_list
             else:
-                out_str = out_str[len(prompt) :]
+                outputs = self.model_.generate(
+                    **inputs,
+                    max_new_tokens=max_new_tokens,
+                    do_sample=do_sample,
+                    pad_token_id=self.tokenizer_.pad_token_id,
+                )
+                # top_p=0.92,
+                # temperature=0,
+                # top_k=0
+            if input_is_str:
+                out_str = self.tokenizer_.decode(
+                    outputs[0], skip_special_tokens=True)
+                # print(&#39;out_str&#39;, out_str)
+                if &#39;mistral&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
+                    out_str = out_str[len(prompt) - 2:]
+                elif &#39;Meta-Llama-3&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
+                    out_str = out_str[len(prompt) - 145:]
+                else:
+                    out_str = out_str[len(prompt):]
 
-            if stop is not None and isinstance(stop, str) and stop in out_str:
-                out_str = out_str[: out_str.index(stop)]
+                if use_cache:
+                    pkl.dump(out_str, open(cache_file, &#34;wb&#34;))
+                return out_str
+            else:
+                out_strs = []
+                for i in range(outputs.shape[0]):
+                    out_tokens = outputs[i]
+                    out_str = self.tokenizer_.decode(
+                        out_tokens, skip_special_tokens=True)
+                    if &#39;mistral&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
+                        out_str = out_str[len(prompt[i]) - 2:]
+                    elif &#39;Meta-Llama-3&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
+                        # print(&#39;here&#39;)
+                        out_str = out_str[len(prompt) + 187:]
+                    else:
+                        out_str = out_str[len(prompt[i]):]
+                    out_strs.append(out_str)
+                if use_cache:
+                    pkl.dump(out_strs, open(cache_file, &#34;wb&#34;))
+                return out_strs
 
-            pkl.dump(out_str, open(cache_file, &#34;wb&#34;))
-            return out_str
+    def _check_target_token_strs(self, target_token_strs, override_token_with_first_token_id=False):
+        if isinstance(target_token_strs, str):
+            target_token_strs = [target_token_strs]
 
-    def _get_logit_for_target_token(self, prompt: str, target_token_str: str) -&gt; float:
-        &#34;&#34;&#34;Get logits target_token_str
-        This is weird when token_output_ids represents multiple tokens
-        It currently will only take the first token
-        &#34;&#34;&#34;
-        # Get first token id in target_token_str
-        target_token_id = self._tokenizer(target_token_str)[&#34;input_ids&#34;][0]
+        target_token_ids = [self.tokenizer_(target_token_str, add_special_tokens=False)[&#34;input_ids&#34;]
+                            for target_token_str in target_token_strs]
 
-        # get prob of target token
-        inputs = self._tokenizer(
-            prompt,
-            return_tensors=&#34;pt&#34;,
-            return_attention_mask=True,
-            padding=False,
-            truncation=False,
-        ).to(self._model.device)
-        # shape is (batch_size, seq_len, vocab_size)
-        logits = self._model(**inputs)[&#34;logits&#34;].detach().cpu()
-        # shape is (vocab_size,)
-        probs_next_token = softmax(logits[0, -1, :].numpy().flatten())
-        return probs_next_token[target_token_id]
+        # Check that the target token is in the vocab
+        if override_token_with_first_token_id:
+            # Get first token id in target_token_str
+            target_token_ids = [target_token_id[0]
+                                for target_token_id in target_token_ids]
+        else:
+            for i in range(len(target_token_strs)):
+                if len(target_token_ids[i]) &gt; 1:
+                    raise ValueError(
+                        f&#34;target_token_str {target_token_strs[i]} has multiple tokens: &#34; +
+                        str([self.tokenizer_.decode(target_token_id)
+                            for target_token_id in target_token_ids[i]]))
+        return target_token_ids
+
+
+class LLMEmbs:
+    def __init__(self, checkpoint):
+        self.tokenizer_ = load_tokenizer(checkpoint)
+        self.model_ = AutoModel.from_pretrained(
+            checkpoint, output_hidden_states=True,
+            device_map=&#34;auto&#34;,
+            torch_dtype=torch.float16,)
+
+    def __call__(self, texts: List[str], layer_idx: int = 18, batch_size=16):
+        &#39;&#39;&#39;Returns embeddings
+        &#39;&#39;&#39;
+        embs = []
+        for i in tqdm(range(0, len(texts), batch_size)):
+            inputs = self.tokenizer_(
+                texts[i:i + batch_size], return_tensors=&#39;pt&#39;, padding=True).to(self.model_.device)
+            hidden_states = self.model_(**inputs).hidden_states
+
+            # layers x batch x tokens x features
+            emb = hidden_states[layer_idx].detach().cpu().numpy()
+
+            # get emb from last token
+            emb = emb[:, -1, :]
+            embs.append(deepcopy(emb))
+        embs = np.concatenate(embs)
+        return embs
 
 
 if __name__ == &#34;__main__&#34;:
@@ -413,19 +619,39 @@ if __name__ == &#34;__main__&#34;:
     # model = transformers.LlamaForCausalLM.from_pretrained(&#34;chaoyi-wu/PMC_LLAMA_7B&#34;)
 
     # llm = get_llm(&#34;chaoyi-wu/PMC_LLAMA_7B&#34;)
-    llm = get_llm(&#34;llama_65b&#34;)
-    text = llm(
-        &#34;&#34;&#34;Continue this list
-- red
-- orange
-- yellow
-- green
--&#34;&#34;&#34;,
-        use_cache=False,
-    )
-    print(text)
-    print(&#34;\n\n&#34;)
-    print(repr(text))</code></pre>
+    #     llm = get_llm(&#34;llama_65b&#34;)
+    #     text = llm(
+    #         &#34;&#34;&#34;Continue this list
+    # - red
+    # - orange
+    # - yellow
+    # - green
+    # -&#34;&#34;&#34;,
+    #         use_cache=False,
+    #     )
+    #     print(text)
+    #     print(&#34;\n\n&#34;)
+    #     print(repr(text))
+
+    # GET LOGITS ###################################
+    # llm = get_llm(&#34;gpt2&#34;)
+    # prompts = [&#39;roses are red, violets are&#39;, &#39;may the force be with&#39;]
+    # # prompts = [&#39;may the force be with&#39;, &#39;so may the light be with&#39;]
+    # target_token_strs = [&#39; blue&#39;, &#39; you&#39;]
+    # ans = llm(prompts, return_next_token_prob_scores=True,
+    #           use_cache=False, target_token_strs=target_token_strs)
+
+    # FORCE WORDS ##########
+    llm = get_llm(&#34;gpt2&#34;)
+    prompts = [&#39;roses are red, violets are&#39;,
+               &#39;may the force be with&#39;, &#39;trees are usually&#39;]
+    # prompts = [&#39;may the force be with&#39;, &#39;so may the light be with&#39;]
+    target_token_strs = [&#39; green&#39;, &#39; you&#39;, &#39;orange&#39;]
+    llm._check_target_token_strs(target_token_strs)
+    ans = llm(prompts, use_cache=False,
+              return_next_token_prob_scores=True, target_token_strs=target_token_strs,
+              return_top_target_token_str=True)
+    print(&#39;ans&#39;, ans)</code></pre>
 </details>
 </section>
 <section>
@@ -460,9 +686,66 @@ if __name__ == &#34;__main__&#34;:
         return LLM_OpenAI(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR)
     elif checkpoint.startswith(&#34;gpt-3&#34;) or checkpoint.startswith(&#34;gpt-4&#34;):
         return LLM_Chat(checkpoint, seed, role, CACHE_DIR)
+    elif &#39;Meta-Llama-3&#39; in checkpoint and &#39;Instruct&#39; in checkpoint:
+        return LLM_HF_Pipeline(checkpoint, CACHE_DIR)
     else:
         # warning: this sets torch.manual_seed(seed)
         return LLM_HF(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR, LLAMA_DIR=LLAMA_DIR)</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.llm.load_hf_model"><code class="name flex">
+<span>def <span class="ident">load_hf_model</span></span>(<span>checkpoint: str) ‑> transformers.modeling_utils.PreTrainedModel</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_hf_model(checkpoint: str) -&gt; transformers.PreTrainedModel:
+    # set checkpoint
+    kwargs = {
+        &#34;pretrained_model_name_or_path&#34;: checkpoint,
+        &#34;output_hidden_states&#34;: False,
+        # &#34;pad_token_id&#34;: tokenizer.eos_token_id,
+        &#34;low_cpu_mem_usage&#34;: True,
+    }
+    if &#34;google/flan&#34; in checkpoint:
+        return T5ForConditionalGeneration.from_pretrained(
+            checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16
+        )
+    elif checkpoint == &#34;EleutherAI/gpt-j-6B&#34;:
+        return AutoModelForCausalLM.from_pretrained(
+            checkpoint,
+            revision=&#34;float16&#34;,
+            torch_dtype=torch.float16,
+            **kwargs,
+        )
+    elif &#34;llama-2&#34; in checkpoint.lower():
+        return AutoModelForCausalLM.from_pretrained(
+            checkpoint,
+            torch_dtype=torch.float16,
+            device_map=&#34;auto&#34;,
+            token=HF_TOKEN,
+            offload_folder=&#34;offload&#34;,
+        )
+    elif &#34;llama_&#34; in checkpoint:
+        return transformers.LlamaForCausalLM.from_pretrained(
+            join(LLAMA_DIR, checkpoint),
+            device_map=&#34;auto&#34;,
+            torch_dtype=torch.float16,
+        )
+    elif &#39;microsoft/phi&#39; in checkpoint:
+        return AutoModelForCausalLM.from_pretrained(
+            checkpoint
+        )
+    elif checkpoint == &#34;gpt-xl&#34;:
+        return AutoModelForCausalLM.from_pretrained(checkpoint)
+    else:
+        return AutoModelForCausalLM.from_pretrained(
+            checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16,
+            token=HF_TOKEN,
+        )</code></pre>
 </details>
 </dd>
 <dt id="imodelsx.llm.load_tokenizer"><code class="name flex">
@@ -477,15 +760,19 @@ if __name__ == &#34;__main__&#34;:
 <pre><code class="python">def load_tokenizer(checkpoint: str) -&gt; transformers.PreTrainedTokenizer:
     if &#34;facebook/opt&#34; in checkpoint:
         # opt can&#39;t use fast tokenizer
-        return AutoTokenizer.from_pretrained(checkpoint, use_fast=False)
-    elif &#34;llama_&#34; in checkpoint:
-        return transformers.LlamaTokenizer.from_pretrained(join(LLAMA_DIR, checkpoint))
+        tokenizer = AutoTokenizer.from_pretrained(
+            checkpoint, use_fast=False, padding_side=&#39;left&#39;, token=HF_TOKEN)
     elif &#34;PMC_LLAMA&#34; in checkpoint:
-        return transformers.LlamaTokenizer.from_pretrained(&#34;chaoyi-wu/PMC_LLAMA_7B&#34;)
+        tokenizer = transformers.LlamaTokenizer.from_pretrained(
+            &#34;chaoyi-wu/PMC_LLAMA_7B&#34;, padding_side=&#39;left&#39;, token=HF_TOKEN)
     else:
-        return AutoTokenizer.from_pretrained(checkpoint)  # , use_fast=True)
-    # return AutoTokenizer.from_pretrained(checkpoint,
-    # token=os.environ.get(&#34;LLAMA_TOKEN&#34;),)</code></pre>
+        # , use_fast=True)
+        tokenizer = AutoTokenizer.from_pretrained(
+            checkpoint, padding_side=&#39;left&#39;, use_fast=True, token=HF_TOKEN)
+
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+    return tokenizer</code></pre>
 </details>
 </dd>
 <dt id="imodelsx.llm.repeatedly_call_with_delay"><code class="name flex">
@@ -516,6 +803,8 @@ if __name__ == &#34;__main__&#34;:
                     return None
                 elif &#34;maximum context length&#34; in e:
                     return None
+                elif &#39;content management policy&#39; in e:
+                    return None
                 if delay is None:
                     raise e
                 else:
@@ -530,6 +819,43 @@ if __name__ == &#34;__main__&#34;:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="imodelsx.llm.LLMEmbs"><code class="flex name class">
+<span>class <span class="ident">LLMEmbs</span></span>
+<span>(</span><span>checkpoint)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LLMEmbs:
+    def __init__(self, checkpoint):
+        self.tokenizer_ = load_tokenizer(checkpoint)
+        self.model_ = AutoModel.from_pretrained(
+            checkpoint, output_hidden_states=True,
+            device_map=&#34;auto&#34;,
+            torch_dtype=torch.float16,)
+
+    def __call__(self, texts: List[str], layer_idx: int = 18, batch_size=16):
+        &#39;&#39;&#39;Returns embeddings
+        &#39;&#39;&#39;
+        embs = []
+        for i in tqdm(range(0, len(texts), batch_size)):
+            inputs = self.tokenizer_(
+                texts[i:i + batch_size], return_tensors=&#39;pt&#39;, padding=True).to(self.model_.device)
+            hidden_states = self.model_(**inputs).hidden_states
+
+            # layers x batch x tokens x features
+            emb = hidden_states[layer_idx].detach().cpu().numpy()
+
+            # get emb from last token
+            emb = emb[:, -1, :]
+            embs.append(deepcopy(emb))
+        embs = np.concatenate(embs)
+        return embs</code></pre>
+</details>
+</dd>
 <dt id="imodelsx.llm.LLM_Chat"><code class="flex name class">
 <span>class <span class="ident">LLM_Chat</span></span>
 <span>(</span><span>checkpoint, seed, role, CACHE_DIR)</span>
@@ -549,6 +875,14 @@ if __name__ == &#34;__main__&#34;:
         )
         self.checkpoint = checkpoint
         self.role = role
+        from openai import AzureOpenAI
+        self.client = AzureOpenAI(
+            api_version=&#34;2023-07-01-preview&#34;,
+            azure_endpoint=open(os.path.expanduser(
+                &#39;~/.AZURE_OPENAI_ENDPOINT&#39;)).read().strip(),
+            api_key=open(os.path.expanduser(
+                &#39;~/.AZURE_OPENAI_KEY&#39;)).read().strip(),
+        )
 
     @repeatedly_call_with_delay
     def __call__(
@@ -567,7 +901,8 @@ if __name__ == &#34;__main__&#34;:
             Example: [
                 {&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: &#34;You are a helpful assistant.&#34;},
                 {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: &#34;Who won the world series in 2020?&#34;},
-                {&#34;role&#34;: &#34;assistant&#34;, &#34;content&#34;: &#34;The Los Angeles Dodgers won the World Series in 2020.&#34;},
+                {&#34;role&#34;: &#34;assistant&#34;,
+                    &#34;content&#34;: &#34;The Los Angeles Dodgers won the World Series in 2020.&#34;},
                 {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: &#34;Where was it played?&#34;}
             ]
         prompts_list: str
@@ -577,8 +912,6 @@ if __name__ == &#34;__main__&#34;:
                 {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: &lt;&lt;&lt;&lt;&lt;prompts_list&gt;&gt;&gt;&gt;},
             ]
         &#34;&#34;&#34;
-        import openai
-
         if isinstance(prompts_list, str):
             role = self.role
             if role is None:
@@ -630,13 +963,15 @@ if __name__ == &#34;__main__&#34;:
         if functions is not None:
             kwargs[&#34;functions&#34;] = functions
 
-        response = openai.ChatCompletion.create(**kwargs)
+        completion = self.client.chat.completions.create(
+            **kwargs,
+        )
 
         if return_str:
-            response = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
-        # print(response)
+            response = completion.choices[0].message.content
 
         pkl.dump(response, open(cache_file, &#34;wb&#34;))
+
         return response</code></pre>
 </details>
 </dd>
@@ -652,46 +987,8 @@ if __name__ == &#34;__main__&#34;:
 </summary>
 <pre><code class="python">class LLM_HF:
     def __init__(self, checkpoint, seed, CACHE_DIR, LLAMA_DIR=None):
-        self._tokenizer = load_tokenizer(checkpoint)
-
-        # set checkpoint
-        kwargs = {
-            &#34;pretrained_model_name_or_path&#34;: checkpoint,
-            &#34;output_hidden_states&#34;: False,
-            # &#34;pad_token_id&#34;: tokenizer.eos_token_id,
-            &#34;low_cpu_mem_usage&#34;: True,
-        }
-        if &#34;google/flan&#34; in checkpoint:
-            self._model = T5ForConditionalGeneration.from_pretrained(
-                checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16
-            )
-        elif checkpoint == &#34;EleutherAI/gpt-j-6B&#34;:
-            self._model = AutoModelForCausalLM.from_pretrained(
-                checkpoint,
-                revision=&#34;float16&#34;,
-                torch_dtype=torch.float16,
-                **kwargs,
-            )
-        elif &#34;llama-2&#34; in checkpoint.lower():
-            self._model = transformers.AutoModelForCausalLM.from_pretrained(
-                checkpoint,
-                torch_dtype=torch.float16,
-                device_map=&#34;auto&#34;,
-                token=os.environ.get(&#34;LLAMA_TOKEN&#34;),
-                offload_folder=&#34;offload&#34;,
-            )
-        elif &#34;llama_&#34; in checkpoint:
-            self._model = transformers.LlamaForCausalLM.from_pretrained(
-                join(LLAMA_DIR, checkpoint),
-                device_map=&#34;auto&#34;,
-                torch_dtype=torch.float16,
-            )
-        elif checkpoint == &#34;gpt-xl&#34;:
-            self._model = AutoModelForCausalLM.from_pretrained(checkpoint)
-        else:
-            self._model = AutoModelForCausalLM.from_pretrained(
-                checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16
-            )
+        self.tokenizer_ = load_tokenizer(checkpoint)
+        self.model_ = load_hf_model(checkpoint)
         self.checkpoint = checkpoint
         self.cache_dir = join(
             CACHE_DIR, &#34;cache_hf&#34;, f&#39;{checkpoint.replace(&#34;/&#34;, &#34;_&#34;)}___{seed}&#39;
@@ -700,87 +997,231 @@ if __name__ == &#34;__main__&#34;:
 
     def __call__(
         self,
-        prompt: str,
+        prompt: Union[str, List[str]],
         stop: str = None,
         max_new_tokens=20,
         do_sample=False,
         use_cache=True,
-    ) -&gt; str:
-        &#34;&#34;&#34;Warning: stop not actually used&#34;&#34;&#34;
+        verbose=False,
+        return_next_token_prob_scores=False,
+        target_token_strs: List[str] = None,
+        return_top_target_token_str: bool = False,
+        batch_size=1,
+    ) -&gt; Union[str, List[str]]:
+        &#34;&#34;&#34;Warning: stop is used posthoc but not during generation.
+        Be careful, caching can take up a lot of memory....
+
+        Example mistral-instruct prompt: &#34;&lt;s&gt;[INST]&#39;Input text: {example}\nQuestion: {question} Answer yes or no.[/INST]&#34;
+
+
+        Params
+        ------
+        return_next_token_prob_scores: bool
+            If this is true, then the function will return the probability of the next token being each of the target_token_strs
+            target_token_strs: List[str]
+                If this is not None and return_next_token_prob_scores is True, then the function will return the probability of the next token being each of the target_token_strs
+                The output will be a list of dictionaries in this case List[Dict[str, float]]
+                return_top_target_token_str: bool
+                    If true and above are true, then just return top token of the above
+                    This is a way to constrain the output (but only for 1 token)
+                    This setting caches but the other two (which do not return strings) do not cache
+
+        &#34;&#34;&#34;
+        input_is_str = isinstance(prompt, str)
         with torch.no_grad():
             # cache
-            os.makedirs(self.cache_dir, exist_ok=True)
-            hash_str = hashlib.sha256(prompt.encode()).hexdigest()
-            cache_file = join(
-                self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;
-            )
-            if os.path.exists(cache_file) and use_cache:
-                return pkl.load(open(cache_file, &#34;rb&#34;))
+            if use_cache:
+                os.makedirs(self.cache_dir, exist_ok=True)
+                hash_str = hashlib.sha256(str(prompt).encode()).hexdigest()
+                cache_file = join(
+                    self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;
+                )
+
+                if os.path.exists(cache_file):
+                    if verbose:
+                        print(&#34;cached!&#34;)
+                    try:
+                        return pkl.load(open(cache_file, &#34;rb&#34;))
+                    except:
+                        print(&#39;failed to load cache so rerunning...&#39;)
+                if verbose:
+                    print(&#34;not cached...&#34;)
 
             # if stop is not None:
             # raise ValueError(&#34;stop kwargs are not permitted.&#34;)
-            inputs = self._tokenizer(
-                prompt, return_tensors=&#34;pt&#34;, return_attention_mask=True
-            ).to(
-                self._model.device
-            )  # .input_ids.to(&#34;cuda&#34;)
-            # stopping_criteria = StoppingCriteriaList([MaxLengthCriteria(max_length=max_tokens)])
-            # outputs = self._model.generate(input_ids, max_length=max_tokens, stopping_criteria=stopping_criteria)
-            # print(&#39;pad_token&#39;, self._tokenizer.pad_token)
-            if self._tokenizer.pad_token_id is None:
-                self._tokenizer.pad_token_id = self._tokenizer.eos_token_id
-                torch.manual_seed(0)
-            outputs = self._model.generate(
-                **inputs,
-                max_new_tokens=max_new_tokens,
-                do_sample=do_sample,
-                # pad_token=self._tokenizer.pad_token,
-                pad_token_id=self._tokenizer.pad_token_id,
-                # top_p=0.92,
-                # top_k=0
-            )
-            out_str = self._tokenizer.decode(outputs[0])
-            # print(&#39;out_str&#39;, out_str)
-            if &#34;facebook/opt&#34; in self.checkpoint:
-                out_str = out_str[len(&#34;&lt;/s&gt;&#34;) + len(prompt) :]
-            elif &#34;google/flan&#34; in self.checkpoint:
-                # print(&#34;full&#34;, out_str)
-                out_str = out_str[len(&#34;&lt;pad&gt;&#34;) : out_str.index(&#34;&lt;/s&gt;&#34;)]
-            elif &#34;PMC_LLAMA&#34; in self.checkpoint:
-                # print(&#39;here!&#39;, out_str)
-                out_str = out_str[len(&#34;&lt;unk&gt;&#34;) + len(prompt) :]
-            elif &#34;llama_&#34; in self.checkpoint:
-                out_str = out_str[len(&#34;&lt;s&gt;&#34;) + len(prompt) :]
+            inputs = self.tokenizer_(
+                prompt, return_tensors=&#34;pt&#34;,
+                return_attention_mask=True,
+                padding=True,
+                truncation=False,
+            ).to(self.model_.device)
+
+            if return_next_token_prob_scores or target_token_strs or return_top_target_token_str:
+                outputs = self.model_.generate(
+                    **inputs,
+                    max_new_tokens=1,
+                    pad_token_id=self.tokenizer_.pad_token_id,
+                    output_logits=True,
+                    return_dict_in_generate=True,
+                )
+                next_token_logits = outputs[&#39;logits&#39;][0]
+                next_token_probs = next_token_logits.softmax(
+                    axis=-1).detach().cpu().numpy()
+
+                if target_token_strs is None:
+                    return next_token_probs
+
+                target_token_ids = self._check_target_token_strs(
+                    target_token_strs)
+                if return_top_target_token_str:
+                    selected_tokens = next_token_probs[:, np.array(
+                        target_token_ids)].squeeze().argmax(axis=-1)
+                    out_strs = [
+                        target_token_strs[selected_tokens[i]]
+                        for i in range(len(selected_tokens))
+                    ]
+                    if len(out_strs) == 1:
+                        out_strs = out_strs[0]
+                    if use_cache:
+                        pkl.dump(out_strs, open(cache_file, &#34;wb&#34;))
+                    return out_strs
+                else:
+                    out_dict_list = [
+                        {target_token_strs[i]: next_token_probs[prompt_num, target_token_ids[i]]
+                            for i in range(len(target_token_strs))
+                         }
+                        for prompt_num in range(len(prompt))
+                    ]
+                    return out_dict_list
             else:
-                out_str = out_str[len(prompt) :]
+                outputs = self.model_.generate(
+                    **inputs,
+                    max_new_tokens=max_new_tokens,
+                    do_sample=do_sample,
+                    pad_token_id=self.tokenizer_.pad_token_id,
+                )
+                # top_p=0.92,
+                # temperature=0,
+                # top_k=0
+            if input_is_str:
+                out_str = self.tokenizer_.decode(
+                    outputs[0], skip_special_tokens=True)
+                # print(&#39;out_str&#39;, out_str)
+                if &#39;mistral&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
+                    out_str = out_str[len(prompt) - 2:]
+                elif &#39;Meta-Llama-3&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
+                    out_str = out_str[len(prompt) - 145:]
+                else:
+                    out_str = out_str[len(prompt):]
 
-            if stop is not None and isinstance(stop, str) and stop in out_str:
-                out_str = out_str[: out_str.index(stop)]
+                if use_cache:
+                    pkl.dump(out_str, open(cache_file, &#34;wb&#34;))
+                return out_str
+            else:
+                out_strs = []
+                for i in range(outputs.shape[0]):
+                    out_tokens = outputs[i]
+                    out_str = self.tokenizer_.decode(
+                        out_tokens, skip_special_tokens=True)
+                    if &#39;mistral&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
+                        out_str = out_str[len(prompt[i]) - 2:]
+                    elif &#39;Meta-Llama-3&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
+                        # print(&#39;here&#39;)
+                        out_str = out_str[len(prompt) + 187:]
+                    else:
+                        out_str = out_str[len(prompt[i]):]
+                    out_strs.append(out_str)
+                if use_cache:
+                    pkl.dump(out_strs, open(cache_file, &#34;wb&#34;))
+                return out_strs
 
-            pkl.dump(out_str, open(cache_file, &#34;wb&#34;))
-            return out_str
+    def _check_target_token_strs(self, target_token_strs, override_token_with_first_token_id=False):
+        if isinstance(target_token_strs, str):
+            target_token_strs = [target_token_strs]
 
-    def _get_logit_for_target_token(self, prompt: str, target_token_str: str) -&gt; float:
-        &#34;&#34;&#34;Get logits target_token_str
-        This is weird when token_output_ids represents multiple tokens
-        It currently will only take the first token
-        &#34;&#34;&#34;
-        # Get first token id in target_token_str
-        target_token_id = self._tokenizer(target_token_str)[&#34;input_ids&#34;][0]
+        target_token_ids = [self.tokenizer_(target_token_str, add_special_tokens=False)[&#34;input_ids&#34;]
+                            for target_token_str in target_token_strs]
 
-        # get prob of target token
-        inputs = self._tokenizer(
+        # Check that the target token is in the vocab
+        if override_token_with_first_token_id:
+            # Get first token id in target_token_str
+            target_token_ids = [target_token_id[0]
+                                for target_token_id in target_token_ids]
+        else:
+            for i in range(len(target_token_strs)):
+                if len(target_token_ids[i]) &gt; 1:
+                    raise ValueError(
+                        f&#34;target_token_str {target_token_strs[i]} has multiple tokens: &#34; +
+                        str([self.tokenizer_.decode(target_token_id)
+                            for target_token_id in target_token_ids[i]]))
+        return target_token_ids</code></pre>
+</details>
+</dd>
+<dt id="imodelsx.llm.LLM_HF_Pipeline"><code class="flex name class">
+<span>class <span class="ident">LLM_HF_Pipeline</span></span>
+<span>(</span><span>checkpoint, CACHE_DIR)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LLM_HF_Pipeline:
+    def __init__(self, checkpoint, CACHE_DIR):
+
+        self.pipeline_ = transformers.pipeline(
+            &#34;text-generation&#34;,
+            model=checkpoint,
+            # model_kwargs={&#34;torch_dtype&#34;: torch.bfloat16},
+            # , &#39;device_map&#39;: &#34;auto&#34;},
+            model_kwargs={&#39;torch_dtype&#39;: torch.float16},
+            device_map=&#34;auto&#34;
+        )
+        self.pipeline_.tokenizer.pad_token_id = self.pipeline_.tokenizer.eos_token_id
+        self.pipeline_.tokenizer.padding_side = &#39;left&#39;
+        self.cache_dir = join(CACHE_DIR)
+
+    def __call__(
+        self,
+        prompt: Union[str, List[str]],
+        max_new_tokens=20,
+        use_cache=True,
+        verbose=False,
+        batch_size=64,
+    ):
+
+        if use_cache:
+            os.makedirs(self.cache_dir, exist_ok=True)
+            hash_str = hashlib.sha256(str(prompt).encode()).hexdigest()
+            cache_file = join(
+                self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;
+            )
+
+            if os.path.exists(cache_file):
+                if verbose:
+                    print(&#34;cached!&#34;)
+                try:
+                    return pkl.load(open(cache_file, &#34;rb&#34;))
+                except:
+                    print(&#39;failed to load cache so rerunning...&#39;)
+            if verbose:
+                print(&#34;not cached...&#34;)
+        outputs = self.pipeline_(
             prompt,
-            return_tensors=&#34;pt&#34;,
-            return_attention_mask=True,
-            padding=False,
-            truncation=False,
-        ).to(self._model.device)
-        # shape is (batch_size, seq_len, vocab_size)
-        logits = self._model(**inputs)[&#34;logits&#34;].detach().cpu()
-        # shape is (vocab_size,)
-        probs_next_token = softmax(logits[0, -1, :].numpy().flatten())
-        return probs_next_token[target_token_id]</code></pre>
+            max_new_tokens=max_new_tokens,
+            batch_size=batch_size,
+            do_sample=False,
+        )
+        if isinstance(prompt, str):
+            texts = outputs[0][&#34;generated_text&#34;][len(prompt):]
+        else:
+            texts = [outputs[i][0][&#39;generated_text&#39;]
+                     [len(prompt[i]):] for i in range(len(outputs))]
+
+        if use_cache:
+            pkl.dump(texts, open(cache_file, &#34;wb&#34;))
+        return texts</code></pre>
 </details>
 </dd>
 <dt id="imodelsx.llm.LLM_OpenAI"><code class="flex name class">
@@ -805,6 +1246,8 @@ if __name__ == &#34;__main__&#34;:
         self,
         prompt: str,
         max_new_tokens=250,
+        frequency_penalty=0.25,  # maximum is 2
+        temperature=0.1,
         do_sample=True,
         stop=None,
         return_str=True,
@@ -814,7 +1257,8 @@ if __name__ == &#34;__main__&#34;:
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         hash_str = hashlib.sha256(prompt.encode()).hexdigest()
-        cache_file = join(self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;)
+        cache_file = join(
+            self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;)
         if os.path.exists(cache_file):
             return pkl.load(open(cache_file, &#34;rb&#34;))
 
@@ -822,9 +1266,9 @@ if __name__ == &#34;__main__&#34;:
             engine=self.checkpoint,
             prompt=prompt,
             max_tokens=max_new_tokens,
-            temperature=0.1,
+            temperature=temperature,
             top_p=1,
-            frequency_penalty=0.25,  # maximum is 2
+            frequency_penalty=frequency_penalty,
             presence_penalty=0,
             stop=stop,
             # stop=[&#34;101&#34;]
@@ -853,6 +1297,7 @@ if __name__ == &#34;__main__&#34;:
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="imodelsx.llm.get_llm" href="#imodelsx.llm.get_llm">get_llm</a></code></li>
+<li><code><a title="imodelsx.llm.load_hf_model" href="#imodelsx.llm.load_hf_model">load_hf_model</a></code></li>
 <li><code><a title="imodelsx.llm.load_tokenizer" href="#imodelsx.llm.load_tokenizer">load_tokenizer</a></code></li>
 <li><code><a title="imodelsx.llm.repeatedly_call_with_delay" href="#imodelsx.llm.repeatedly_call_with_delay">repeatedly_call_with_delay</a></code></li>
 </ul>
@@ -860,10 +1305,16 @@ if __name__ == &#34;__main__&#34;:
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
+<h4><code><a title="imodelsx.llm.LLMEmbs" href="#imodelsx.llm.LLMEmbs">LLMEmbs</a></code></h4>
+</li>
+<li>
 <h4><code><a title="imodelsx.llm.LLM_Chat" href="#imodelsx.llm.LLM_Chat">LLM_Chat</a></code></h4>
 </li>
 <li>
 <h4><code><a title="imodelsx.llm.LLM_HF" href="#imodelsx.llm.LLM_HF">LLM_HF</a></code></h4>
+</li>
+<li>
+<h4><code><a title="imodelsx.llm.LLM_HF_Pipeline" href="#imodelsx.llm.LLM_HF_Pipeline">LLM_HF_Pipeline</a></code></h4>
 </li>
 <li>
 <h4><code><a title="imodelsx.llm.LLM_OpenAI" href="#imodelsx.llm.LLM_OpenAI">LLM_OpenAI</a></code></h4>

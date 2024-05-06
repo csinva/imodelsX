@@ -36,7 +36,10 @@ from functools import reduce
 from itertools import repeat
 import time
 import traceback
+import os
 from os.path import dirname, join
+
+from dict_hash import sha256
 submit_utils_dir = dirname(__file__)
 &#34;&#34;&#34;Handles utilities for job sweeps,
 focused on embarassingly parallel sweeps on a single machine.
@@ -48,13 +51,16 @@ def run_args_list(
     cmd_python: str = &#39;python&#39;,
     script_name: str = &#39;02_train_suffix.py&#39;,
     actually_run: bool = True,
+    debug_mode: bool = False,
     shuffle: bool = False,
     reverse: bool = False,
+    unique_seeds: str = None,
     n_cpus: int = 1,
     gpu_ids: Union[List[int], List[List[int]]] = [],
     repeat_failed_jobs: bool = False,
     slurm: bool = False,
     slurm_kwargs: Optional[Dict] = None,
+    amlt_kwargs: Optional[Dict] = None,
 ):
     &#34;&#34;&#34;
     Params
@@ -66,10 +72,14 @@ def run_args_list(
         Name of script to run
     actually_run: bool
         Whether to actually run the script (otherwise just print the command)
+    debug_mode: bool
+        Whether to open debugger after failure (stops all parallelilization) 
     shuffle: bool
         Whether to shuffle the order of the script calls
     reverse: bool
         Whether to reverse the order of the script calls
+    unique_seeds: str
+        Whether to assign random, unique values to each parameter with this value
     n_cpus: int
         Number of cpus to use (if &gt;1, parallelizes over local machine)
     gpu_ids: List[int], List[List[int]]
@@ -81,9 +91,14 @@ def run_args_list(
         Whether to run on SLURM (defaults to False)
     slurm_kwargs: Optional[Dict]
         kwargs for slurm
+    amlt_kwargs: Optional[Dict]
+        kwargs for amlt (will override everything else)
     &#34;&#34;&#34;
-    n_gpus = len(gpu_ids)
-    _validate_run_arguments(n_cpus, gpu_ids)
+    if amlt_kwargs is not None:
+        print(&#39;Running on AMLT with&#39;, amlt_kwargs)
+    else:
+        n_gpus = len(gpu_ids)
+        _validate_run_arguments(n_cpus, gpu_ids)
 
     # adjust order
     if shuffle:
@@ -91,16 +106,22 @@ def run_args_list(
     if reverse:
         args_list = args_list[::-1]
 
+    # debug mode
+    if debug_mode:
+        cmd_python = &#39;python -m pdb -c continue&#39;
+        if n_cpus &gt; 1 or n_gpus &gt; 1:
+            print(&#39;\n###\n### Debug mode, setting n_cpus=1 and n_gpus=0 ###\n###\n&#39;)
+            n_cpus = 1
+            n_gpus = 0
+
+    # assign unique seeds
+    if unique_seeds:
+        for i, args in enumerate(args_list):
+            args_list[i][&#39;seed_stories&#39;] = random.randint(1, int(1e6))
+
     # construct commands
-    param_str_list = []
-    for args in args_list:
-        param_str = cmd_python + &#39; &#39; + script_name + &#39; &#39;
-        for k, v in args.items():
-            if isinstance(v, list):
-                param_str += &#39;--&#39; + k + &#39; &#39; + &#39; &#39;.join(v) + &#39; &#39;
-            else:
-                param_str += &#39;--&#39; + k + &#39; &#39; + str(v) + &#39; &#39;
-        param_str_list.append(param_str)
+    param_str_list = [_param_str_from_args(
+        args, cmd_python, script_name) for args in args_list]
 
     # just print and exit
     if not actually_run:
@@ -111,13 +132,57 @@ def run_args_list(
         return
 
     failed_jobs = []
-   
+
     if slurm:
         for i, param_str in enumerate(param_str_list):
             print(
                 f&#39;\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n&#39; + param_str)
             run_slurm(param_str, slurm_kwargs=slurm_kwargs)
-      
+        return
+    elif amlt_kwargs is not None:
+        assert &#39;amlt_file&#39; in amlt_kwargs
+        sku = amlt_kwargs.get(&#39;sku&#39;, &#39;G1&#39;)
+        process_count_per_node = amlt_kwargs.get(&#39;process_count_per_node&#39;, 1)
+        amlt_dir = dirname(amlt_kwargs[&#39;amlt_file&#39;])
+        amlt_text = open(amlt_kwargs[&#39;amlt_file&#39;], &#39;r&#39;).read()
+        assert amlt_text.endswith(&#39;jobs:&#39;), &#39;amlt file must end with jobs:&#39;
+        script_name = script_name.replace(amlt_dir, &#39;&#39;).strip(&#39;/&#39;)
+        param_str_list = [_param_str_from_args(
+            args, cmd_python, script_name) for args in args_list]
+        if &#39;mnt_rename&#39; in amlt_kwargs:
+            param_str_list = [
+                param_str.replace(
+                    amlt_kwargs[&#39;mnt_rename&#39;][0], amlt_kwargs[&#39;mnt_rename&#39;][1])
+                for param_str in param_str_list
+            ]
+
+        # save yaml file with multiple jobs in logs dir and run with amlt
+        logs_dir = join(amlt_dir, &#39;logs&#39;)
+        os.makedirs(logs_dir, exist_ok=True)
+        job_template = &#39;&#39;&#39;
+- name: {name}
+  process_count_per_node: {process_count_per_node}
+  sku: {sku}
+  command:
+  - {param_str}&#39;&#39;&#39;
+        out_file = join(logs_dir, sha256({&#39;s&#39;: str(param_str_list)}) + &#39;.yaml&#39;)
+        s = amlt_text
+        for i, param_str in enumerate(param_str_list):
+            job_text = job_template.format(
+                name=f&#39;{sku}_job_{i}&#39;,
+                process_count_per_node=process_count_per_node,
+                sku=sku,
+                param_str=param_str
+            )
+            s = s + job_text
+        s = s.replace(&#39;$CONFIG_DIR&#39;, &#39;$CONFIG_DIR/..&#39;)
+        with open(out_file, &#39;w&#39;) as f:
+            f.write(s)
+        subprocess.run(
+            f&#39;amlt run {out_file}&#39;, shell=True, check=True,
+        )
+        return
+
     # run serial
     elif n_cpus == 1 and n_gpus == 0:
         for i, param_str in enumerate(param_str_list):
@@ -135,7 +200,6 @@ def run_args_list(
                 failed_jobs.append((i, param_str))
             except Exception as e:
                 print(e)
-
 
     # run parallel on CPUs
     elif n_cpus &gt; 1 and n_gpus == 0:
@@ -210,15 +274,26 @@ def run_args_list(
 def run_slurm(param_str, slurm_kwargs):
     from slurmpy import Slurm
     slurm = Slurm(
-            f&#34;imodelsx_job_{time.time()}&#34;,
-            slurm_kwargs=slurm_kwargs,
-            slurm_flags=[&#34;requeue&#34;],
-        )
+        f&#34;imodelsx_job_{time.time()}&#34;,
+        slurm_kwargs=slurm_kwargs,
+        slurm_flags=[&#34;requeue&#34;],
+    )
     slurm.run(
         f&#34;&#34;&#34;
         {param_str}
         &#34;&#34;&#34;
     )
+
+
+def _param_str_from_args(args, cmd_python, script_name):
+    param_str = cmd_python + &#39; &#39; + script_name + &#39; &#39;
+    for k, v in args.items():
+        if isinstance(v, list):
+            param_str += &#39;--&#39; + k + &#39; &#39; + &#39; &#39;.join(v) + &#39; &#39;
+        else:
+            param_str += &#39;--&#39; + k + &#39; &#39; + str(v) + &#39; &#39;
+    return param_str
+
 
 def run_on_gpu(param_str, i, n):
     gpu_id = job_queue_multiprocessing.get()
@@ -252,7 +327,7 @@ def run_on_gpu(param_str, i, n):
 
 def get_args_list(
     params_shared_dict: Dict[str, List],
-    params_coupled_dict: Dict[Tuple[str], List[Tuple]],
+    params_coupled_dict: Dict[Tuple[str], List[Tuple]] = {},
 ) -&gt; List[Dict[str, Any]]:
     _validate_arguments(params_shared_dict, params_coupled_dict)
 
@@ -295,6 +370,8 @@ def _validate_arguments(
     params_coupled_dict: Dict[Tuple[str], List[Tuple]],
 ):
     for k, v in params_shared_dict.items():
+        if isinstance(v, range):
+            v = list(v)
         assert isinstance(
             k, str), f&#34;params_shared_dict key {k} must be type list, got type {type(k)}&#34;
         assert isinstance(
@@ -320,7 +397,8 @@ def _validate_run_arguments(
     gpu_ids: List[int],
 ):
     assert n_cpus &gt; 0, f&#34;n_cpus must be greater than 0, got {n_cpus}&#34;
-    assert not (n_cpus &gt; 1 and len(gpu_ids) &gt; 0), &#39;Cannot parallelize over cpus and gpus&#39;
+    assert not (n_cpus &gt; 1 and len(gpu_ids) &gt;
+                0), &#39;Cannot parallelize over cpus and gpus&#39;
     if len(gpu_ids) &gt; 0:
         import torch.cuda
         num_gpus = torch.cuda.device_count()
@@ -328,11 +406,11 @@ def _validate_run_arguments(
                                                                  ), f&#39;gpu_ids {gpu_ids} must be type int or type list&#39;
         if all([isinstance(x, int) for x in gpu_ids]):
             assert all([x &gt;= 0 and x &lt; num_gpus for x in gpu_ids]
-                    ), f&#39;gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}&#39;
+                       ), f&#39;gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}&#39;
         elif all([isinstance(x, list) for x in gpu_ids]):
             gpu_ids_flattened = sum(gpu_ids, [])
             assert all([x &gt;= 0 and x &lt; num_gpus for x in gpu_ids_flattened]
-                    ), f&#39;gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}&#39;
+                       ), f&#39;gpu_ids {gpu_ids} must be less than available gpus count {num_gpus}&#39;
 
 
 if __name__ == &#39;__main__&#39;:
@@ -378,7 +456,7 @@ focused on embarassingly parallel sweeps on a single machine.</p></div>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="imodelsx.submit_utils.get_args_list"><code class="name flex">
-<span>def <span class="ident">get_args_list</span></span>(<span>params_shared_dict: Dict[str, List], params_coupled_dict: Dict[Tuple[str], List[Tuple]]) ‑> List[Dict[str, Any]]</span>
+<span>def <span class="ident">get_args_list</span></span>(<span>params_shared_dict: Dict[str, List], params_coupled_dict: Dict[Tuple[str], List[Tuple]] = {}) ‑> List[Dict[str, Any]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -388,7 +466,7 @@ focused on embarassingly parallel sweeps on a single machine.</p></div>
 </summary>
 <pre><code class="python">def get_args_list(
     params_shared_dict: Dict[str, List],
-    params_coupled_dict: Dict[Tuple[str], List[Tuple]],
+    params_coupled_dict: Dict[Tuple[str], List[Tuple]] = {},
 ) -&gt; List[Dict[str, Any]]:
     _validate_arguments(params_shared_dict, params_coupled_dict)
 
@@ -427,7 +505,7 @@ focused on embarassingly parallel sweeps on a single machine.</p></div>
 </details>
 </dd>
 <dt id="imodelsx.submit_utils.run_args_list"><code class="name flex">
-<span>def <span class="ident">run_args_list</span></span>(<span>args_list: List[Dict[str, Any]], cmd_python: str = 'python', script_name: str = '02_train_suffix.py', actually_run: bool = True, shuffle: bool = False, reverse: bool = False, n_cpus: int = 1, gpu_ids: Union[List[int], List[List[int]]] = [], repeat_failed_jobs: bool = False, slurm: bool = False, slurm_kwargs: Optional[Dict] = None)</span>
+<span>def <span class="ident">run_args_list</span></span>(<span>args_list: List[Dict[str, Any]], cmd_python: str = 'python', script_name: str = '02_train_suffix.py', actually_run: bool = True, debug_mode: bool = False, shuffle: bool = False, reverse: bool = False, unique_seeds: str = None, n_cpus: int = 1, gpu_ids: Union[List[int], List[List[int]]] = [], repeat_failed_jobs: bool = False, slurm: bool = False, slurm_kwargs: Optional[Dict] = None, amlt_kwargs: Optional[Dict] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><h2 id="params">Params</h2>
@@ -438,10 +516,14 @@ script_name: str
 Name of script to run
 actually_run: bool
 Whether to actually run the script (otherwise just print the command)
+debug_mode: bool
+Whether to open debugger after failure (stops all parallelilization)
 shuffle: bool
 Whether to shuffle the order of the script calls
 reverse: bool
 Whether to reverse the order of the script calls
+unique_seeds: str
+Whether to assign random, unique values to each parameter with this value
 n_cpus: int
 Number of cpus to use (if &gt;1, parallelizes over local machine)
 gpu_ids: List[int], List[List[int]]
@@ -452,7 +534,9 @@ Whether to repeatedly run failed jobs
 run_slurm: bool
 Whether to run on SLURM (defaults to False)
 slurm_kwargs: Optional[Dict]
-kwargs for slurm</p></div>
+kwargs for slurm
+amlt_kwargs: Optional[Dict]
+kwargs for amlt (will override everything else)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -462,13 +546,16 @@ kwargs for slurm</p></div>
     cmd_python: str = &#39;python&#39;,
     script_name: str = &#39;02_train_suffix.py&#39;,
     actually_run: bool = True,
+    debug_mode: bool = False,
     shuffle: bool = False,
     reverse: bool = False,
+    unique_seeds: str = None,
     n_cpus: int = 1,
     gpu_ids: Union[List[int], List[List[int]]] = [],
     repeat_failed_jobs: bool = False,
     slurm: bool = False,
     slurm_kwargs: Optional[Dict] = None,
+    amlt_kwargs: Optional[Dict] = None,
 ):
     &#34;&#34;&#34;
     Params
@@ -480,10 +567,14 @@ kwargs for slurm</p></div>
         Name of script to run
     actually_run: bool
         Whether to actually run the script (otherwise just print the command)
+    debug_mode: bool
+        Whether to open debugger after failure (stops all parallelilization) 
     shuffle: bool
         Whether to shuffle the order of the script calls
     reverse: bool
         Whether to reverse the order of the script calls
+    unique_seeds: str
+        Whether to assign random, unique values to each parameter with this value
     n_cpus: int
         Number of cpus to use (if &gt;1, parallelizes over local machine)
     gpu_ids: List[int], List[List[int]]
@@ -495,9 +586,14 @@ kwargs for slurm</p></div>
         Whether to run on SLURM (defaults to False)
     slurm_kwargs: Optional[Dict]
         kwargs for slurm
+    amlt_kwargs: Optional[Dict]
+        kwargs for amlt (will override everything else)
     &#34;&#34;&#34;
-    n_gpus = len(gpu_ids)
-    _validate_run_arguments(n_cpus, gpu_ids)
+    if amlt_kwargs is not None:
+        print(&#39;Running on AMLT with&#39;, amlt_kwargs)
+    else:
+        n_gpus = len(gpu_ids)
+        _validate_run_arguments(n_cpus, gpu_ids)
 
     # adjust order
     if shuffle:
@@ -505,16 +601,22 @@ kwargs for slurm</p></div>
     if reverse:
         args_list = args_list[::-1]
 
+    # debug mode
+    if debug_mode:
+        cmd_python = &#39;python -m pdb -c continue&#39;
+        if n_cpus &gt; 1 or n_gpus &gt; 1:
+            print(&#39;\n###\n### Debug mode, setting n_cpus=1 and n_gpus=0 ###\n###\n&#39;)
+            n_cpus = 1
+            n_gpus = 0
+
+    # assign unique seeds
+    if unique_seeds:
+        for i, args in enumerate(args_list):
+            args_list[i][&#39;seed_stories&#39;] = random.randint(1, int(1e6))
+
     # construct commands
-    param_str_list = []
-    for args in args_list:
-        param_str = cmd_python + &#39; &#39; + script_name + &#39; &#39;
-        for k, v in args.items():
-            if isinstance(v, list):
-                param_str += &#39;--&#39; + k + &#39; &#39; + &#39; &#39;.join(v) + &#39; &#39;
-            else:
-                param_str += &#39;--&#39; + k + &#39; &#39; + str(v) + &#39; &#39;
-        param_str_list.append(param_str)
+    param_str_list = [_param_str_from_args(
+        args, cmd_python, script_name) for args in args_list]
 
     # just print and exit
     if not actually_run:
@@ -525,13 +627,57 @@ kwargs for slurm</p></div>
         return
 
     failed_jobs = []
-   
+
     if slurm:
         for i, param_str in enumerate(param_str_list):
             print(
                 f&#39;\n\n-------------------{i + 1}/{len(param_str_list)}--------------------\n&#39; + param_str)
             run_slurm(param_str, slurm_kwargs=slurm_kwargs)
-      
+        return
+    elif amlt_kwargs is not None:
+        assert &#39;amlt_file&#39; in amlt_kwargs
+        sku = amlt_kwargs.get(&#39;sku&#39;, &#39;G1&#39;)
+        process_count_per_node = amlt_kwargs.get(&#39;process_count_per_node&#39;, 1)
+        amlt_dir = dirname(amlt_kwargs[&#39;amlt_file&#39;])
+        amlt_text = open(amlt_kwargs[&#39;amlt_file&#39;], &#39;r&#39;).read()
+        assert amlt_text.endswith(&#39;jobs:&#39;), &#39;amlt file must end with jobs:&#39;
+        script_name = script_name.replace(amlt_dir, &#39;&#39;).strip(&#39;/&#39;)
+        param_str_list = [_param_str_from_args(
+            args, cmd_python, script_name) for args in args_list]
+        if &#39;mnt_rename&#39; in amlt_kwargs:
+            param_str_list = [
+                param_str.replace(
+                    amlt_kwargs[&#39;mnt_rename&#39;][0], amlt_kwargs[&#39;mnt_rename&#39;][1])
+                for param_str in param_str_list
+            ]
+
+        # save yaml file with multiple jobs in logs dir and run with amlt
+        logs_dir = join(amlt_dir, &#39;logs&#39;)
+        os.makedirs(logs_dir, exist_ok=True)
+        job_template = &#39;&#39;&#39;
+- name: {name}
+  process_count_per_node: {process_count_per_node}
+  sku: {sku}
+  command:
+  - {param_str}&#39;&#39;&#39;
+        out_file = join(logs_dir, sha256({&#39;s&#39;: str(param_str_list)}) + &#39;.yaml&#39;)
+        s = amlt_text
+        for i, param_str in enumerate(param_str_list):
+            job_text = job_template.format(
+                name=f&#39;{sku}_job_{i}&#39;,
+                process_count_per_node=process_count_per_node,
+                sku=sku,
+                param_str=param_str
+            )
+            s = s + job_text
+        s = s.replace(&#39;$CONFIG_DIR&#39;, &#39;$CONFIG_DIR/..&#39;)
+        with open(out_file, &#39;w&#39;) as f:
+            f.write(s)
+        subprocess.run(
+            f&#39;amlt run {out_file}&#39;, shell=True, check=True,
+        )
+        return
+
     # run serial
     elif n_cpus == 1 and n_gpus == 0:
         for i, param_str in enumerate(param_str_list):
@@ -549,7 +695,6 @@ kwargs for slurm</p></div>
                 failed_jobs.append((i, param_str))
             except Exception as e:
                 print(e)
-
 
     # run parallel on CPUs
     elif n_cpus &gt; 1 and n_gpus == 0:
@@ -672,10 +817,10 @@ kwargs for slurm</p></div>
 <pre><code class="python">def run_slurm(param_str, slurm_kwargs):
     from slurmpy import Slurm
     slurm = Slurm(
-            f&#34;imodelsx_job_{time.time()}&#34;,
-            slurm_kwargs=slurm_kwargs,
-            slurm_flags=[&#34;requeue&#34;],
-        )
+        f&#34;imodelsx_job_{time.time()}&#34;,
+        slurm_kwargs=slurm_kwargs,
+        slurm_flags=[&#34;requeue&#34;],
+    )
     slurm.run(
         f&#34;&#34;&#34;
         {param_str}

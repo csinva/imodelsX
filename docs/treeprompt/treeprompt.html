@@ -44,6 +44,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.preprocessing import OneHotEncoder
 
 import imodelsx.treeprompt.stump
+import imodelsx.llm
 
 
 class TreePromptClassifier(BaseEstimator, ClassifierMixin):
@@ -54,17 +55,28 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
         verbalizer: Dict[int, str] = {0: &#34; Negative.&#34;, 1: &#34; Positive.&#34;},
         tree_kwargs: Dict = {&#34;max_leaf_nodes&#34;: 3},
         batch_size: int = 1,
+        prompt_template: str = &#34;{example}{prompt}&#34;,
         cache_prompt_features_dir=join(&#34;cache_prompt_features&#34;),
         cache_key_values: bool = False,
         device=None,
         verbose: bool = True,
         random_state: int = 42,
     ):
+        &#39;&#39;&#39;
+        Params
+        ------
+        prompt_template: str
+            template for the prompt, for different prompt styles (e.g. few-shot), may want to place {prompt} before {example}
+             or you may want to add some text before the verbalizer, e.g. {example}{prompt} Output:
+        cache_key_values: bool
+            Whether to cache key values (only possible when prompt does not start with {example})
+        &#39;&#39;&#39;
         self.checkpoint = checkpoint
         self.prompts = prompts
         self.verbalizer = verbalizer
         self.tree_kwargs = tree_kwargs
         self.batch_size = batch_size
+        self.prompt_template = prompt_template
         self.cache_prompt_features_dir = cache_prompt_features_dir
         self.cache_key_values = cache_key_values
         self.device = device
@@ -87,8 +99,8 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
         if len(np.unique(y)) &gt; 3:
             print(&#34;Converting to one-hot&#34;)
             self.enc_ = OneHotEncoder(handle_unknown=&#34;ignore&#34;)
-            prompt_features = enc.fit_transform(prompt_features)
-            self.feature_names_ = enc.get_feature_names_out(self.prompts)
+            prompt_features = self.enc_.fit_transform(prompt_features)
+            self.feature_names_ = self.enc_.get_feature_names_out(self.prompts)
         else:
             self.feature_names_ = self.prompts
 
@@ -106,7 +118,7 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
 
     def _calc_prompt_features(self, X, prompts):
         prompt_features = np.zeros((len(X), len(prompts)))
-        llm = imodelsx.llm.get_llm(self.checkpoint)._model
+        llm = imodelsx.llm.get_llm(self.checkpoint).model_
         if self.device is not None:
             llm = llm.to(self.device)
         stump = None
@@ -117,7 +129,8 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
             loaded_from_cache = False
             if self.cache_prompt_features_dir is not None:
                 os.makedirs(self.cache_prompt_features_dir, exist_ok=True)
-                args_dict_cache = {&#34;prompt&#34;: prompt}
+                args_dict_cache = {&#34;prompt&#34;: prompt,
+                                   &#34;X_len&#34;: len(X), &#34;ex0&#34;: X[0]}
                 save_dir_unique_hash = sha256(args_dict_cache)
                 cache_file = join(
                     self.cache_prompt_features_dir, f&#34;{save_dir_unique_hash}.pkl&#34;
@@ -139,6 +152,8 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
                         checkpoint=self.checkpoint,
                         verbalizer=self.verbalizer,
                         batch_size=self.batch_size,
+                        prompt_template=self.prompt_template,
+                        cache_key_values=self.cache_key_values,
                     )
 
                 # calculate prompt_features
@@ -159,7 +174,7 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
                 past_key_values = None
                 if self.cache_key_values:
                     stump.prompt = prompt
-                    past_key_values = stump.calc_key_values(X_train_text)
+                    past_key_values = stump.calc_key_values(X)
                 prompt_features_i = _calc_features_single_prompt(
                     X, stump, prompt, past_key_values=past_key_values
                 )
@@ -187,50 +202,7 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
         return self.clf_.predict_proba(prompt_features)
 
     def predict(self, X):
-        return self.predict_proba(X).argmax(axis=1)
-
-
-if __name__ == &#34;__main__&#34;:
-    # load data
-    rng = np.random.default_rng(42)
-    dset_train = datasets.load_dataset(&#34;rotten_tomatoes&#34;)[&#34;train&#34;]
-    dset_train = dset_train.select(rng.choice(
-        len(dset_train), size=100, replace=False))
-    dset_val = datasets.load_dataset(&#34;rotten_tomatoes&#34;)[&#34;validation&#34;]
-    dset_val = dset_val.select(rng.choice(
-        len(dset_val), size=100, replace=False))
-
-    # example fit
-    prompts = [
-        &#34;This movie is&#34;,
-        &#34; Positive or Negative? The movie was&#34;,
-        &#34; The sentiment of the movie was&#34;,
-        &#34; The plot of the movie was really&#34;,
-        &#34; The acting in the movie was&#34;,
-    ]
-    verbalizer = {0: &#34; Negative.&#34;, 1: &#34; Positive.&#34;}
-    m = TreePromptClassifier(
-        checkpoint=&#34;gpt2&#34;,
-        prompts=prompts,
-        verbalizer=verbalizer,
-        cache_prompt_features_dir=None,  # &#39;cache_prompt_features_dir/gp2&#39;,
-    )
-    m.fit(dset_train[&#34;text&#34;], dset_train[&#34;label&#34;])
-
-    acc_test = np.mean(m.predict(dset_val[&#34;text&#34;]) == dset_val[&#34;label&#34;])
-    print(&#34;acc_test&#34;, acc_test)
-
-    # visualize decision tree
-    # plot_tree(
-    #     m.clf_,
-    #     fontsize=10,
-    #     feature_names=m.feature_names_,
-    #     class_names=list(verbalizer.values()),
-    #     filled=True,
-    # )
-    # plt.show()
-
-    # pd.DataFrame({&#39;prompt&#39;: prompts, &#39;acc&#39;: m.prompt_accs_})</code></pre>
+        return self.predict_proba(X).argmax(axis=1)</code></pre>
 </details>
 </section>
 <section>
@@ -244,14 +216,51 @@ if __name__ == &#34;__main__&#34;:
 <dl>
 <dt id="imodelsx.treeprompt.treeprompt.TreePromptClassifier"><code class="flex name class">
 <span>class <span class="ident">TreePromptClassifier</span></span>
-<span>(</span><span>checkpoint: str, prompts: List[str], verbalizer: Dict[int, str] = {0: ' Negative.', 1: ' Positive.'}, tree_kwargs: Dict = {'max_leaf_nodes': 3}, batch_size: int = 1, cache_prompt_features_dir='cache_prompt_features', cache_key_values: bool = False, device=None, verbose: bool = True, random_state: int = 42)</span>
+<span>(</span><span>checkpoint: str, prompts: List[str], verbalizer: Dict[int, str] = {0: ' Negative.', 1: ' Positive.'}, tree_kwargs: Dict = {'max_leaf_nodes': 3}, batch_size: int = 1, prompt_template: str = '{example}{prompt}', cache_prompt_features_dir='cache_prompt_features', cache_key_values: bool = False, device=None, verbose: bool = True, random_state: int = 42)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
+<p>Inheriting from this class provides default implementations of:</p>
+<ul>
+<li>setting and getting parameters used by <code>GridSearchCV</code> and friends;</li>
+<li>textual and HTML representation displayed in terminals and IDEs;</li>
+<li>estimator serialization;</li>
+<li>parameters validation;</li>
+<li>data validation;</li>
+<li>feature names validation.</li>
+</ul>
+<p>Read more in the :ref:<code>User Guide &lt;rolling_your_own_estimator&gt;</code>.</p>
 <h2 id="notes">Notes</h2>
 <p>All estimators should specify all the parameters that can be set
 at the class level in their <code>__init__</code> as explicit keyword
-arguments (no <code>*args</code> or <code>**kwargs</code>).</p></div>
+arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
+<h2 id="examples">Examples</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; import numpy as np
+&gt;&gt;&gt; from sklearn.base import BaseEstimator
+&gt;&gt;&gt; class MyEstimator(BaseEstimator):
+...     def __init__(self, *, param=1):
+...         self.param = param
+...     def fit(self, X, y=None):
+...         self.is_fitted_ = True
+...         return self
+...     def predict(self, X):
+...         return np.full(shape=X.shape[0], fill_value=self.param)
+&gt;&gt;&gt; estimator = MyEstimator(param=2)
+&gt;&gt;&gt; estimator.get_params()
+{'param': 2}
+&gt;&gt;&gt; X = np.array([[1, 2], [2, 3], [3, 4]])
+&gt;&gt;&gt; y = np.array([1, 0, 1])
+&gt;&gt;&gt; estimator.fit(X, y).predict(X)
+array([2, 2, 2])
+&gt;&gt;&gt; estimator.set_params(param=3).fit(X, y).predict(X)
+array([3, 3, 3])
+</code></pre>
+<h2 id="params">Params</h2>
+<p>prompt_template: str
+template for the prompt, for different prompt styles (e.g. few-shot), may want to place {prompt} before {example}
+or you may want to add some text before the verbalizer, e.g. {example}{prompt} Output:
+cache_key_values: bool
+Whether to cache key values (only possible when prompt does not start with {example})</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -264,17 +273,28 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p></div>
         verbalizer: Dict[int, str] = {0: &#34; Negative.&#34;, 1: &#34; Positive.&#34;},
         tree_kwargs: Dict = {&#34;max_leaf_nodes&#34;: 3},
         batch_size: int = 1,
+        prompt_template: str = &#34;{example}{prompt}&#34;,
         cache_prompt_features_dir=join(&#34;cache_prompt_features&#34;),
         cache_key_values: bool = False,
         device=None,
         verbose: bool = True,
         random_state: int = 42,
     ):
+        &#39;&#39;&#39;
+        Params
+        ------
+        prompt_template: str
+            template for the prompt, for different prompt styles (e.g. few-shot), may want to place {prompt} before {example}
+             or you may want to add some text before the verbalizer, e.g. {example}{prompt} Output:
+        cache_key_values: bool
+            Whether to cache key values (only possible when prompt does not start with {example})
+        &#39;&#39;&#39;
         self.checkpoint = checkpoint
         self.prompts = prompts
         self.verbalizer = verbalizer
         self.tree_kwargs = tree_kwargs
         self.batch_size = batch_size
+        self.prompt_template = prompt_template
         self.cache_prompt_features_dir = cache_prompt_features_dir
         self.cache_key_values = cache_key_values
         self.device = device
@@ -297,8 +317,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p></div>
         if len(np.unique(y)) &gt; 3:
             print(&#34;Converting to one-hot&#34;)
             self.enc_ = OneHotEncoder(handle_unknown=&#34;ignore&#34;)
-            prompt_features = enc.fit_transform(prompt_features)
-            self.feature_names_ = enc.get_feature_names_out(self.prompts)
+            prompt_features = self.enc_.fit_transform(prompt_features)
+            self.feature_names_ = self.enc_.get_feature_names_out(self.prompts)
         else:
             self.feature_names_ = self.prompts
 
@@ -316,7 +336,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p></div>
 
     def _calc_prompt_features(self, X, prompts):
         prompt_features = np.zeros((len(X), len(prompts)))
-        llm = imodelsx.llm.get_llm(self.checkpoint)._model
+        llm = imodelsx.llm.get_llm(self.checkpoint).model_
         if self.device is not None:
             llm = llm.to(self.device)
         stump = None
@@ -327,7 +347,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p></div>
             loaded_from_cache = False
             if self.cache_prompt_features_dir is not None:
                 os.makedirs(self.cache_prompt_features_dir, exist_ok=True)
-                args_dict_cache = {&#34;prompt&#34;: prompt}
+                args_dict_cache = {&#34;prompt&#34;: prompt,
+                                   &#34;X_len&#34;: len(X), &#34;ex0&#34;: X[0]}
                 save_dir_unique_hash = sha256(args_dict_cache)
                 cache_file = join(
                     self.cache_prompt_features_dir, f&#34;{save_dir_unique_hash}.pkl&#34;
@@ -349,6 +370,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p></div>
                         checkpoint=self.checkpoint,
                         verbalizer=self.verbalizer,
                         batch_size=self.batch_size,
+                        prompt_template=self.prompt_template,
+                        cache_key_values=self.cache_key_values,
                     )
 
                 # calculate prompt_features
@@ -369,7 +392,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p></div>
                 past_key_values = None
                 if self.cache_key_values:
                     stump.prompt = prompt
-                    past_key_values = stump.calc_key_values(X_train_text)
+                    past_key_values = stump.calc_key_values(X)
                 prompt_features_i = _calc_features_single_prompt(
                     X, stump, prompt, past_key_values=past_key_values
                 )
@@ -402,6 +425,7 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>sklearn.base.BaseEstimator</li>
+<li>sklearn.utils._estimator_html_repr._HTMLDocumentationLinkMixin</li>
 <li>sklearn.utils._metadata_requests._MetadataRequester</li>
 <li>sklearn.base.ClassifierMixin</li>
 </ul>
@@ -432,8 +456,8 @@ arguments (no <code>*args</code> or <code>**kwargs</code>).</p></div>
     if len(np.unique(y)) &gt; 3:
         print(&#34;Converting to one-hot&#34;)
         self.enc_ = OneHotEncoder(handle_unknown=&#34;ignore&#34;)
-        prompt_features = enc.fit_transform(prompt_features)
-        self.feature_names_ = enc.get_feature_names_out(self.prompts)
+        prompt_features = self.enc_.fit_transform(prompt_features)
+        self.feature_names_ = self.enc_.get_feature_names_out(self.prompts)
     else:
         self.feature_names_ = self.prompts
 
@@ -522,7 +546,7 @@ parameters and not others.</p>
 <p class="admonition-title">Note</p>
 <p>This method is only relevant if this estimator is used as a
 sub-estimator of a meta-estimator, e.g. used inside a
-:class:<code>pipeline.Pipeline</code>. Otherwise it has no effect.</p>
+:class:<code>~sklearn.pipeline.Pipeline</code>. Otherwise it has no effect.</p>
 </div>
 <h2 id="parameters">Parameters</h2>
 <dl>
