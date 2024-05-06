@@ -24,7 +24,7 @@
 | SASC            |   ㅤㅤ[🗂️](https://csinva.io/imodelsX/sasc/api.html), [🔗](https://github.com/microsoft/automated-explanations), [📄](https://arxiv.org/abs/2305.09863) | Explanation | Explain a black-box text module<br/>using an LLM (*Official*) |
 | Aug-Linear            | [🗂️](https://csinva.io/imodelsX/auglinear/auglinear.html), [🔗](https://github.com/microsoft/aug-models), [📄](https://www.nature.com/articles/s41467-023-43713-1), [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/aug_imodels.ipynb) | Linear model | Fit better linear model using an LLM<br/>to extract embeddings (*Official*) |
 | Aug-Tree            | [🗂️](https://csinva.io/imodelsX/augtree/augtree.html), [🔗](https://github.com/microsoft/aug-models), [📄](https://www.nature.com/articles/s41467-023-43713-1), [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/aug_imodels.ipynb) | Decision tree | Fit better decision tree using an LLM<br/>to expand features (*Official*) |
-| KAN            | [🗂️](https://csinva.io/imodelsX/kan/kan_sklearn.html), [🔗](https://github.com/Blealtan/efficient-kan/tree/master), [📄](https://arxiv.org/abs/2404.19756), [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/kan.ipynb) | Decision tree | Fit better decision tree using an LLM<br/>to expand features (*Official*) |
+| KAN            | [🗂️](https://csinva.io/imodelsX/kan/kan_sklearn.html), [🔗](https://github.com/Blealtan/efficient-kan/tree/master), [📄](https://arxiv.org/abs/2404.19756), [📖](https://github.com/csinva/imodelsX/blob/master/demo_notebooks/kan.ipynb) | 2-layer<br/>network | Fit 2-layer Kolmogorov-Arnold network |
 
 <p align="center">
 <a href="https://github.com/csinva/imodelsX/tree/master/demo_notebooks">📖</a>Demo notebooks &emsp; <a href="https://csinva.io/imodelsX/">🗂️</a> Doc &emsp; 🔗 Reference code &emsp; 📄 Research paper
@@ -198,6 +198,30 @@ print('Most negative ngrams')
 for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
     print('\t', k, round(v, 2))
 ```
+
+# KAN
+```python
+import imodelsx
+from sklearn.datasets import make_classification, make_regression
+from sklearn.metrics import accuracy_score
+import numpy as np
+
+X, y = make_classification(n_samples=5000, n_features=5, n_informative=3)
+model = imodelsx.KANClassifier(hidden_layer_size=64, device='cpu',
+                               regularize_activation=1.0, regularize_entropy=1.0)
+model.fit(X, y)
+y_pred = model.predict(X)
+print('Test acc', accuracy_score(y, y_pred))
+
+# now try regression
+X, y = make_regression(n_samples=5000, n_features=5, n_informative=3)
+model = imodelsx.kan.KANRegressor(hidden_layer_size=64, device='cpu',
+                                  regularize_activation=1.0, regularize_entropy=1.0)
+model.fit(X, y)
+y_pred = model.predict(X)
+print('Test correlation', np.corrcoef(y, y_pred.flatten())[0, 1])
+```
+
 
 # General utilities
 
