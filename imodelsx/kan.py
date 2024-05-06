@@ -318,7 +318,7 @@ class KANsklearn(BaseEstimator):
         self.regularize_activation = regularize_activation
         self.regularize_entropy = regularize_entropy
 
-    def fit(self, X, y, batch_size=512):
+    def fit(self, X, y, batch_size=512, lr=1e-3, weight_decay=1e-4, gamma=0.8):
         if isinstance(self, ClassifierMixin):
             check_classification_targets(y)
             self.classes_, y = np.unique(y, return_inverse=True)
@@ -345,8 +345,8 @@ class KANsklearn(BaseEstimator):
             dset_tune, batch_size=batch_size, shuffle=False)
 
         optimizer = optim.AdamW(self.model.parameters(),
-                                lr=1e-3, weight_decay=1e-4)
-        scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.8)
+                                lr=lr, weight_decay=weight_decay)
+        scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
 
         # Define loss
         if isinstance(self, ClassifierMixin):
@@ -378,13 +378,7 @@ class KANsklearn(BaseEstimator):
                                            labs.to(self.device).squeeze()).item()
             tune_loss /= len(loader_tune)
             tune_losses.append(tune_loss)
-
-            # Update learning rate
             scheduler.step()
-
-            # print(
-            #     f"Epoch {epoch + 1}, Tune Loss: {val_loss:.4f}"
-            # )
 
             # apply early stopping
             if len(tune_losses) > 3 and tune_losses[-1] > tune_losses[-2]:
