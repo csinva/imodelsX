@@ -116,9 +116,10 @@ def run_args_list(
         sku = amlt_kwargs.get('sku', 'G1')
         process_count_per_node = amlt_kwargs.get('process_count_per_node', 1)
         amlt_dir = dirname(amlt_kwargs['amlt_file'])
+        repo_dir = dirname(amlt_dir)
         amlt_text = open(amlt_kwargs['amlt_file'], 'r').read()
         assert amlt_text.endswith('jobs:'), 'amlt file must end with jobs:'
-        script_name = script_name.replace(amlt_dir, '').strip('/')
+        script_name = script_name.replace(repo_dir, '').strip('/')
         param_str_list = [_param_str_from_args(
             args, cmd_python, script_name) for args in args_list]
         if 'mnt_rename' in amlt_kwargs:
@@ -136,6 +137,7 @@ def run_args_list(
   process_count_per_node: {process_count_per_node}
   sku: {sku}
   command:
+  - echo "{param_str}"
   - {param_str}'''
         out_file = join(logs_dir, sha256({'s': str(param_str_list)}) + '.yaml')
         s = amlt_text
@@ -282,9 +284,10 @@ def run_on_gpu(param_str, i, n):
         param_str = prefix + param_str
         print(
             f'\n\n-------------------{i + 1}/{n}--------------------\n' + param_str)
-        output = subprocess.run(
-            param_str, shell=True, check=True,
+        subprocess.run(
+            param_str, check=True, shell=True
         )
+        print('here')
     except KeyboardInterrupt:
         print('Keyboard interrupt, exiting...')
         exit(0)
