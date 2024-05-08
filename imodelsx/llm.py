@@ -117,7 +117,6 @@ class LLM_OpenAI:
         stop=None,
         return_str=True,
     ):
-        import openai
 
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
@@ -127,19 +126,41 @@ class LLM_OpenAI:
         if os.path.exists(cache_file):
             return pkl.load(open(cache_file, "rb"))
 
-        response = openai.Completion.create(
-            engine=self.checkpoint,
-            prompt=prompt,
-            max_tokens=max_new_tokens,
+        # import openai
+        # response = openai.Completion.create(
+        #     engine=self.checkpoint,
+        #     prompt=prompt,
+        #     max_tokens=max_new_tokens,
+        #     temperature=temperature,
+        #     top_p=1,
+        #     frequency_penalty=frequency_penalty,
+        #     presence_penalty=0,
+        #     stop=stop,
+        #     # stop=["101"]
+        # )
+        # if return_str:
+        #     response = response["choices"][0]["text"]
+
+        from openai import AzureOpenAI
+        api_key = os.getenv("OPENAI_API_KEY")  # need to fill this in
+        client = AzureOpenAI(
+            azure_endpoint="https://healthcare-ai.openai.azure.com/",
+            api_version="2024-02-01",
+            api_key=api_key,
+        )
+
+        response = client.chat.completions.create(  # replace this value with the deployment name you chose when you deployed the associated model.
+            model=self.checkpoint,
+            messages=prompt,
             temperature=temperature,
+            max_tokens=max_new_tokens,
             top_p=1,
             frequency_penalty=frequency_penalty,
             presence_penalty=0,
-            stop=stop,
-            # stop=["101"]
-        )
+            stop=None)
+
         if return_str:
-            response = response["choices"][0]["text"]
+            response = response.choices[0].message.content
 
         pkl.dump(response, open(cache_file, "wb"))
         return response
@@ -155,15 +176,14 @@ class LLM_Chat:
         self.checkpoint = checkpoint
         self.role = role
         from openai import AzureOpenAI
+        api_key = os.getenv("OPENAI_API_KEY")  # need to fill this in
         self.client = AzureOpenAI(
-            api_version="2023-07-01-preview",
-            azure_endpoint=open(os.path.expanduser(
-                '~/.AZURE_OPENAI_ENDPOINT')).read().strip(),
-            api_key=open(os.path.expanduser(
-                '~/.AZURE_OPENAI_KEY')).read().strip(),
+            azure_endpoint="https://healthcare-ai.openai.azure.com/",
+            api_version="2024-02-01",
+            api_key=api_key,
         )
 
-    @repeatedly_call_with_delay
+    # @repeatedly_call_with_delay
     def __call__(
         self,
         prompts_list: List[Dict[str, str]],
@@ -174,6 +194,7 @@ class LLM_Chat:
         verbose=True,
         temperature=0.1,
         frequency_penalty=0.25,
+        use_cache=True,
     ):
         """
         prompts_list: list of dicts, each dict has keys 'role' and 'content'
@@ -219,12 +240,14 @@ class LLM_Chat:
             self.cache_dir,
             f"chat__{hash_str}__num_tok={max_new_tokens}.pkl",
         )
-        if os.path.exists(cache_file):
+        if os.path.exists(cache_file) and use_cache:
             if verbose:
                 print("cached!")
                 # print(cache_file)
             # print(cache_file)
-            return pkl.load(open(cache_file, "rb"))
+            response = pkl.load(open(cache_file, "rb"))
+            if response is not None:
+                return response
         if verbose:
             print("not cached")
 
@@ -242,14 +265,15 @@ class LLM_Chat:
         if functions is not None:
             kwargs["functions"] = functions
 
-        completion = self.client.chat.completions.create(
+        response = self.client.chat.completions.create(
             **kwargs,
         )
 
         if return_str:
-            response = completion.choices[0].message.content
+            response = response.choices[0].message.content
 
-        pkl.dump(response, open(cache_file, "wb"))
+        if response is not None:
+            pkl.dump(response, open(cache_file, "wb"))
 
         return response
 
