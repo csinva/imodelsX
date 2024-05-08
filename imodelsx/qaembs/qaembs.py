@@ -5,7 +5,6 @@ from typing import List
 from os.path import expanduser
 from tqdm import tqdm
 import imodelsx.llm
-import huth.features.qa_questions as qa_questions
 import pandas as pd
 import warnings
 
@@ -13,7 +12,7 @@ import warnings
 class QuestionEmbedder:
     def __init__(
             self,
-            questions: List[str] = qa_questions.get_questions(),
+            questions: List[str],
             checkpoint: str = 'mistralai/Mistral-7B-Instruct-v0.2',
             use_cache: bool = True,
             batch_size: int = 16

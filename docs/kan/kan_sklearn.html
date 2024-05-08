@@ -42,20 +42,35 @@ from sklearn.metrics import accuracy_score
 
 class KAN(BaseEstimator):
     def __init__(self, hidden_layer_size=64, device=&#39;cpu&#39;,
-                 regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0):
+                 regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0,
+                 **kwargs):
         &#39;&#39;&#39;
         Params
         ------
         hidden_layer_size : int
             Number of neurons in the hidden layer.
+        regularize_activation: float
+            Activation regularization parameter
+        regularize_entropy: float
+            Entropy regularization parameter
         regularize_ridge: float
             Ridge regularization parameter (only applies to KANGAM)
+        kwargs can be any of these more detailed KAN parameters
+            grid_size=5,
+            spline_order=3,
+            scale_noise=0.1,
+            scale_base=1.0,
+            scale_spline=1.0,
+            base_activation=torch.nn.SiLU,
+            grid_eps=0.02,
+            grid_range=[-1, 1],
         &#39;&#39;&#39;
         self.hidden_layer_size = hidden_layer_size
         self.device = device
         self.regularize_activation = regularize_activation
         self.regularize_entropy = regularize_entropy
         self.regularize_ridge = regularize_ridge
+        self.kwargs = kwargs
 
     def fit(self, X, y, batch_size=512, lr=1e-3, weight_decay=1e-4, gamma=0.8):
         if isinstance(self, ClassifierMixin):
@@ -73,6 +88,7 @@ class KAN(BaseEstimator):
                 num_features=num_features,
                 hidden_layer_size=self.hidden_layer_size,
                 n_classes=num_outputs,
+                **self.kwargs
             ).to(self.device)
         else:
             self.model = KANModule(
@@ -198,7 +214,7 @@ if __name__ == &#39;__main__&#39;:
 <dl>
 <dt id="imodelsx.kan.kan_sklearn.KAN"><code class="flex name class">
 <span>class <span class="ident">KAN</span></span>
-<span>(</span><span>hidden_layer_size=64, device='cpu', regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0)</span>
+<span>(</span><span>hidden_layer_size=64, device='cpu', regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -240,28 +256,56 @@ array([3, 3, 3])
 <h2 id="params">Params</h2>
 <p>hidden_layer_size : int
 Number of neurons in the hidden layer.
+regularize_activation: float
+Activation regularization parameter
+regularize_entropy: float
+Entropy regularization parameter
 regularize_ridge: float
-Ridge regularization parameter (only applies to KANGAM)</p></div>
+Ridge regularization parameter (only applies to KANGAM)
+kwargs can be any of these more detailed KAN parameters
+grid_size=5,
+spline_order=3,
+scale_noise=0.1,
+scale_base=1.0,
+scale_spline=1.0,
+base_activation=torch.nn.SiLU,
+grid_eps=0.02,
+grid_range=[-1, 1],</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class KAN(BaseEstimator):
     def __init__(self, hidden_layer_size=64, device=&#39;cpu&#39;,
-                 regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0):
+                 regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0,
+                 **kwargs):
         &#39;&#39;&#39;
         Params
         ------
         hidden_layer_size : int
             Number of neurons in the hidden layer.
+        regularize_activation: float
+            Activation regularization parameter
+        regularize_entropy: float
+            Entropy regularization parameter
         regularize_ridge: float
             Ridge regularization parameter (only applies to KANGAM)
+        kwargs can be any of these more detailed KAN parameters
+            grid_size=5,
+            spline_order=3,
+            scale_noise=0.1,
+            scale_base=1.0,
+            scale_spline=1.0,
+            base_activation=torch.nn.SiLU,
+            grid_eps=0.02,
+            grid_range=[-1, 1],
         &#39;&#39;&#39;
         self.hidden_layer_size = hidden_layer_size
         self.device = device
         self.regularize_activation = regularize_activation
         self.regularize_entropy = regularize_entropy
         self.regularize_ridge = regularize_ridge
+        self.kwargs = kwargs
 
     def fit(self, X, y, batch_size=512, lr=1e-3, weight_decay=1e-4, gamma=0.8):
         if isinstance(self, ClassifierMixin):
@@ -279,6 +323,7 @@ Ridge regularization parameter (only applies to KANGAM)</p></div>
                 num_features=num_features,
                 hidden_layer_size=self.hidden_layer_size,
                 n_classes=num_outputs,
+                **self.kwargs
             ).to(self.device)
         else:
             self.model = KANModule(
@@ -390,6 +435,7 @@ Ridge regularization parameter (only applies to KANGAM)</p></div>
             num_features=num_features,
             hidden_layer_size=self.hidden_layer_size,
             n_classes=num_outputs,
+            **self.kwargs
         ).to(self.device)
     else:
         self.model = KANModule(
@@ -568,7 +614,7 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 </dd>
 <dt id="imodelsx.kan.kan_sklearn.KANClassifier"><code class="flex name class">
 <span>class <span class="ident">KANClassifier</span></span>
-<span>(</span><span>hidden_layer_size=64, device='cpu', regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0)</span>
+<span>(</span><span>hidden_layer_size=64, device='cpu', regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -610,8 +656,21 @@ array([3, 3, 3])
 <h2 id="params">Params</h2>
 <p>hidden_layer_size : int
 Number of neurons in the hidden layer.
+regularize_activation: float
+Activation regularization parameter
+regularize_entropy: float
+Entropy regularization parameter
 regularize_ridge: float
-Ridge regularization parameter (only applies to KANGAM)</p></div>
+Ridge regularization parameter (only applies to KANGAM)
+kwargs can be any of these more detailed KAN parameters
+grid_size=5,
+spline_order=3,
+scale_noise=0.1,
+scale_base=1.0,
+scale_spline=1.0,
+base_activation=torch.nn.SiLU,
+grid_eps=0.02,
+grid_range=[-1, 1],</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -746,7 +805,7 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 </dd>
 <dt id="imodelsx.kan.kan_sklearn.KANGAMClassifier"><code class="flex name class">
 <span>class <span class="ident">KANGAMClassifier</span></span>
-<span>(</span><span>hidden_layer_size=64, device='cpu', regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0)</span>
+<span>(</span><span>hidden_layer_size=64, device='cpu', regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -788,8 +847,21 @@ array([3, 3, 3])
 <h2 id="params">Params</h2>
 <p>hidden_layer_size : int
 Number of neurons in the hidden layer.
+regularize_activation: float
+Activation regularization parameter
+regularize_entropy: float
+Entropy regularization parameter
 regularize_ridge: float
-Ridge regularization parameter (only applies to KANGAM)</p></div>
+Ridge regularization parameter (only applies to KANGAM)
+kwargs can be any of these more detailed KAN parameters
+grid_size=5,
+spline_order=3,
+scale_noise=0.1,
+scale_base=1.0,
+scale_spline=1.0,
+base_activation=torch.nn.SiLU,
+grid_eps=0.02,
+grid_range=[-1, 1],</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -818,7 +890,7 @@ Ridge regularization parameter (only applies to KANGAM)</p></div>
 </dd>
 <dt id="imodelsx.kan.kan_sklearn.KANGAMRegressor"><code class="flex name class">
 <span>class <span class="ident">KANGAMRegressor</span></span>
-<span>(</span><span>hidden_layer_size=64, device='cpu', regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0)</span>
+<span>(</span><span>hidden_layer_size=64, device='cpu', regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -860,8 +932,21 @@ array([3, 3, 3])
 <h2 id="params">Params</h2>
 <p>hidden_layer_size : int
 Number of neurons in the hidden layer.
+regularize_activation: float
+Activation regularization parameter
+regularize_entropy: float
+Entropy regularization parameter
 regularize_ridge: float
-Ridge regularization parameter (only applies to KANGAM)</p></div>
+Ridge regularization parameter (only applies to KANGAM)
+kwargs can be any of these more detailed KAN parameters
+grid_size=5,
+spline_order=3,
+scale_noise=0.1,
+scale_base=1.0,
+scale_spline=1.0,
+base_activation=torch.nn.SiLU,
+grid_eps=0.02,
+grid_range=[-1, 1],</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -890,7 +975,7 @@ Ridge regularization parameter (only applies to KANGAM)</p></div>
 </dd>
 <dt id="imodelsx.kan.kan_sklearn.KANRegressor"><code class="flex name class">
 <span>class <span class="ident">KANRegressor</span></span>
-<span>(</span><span>hidden_layer_size=64, device='cpu', regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0)</span>
+<span>(</span><span>hidden_layer_size=64, device='cpu', regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
@@ -932,8 +1017,21 @@ array([3, 3, 3])
 <h2 id="params">Params</h2>
 <p>hidden_layer_size : int
 Number of neurons in the hidden layer.
+regularize_activation: float
+Activation regularization parameter
+regularize_entropy: float
+Entropy regularization parameter
 regularize_ridge: float
-Ridge regularization parameter (only applies to KANGAM)</p></div>
+Ridge regularization parameter (only applies to KANGAM)
+kwargs can be any of these more detailed KAN parameters
+grid_size=5,
+spline_order=3,
+scale_noise=0.1,
+scale_base=1.0,
+scale_spline=1.0,
+base_activation=torch.nn.SiLU,
+grid_eps=0.02,
+grid_range=[-1, 1],</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>

@@ -14,20 +14,35 @@ from sklearn.metrics import accuracy_score
 
 class KAN(BaseEstimator):
     def __init__(self, hidden_layer_size=64, device='cpu',
-                 regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0):
+                 regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0,
+                 **kwargs):
         '''
         Params
         ------
         hidden_layer_size : int
             Number of neurons in the hidden layer.
+        regularize_activation: float
+            Activation regularization parameter
+        regularize_entropy: float
+            Entropy regularization parameter
         regularize_ridge: float
             Ridge regularization parameter (only applies to KANGAM)
+        kwargs can be any of these more detailed KAN parameters
+            grid_size=5,
+            spline_order=3,
+            scale_noise=0.1,
+            scale_base=1.0,
+            scale_spline=1.0,
+            base_activation=torch.nn.SiLU,
+            grid_eps=0.02,
+            grid_range=[-1, 1],
         '''
         self.hidden_layer_size = hidden_layer_size
         self.device = device
         self.regularize_activation = regularize_activation
         self.regularize_entropy = regularize_entropy
         self.regularize_ridge = regularize_ridge
+        self.kwargs = kwargs
 
     def fit(self, X, y, batch_size=512, lr=1e-3, weight_decay=1e-4, gamma=0.8):
         if isinstance(self, ClassifierMixin):
@@ -45,6 +60,7 @@ class KAN(BaseEstimator):
                 num_features=num_features,
                 hidden_layer_size=self.hidden_layer_size,
                 n_classes=num_outputs,
+                **self.kwargs
             ).to(self.device)
         else:
             self.model = KANModule(

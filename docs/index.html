@@ -90,6 +90,12 @@
 <td>Decision tree</td>
 <td>Fit better decision tree using an LLM<br/>to expand features (<em>Official</em>)</td>
 </tr>
+<tr>
+<td style="text-align: left;">KAN</td>
+<td><a href="https://csinva.io/imodelsX/kan/kan_sklearn.html">🗂️</a>, <a href="https://github.com/Blealtan/efficient-kan/tree/master">🔗</a>, <a href="https://arxiv.org/abs/2404.19756">📄</a>, <a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/kan.ipynb">📖</a></td>
+<td>2-layer<br/>network</td>
+<td>Fit 2-layer Kolmogorov-Arnold network</td>
+</tr>
 </tbody>
 </table>
 <p align="center">
@@ -265,6 +271,27 @@ print('Most negative ngrams')
 for k, v in sorted(m.coefs_dict_.items(), key=lambda item: item[1])[:8]:
     print('\t', k, round(v, 2))
 </code></pre>
+<h1 id="kan">KAN</h1>
+<pre><code class="language-python">import imodelsx
+from sklearn.datasets import make_classification, make_regression
+from sklearn.metrics import accuracy_score
+import numpy as np
+
+X, y = make_classification(n_samples=5000, n_features=5, n_informative=3)
+model = imodelsx.KANClassifier(hidden_layer_size=64, device='cpu',
+                               regularize_activation=1.0, regularize_entropy=1.0)
+model.fit(X, y)
+y_pred = model.predict(X)
+print('Test acc', accuracy_score(y, y_pred))
+
+# now try regression
+X, y = make_regression(n_samples=5000, n_features=5, n_informative=3)
+model = imodelsx.kan.KANRegressor(hidden_layer_size=64, device='cpu',
+                                  regularize_activation=1.0, regularize_entropy=1.0)
+model.fit(X, y)
+y_pred = model.predict(X)
+print('Test correlation', np.corrcoef(y, y_pred.flatten())[0, 1])
+</code></pre>
 <h1 id="general-utilities">General utilities</h1>
 <h3 id="easy-baselines">Easy baselines</h3>
 <p>Easy-to-fit baselines that follow the sklearn API.</p>
@@ -384,6 +411,10 @@ from .kan.kan_sklearn import KANClassifier, KANGAMClassifier, KANRegressor, KANG
 <dd>
 <div class="desc"></div>
 </dd>
+<dt><code class="name"><a title="imodelsx.qaembs" href="qaembs/index.html">imodelsx.qaembs</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt><code class="name"><a title="imodelsx.sasc" href="sasc/index.html">imodelsx.sasc</a></code></dt>
 <dd>
 <div class="desc"></div>
@@ -426,6 +457,7 @@ from .kan.kan_sklearn import KANClassifier, KANGAMClassifier, KANRegressor, KANG
 </ul>
 </li>
 <li><a href="#aug-imodels">Aug-imodels</a></li>
+<li><a href="#kan">KAN</a></li>
 <li><a href="#general-utilities">General utilities</a><ul>
 <li><a href="#easy-baselines">Easy baselines</a></li>
 <li><a href="#llm-wrapper">LLM wrapper</a></li>
@@ -452,6 +484,7 @@ from .kan.kan_sklearn import KANClassifier, KANGAMClassifier, KANRegressor, KANG
 <li><code><a title="imodelsx.llm" href="llm.html">imodelsx.llm</a></code></li>
 <li><code><a title="imodelsx.metrics" href="metrics.html">imodelsx.metrics</a></code></li>
 <li><code><a title="imodelsx.process_results" href="process_results.html">imodelsx.process_results</a></code></li>
+<li><code><a title="imodelsx.qaembs" href="qaembs/index.html">imodelsx.qaembs</a></code></li>
 <li><code><a title="imodelsx.sasc" href="sasc/index.html">imodelsx.sasc</a></code></li>
 <li><code><a title="imodelsx.submit_utils" href="submit_utils.html">imodelsx.submit_utils</a></code></li>
 <li><code><a title="imodelsx.treeprompt" href="treeprompt/index.html">imodelsx.treeprompt</a></code></li>
