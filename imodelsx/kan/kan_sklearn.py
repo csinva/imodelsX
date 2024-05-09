@@ -10,17 +10,26 @@ from tqdm import tqdm
 from imodelsx.kan.kan_modules import KANModule, KANGAMModule
 from sklearn.datasets import make_classification, make_regression
 from sklearn.metrics import accuracy_score
+from typing import List
 
 
 class KAN(BaseEstimator):
-    def __init__(self, hidden_layer_size=64, device='cpu',
-                 regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=0.0,
+    def __init__(self,
+                 hidden_layer_size: int = 64,
+                 hidden_layer_sizes: List[int] = None,
+                 regularize_activation: float = 1.0, regularize_entropy: float = 1.0, regularize_ridge: float = 0.0,
+                 device: str = 'cpu',
                  **kwargs):
         '''
         Params
         ------
         hidden_layer_size : int
-            Number of neurons in the hidden layer.
+            If int, number of neurons in the hidden layer (assumes single hidden layer)
+        hidden_layer_sizes: List with length (n_layers - 2)
+            The ith element represents the number of neurons in the ith hidden layer.
+            If this is passed, will override hidden_layer_size
+            e.g. [32, 64] would have a layer with 32 hidden units followed by a layer with 64 hidden units
+            (input and output shape are inferred by the data passed)
         regularize_activation: float
             Activation regularization parameter
         regularize_entropy: float
@@ -37,7 +46,10 @@ class KAN(BaseEstimator):
             grid_eps=0.02,
             grid_range=[-1, 1],
         '''
-        self.hidden_layer_size = hidden_layer_size
+        if hidden_layer_sizes is not None:
+            self.hidden_layer_sizes = hidden_layer_sizes
+        else:
+            self.hidden_layer_sizes = [hidden_layer_size]
         self.device = device
         self.regularize_activation = regularize_activation
         self.regularize_entropy = regularize_entropy
@@ -55,17 +67,18 @@ class KAN(BaseEstimator):
             y = torch.tensor(y, dtype=torch.float32)
         X = torch.tensor(X, dtype=torch.float32)
         num_features = X.shape[1]
+
         if isinstance(self, (KANGAMClassifier, KANGAMRegressor)):
             self.model = KANGAMModule(
                 num_features=num_features,
-                hidden_layer_size=self.hidden_layer_size,
+                layers_hidden=self.hidden_layer_sizes,
                 n_classes=num_outputs,
                 **self.kwargs
             ).to(self.device)
         else:
             self.model = KANModule(
-                layers_hidden=[num_features,
-                               self.hidden_layer_size, num_outputs]
+                layers_hidden=[num_features] +
+                self.hidden_layer_sizes + [num_outputs],
             ).to(self.device)
 
         X_train, X_tune, y_train, y_tune = train_test_split(
@@ -120,7 +133,7 @@ class KAN(BaseEstimator):
 
             # apply early stopping
             if len(tune_losses) > 3 and tune_losses[-1] > tune_losses[-2]:
-                print("Early stopping")
+                print("\tEarly stopping")
                 return self
 
         return self

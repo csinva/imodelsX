@@ -6,14 +6,7 @@ Original paper: "KAN: Kolmogorov-Arnold Networks" https://arxiv.org/abs/2404.197
 import torch
 import torch.nn.functional as F
 import math
-from sklearn.model_selection import train_test_split
-from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
-from sklearn.utils.multiclass import check_classification_targets
-import numpy as np
-from torch.utils.data import DataLoader
-import torch.nn as nn
-import torch.optim as optim
-from tqdm import tqdm
+from typing import List
 
 
 class KANLinearModule(torch.nn.Module):
@@ -308,11 +301,11 @@ class KANGAMModule(torch.nn.Module):
     '''Learn a KAN model on each individual input feature
     '''
 
-    def __init__(self, num_features, hidden_layer_size, n_classes, **kwargs):
+    def __init__(self, num_features, layers_hidden: List[int], n_classes, **kwargs):
         super(KANGAMModule, self).__init__()
         self.models = torch.nn.ModuleList([
             KANModule(
-                layers_hidden=[1, hidden_layer_size, 1],
+                layers_hidden=[1] + layers_hidden + [1],
                 **kwargs)
             for _ in range(num_features)
         ])
