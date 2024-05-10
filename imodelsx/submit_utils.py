@@ -8,6 +8,7 @@ from functools import reduce
 from itertools import repeat
 import time
 import traceback
+import numpy as np
 import os
 from os.path import dirname, join
 
@@ -347,6 +348,8 @@ def _validate_arguments(
     for k, v in params_shared_dict.items():
         if isinstance(v, range):
             v = list(v)
+        elif isinstance(v, np.ndarray):
+            v = v.tolist()
         assert isinstance(
             k, str), f"params_shared_dict key {k} must be type list, got type {type(k)}"
         assert isinstance(
