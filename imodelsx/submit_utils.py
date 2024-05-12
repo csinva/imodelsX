@@ -265,6 +265,9 @@ def _param_str_from_args(args, cmd_python, script_name):
     for k, v in args.items():
         if isinstance(v, list):
             param_str += '--' + k + ' ' + ' '.join(v) + ' '
+        elif v is None:
+            # skip: None means don't include this argument
+            pass
         else:
             param_str += '--' + k + ' ' + str(v) + ' '
     return param_str
@@ -288,7 +291,6 @@ def run_on_gpu(param_str, i, n):
         subprocess.run(
             param_str, check=True, shell=True
         )
-        print('here')
     except KeyboardInterrupt:
         print('Keyboard interrupt, exiting...')
         exit(0)
@@ -393,7 +395,7 @@ def _validate_run_arguments(
 
 if __name__ == '__main__':
     params_shared_dict = {
-        'name': ['chandan', 'roli', 'alice', 'albert', 'jessica', 'felicia', ],
+        'name': ['chandan', 'saloni', 'alice', 'albert', 'jessica', 'felicia', ],
     }
 
     # Single-tree sweep
@@ -410,7 +412,7 @@ if __name__ == '__main__':
     )
     run_args_list(
         args_list,
-        script_name=join(submit_utils_dir, 'dummy_script.py'),
+        script_name=join(submit_utils_dir, '../tests/dummy_script.py'),
         actually_run=True,
         # n_cpus=3,
         gpu_ids=[[0, 3]],
