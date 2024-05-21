@@ -26,10 +26,11 @@ if 'HF_TOKEN' in os.environ:
     HF_TOKEN = os.environ.get("HF_TOKEN")
 elif os.path.exists(expanduser('~/.HF_TOKEN')):
     HF_TOKEN = open(expanduser('~/.HF_TOKEN'), 'r').read().strip()
-if 'OPENAI_API_KEY' in os.environ:
-    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-elif os.path.exists(expanduser('~/.OPENAI_API_KEY')):
+if os.path.exists(expanduser('~/.OPENAI_API_KEY')):
     OPENAI_API_KEY = open(expanduser('~/.OPENAI_API_KEY'), 'r').read().strip()
+if os.path.exists(expanduser('~/.OPENAI_API_KEY_SHARED')):
+    OPENAI_API_KEY_SHARED = open(expanduser(
+        '~/.OPENAI_API_KEY_SHARED'), 'r').read().strip()
 '''
 Example usage:
 # gpt-4, gpt-35-turbo, meta-llama/Llama-2-70b-hf, mistralai/Mistral-7B-v0.1
@@ -112,11 +113,18 @@ class LLM_Chat:
         self.checkpoint = checkpoint
         self.role = role
         from openai import AzureOpenAI
-        self.client = AzureOpenAI(
-            azure_endpoint="https://healthcare-ai.openai.azure.com/",
-            api_version="2024-02-01",
-            api_key=OPENAI_API_KEY,
-        )
+        if 'spot' in checkpoint:
+            self.client = AzureOpenAI(
+                azure_endpoint="https://gcraoai9wus3spot.openai.azure.com/",
+                api_version="2024-02-01",
+                api_key=OPENAI_API_KEY_SHARED,
+            )
+        else:
+            self.client = AzureOpenAI(
+                azure_endpoint="https://healthcare-ai.openai.azure.com/",
+                api_version="2024-02-01",
+                api_key=OPENAI_API_KEY,
+            )
 
     # @repeatedly_call_with_delay
     def __call__(
@@ -130,6 +138,7 @@ class LLM_Chat:
         temperature=0.1,
         frequency_penalty=0.25,
         use_cache=True,
+        return_false_if_not_cached=False,
     ):
         """
         prompts_list: list of dicts, each dict has keys 'role' and 'content'
@@ -185,6 +194,9 @@ class LLM_Chat:
                 return response
         if verbose:
             print("not cached")
+
+        if return_false_if_not_cached:
+            return False
 
         kwargs = dict(
             model=self.checkpoint,
