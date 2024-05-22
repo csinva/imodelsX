@@ -9,7 +9,7 @@ import pandas as pd
 import warnings
 
 
-class QuestionEmbedder:
+class QAEmb:
     def __init__(
             self,
             questions: List[str],
@@ -52,6 +52,11 @@ class QuestionEmbedder:
         self.use_cache = use_cache
 
     def __call__(self, examples: List[str], verbose=True) -> np.ndarray:
+        '''
+        Returns
+        -------
+        embeddings: (num_examples, num_questions)
+        '''
         programs = [
             self.prompt.format(example=example, question=question)
             for example in examples
@@ -76,32 +81,3 @@ class QuestionEmbedder:
         embeddings = np.array(answers, dtype=float)
 
         return embeddings
-
-
-if __name__ == "__main__":
-    questions = [
-        'Is the input related to food preparation?',
-        'Does the input mention laughter?',
-        'Is there an expression of surprise?',
-        'Is there a depiction of a routine or habit?',
-        'Is there stuttering or uncertainty in the input?',
-        'Is there a first-person pronoun in the input?',
-    ]
-    examples = [
-        'i sliced some cucumbers and then moved on to what was next',
-        'the kids were giggling about the silly things they did',
-        'and i was like whoa that was unexpected',
-        'walked down the path like i always did',
-        'um no um then it was all clear',
-        'i was walking to school and then i saw a cat',
-    ]
-
-    checkpoint = 'meta-llama/Meta-Llama-3-8B-Instruct'
-
-    embedder = QuestionEmbedder(
-        questions=questions, checkpoint=checkpoint, use_cache=False)
-    embeddings = embedder(examples)
-    df = pd.DataFrame(embeddings.astype(int), columns=[
-                      q.split()[-1] for q in questions])
-    print('examples x questions')
-    print(df)

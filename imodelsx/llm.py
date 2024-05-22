@@ -207,6 +207,7 @@ class LLM_Chat:
             frequency_penalty=frequency_penalty,  # maximum is 2
             presence_penalty=0,
             stop=stop,
+            # logprobs=True,
             # stop=["101"]
         )
         if functions is not None:

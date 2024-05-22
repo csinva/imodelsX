@@ -13,7 +13,7 @@ required_pypi = [
     'langchain',
     'numpy',
     'pandas',
-    'scikit-learn',
+    'scikit-learn>=1.2.0'
     'scipy',
     'spacy',
     'torch',
