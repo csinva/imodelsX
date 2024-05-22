@@ -36,6 +36,7 @@ from functools import reduce
 from itertools import repeat
 import time
 import traceback
+import numpy as np
 import os
 from os.path import dirname, join
 
@@ -292,6 +293,9 @@ def _param_str_from_args(args, cmd_python, script_name):
     for k, v in args.items():
         if isinstance(v, list):
             param_str += &#39;--&#39; + k + &#39; &#39; + &#39; &#39;.join(v) + &#39; &#39;
+        elif v is None:
+            # skip: None means don&#39;t include this argument
+            pass
         else:
             param_str += &#39;--&#39; + k + &#39; &#39; + str(v) + &#39; &#39;
     return param_str
@@ -315,7 +319,6 @@ def run_on_gpu(param_str, i, n):
         subprocess.run(
             param_str, check=True, shell=True
         )
-        print(&#39;here&#39;)
     except KeyboardInterrupt:
         print(&#39;Keyboard interrupt, exiting...&#39;)
         exit(0)
@@ -375,6 +378,8 @@ def _validate_arguments(
     for k, v in params_shared_dict.items():
         if isinstance(v, range):
             v = list(v)
+        elif isinstance(v, np.ndarray):
+            v = v.tolist()
         assert isinstance(
             k, str), f&#34;params_shared_dict key {k} must be type list, got type {type(k)}&#34;
         assert isinstance(
@@ -418,7 +423,7 @@ def _validate_run_arguments(
 
 if __name__ == &#39;__main__&#39;:
     params_shared_dict = {
-        &#39;name&#39;: [&#39;chandan&#39;, &#39;roli&#39;, &#39;alice&#39;, &#39;albert&#39;, &#39;jessica&#39;, &#39;felicia&#39;, ],
+        &#39;name&#39;: [&#39;chandan&#39;, &#39;saloni&#39;, &#39;alice&#39;, &#39;albert&#39;, &#39;jessica&#39;, &#39;felicia&#39;, ],
     }
 
     # Single-tree sweep
@@ -435,7 +440,7 @@ if __name__ == &#39;__main__&#39;:
     )
     run_args_list(
         args_list,
-        script_name=join(submit_utils_dir, &#39;dummy_script.py&#39;),
+        script_name=join(submit_utils_dir, &#39;../tests/dummy_script.py&#39;),
         actually_run=True,
         # n_cpus=3,
         gpu_ids=[[0, 3]],
@@ -798,7 +803,6 @@ kwargs for amlt (will override everything else)</p></div>
         subprocess.run(
             param_str, check=True, shell=True
         )
-        print(&#39;here&#39;)
     except KeyboardInterrupt:
         print(&#39;Keyboard interrupt, exiting...&#39;)
         exit(0)

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>imodelsx.qaembs.qaembs API documentation</title>
+<title>imodelsx.qaemb.qaemb API documentation</title>
 <meta name="description" content="This is a simplified example, many optimizations for performance can be made (e.g. using sglang)" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>imodelsx.qaembs.qaembs</code></h1>
+<h1 class="title">Module <code>imodelsx.qaemb.qaemb</code></h1>
 </header>
 <section id="section-intro">
 <p>This is a simplified example, many optimizations for performance can be made (e.g. using sglang)</p>
@@ -38,7 +38,7 @@ import pandas as pd
 import warnings
 
 
-class QuestionEmbedder:
+class QAEmb:
     def __init__(
             self,
             questions: List[str],
@@ -81,6 +81,11 @@ class QuestionEmbedder:
         self.use_cache = use_cache
 
     def __call__(self, examples: List[str], verbose=True) -&gt; np.ndarray:
+        &#39;&#39;&#39;
+        Returns
+        -------
+        embeddings: (num_examples, num_questions)
+        &#39;&#39;&#39;
         programs = [
             self.prompt.format(example=example, question=question)
             for example in examples
@@ -104,36 +109,7 @@ class QuestionEmbedder:
         answers = np.array(answers).reshape(len(examples), len(self.questions))
         embeddings = np.array(answers, dtype=float)
 
-        return embeddings
-
-
-if __name__ == &#34;__main__&#34;:
-    questions = [
-        &#39;Is the input related to food preparation?&#39;,
-        &#39;Does the input mention laughter?&#39;,
-        &#39;Is there an expression of surprise?&#39;,
-        &#39;Is there a depiction of a routine or habit?&#39;,
-        &#39;Is there stuttering or uncertainty in the input?&#39;,
-        &#39;Is there a first-person pronoun in the input?&#39;,
-    ]
-    examples = [
-        &#39;i sliced some cucumbers and then moved on to what was next&#39;,
-        &#39;the kids were giggling about the silly things they did&#39;,
-        &#39;and i was like whoa that was unexpected&#39;,
-        &#39;walked down the path like i always did&#39;,
-        &#39;um no um then it was all clear&#39;,
-        &#39;i was walking to school and then i saw a cat&#39;,
-    ]
-
-    checkpoint = &#39;meta-llama/Meta-Llama-3-8B-Instruct&#39;
-
-    embedder = QuestionEmbedder(
-        questions=questions, checkpoint=checkpoint, use_cache=False)
-    embeddings = embedder(examples)
-    df = pd.DataFrame(embeddings.astype(int), columns=[
-                      q.split()[-1] for q in questions])
-    print(&#39;examples x questions&#39;)
-    print(df)</code></pre>
+        return embeddings</code></pre>
 </details>
 </section>
 <section>
@@ -145,8 +121,8 @@ if __name__ == &#34;__main__&#34;:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="imodelsx.qaembs.qaembs.QuestionEmbedder"><code class="flex name class">
-<span>class <span class="ident">QuestionEmbedder</span></span>
+<dt id="imodelsx.qaemb.qaemb.QAEmb"><code class="flex name class">
+<span>class <span class="ident">QAEmb</span></span>
 <span>(</span><span>questions: List[str], checkpoint: str = 'mistralai/Mistral-7B-Instruct-v0.2', use_cache: bool = True, batch_size: int = 16)</span>
 </code></dt>
 <dd>
@@ -155,7 +131,7 @@ if __name__ == &#34;__main__&#34;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class QuestionEmbedder:
+<pre><code class="python">class QAEmb:
     def __init__(
             self,
             questions: List[str],
@@ -198,6 +174,11 @@ if __name__ == &#34;__main__&#34;:
         self.use_cache = use_cache
 
     def __call__(self, examples: List[str], verbose=True) -&gt; np.ndarray:
+        &#39;&#39;&#39;
+        Returns
+        -------
+        embeddings: (num_examples, num_questions)
+        &#39;&#39;&#39;
         programs = [
             self.prompt.format(example=example, question=question)
             for example in examples
@@ -235,13 +216,13 @@ if __name__ == &#34;__main__&#34;:
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="imodelsx.qaembs" href="index.html">imodelsx.qaembs</a></code></li>
+<li><code><a title="imodelsx.qaemb" href="index.html">imodelsx.qaemb</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="imodelsx.qaembs.qaembs.QuestionEmbedder" href="#imodelsx.qaembs.qaembs.QuestionEmbedder">QuestionEmbedder</a></code></h4>
+<h4><code><a title="imodelsx.qaemb.qaemb.QAEmb" href="#imodelsx.qaemb.qaemb.QAEmb">QAEmb</a></code></h4>
 </li>
 </ul>
 </li>

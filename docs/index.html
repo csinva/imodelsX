@@ -64,7 +64,7 @@
 <td style="text-align: left;">AutoPrompt</td>
 <td>ㅤㅤ<a href="">🗂️</a>, <a href="https://github.com/ucinlp/autoprompt">🔗</a>, <a href="https://arxiv.org/abs/2010.15980">📄</a></td>
 <td>Explanation<br/>+ Steering</td>
-<td>Find a natural-language prompt<br/>using input-gradients (⌛ In progress)</td>
+<td>Find a natural-language prompt<br/>using input-gradients</td>
 </tr>
 <tr>
 <td style="text-align: left;">D3</td>
@@ -91,9 +91,15 @@
 <td>Fit better decision tree using an LLM<br/>to expand features (<em>Official</em>)</td>
 </tr>
 <tr>
+<td style="text-align: left;">QAEmb</td>
+<td><a href="https://csinva.io/imodelsX/qaemb/qaemb.html">🗂️</a>, <a href="https://github.com/csinva/interpretable-embeddings">🔗</a>, <a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/qaemb.ipynb">📖</a></td>
+<td>Explainable<br/>embedding</td>
+<td>Generate interpretable embeddings<br/>by asking LLMs questions (<em>Official</em>)</td>
+</tr>
+<tr>
 <td style="text-align: left;">KAN</td>
 <td><a href="https://csinva.io/imodelsX/kan/kan_sklearn.html">🗂️</a>, <a href="https://github.com/Blealtan/efficient-kan/tree/master">🔗</a>, <a href="https://arxiv.org/abs/2404.19756">📄</a>, <a href="https://github.com/csinva/imodelsX/blob/master/demo_notebooks/kan.ipynb">📖</a></td>
-<td>small<br/>network</td>
+<td>Small<br/>network</td>
 <td>Fit 2-layer Kolmogorov-Arnold network</td>
 </tr>
 </tbody>
@@ -349,7 +355,8 @@ from .iprompt.api import explain_dataset_iprompt
 from .iprompt.data import get_add_two_numbers_dataset
 from .sasc.api import explain_module_sasc
 from .treeprompt.treeprompt import TreePromptClassifier
-from .kan.kan_sklearn import KANClassifier, KANGAMClassifier, KANRegressor, KANGAMRegressor</code></pre>
+from .kan.kan_sklearn import KANClassifier, KANGAMClassifier, KANRegressor, KANGAMRegressor
+from .qaemb.qaemb import QAEmb</code></pre>
 </details>
 </section>
 <section>
@@ -372,10 +379,6 @@ from .kan.kan_sklearn import KANClassifier, KANGAMClassifier, KANRegressor, KANG
 <div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="imodelsx.data" href="data.html">imodelsx.data</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="imodelsx.dummy_script" href="dummy_script.html">imodelsx.dummy_script</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -411,7 +414,7 @@ from .kan.kan_sklearn import KANClassifier, KANGAMClassifier, KANRegressor, KANG
 <dd>
 <div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="imodelsx.qaembs" href="qaembs/index.html">imodelsx.qaembs</a></code></dt>
+<dt><code class="name"><a title="imodelsx.qaemb" href="qaemb/index.html">imodelsx.qaemb</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -475,7 +478,6 @@ from .kan.kan_sklearn import KANClassifier, KANGAMClassifier, KANRegressor, KANG
 <li><code><a title="imodelsx.cache_save_utils" href="cache_save_utils.html">imodelsx.cache_save_utils</a></code></li>
 <li><code><a title="imodelsx.d3" href="d3/index.html">imodelsx.d3</a></code></li>
 <li><code><a title="imodelsx.data" href="data.html">imodelsx.data</a></code></li>
-<li><code><a title="imodelsx.dummy_script" href="dummy_script.html">imodelsx.dummy_script</a></code></li>
 <li><code><a title="imodelsx.embeddings" href="embeddings.html">imodelsx.embeddings</a></code></li>
 <li><code><a title="imodelsx.iprompt" href="iprompt/index.html">imodelsx.iprompt</a></code></li>
 <li><code><a title="imodelsx.kan" href="kan/index.html">imodelsx.kan</a></code></li>
@@ -484,7 +486,7 @@ from .kan.kan_sklearn import KANClassifier, KANGAMClassifier, KANRegressor, KANG
 <li><code><a title="imodelsx.llm" href="llm.html">imodelsx.llm</a></code></li>
 <li><code><a title="imodelsx.metrics" href="metrics.html">imodelsx.metrics</a></code></li>
 <li><code><a title="imodelsx.process_results" href="process_results.html">imodelsx.process_results</a></code></li>
-<li><code><a title="imodelsx.qaembs" href="qaembs/index.html">imodelsx.qaembs</a></code></li>
+<li><code><a title="imodelsx.qaemb" href="qaemb/index.html">imodelsx.qaemb</a></code></li>
 <li><code><a title="imodelsx.sasc" href="sasc/index.html">imodelsx.sasc</a></code></li>
 <li><code><a title="imodelsx.submit_utils" href="submit_utils.html">imodelsx.submit_utils</a></code></li>
 <li><code><a title="imodelsx.treeprompt" href="treeprompt/index.html">imodelsx.treeprompt</a></code></li>

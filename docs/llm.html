@@ -45,14 +45,20 @@ import pickle as pkl
 from scipy.special import softmax
 import hashlib
 import torch
+from os.path import expanduser
 import time
 from tqdm import tqdm
 
 HF_TOKEN = None
 if &#39;HF_TOKEN&#39; in os.environ:
     HF_TOKEN = os.environ.get(&#34;HF_TOKEN&#34;)
-elif os.path.exists(&#39;~/.HF_TOKEN&#39;):
-    HF_TOKEN = open(os.path.expanduser(&#39;~/.HF_TOKEN&#39;), &#39;r&#39;).read().strip()
+elif os.path.exists(expanduser(&#39;~/.HF_TOKEN&#39;)):
+    HF_TOKEN = open(expanduser(&#39;~/.HF_TOKEN&#39;), &#39;r&#39;).read().strip()
+if os.path.exists(expanduser(&#39;~/.OPENAI_API_KEY&#39;)):
+    OPENAI_API_KEY = open(expanduser(&#39;~/.OPENAI_API_KEY&#39;), &#39;r&#39;).read().strip()
+if os.path.exists(expanduser(&#39;~/.OPENAI_API_KEY_SHARED&#39;)):
+    OPENAI_API_KEY_SHARED = open(expanduser(
+        &#39;~/.OPENAI_API_KEY_SHARED&#39;), &#39;r&#39;).read().strip()
 &#39;&#39;&#39;
 Example usage:
 # gpt-4, gpt-35-turbo, meta-llama/Llama-2-70b-hf, mistralai/Mistral-7B-v0.1
@@ -86,9 +92,7 @@ def get_llm(
         LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;] = repeat_delay
 
     &#34;&#34;&#34;Get an LLM with a call function and caching capabilities&#34;&#34;&#34;
-    if checkpoint.startswith(&#34;text-da&#34;):
-        return LLM_OpenAI(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR)
-    elif checkpoint.startswith(&#34;gpt-3&#34;) or checkpoint.startswith(&#34;gpt-4&#34;):
+    if checkpoint.startswith(&#34;gpt-3&#34;) or checkpoint.startswith(&#34;gpt-4&#34;):
         return LLM_Chat(checkpoint, seed, role, CACHE_DIR)
     elif &#39;Meta-Llama-3&#39; in checkpoint and &#39;Instruct&#39; in checkpoint:
         return LLM_HF_Pipeline(checkpoint, CACHE_DIR)
@@ -127,73 +131,6 @@ def repeatedly_call_with_delay(llm_call):
     return wrapper
 
 
-class LLM_OpenAI:
-    def __init__(self, checkpoint, seed, CACHE_DIR):
-        self.cache_dir = join(
-            CACHE_DIR, &#34;cache_openai&#34;, f&#39;{checkpoint.replace(&#34;/&#34;, &#34;_&#34;)}___{seed}&#39;
-        )
-        self.checkpoint = checkpoint
-
-    @repeatedly_call_with_delay
-    def __call__(
-        self,
-        prompt: str,
-        max_new_tokens=250,
-        frequency_penalty=0.25,  # maximum is 2
-        temperature=0.1,
-        do_sample=True,
-        stop=None,
-        return_str=True,
-    ):
-
-        # cache
-        os.makedirs(self.cache_dir, exist_ok=True)
-        hash_str = hashlib.sha256(prompt.encode()).hexdigest()
-        cache_file = join(
-            self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;)
-        if os.path.exists(cache_file):
-            return pkl.load(open(cache_file, &#34;rb&#34;))
-
-        # import openai
-        # response = openai.Completion.create(
-        #     engine=self.checkpoint,
-        #     prompt=prompt,
-        #     max_tokens=max_new_tokens,
-        #     temperature=temperature,
-        #     top_p=1,
-        #     frequency_penalty=frequency_penalty,
-        #     presence_penalty=0,
-        #     stop=stop,
-        #     # stop=[&#34;101&#34;]
-        # )
-        # if return_str:
-        #     response = response[&#34;choices&#34;][0][&#34;text&#34;]
-
-        from openai import AzureOpenAI
-        api_key = os.getenv(&#34;OPENAI_API_KEY&#34;)  # need to fill this in
-        client = AzureOpenAI(
-            azure_endpoint=&#34;https://healthcare-ai.openai.azure.com/&#34;,
-            api_version=&#34;2024-02-01&#34;,
-            api_key=api_key,
-        )
-
-        response = client.chat.completions.create(  # replace this value with the deployment name you chose when you deployed the associated model.
-            model=self.checkpoint,
-            messages=prompt,
-            temperature=temperature,
-            max_tokens=max_new_tokens,
-            top_p=1,
-            frequency_penalty=frequency_penalty,
-            presence_penalty=0,
-            stop=None)
-
-        if return_str:
-            response = response.choices[0].message.content
-
-        pkl.dump(response, open(cache_file, &#34;wb&#34;))
-        return response
-
-
 class LLM_Chat:
     &#34;&#34;&#34;Chat models take a different format: https://platform.openai.com/docs/guides/chat/introduction&#34;&#34;&#34;
 
@@ -204,12 +141,18 @@ class LLM_Chat:
         self.checkpoint = checkpoint
         self.role = role
         from openai import AzureOpenAI
-        api_key = os.getenv(&#34;OPENAI_API_KEY&#34;)  # need to fill this in
-        self.client = AzureOpenAI(
-            azure_endpoint=&#34;https://healthcare-ai.openai.azure.com/&#34;,
-            api_version=&#34;2024-02-01&#34;,
-            api_key=api_key,
-        )
+        if &#39;spot&#39; in checkpoint:
+            self.client = AzureOpenAI(
+                azure_endpoint=&#34;https://gcraoai9wus3spot.openai.azure.com/&#34;,
+                api_version=&#34;2024-02-01&#34;,
+                api_key=OPENAI_API_KEY_SHARED,
+            )
+        else:
+            self.client = AzureOpenAI(
+                azure_endpoint=&#34;https://healthcare-ai.openai.azure.com/&#34;,
+                api_version=&#34;2024-02-01&#34;,
+                api_key=OPENAI_API_KEY,
+            )
 
     # @repeatedly_call_with_delay
     def __call__(
@@ -223,6 +166,7 @@ class LLM_Chat:
         temperature=0.1,
         frequency_penalty=0.25,
         use_cache=True,
+        return_false_if_not_cached=False,
     ):
         &#34;&#34;&#34;
         prompts_list: list of dicts, each dict has keys &#39;role&#39; and &#39;content&#39;
@@ -279,6 +223,9 @@ class LLM_Chat:
         if verbose:
             print(&#34;not cached&#34;)
 
+        if return_false_if_not_cached:
+            return False
+
         kwargs = dict(
             model=self.checkpoint,
             messages=prompts_list,
@@ -288,6 +235,7 @@ class LLM_Chat:
             frequency_penalty=frequency_penalty,  # maximum is 2
             presence_penalty=0,
             stop=stop,
+            # logprobs=True,
             # stop=[&#34;101&#34;]
         )
         if functions is not None:
@@ -706,9 +654,7 @@ if __name__ == &#34;__main__&#34;:
         LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;] = repeat_delay
 
     &#34;&#34;&#34;Get an LLM with a call function and caching capabilities&#34;&#34;&#34;
-    if checkpoint.startswith(&#34;text-da&#34;):
-        return LLM_OpenAI(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR)
-    elif checkpoint.startswith(&#34;gpt-3&#34;) or checkpoint.startswith(&#34;gpt-4&#34;):
+    if checkpoint.startswith(&#34;gpt-3&#34;) or checkpoint.startswith(&#34;gpt-4&#34;):
         return LLM_Chat(checkpoint, seed, role, CACHE_DIR)
     elif &#39;Meta-Llama-3&#39; in checkpoint and &#39;Instruct&#39; in checkpoint:
         return LLM_HF_Pipeline(checkpoint, CACHE_DIR)
@@ -900,12 +846,18 @@ if __name__ == &#34;__main__&#34;:
         self.checkpoint = checkpoint
         self.role = role
         from openai import AzureOpenAI
-        api_key = os.getenv(&#34;OPENAI_API_KEY&#34;)  # need to fill this in
-        self.client = AzureOpenAI(
-            azure_endpoint=&#34;https://healthcare-ai.openai.azure.com/&#34;,
-            api_version=&#34;2024-02-01&#34;,
-            api_key=api_key,
-        )
+        if &#39;spot&#39; in checkpoint:
+            self.client = AzureOpenAI(
+                azure_endpoint=&#34;https://gcraoai9wus3spot.openai.azure.com/&#34;,
+                api_version=&#34;2024-02-01&#34;,
+                api_key=OPENAI_API_KEY_SHARED,
+            )
+        else:
+            self.client = AzureOpenAI(
+                azure_endpoint=&#34;https://healthcare-ai.openai.azure.com/&#34;,
+                api_version=&#34;2024-02-01&#34;,
+                api_key=OPENAI_API_KEY,
+            )
 
     # @repeatedly_call_with_delay
     def __call__(
@@ -919,6 +871,7 @@ if __name__ == &#34;__main__&#34;:
         temperature=0.1,
         frequency_penalty=0.25,
         use_cache=True,
+        return_false_if_not_cached=False,
     ):
         &#34;&#34;&#34;
         prompts_list: list of dicts, each dict has keys &#39;role&#39; and &#39;content&#39;
@@ -975,6 +928,9 @@ if __name__ == &#34;__main__&#34;:
         if verbose:
             print(&#34;not cached&#34;)
 
+        if return_false_if_not_cached:
+            return False
+
         kwargs = dict(
             model=self.checkpoint,
             messages=prompts_list,
@@ -984,6 +940,7 @@ if __name__ == &#34;__main__&#34;:
             frequency_penalty=frequency_penalty,  # maximum is 2
             presence_penalty=0,
             stop=stop,
+            # logprobs=True,
             # stop=[&#34;101&#34;]
         )
         if functions is not None:
@@ -1251,83 +1208,6 @@ if __name__ == &#34;__main__&#34;:
         return texts</code></pre>
 </details>
 </dd>
-<dt id="imodelsx.llm.LLM_OpenAI"><code class="flex name class">
-<span>class <span class="ident">LLM_OpenAI</span></span>
-<span>(</span><span>checkpoint, seed, CACHE_DIR)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class LLM_OpenAI:
-    def __init__(self, checkpoint, seed, CACHE_DIR):
-        self.cache_dir = join(
-            CACHE_DIR, &#34;cache_openai&#34;, f&#39;{checkpoint.replace(&#34;/&#34;, &#34;_&#34;)}___{seed}&#39;
-        )
-        self.checkpoint = checkpoint
-
-    @repeatedly_call_with_delay
-    def __call__(
-        self,
-        prompt: str,
-        max_new_tokens=250,
-        frequency_penalty=0.25,  # maximum is 2
-        temperature=0.1,
-        do_sample=True,
-        stop=None,
-        return_str=True,
-    ):
-
-        # cache
-        os.makedirs(self.cache_dir, exist_ok=True)
-        hash_str = hashlib.sha256(prompt.encode()).hexdigest()
-        cache_file = join(
-            self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;)
-        if os.path.exists(cache_file):
-            return pkl.load(open(cache_file, &#34;rb&#34;))
-
-        # import openai
-        # response = openai.Completion.create(
-        #     engine=self.checkpoint,
-        #     prompt=prompt,
-        #     max_tokens=max_new_tokens,
-        #     temperature=temperature,
-        #     top_p=1,
-        #     frequency_penalty=frequency_penalty,
-        #     presence_penalty=0,
-        #     stop=stop,
-        #     # stop=[&#34;101&#34;]
-        # )
-        # if return_str:
-        #     response = response[&#34;choices&#34;][0][&#34;text&#34;]
-
-        from openai import AzureOpenAI
-        api_key = os.getenv(&#34;OPENAI_API_KEY&#34;)  # need to fill this in
-        client = AzureOpenAI(
-            azure_endpoint=&#34;https://healthcare-ai.openai.azure.com/&#34;,
-            api_version=&#34;2024-02-01&#34;,
-            api_key=api_key,
-        )
-
-        response = client.chat.completions.create(  # replace this value with the deployment name you chose when you deployed the associated model.
-            model=self.checkpoint,
-            messages=prompt,
-            temperature=temperature,
-            max_tokens=max_new_tokens,
-            top_p=1,
-            frequency_penalty=frequency_penalty,
-            presence_penalty=0,
-            stop=None)
-
-        if return_str:
-            response = response.choices[0].message.content
-
-        pkl.dump(response, open(cache_file, &#34;wb&#34;))
-        return response</code></pre>
-</details>
-</dd>
 </dl>
 </section>
 </article>
@@ -1363,9 +1243,6 @@ if __name__ == &#34;__main__&#34;:
 </li>
 <li>
 <h4><code><a title="imodelsx.llm.LLM_HF_Pipeline" href="#imodelsx.llm.LLM_HF_Pipeline">LLM_HF_Pipeline</a></code></h4>
-</li>
-<li>
-<h4><code><a title="imodelsx.llm.LLM_OpenAI" href="#imodelsx.llm.LLM_OpenAI">LLM_OpenAI</a></code></h4>
 </li>
 </ul>
 </li>
