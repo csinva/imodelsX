@@ -62,7 +62,10 @@ def explain_ngrams(
 
     # get unique ngrams
     ngrams_list = sorted(list(set(ngrams_list)))
-    # print(f'{ngrams_list=}')
+    # pkl.dump(ngrams_list, open(
+    # cache_filename.replace('.pkl', '_ngrams.pkl'), "wb"))
+    # exit(0)
+    print(f'{ngrams_list=}')
 
     # compute scores and cache...
     use_cache = (
@@ -84,6 +87,8 @@ def explain_ngrams(
 
         if use_cache:
             os.makedirs(dirname(cache_filename), exist_ok=True)
+            # pkl.dump(ngrams_list, open(
+            # cache_filename.replace('.pkl', '_ngrams.pkl'), "wb"))
             pkl.dump(ngram_scores, open(cache_filename, "wb"))
 
     # multidimensional predictions
@@ -116,7 +121,8 @@ def explain_ngrams(
             )
         )
         idxs_to_keep = np.array(
-            [i for i, ngram in enumerate(ngrams_list) if ngram in ngrams_set_restrict]
+            [i for i, ngram in enumerate(
+                ngrams_list) if ngram in ngrams_set_restrict]
         )
         ngrams_list = [ngrams_list[i] for i in idxs_to_keep]
         ngram_scores = ngram_scores[idxs_to_keep]

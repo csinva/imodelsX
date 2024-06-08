@@ -18,6 +18,7 @@ from scipy.special import softmax
 import hashlib
 import torch
 from os.path import expanduser
+import traceback
 import time
 from tqdm import tqdm
 
@@ -210,6 +211,7 @@ class LLM_Chat:
             # logprobs=True,
             # stop=["101"]
         )
+        # print('kwargs', kwargs)
         if functions is not None:
             kwargs["functions"] = functions
 
@@ -221,7 +223,12 @@ class LLM_Chat:
             response = response.choices[0].message.content
 
         if response is not None:
-            pkl.dump(response, open(cache_file, "wb"))
+            # print('resp', response, 'cache_file', cache_file)
+            try:
+                pkl.dump(response, open(cache_file, "wb"))
+            except:
+                print('failed to save cache!', cache_file)
+                traceback.print_exc()
 
         return response
 
@@ -303,6 +310,7 @@ class LLM_HF_Pipeline:
         )
         self.pipeline_.tokenizer.pad_token_id = self.pipeline_.tokenizer.eos_token_id
         self.pipeline_.tokenizer.padding_side = 'left'
+        # self.pipeline_.model.generation_config.pad_token_id = self.pipeline_.tokenizer.pad_token_id
         self.cache_dir = join(CACHE_DIR)
 
     def __call__(
@@ -335,6 +343,7 @@ class LLM_HF_Pipeline:
             max_new_tokens=max_new_tokens,
             batch_size=batch_size,
             do_sample=False,
+            pad_token_id=self.pipeline_.tokenizer.pad_token_id,
         )
         if isinstance(prompt, str):
             texts = outputs[0]["generated_text"][len(prompt):]
