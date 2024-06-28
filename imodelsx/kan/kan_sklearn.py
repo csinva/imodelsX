@@ -18,6 +18,7 @@ class KAN(BaseEstimator):
                  hidden_layer_size: int = 64,
                  hidden_layer_sizes: List[int] = None,
                  regularize_activation: float = 1.0, regularize_entropy: float = 1.0, regularize_ridge: float = 0.0,
+                 test_size=0.2, random_state=42, shuffle=True,
                  device: str = 'cpu',
                  **kwargs):
         '''
@@ -82,7 +83,7 @@ class KAN(BaseEstimator):
             ).to(self.device)
 
         X_train, X_tune, y_train, y_tune = train_test_split(
-            X, y, test_size=0.2, random_state=42)
+            X, y, test_size=test_size, random_state=random_state, shuffle=shuffle)
 
         dset_train = torch.utils.data.TensorDataset(X_train, y_train)
         dset_tune = torch.utils.data.TensorDataset(X_tune, y_tune)
