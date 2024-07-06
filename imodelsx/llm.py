@@ -127,7 +127,7 @@ class LLM_Chat:
                 api_key=OPENAI_API_KEY,
             )
 
-    # @repeatedly_call_with_delay
+    @repeatedly_call_with_delay
     def __call__(
         self,
         prompts_list: List[Dict[str, str]],
