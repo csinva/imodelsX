@@ -114,18 +114,17 @@ class LLM_Chat:
         self.checkpoint = checkpoint
         self.role = role
         from openai import AzureOpenAI
-        if 'spot' in checkpoint:
-            self.client = AzureOpenAI(
-                azure_endpoint="https://gcraoai9wus3spot.openai.azure.com/",
-                api_version="2024-02-01",
-                api_key=OPENAI_API_KEY_SHARED,
-            )
-        else:
-            self.client = AzureOpenAI(
-                azure_endpoint="https://healthcare-ai.openai.azure.com/",
-                api_version="2024-02-01",
-                api_key=OPENAI_API_KEY,
-            )
+        from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+
+        token_provider = get_bearer_token_provider(
+            DefaultAzureCredential(),
+            "https://cognitiveservices.azure.com/.default"
+        )
+        self.client = AzureOpenAI(
+            api_version="2024-09-01-preview",
+            azure_endpoint="https://dl-openai-1.openai.azure.com/",
+            azure_ad_token_provider=token_provider
+        )
 
     @repeatedly_call_with_delay
     def __call__(
