@@ -144,6 +144,8 @@ def average_over_seeds(
     def sem(x):
         """Compute standard error of the mean, ignoring NaNs"""
         with warnings.catch_warnings():
+            # Ignore only UserWarning
+            warnings.simplefilter("ignore")
             return scipy.stats.sem(x, ddof=0)
 
     group_keys = [

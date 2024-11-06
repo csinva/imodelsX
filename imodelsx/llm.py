@@ -27,11 +27,6 @@ if 'HF_TOKEN' in os.environ:
     HF_TOKEN = os.environ.get("HF_TOKEN")
 elif os.path.exists(expanduser('~/.HF_TOKEN')):
     HF_TOKEN = open(expanduser('~/.HF_TOKEN'), 'r').read().strip()
-if os.path.exists(expanduser('~/.OPENAI_API_KEY')):
-    OPENAI_API_KEY = open(expanduser('~/.OPENAI_API_KEY'), 'r').read().strip()
-if os.path.exists(expanduser('~/.OPENAI_API_KEY_SHARED')):
-    OPENAI_API_KEY_SHARED = open(expanduser(
-        '~/.OPENAI_API_KEY_SHARED'), 'r').read().strip()
 '''
 Example usage:
 # gpt-4, gpt-35-turbo, meta-llama/Llama-2-70b-hf, mistralai/Mistral-7B-v0.1
@@ -116,15 +111,20 @@ class LLM_Chat:
         from openai import AzureOpenAI
         from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 
-        token_provider = get_bearer_token_provider(
-            DefaultAzureCredential(),
-            "https://cognitiveservices.azure.com/.default"
-        )
-        self.client = AzureOpenAI(
-            api_version="2024-09-01-preview",
-            azure_endpoint="https://dl-openai-1.openai.azure.com/",
-            azure_ad_token_provider=token_provider
-        )
+        try:
+            token_provider = get_bearer_token_provider(
+                DefaultAzureCredential(),
+                "https://cognitiveservices.azure.com/.default"
+            )
+            self.client = AzureOpenAI(
+                api_version="2024-09-01-preview",
+                azure_endpoint="https://dl-openai-2.openai.azure.com/",
+                azure_ad_token_provider=token_provider
+            )
+        except Exception as e:
+            print('failed to create client', e)
+            print('You may need to edit this call in order to supply your own OpenAI / AzureOpenAI key and authentication.')
+            traceback.print_exc()
 
     @repeatedly_call_with_delay
     def __call__(
