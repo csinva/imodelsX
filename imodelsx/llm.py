@@ -62,7 +62,7 @@ def get_llm(
     """Get an LLM with a call function and caching capabilities"""
     if checkpoint.startswith("gpt-3") or checkpoint.startswith("gpt-4"):
         return LLM_Chat(checkpoint, seed, role, CACHE_DIR)
-    elif 'Meta-Llama-3' in checkpoint and 'Instruct' in checkpoint:
+    elif 'meta-llama' in checkpoint and 'Instruct' in checkpoint:
         return LLM_HF_Pipeline(checkpoint, CACHE_DIR)
     else:
         # warning: this sets torch.manual_seed(seed)
@@ -302,15 +302,15 @@ class LLM_HF_Pipeline:
         self.pipeline_ = transformers.pipeline(
             "text-generation",
             model=checkpoint,
-            # model_kwargs={"torch_dtype": torch.bfloat16},
-            # , 'device_map': "auto"},
-            model_kwargs={'torch_dtype': torch.float16},
-            device_map="auto"
+            model_kwargs={"torch_dtype": torch.bfloat16},
+            # 'device_map': "auto"},
+            # model_kwargs={'torch_dtype': torch.float16},
+            device_map="auto",
         )
         self.pipeline_.tokenizer.pad_token_id = self.pipeline_.tokenizer.eos_token_id
         self.pipeline_.tokenizer.padding_side = 'left'
         # self.pipeline_.model.generation_config.pad_token_id = self.pipeline_.tokenizer.pad_token_id
-        self.cache_dir = join(CACHE_DIR)
+        self.cache_dir = CACHE_DIR
 
     def __call__(
         self,
@@ -320,7 +320,7 @@ class LLM_HF_Pipeline:
         verbose=False,
         batch_size=64,
     ):
-
+        use_cache = use_cache and self.cache_dir is not None
         if use_cache:
             os.makedirs(self.cache_dir, exist_ok=True)
             hash_str = hashlib.sha256(str(prompt).encode()).hexdigest()
@@ -343,7 +343,10 @@ class LLM_HF_Pipeline:
             batch_size=batch_size,
             do_sample=False,
             pad_token_id=self.pipeline_.tokenizer.pad_token_id,
+            top_p=None,
+            temperature=None,
         )
+        # print(outputs)
         if isinstance(prompt, str):
             texts = outputs[0]["generated_text"][len(prompt):]
         else:
