@@ -70,8 +70,6 @@ class QAEmb:
         embeddings: (num_examples, num_questions)
         '''
         if speed_up_with_unique_calls:
-            assert len(
-                self.questions) == 1, 'speed_up_with_unique_calls only works with one question'
             examples_unique = np.unique(examples)
             answers_unique = self.__call__(examples_unique)
             examples_to_answers_dict = {
@@ -139,12 +137,15 @@ if __name__ == '__main__':
     questions, examples = get_sample_questions_and_examples()
     qa_embedder = QAEmb(
         questions=questions,
-        checkpoint='meta-llama/Meta-Llama-3-8B-Instruct',
+        # checkpoint='meta-llama/Meta-Llama-3-8B-Instruct',
+        checkpoint='mistralai/Mistral-7B-Instruct-v0.2',
         batch_size=64,
         CACHE_DIR=None,
     )
     qa_embedder.questions = questions
     embs = qa_embedder(examples)
+
+    print(embs)
 
     # check answers
     assert np.all(embs[np.diag_indices(5)]

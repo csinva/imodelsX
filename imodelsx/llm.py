@@ -363,9 +363,12 @@ class LLM_HF:
         self.tokenizer_ = load_tokenizer(checkpoint)
         self.model_ = load_hf_model(checkpoint)
         self.checkpoint = checkpoint
-        self.cache_dir = join(
-            CACHE_DIR, "cache_hf", f'{checkpoint.replace("/", "_")}___{seed}'
-        )
+        if CACHE_DIR is not None:
+            self.cache_dir = join(
+                CACHE_DIR, "cache_hf", f'{checkpoint.replace("/", "_")}___{seed}'
+            )
+        else:
+            self.cache_dir = None
         self.seed = seed
 
     def __call__(
@@ -402,6 +405,7 @@ class LLM_HF:
         """
         input_is_str = isinstance(prompt, str)
         with torch.no_grad():
+            use_cache = use_cache and self.cache_dir is not None
             # cache
             if use_cache:
                 os.makedirs(self.cache_dir, exist_ok=True)
