@@ -23,9 +23,13 @@ class QAEmb:
             'gpt2',
             'gpt2-xl',
             'mistralai/Mistral-7B-Instruct-v0.2',
+            'mistralai/Mixtral-8x7B-Instruct-v0.1',
             'meta-llama/Meta-Llama-3-8B-Instruct',
             'meta-llama/Meta-Llama-3-8B-Instruct-fewshot',
             'meta-llama/Meta-Llama-3-8B-Instruct-refined',
+            'google/gemma-7b-it',
+            'meta-llama/Meta-Llama-3-70B-Instruct',
+            'meta-llama/Meta-Llama-3-70B-Instruct-fewshot',
         ]
         if not checkpoint in checkpoints_tested:
             warnings.warn(
@@ -91,7 +95,7 @@ class QAEmb:
         answers = []
         # pipeline uses batch_size under the hood, but use for-loop here to get progress bar
         batch_size_mult = self.batch_size * 8
-        for i in tqdm(range(0, len(programs), batch_size_mult)):
+        for i in range(0, len(programs), batch_size_mult):
             # print(i, len(programs))
             answers += self.llm(
                 programs[i:i+batch_size_mult],
@@ -103,7 +107,7 @@ class QAEmb:
 
         if debug_answering_correctly:
             # check if answers are yes or no
-            for i in range(30):
+            for i in range(min(30, len(programs))):
                 print(programs[i], '->', answers[i], end='\n\n\n')
 
         answers = list(map(lambda x: 'yes' in x.lower(), answers))
@@ -138,12 +142,14 @@ if __name__ == '__main__':
     qa_embedder = QAEmb(
         questions=questions,
         # checkpoint='meta-llama/Meta-Llama-3-8B-Instruct',
-        checkpoint='mistralai/Mistral-7B-Instruct-v0.2',
+        # checkpoint='mistralai/Mistral-7B-Instruct-v0.2',
+        # checkpoint='google/gemma-7b-it',
+        checkpoint='mistralai/Mixtral-8x7B-Instruct-v0.1',
         batch_size=64,
         CACHE_DIR=None,
     )
     qa_embedder.questions = questions
-    embs = qa_embedder(examples)
+    embs = qa_embedder(examples, debug_answering_correctly=True)
 
     print(embs)
 
