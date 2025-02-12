@@ -20,6 +20,11 @@ class QAEmb:
             CACHE_DIR: str = expanduser("~/cache_qa_embedder"),
     ):
         checkpoints_tested = [
+            # openai api
+            'gpt-4o',
+            'gpt-4o-mini',
+
+            # HF api
             'gpt2',
             'gpt2-xl',
             'mistralai/Mistral-7B-Instruct-v0.2',
@@ -91,19 +96,29 @@ class QAEmb:
             for question in self.questions
         ]
 
-        # run in batches
-        answers = []
-        # pipeline uses batch_size under the hood, but use for-loop here to get progress bar
-        batch_size_mult = self.batch_size * 8
-        for i in range(0, len(programs), batch_size_mult):
-            # print(i, len(programs))
-            answers += self.llm(
-                programs[i:i+batch_size_mult],
-                max_new_tokens=1,
-                verbose=verbose,
-                use_cache=self.use_cache,
-                batch_size=self.batch_size,
-            )
+        if self.llm.checkpoint.startswith('gpt-4'):
+            answers = [
+                self.llm(
+                    programs[i],
+                    max_new_tokens=1,
+                    verbose=verbose,
+                    use_cache=self.use_cache,
+                )
+                for i in tqdm(range(len(programs)))
+            ]
+        else:
+            # run in batches
+            answers = []
+            # pass in this multiple to pipeline, even though it still uses batch_size under the hood
+            batch_size_mult = self.batch_size * 8
+            for i in tqdm(range(0, len(programs), batch_size_mult)):
+                answers += self.llm(
+                    programs[i:i+batch_size_mult],
+                    max_new_tokens=1,
+                    verbose=verbose,
+                    use_cache=self.use_cache,
+                    batch_size=self.batch_size,
+                )
 
         if debug_answering_correctly:
             # check if answers are yes or no
@@ -119,20 +134,24 @@ class QAEmb:
 
 def get_sample_questions_and_examples():
     questions = [
-        'Is the input related to food preparation?',
-        'Does the input mention laughter?',
-        'Is there an expression of surprise?',
-        'Is there a depiction of a routine or habit?',
-        'Is there stuttering or uncertainty in the input?',
-        # 'Is there a first-person pronoun in the input?',
+        # 'Is the input related to food preparation?',
+        # 'Does the input mention laughter?',
+        # 'Is there an expression of surprise?',
+        # 'Is there a depiction of a routine or habit?',
+        # 'Is there stuttering or uncertainty in the input?',
+        # 'Does the input contain a number?',
+        'Is time mentioned in the input?',
+        'Does the sentence contain a negation?',
     ]
     examples = [
-        'i sliced some cucumbers and then moved on to what was next',
-        'the kids were giggling about the silly things they did',
-        'and i was like whoa that was unexpected',
-        'walked down the path like i always did',
-        'um no um then it was all clear',
-        # 'i was walking to school and then i saw a cat',
+        # 'i sliced some cucumbers and then moved on to what was next',
+        # 'the kids were giggling about the silly things they did',
+        # 'and i was like whoa that was unexpected',
+        # 'walked down the path like i always did',
+        # 'um no um then it was all clear',
+        # 'three four five',
+        'two hours in the future',
+        'it was not a good movie',
     ]
     return questions, examples
 
@@ -144,7 +163,8 @@ if __name__ == '__main__':
         # checkpoint='meta-llama/Meta-Llama-3-8B-Instruct',
         # checkpoint='mistralai/Mistral-7B-Instruct-v0.2',
         # checkpoint='google/gemma-7b-it',
-        checkpoint='mistralai/Mixtral-8x7B-Instruct-v0.1',
+        # checkpoint='mistralai/Mixtral-8x7B-Instruct-v0.1',
+        checkpoint='gpt-4o-mini',
         batch_size=64,
         CACHE_DIR=None,
     )

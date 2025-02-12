@@ -38,7 +38,7 @@ llm('may the force be') # returns ' with you'
 # change these settings before using these classes!
 LLM_CONFIG = {
     # how long to wait before recalling a failed llm call (can set to None)
-    "LLM_REPEAT_DELAY": None,
+    "LLM_REPEAT_DELAY": 10,
     "CACHE_DIR": join(
         os.path.expanduser("~"), "clin/CACHE_OPENAI"
     ),  # path to save cached llm outputs
@@ -109,16 +109,16 @@ class LLM_Chat:
         self.checkpoint = checkpoint
         self.role = role
         from openai import AzureOpenAI
-        from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+        from azure.identity import DefaultAzureCredential, get_bearer_token_provider, AzureCliCredential
 
         try:
             token_provider = get_bearer_token_provider(
-                DefaultAzureCredential(),
+                AzureCliCredential(),
                 "https://cognitiveservices.azure.com/.default"
             )
             self.client = AzureOpenAI(
-                api_version="2024-09-01-preview",
-                azure_endpoint="https://dl-openai-2.openai.azure.com/",
+                api_version="2024-03-01-preview",
+                azure_endpoint="https://dl-openai-1.openai.azure.com/",
                 azure_ad_token_provider=token_provider
             )
         except Exception as e:
@@ -166,6 +166,7 @@ class LLM_Chat:
             ]
 
         assert isinstance(prompts_list, list), prompts_list
+        # breakpoint()
 
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
@@ -224,6 +225,7 @@ class LLM_Chat:
         if response is not None:
             # print('resp', response, 'cache_file', cache_file)
             try:
+                # print(cache_file, 'cached!')
                 pkl.dump(response, open(cache_file, "wb"))
             except:
                 print('failed to save cache!', cache_file)
@@ -277,12 +279,6 @@ def load_hf_model(checkpoint: str) -> transformers.PreTrainedModel:
             token=HF_TOKEN,
             offload_folder="offload",
         )
-    elif "llama_" in checkpoint:
-        return transformers.LlamaForCausalLM.from_pretrained(
-            join(LLAMA_DIR, checkpoint),
-            device_map="auto",
-            torch_dtype=torch.float16,
-        )
     elif 'microsoft/phi' in checkpoint:
         return AutoModelForCausalLM.from_pretrained(
             checkpoint
@@ -291,7 +287,9 @@ def load_hf_model(checkpoint: str) -> transformers.PreTrainedModel:
         return AutoModelForCausalLM.from_pretrained(checkpoint)
     else:
         return AutoModelForCausalLM.from_pretrained(
-            checkpoint, device_map="auto", torch_dtype=torch.float16,
+            checkpoint,
+            device_map="auto",
+            torch_dtype=torch.float16,
             token=HF_TOKEN,
         )
 
