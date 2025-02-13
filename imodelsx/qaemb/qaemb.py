@@ -125,7 +125,12 @@ class QAEmb:
             for i in range(min(30, len(programs))):
                 print(programs[i], '->', answers[i], end='\n\n\n')
 
-        answers = list(map(lambda x: 'yes' in x.lower(), answers))
+        def _check_for_yes(s):
+            if isinstance(s, str):
+                return 'yes' in s.lower()
+            else:
+                return False
+        answers = list(map(_check_for_yes, answers))
         answers = np.array(answers).reshape(len(examples), len(self.questions))
         embeddings = np.array(answers, dtype=float)
 
