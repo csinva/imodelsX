@@ -102,7 +102,7 @@ def repeatedly_call_with_delay(llm_call):
 class LLM_Chat:
     """Chat models take a different format: https://platform.openai.com/docs/guides/chat/introduction"""
 
-    def __init__(self, checkpoint, seed, role, CACHE_DIR):
+    def __init__(self, checkpoint, seed=1, role=None, CACHE_DIR=LLM_CONFIG["CACHE_DIR"]):
         self.cache_dir = join(
             CACHE_DIR, "cache_openai", f'{checkpoint.replace("/", "_")}___{seed}'
         )
@@ -116,11 +116,18 @@ class LLM_Chat:
                 AzureCliCredential(),
                 "https://cognitiveservices.azure.com/.default"
             )
-            self.client = AzureOpenAI(
-                api_version="2024-03-01-preview",
-                azure_endpoint="https://dl-openai-1.openai.azure.com/",
-                azure_ad_token_provider=token_provider
-            )
+            if 'audio' in checkpoint:
+                self.client = AzureOpenAI(
+                    api_version="2025-01-01-preview",
+                    azure_endpoint="https://neuroaiservice.cognitiveservices.azure.com/openai/deployments/gpt-4o-audio-preview/chat/completions?api-version=2025-01-01-preview",
+                    azure_ad_token_provider=token_provider
+                )
+            else:
+                self.client = AzureOpenAI(
+                    api_version="2025-01-01-preview",
+                    azure_endpoint="https://dl-openai-1.openai.azure.com/",
+                    azure_ad_token_provider=token_provider
+                )
         except Exception as e:
             print('failed to create client', e)
             print('You may need to edit this call in order to supply your own OpenAI / AzureOpenAI key and authentication.')
@@ -354,6 +361,96 @@ class LLM_HF_Pipeline:
         if use_cache:
             pkl.dump(texts, open(cache_file, "wb"))
         return texts
+
+
+class LLM_Chat_Audio(LLM_Chat):
+
+    @repeatedly_call_with_delay
+    def __call__(
+        self,
+        prompt_str: str,
+        audio_str: str,
+        return_str=True,
+        verbose=True,
+        use_cache=True,
+        return_false_if_not_cached=False,
+    ):
+
+        # breakpoint()
+        prompts_list = [{
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": prompt_str,
+                    # "text": 'What food is mentioned in the recording?',
+                },
+                {
+                    "type": "input_audio",
+                    "input_audio": {
+                        "data": audio_str,
+                        "format": "wav"
+                    }
+                }
+            ]
+        }]
+
+        # cache
+        os.makedirs(self.cache_dir, exist_ok=True)
+        prompts_list_dict = {
+            str(i): sorted(v.items()) for i, v in enumerate(prompts_list)
+        }
+        dict_as_str = json.dumps(prompts_list_dict, sort_keys=True)
+        hash_str = hashlib.sha256(dict_as_str.encode()).hexdigest()
+        cache_file = join(
+            self.cache_dir,
+            f"audio__{hash_str}.pkl",
+        )
+        if os.path.exists(cache_file) and use_cache:
+            if verbose:
+                print("cached!")
+                # print(cache_file)
+            # print(cache_file)
+            response = pkl.load(open(cache_file, "rb"))
+            if response is not None:
+                return response
+        if verbose:
+            print("not cached")
+
+        if return_false_if_not_cached:
+            return False
+
+        kwargs = dict(
+            model=self.checkpoint,
+            messages=prompts_list,
+            # max_tokens=max_new_tokens,
+            temperature=0,
+            # top_p=1,
+            # frequency_penalty=frequency_penalty,  # maximum is 2
+            # presence_penalty=0,
+            # stop=stop,
+            # logprobs=True,
+            # stop=["101"]
+        )
+        response = self.client.chat.completions.create(
+            modalities=["text", "audio"],
+            audio={"voice": "alloy", "format": "wav"},
+            **kwargs,
+        )
+
+        if return_str:
+            response = response.choices[0].message.audio.transcript
+
+        if response is not None:
+            # print('resp', response, 'cache_file', cache_file)
+            try:
+                # print(cache_file, 'cached!')
+                pkl.dump(response, open(cache_file, "wb"))
+            except:
+                print('failed to save cache!', cache_file)
+                traceback.print_exc()
+
+        return response
 
 
 class LLM_HF:
