@@ -120,7 +120,9 @@ class LLM_Chat:
                 self.client = AzureOpenAI(
                     api_version="2025-01-01-preview",
                     azure_endpoint="https://neuroaiservice.cognitiveservices.azure.com/openai/deployments/gpt-4o-audio-preview/chat/completions?api-version=2025-01-01-preview",
-                    azure_ad_token_provider=token_provider
+                    azure_ad_token_provider=token_provider,
+                    timeout=10,
+                    max_retries=3,
                 )
             else:
                 self.client = AzureOpenAI(
@@ -365,7 +367,6 @@ class LLM_HF_Pipeline:
 
 class LLM_Chat_Audio(LLM_Chat):
 
-    @repeatedly_call_with_delay
     def __call__(
         self,
         prompt_str: str,
@@ -423,14 +424,7 @@ class LLM_Chat_Audio(LLM_Chat):
         kwargs = dict(
             model=self.checkpoint,
             messages=prompts_list,
-            # max_tokens=max_new_tokens,
-            temperature=0,
-            # top_p=1,
-            # frequency_penalty=frequency_penalty,  # maximum is 2
-            # presence_penalty=0,
-            # stop=stop,
-            # logprobs=True,
-            # stop=["101"]
+            # temperature=0,
         )
         response = self.client.chat.completions.create(
             modalities=["text", "audio"],
