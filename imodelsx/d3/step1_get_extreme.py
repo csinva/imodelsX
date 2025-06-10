@@ -6,7 +6,8 @@ from itertools import chain
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoModel
 import torch
 import tqdm
-from transformers import AdamW, get_linear_schedule_with_warmup
+from transformers import get_linear_schedule_with_warmup
+from torch.optim import AdamW
 import numpy as np
 from torch import nn
 
