@@ -1,7 +1,6 @@
 import imodelsx.llm
 import imodelsx.util
 import os
-from neuro.features.questions.gpt4 import QS_35_STABLE
 import time
 
 
@@ -62,7 +61,7 @@ def time_batch_inference_hf(prompts):
     )
     t1 = time.time()
     print(f'LLM created in {t1 - t0:.2f} seconds')
-    outputs = llm(prompts)
+    outputs = llm(prompts, use_cache=False)
     t2 = time.time()
     print(f'Inference completed in {t2 - t1:.2f} seconds')
     
@@ -71,6 +70,7 @@ story_text = open(os.path.expanduser('~/automated-brain-explanations/data/exampl
 ngrams = imodelsx.util.generate_ngrams_list(story_text, ngrams=10)
 
 if __name__ == '__main__':
+    from neuro.features.questions.gpt4 import QS_35_STABLE
     prompt_template = 'Input: {example}\nQuestion: {question} Answer yes or no.'
     question = QS_35_STABLE[0]
     prompts = [prompt_template.format(example=ngram, question=question) for ngram in ngrams]
