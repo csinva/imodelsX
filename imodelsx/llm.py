@@ -23,10 +23,8 @@ import time
 from tqdm import tqdm
 
 HF_TOKEN = None
-if 'HF_TOKEN' in os.environ:
-    HF_TOKEN = os.environ.get("HF_TOKEN")
-elif os.path.exists(expanduser('~/.HF_TOKEN')):
-    HF_TOKEN = open(expanduser('~/.HF_TOKEN'), 'r').read().strip()
+if os.path.exists(expanduser('~/.HF_TOKEN')):
+    os.environ['HF_TOKEN'] = open(expanduser('~/.HF_TOKEN'), 'r').read().strip()
 '''
 Example usage:
 # gpt-4, gpt-35-turbo, meta-llama/Llama-2-70b-hf, mistralai/Mistral-7B-v0.1
@@ -63,6 +61,9 @@ def get_llm(
     if checkpoint.startswith("gpt-3") or checkpoint.startswith("gpt-4"):
         return LLM_Chat(checkpoint, seed, role, CACHE_DIR)
     elif 'meta-llama' in checkpoint and 'Instruct' in checkpoint:
+        if os.environ['HF_TOKEN'] is None:
+            raise ValueError(
+                "You must set the HF_TOKEN environment variable to use this model.")
         return LLM_HF_Pipeline(checkpoint, CACHE_DIR)
     else:
         # warning: this sets torch.manual_seed(seed)
@@ -247,14 +248,14 @@ def load_tokenizer(checkpoint: str) -> transformers.PreTrainedTokenizer:
     if "facebook/opt" in checkpoint:
         # opt can't use fast tokenizer
         tokenizer = AutoTokenizer.from_pretrained(
-            checkpoint, use_fast=False, padding_side='left', token=HF_TOKEN)
+            checkpoint, use_fast=False, padding_side='left', token=os.environ['HF_TOKEN'])
     elif "PMC_LLAMA" in checkpoint:
         tokenizer = transformers.LlamaTokenizer.from_pretrained(
-            "chaoyi-wu/PMC_LLAMA_7B", padding_side='left', token=HF_TOKEN)
+            "chaoyi-wu/PMC_LLAMA_7B", padding_side='left', token=os.environ['HF_TOKEN'])
     else:
         # , use_fast=True)
         tokenizer = AutoTokenizer.from_pretrained(
-            checkpoint, padding_side='left', use_fast=True, token=HF_TOKEN)
+            checkpoint, padding_side='left', use_fast=True, token=os.environ['HF_TOKEN'])
 
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
@@ -285,7 +286,7 @@ def load_hf_model(checkpoint: str) -> transformers.PreTrainedModel:
             checkpoint,
             torch_dtype=torch.float16,
             device_map="auto",
-            token=HF_TOKEN,
+            token=os.environ['HF_TOKEN'],
             offload_folder="offload",
         )
     elif 'microsoft/phi' in checkpoint:
@@ -299,7 +300,7 @@ def load_hf_model(checkpoint: str) -> transformers.PreTrainedModel:
             checkpoint,
             device_map="auto",
             torch_dtype=torch.float16,
-            token=HF_TOKEN,
+            token=os.environ['HF_TOKEN'],
         )
 
 
