@@ -7,7 +7,7 @@ from tqdm import tqdm
 import imodelsx.llm
 import pandas as pd
 import warnings
-
+from transformers import AutoTokenizer
 
 class QAEmb:
     def __init__(
@@ -29,10 +29,13 @@ class QAEmb:
             'gpt2-xl',
             'mistralai/Mistral-7B-Instruct-v0.2',
             'mistralai/Mixtral-8x7B-Instruct-v0.1',
+            'mistralai/Ministral-8B-Instruct-2410',
+            'google/gemma-7b-it',
+            'google/gemma-2-9b-it',
+            "Qwen/Qwen3-8B",
             'meta-llama/Meta-Llama-3-8B-Instruct',
             'meta-llama/Meta-Llama-3-8B-Instruct-fewshot',
             'meta-llama/Meta-Llama-3-8B-Instruct-refined',
-            'google/gemma-7b-it',
             'meta-llama/Meta-Llama-3-70B-Instruct',
             'meta-llama/Meta-Llama-3-70B-Instruct-fewshot',
         ]
@@ -41,7 +44,7 @@ class QAEmb:
                 f"Checkpoint {checkpoint} has not been tested. You may want to check that everything is running smoothly.")
         self.questions = questions
         if 'mistral' in checkpoint and 'Instruct' in checkpoint:
-            self.prompt = "<s>[INST]'Input text: {example}\nQuestion: {question}\nAnswer with yes or no, then give an explanation.[/INST]"
+            self.prompt = "<s>[INST]Input text: {example}\nQuestion: {question}\nAnswer with yes or no, then give an explanation.[/INST]"
             self.checkpoint = checkpoint
         elif 'Meta-Llama-3' in checkpoint and 'Instruct' in checkpoint:
             if '-refined' in checkpoint:
@@ -53,6 +56,10 @@ class QAEmb:
             else:
                 self.prompt = '<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a concise, helpful assistant.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nInput text: {example}\nQuestion: {question}\nAnswer with yes or no, then give an explanation.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n'
                 self.checkpoint = checkpoint
+        elif 'Qwen' in checkpoint:
+            self.prompt = '<|im_start|>user\nInput: {example}\nQuestion: {question} Answer yes or no.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n'
+            # self.prompt = 'Input: {example}\nQuestion: {question} Answer yes or no.\nAnswer:'
+            self.checkpoint = checkpoint
         else:
             self.prompt = 'Input: {example}\nQuestion: {question} Answer yes or no.\nAnswer:'
             self.checkpoint = checkpoint
@@ -139,22 +146,22 @@ class QAEmb:
 
 def get_sample_questions_and_examples():
     questions = [
-        # 'Is the input related to food preparation?',
-        # 'Does the input mention laughter?',
+        'Is the input related to food preparation?',
+        'Does the input mention laughter?',
         # 'Is there an expression of surprise?',
         # 'Is there a depiction of a routine or habit?',
         # 'Is there stuttering or uncertainty in the input?',
-        # 'Does the input contain a number?',
+        'Does the input contain a number?',
         'Is time mentioned in the input?',
         'Does the sentence contain a negation?',
     ]
     examples = [
-        # 'i sliced some cucumbers and then moved on to what was next',
-        # 'the kids were giggling about the silly things they did',
+        'i sliced some cucumbers and then moved on to what was next',
+        'the kids were giggling about the silly things they did',
         # 'and i was like whoa that was unexpected',
         # 'walked down the path like i always did',
         # 'um no um then it was all clear',
-        # 'three four five',
+        'three four five',
         'two hours in the future',
         'it was not a good movie',
     ]
@@ -165,11 +172,7 @@ if __name__ == '__main__':
     questions, examples = get_sample_questions_and_examples()
     qa_embedder = QAEmb(
         questions=questions,
-        # checkpoint='meta-llama/Meta-Llama-3-8B-Instruct',
-        # checkpoint='mistralai/Mistral-7B-Instruct-v0.2',
-        # checkpoint='google/gemma-7b-it',
-        # checkpoint='mistralai/Mixtral-8x7B-Instruct-v0.1',
-        checkpoint='gpt-4o-mini',
+        checkpoint="Qwen/Qwen3-8B",
         batch_size=64,
         CACHE_DIR=None,
     )
@@ -179,9 +182,18 @@ if __name__ == '__main__':
     print(embs)
 
     # check answers
-    assert np.all(embs[np.diag_indices(5)]
+    assert np.all(embs[np.diag_indices(min(len(embs), 5))]
                   ), 'diagonal answers should be yes for these examples'
 
     # check that speed_up_with_unique_calls works
     embs_fast = qa_embedder(examples, speed_up_with_unique_calls=True)
     assert np.allclose(embs, embs_fast), 'results should be the same'
+
+
+#     tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-8B')
+#     messages = [
+#         {"role": "user", "content": "Input: {example}\nQuestion: {question} Answer yes or no."},
+#     ]
+#     print(repr(tokenizer.apply_chat_template(messages, tokenize=False, enable_thinking=False, add_generation_prompt=True,
+# )))
+

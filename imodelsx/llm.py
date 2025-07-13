@@ -590,7 +590,11 @@ class LLM_HF:
                     out_tokens = outputs[i]
                     out_str = self.tokenizer_.decode(
                         out_tokens, skip_special_tokens=True)
-                    if 'mistral' in self.checkpoint and 'Instruct' in self.checkpoint:
+                    if 'Ministral' in self.checkpoint and 'Instruct' in self.checkpoint:
+                        out_str = out_str[len(prompt[i]) - 16:]
+                    elif 'Qwen' in self.checkpoint:
+                        out_str = out_str[len(prompt[i]) - 34:]
+                    elif 'mistral' in self.checkpoint and 'Instruct' in self.checkpoint:
                         out_str = out_str[len(prompt[i]) - 2:]
                     elif 'Meta-Llama-3' in self.checkpoint and 'Instruct' in self.checkpoint:
                         # print('here')
