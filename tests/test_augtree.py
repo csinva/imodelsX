@@ -7,7 +7,7 @@ import imodelsx.data
 import imodelsx.augtree.ensemble
 
 
-def seed_and_get_tiny_data(seed=1, classification_or_regression='classification'):
+def _seed_and_get_tiny_data(seed=1, classification_or_regression='classification'):
     np.random.seed(seed)
     random.seed(seed)
     if classification_or_regression == 'classification':
@@ -25,7 +25,7 @@ def seed_and_get_tiny_data(seed=1, classification_or_regression='classification'
     return X_train_text, X_test_text, y_train, X_train, y_test, feature_names
 
 
-def test_stump_always_improves_acc():
+def _test_stump_always_improves_acc():
     for classification_or_regression in ['classification', 'regression']: # classification, regression
         stump_class = imodelsx.augtree.stump.StumpClassifier if classification_or_regression == 'classification' else imodelsx.augtree.stump.StumpRegressor
         for seed in range(2):
@@ -55,7 +55,7 @@ def test_stump_always_improves_acc():
                 preds_text == preds_tab), 'predicting with text and tabular should give same results'
 
 
-def test_tree_monotonic_in_depth(refinement_strategy='None', max_features=1, embs_manager=None):
+def _test_tree_monotonic_in_depth(refinement_strategy='None', max_features=1, embs_manager=None):
     for classification_or_regression in ['regression', 'classification']:
         X_train_text, X_test_text, y_train, X_train, y_test, feature_names = \
             seed_and_get_tiny_data(classification_or_regression=classification_or_regression)
@@ -84,7 +84,7 @@ def test_tree_monotonic_in_depth(refinement_strategy='None', max_features=1, emb
             print(m)
             print('\n')
 
-def test_tree_ensemble(
+def _test_tree_ensemble(
     n_estimators=2,
     max_depth=2, max_features=1, refinement_strategy='None'):
     X_train_text, X_test_text, y_train, X_train, y_test, feature_names = seed_and_get_tiny_data()
@@ -108,15 +108,15 @@ if __name__ == '__main__':
 
 
     for refinement_strategy in ['None', 'llm']: #['None', 'llm']:
-        test_tree_monotonic_in_depth(
+        _test_tree_monotonic_in_depth(
             refinement_strategy=refinement_strategy,
             max_features=1)
     
     # embs_manager = imodelsx.augtree.embed.EmbsManager()
-    # test_tree_monotonic_in_depth(
+    # _test_tree_monotonic_in_depth(
     #     refinement_strategy='embs',
     #     max_features=1,
     #     embs_manager=embs_manager
     #     )
     
-    # test_tree_ensemble()
+    # _test_tree_ensemble()
