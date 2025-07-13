@@ -8,6 +8,8 @@ import imodelsx.llm
 import pandas as pd
 import warnings
 from transformers import AutoTokenizer
+from transformers.utils import logging
+
 
 class QAEmb:
     def __init__(
@@ -70,6 +72,8 @@ class QAEmb:
         self.llm = imodelsx.llm.get_llm(self.checkpoint, CACHE_DIR=CACHE_DIR)
         self.batch_size = batch_size
         self.use_cache = use_cache
+
+        logging.set_verbosity_error()
 
     def __call__(self, examples: List[str], verbose=True, debug_answering_correctly=False,
                  speed_up_with_unique_calls=False) -> np.ndarray:

@@ -66,11 +66,13 @@ def time_batch_inference_hf(prompts):
     print(f'Inference completed in {t2 - t1:.2f} seconds')
     
 
-story_text = open(os.path.expanduser('~/automated-brain-explanations/data/example_story_with_punctuation.txt'), 'r').read()
-ngrams = imodelsx.util.generate_ngrams_list(story_text, ngrams=10)
 
 if __name__ == '__main__':
     from neuro.features.questions.gpt4 import QS_35_STABLE
+    
+    story_text = open(os.path.expanduser('~/automated-brain-explanations/data/example_story_with_punctuation.txt'), 'r').read()
+    ngrams = imodelsx.util.generate_ngrams_list(story_text, ngrams=10)
+    
     prompt_template = 'Input: {example}\nQuestion: {question} Answer yes or no.'
     question = QS_35_STABLE[0]
     prompts = [prompt_template.format(example=ngram, question=question) for ngram in ngrams]
