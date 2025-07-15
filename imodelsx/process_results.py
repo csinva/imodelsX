@@ -1,8 +1,7 @@
 import argparse
 import sys
 import os.path
-from os.path import dirname, join
-from os.path import join
+from os.path import dirname, join, expanduser, basename, abspath
 from tqdm import tqdm
 import pandas as pd
 import pickle as pkl
@@ -78,8 +77,12 @@ def fill_missing_args_with_default(df, experiment_filename="01_train_model.py"):
     """
     if experiment_filename.endswith(".py"):
         experiment_filename = experiment_filename[:-3]
-    sys.path.append(os.path.dirname(experiment_filename))
-    train_script = __import__(os.path.basename(experiment_filename))
+
+    # this is kind of weird -- assumes the script is in the same level as the notebook that calls this function
+    sys.path.append(dirname(experiment_filename))
+    # or the nb can be one level below
+    sys.path.append('../' + dirname(experiment_filename))
+    train_script = __import__(basename(experiment_filename))
     parser = train_script.add_main_args(argparse.ArgumentParser())
     parser = train_script.add_computational_args(parser)
     args = parser.parse_args([])
