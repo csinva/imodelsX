@@ -38,7 +38,7 @@ LLM_CONFIG = {
     # how long to wait before recalling a failed llm call (can set to None)
     "LLM_REPEAT_DELAY": 10,
     "CACHE_DIR": join(
-        os.path.expanduser("~"), "clin/CACHE_OPENAI"
+        os.path.expanduser("~"), ".CACHE_LLM"
     ),  # path to save cached llm outputs
     "LLAMA_DIR": join(
         os.path.expanduser("~"), "llama"
