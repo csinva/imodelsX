@@ -4,6 +4,7 @@ import json
 import logging
 from os.path import join
 from dict_hash import sha256
+import subprocess
 
 """Handles utilities for saving/caching.
 This file probably does not need to be edited.
@@ -63,3 +64,10 @@ def check_cached(save_dir_unique_hash, save_dir, fname_results='results.pkl') ->
         except:
             pass
     return False
+
+def get_git_commit_id():
+    try:
+        commit_id = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
+        return commit_id
+    except subprocess.CalledProcessError:
+        return None
