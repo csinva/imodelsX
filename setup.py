@@ -19,6 +19,7 @@ required_pypi = [
     'torch',
     'tqdm',
     'transformers[torch] >= 4.23.1',
+    'pyyaml',
 
 
     # 'InstructorEmbedding', # embeddings for emb_diff_module

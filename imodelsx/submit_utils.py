@@ -11,6 +11,7 @@ import traceback
 import numpy as np
 import os
 from os.path import dirname, join
+import yaml
 
 from dict_hash import sha256
 submit_utils_dir = dirname(__file__)
@@ -118,8 +119,6 @@ def run_args_list(
         process_count_per_node = amlt_kwargs.get('process_count_per_node', 1)
         amlt_dir = dirname(amlt_kwargs['amlt_file'])
         repo_dir = dirname(amlt_dir)
-        amlt_text = open(amlt_kwargs['amlt_file'], 'r').read()
-        assert amlt_text.endswith('jobs:'), 'amlt file must end with jobs:'
         script_name = script_name.replace(repo_dir, '').strip('/')
         param_str_list = [_param_str_from_args(
             args, cmd_python, script_name) for args in args_list]
@@ -130,29 +129,32 @@ def run_args_list(
                 for param_str in param_str_list
             ]
 
-        # save yaml file with multiple jobs in logs dir and run with amlt
+        # read and update amlt yaml file
+        with open(amlt_kwargs['amlt_file'], 'r') as f:
+            amlt_yaml = yaml.safe_load(f)
+
+        if 'target___name' in amlt_kwargs:
+            amlt_yaml['target']['name'] = amlt_kwargs['target___name']
+
+        jobs = []
+        for i, param_str in enumerate(param_str_list):
+            jobs.append({
+                'name': f'{sku}_job_{i}',
+                'process_count_per_node': process_count_per_node,
+                'sku': sku,
+                'command': [f'echo "{param_str}"', param_str],
+            })
+        amlt_yaml['jobs'] = jobs
+        amlt_text = yaml.dump(amlt_yaml, default_flow_style=False)
+        amlt_text = amlt_text.replace('$CONFIG_DIR', '$CONFIG_DIR/..')
+
+
+        # save yaml file in logs dir and run with amlt
         logs_dir = join(amlt_dir, 'logs')
         os.makedirs(logs_dir, exist_ok=True)
-        job_template = '''
-- name: {name}
-  process_count_per_node: {process_count_per_node}
-  sku: {sku}
-  command:
-  - echo "{param_str}"
-  - {param_str}'''
         out_file = join(logs_dir, sha256({'s': str(param_str_list)}) + '.yaml')
-        s = amlt_text
-        for i, param_str in enumerate(param_str_list):
-            job_text = job_template.format(
-                name=f'{sku}_job_{i}',
-                process_count_per_node=process_count_per_node,
-                sku=sku,
-                param_str=param_str
-            )
-            s = s + job_text
-        s = s.replace('$CONFIG_DIR', '$CONFIG_DIR/..')
         with open(out_file, 'w') as f:
-            f.write(s)
+            f.write(amlt_text)
         subprocess.run(
             f'amlt run {out_file}', shell=True, check=True,
         )
