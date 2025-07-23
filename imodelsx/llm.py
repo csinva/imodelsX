@@ -140,12 +140,12 @@ class LLM_Chat:
     def __call__(
         self,
         prompts_list: List[Dict[str, str]],
-        max_new_tokens=250,
+        max_completion_tokens=250,
         stop=None,
         functions: List[Dict] = None,
         return_str=True,
         verbose=True,
-        temperature=0.1,
+        temperature=0,
         frequency_penalty=0.25,
         use_cache=True,
         return_false_if_not_cached=False,
@@ -193,7 +193,7 @@ class LLM_Chat:
         hash_str = hashlib.sha256(dict_as_str.encode()).hexdigest()
         cache_file = join(
             self.cache_dir,
-            f"chat__{hash_str}__num_tok={max_new_tokens}.pkl",
+            f"chat__{hash_str}__num_tok={max_completion_tokens}.pkl",
         )
         if os.path.exists(cache_file) and use_cache:
             if verbose:
@@ -212,7 +212,7 @@ class LLM_Chat:
         kwargs = dict(
             model=self.checkpoint,
             messages=prompts_list,
-            max_tokens=max_new_tokens,
+            max_completion_tokens=max_completion_tokens,
             temperature=temperature,
             top_p=1,
             frequency_penalty=frequency_penalty,  # maximum is 2
