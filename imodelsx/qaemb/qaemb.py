@@ -47,28 +47,24 @@ class QAEmb:
         self.questions = questions
         if 'mistral' in checkpoint and 'Instruct' in checkpoint:
             self.prompt = "<s>[INST]Input text: {example}\nQuestion: {question}\nAnswer with yes or no, then give an explanation.[/INST]"
-            self.checkpoint = checkpoint
         elif 'Meta-Llama-3' in checkpoint and 'Instruct' in checkpoint:
             if '-refined' in checkpoint:
                 self.prompt = '<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a helpful assistant.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nRead the input then answer a question about the input.\n**Input**: "{example}"\n**Question**: {question}\nAnswer with yes or no, then give an explanation.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n**Answer**:'
-                self.checkpoint = checkpoint.replace('-refined', '')
             elif '-fewshot' in checkpoint:
                 self.prompt = '<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a concise, helpful assistant.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nInput text: and i just kept on laughing because it was so\nQuestion: Does the input mention laughter?\nAnswer with Yes or No.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\nYes<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nInput text: what a crazy day things just kept on happening\nQuestion: Is the sentence related to food preparation?\nAnswer with Yes or No.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\nNo<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nInput text: i felt like a fly on the wall just waiting for\nQuestion: Does the text use a metaphor or figurative language?\nAnswer with Yes or No.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\nYes<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nInput text: he takes too long in there getting the pans from\nQuestion: Is there a reference to sports?\nAnswer with Yes or No.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\nNo<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nInput text: was silent and lovely and there was no sound except\nQuestion: Is the sentence expressing confusion or uncertainty?\nAnswer with Yes or No.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\nNo<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nInput text: {example}\nQuestion: {question}\nAnswer with Yes or No.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n'
-                self.checkpoint = checkpoint.replace('-fewshot', '')
             else:
                 self.prompt = '<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a concise, helpful assistant.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nInput text: {example}\nQuestion: {question}\nAnswer with yes or no, then give an explanation.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n'
-                self.checkpoint = checkpoint
         elif 'Qwen' in checkpoint:
             self.prompt = '<|im_start|>user\nInput: {example}\nQuestion: {question} Answer yes or no.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n'
             # self.prompt = 'Input: {example}\nQuestion: {question} Answer yes or no.\nAnswer:'
-            self.checkpoint = checkpoint
         else:
             self.prompt = 'Input: {example}\nQuestion: {question} Answer yes or no.\nAnswer:'
-            self.checkpoint = checkpoint
         if prompt_custom:
             assert '{example}' in prompt_custom and '{question}' in prompt_custom, "Prompt must contain '{example}' and '{question}'"
             self.prompt = prompt_custom
 
+        # clean up checkpoint before passing
+        self.checkpoint = checkpoint.replace('-fewshot', '').replace('-refined', '')
         self.llm = imodelsx.llm.get_llm(self.checkpoint, CACHE_DIR=CACHE_DIR)
         self.batch_size = batch_size
         self.use_cache = use_cache
@@ -107,7 +103,7 @@ class QAEmb:
             for question in self.questions
         ]
 
-        if self.llm.checkpoint.startswith('gpt-4'):
+        if self.checkpoint.startswith('gpt-4'):
             answers = [
                 self.llm(
                     programs[i],
