@@ -58,7 +58,7 @@ def get_llm(
         LLM_CONFIG["LLM_REPEAT_DELAY"] = repeat_delay
 
     """Get an LLM with a call function and caching capabilities"""
-    if checkpoint.startswith("gpt-3") or checkpoint.startswith("gpt-4"):
+    if any(checkpoint.startswith(prefix) for prefix in ["gpt-3", "gpt-4", "o3", "o4"]):
         return LLM_Chat(checkpoint, seed, role, CACHE_DIR)
     elif 'meta-llama' in checkpoint and 'Instruct' in checkpoint:
         if os.environ['HF_TOKEN'] is None:
@@ -183,17 +183,16 @@ class LLM_Chat:
         prompts_list_dict = {
             str(i): sorted(v.items()) for i, v in enumerate(prompts_list)
         }
-        if not self.checkpoint == "gpt-3.5-turbo":
-            prompts_list_dict["checkpoint"] = self.checkpoint
-        if functions is not None:
-            prompts_list_dict["functions"] = functions
-        if temperature > 0.1:
-            prompts_list_dict["temperature"] = temperature
+        prompts_list_dict["checkpoint"] = self.checkpoint
+        prompts_list_dict["temperature"] = temperature
+        prompts_list_dict["functions"] = functions
+        prompts_list_dict["max_completion_tokens"] = max_completion_tokens
+        
         dict_as_str = json.dumps(prompts_list_dict, sort_keys=True)
         hash_str = hashlib.sha256(dict_as_str.encode()).hexdigest()
         cache_file = join(
             self.cache_dir,
-            f"chat__{hash_str}__num_tok={max_completion_tokens}.pkl",
+            f"chat__{hash_str}.pkl",
         )
         if os.path.exists(cache_file) and use_cache:
             if verbose:
@@ -224,6 +223,10 @@ class LLM_Chat:
         # print('kwargs', kwargs)
         if functions is not None:
             kwargs["functions"] = functions
+        if self.checkpoint.startswith('o'):
+            del kwargs['temperature']  # o3 and o4 don't support temperature
+            del kwargs['frequency_penalty']
+            del kwargs['top_p']
 
         response = self.client.chat.completions.create(
             **kwargs,
