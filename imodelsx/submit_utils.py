@@ -136,6 +136,15 @@ def run_args_list(
         if 'target___name' in amlt_kwargs:
             amlt_yaml['target']['name'] = amlt_kwargs['target___name']
 
+        uai = ''
+        if '_AZUREML_SINGULARITY_JOB_UAI' in amlt_kwargs:
+            uai = amlt_kwargs['_AZUREML_SINGULARITY_JOB_UAI']
+        elif '_AZUREML_SINGULARITY_JOB_UAI' in os.environ:
+            uai = os.environ['_AZUREML_SINGULARITY_JOB_UAI']
+        else:
+            uai = '/subscriptions/2cd190bb-b42a-477c-b1bb-2f20932d8dc5/resourceGroups/chansingh/providers/Microsoft.ManagedIdentity/userAssignedIdentities/chansinghid'
+
+
         jobs = []
         for i, param_str in enumerate(param_str_list):
             jobs.append({
@@ -143,6 +152,8 @@ def run_args_list(
                 'process_count_per_node': process_count_per_node,
                 'sku': sku,
                 'command': [f'echo "{param_str}"', param_str],
+                'identity': 'managed',
+                'submit_args': {'env': {'_AZUREML_SINGULARITY_JOB_UAI': uai}},
             })
         amlt_yaml['jobs'] = jobs
         amlt_text = yaml.dump(amlt_yaml, default_flow_style=False)
