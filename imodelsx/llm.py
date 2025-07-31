@@ -110,18 +110,20 @@ class LLM_Chat:
         self.checkpoint = checkpoint
         self.role = role
         from openai import AzureOpenAI
-        from azure.identity import DefaultAzureCredential, get_bearer_token_provider, AzureCliCredential
+        from azure.identity import ChainedTokenCredential, AzureCliCredential, ManagedIdentityCredential, get_bearer_token_provider
 
         try:
-            token_provider = get_bearer_token_provider(
-                AzureCliCredential(),
-                "https://cognitiveservices.azure.com/.default"
-            )
+            client_id = os.environ.get("AZURE_CLIENT_ID")
+            scope = "https://cognitiveservices.azure.com/.default"
+            credential = get_bearer_token_provider(ChainedTokenCredential(
+                AzureCliCredential(), # first check local
+                ManagedIdentityCredential(client_id=client_id)
+            ), scope)
             if 'audio' in checkpoint:
                 self.client = AzureOpenAI(
                     api_version="2025-01-01-preview",
                     azure_endpoint="https://neuroaiservice.cognitiveservices.azure.com/openai/deployments/gpt-4o-audio-preview/chat/completions?api-version=2025-01-01-preview",
-                    azure_ad_token_provider=token_provider,
+                    azure_ad_token_provider=credential,
                     timeout=10,
                     max_retries=3,
                 )
@@ -129,7 +131,7 @@ class LLM_Chat:
                 self.client = AzureOpenAI(
                     api_version="2025-01-01-preview",
                     azure_endpoint="https://dl-openai-1.openai.azure.com/",
-                    azure_ad_token_provider=token_provider
+                    azure_ad_token_provider=credential
                 )
         except Exception as e:
             print('failed to create client', e)
