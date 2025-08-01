@@ -136,6 +136,9 @@ def run_args_list(
         if 'target___name' in amlt_kwargs:
             amlt_yaml['target']['name'] = amlt_kwargs['target___name']
 
+        if 'environment___image' in amlt_kwargs:
+            amlt_yaml['environment']['image'] = amlt_kwargs['environment___image']
+
         uai = ''
         if '_AZUREML_SINGULARITY_JOB_UAI' in amlt_kwargs:
             uai = amlt_kwargs['_AZUREML_SINGULARITY_JOB_UAI']

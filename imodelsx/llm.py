@@ -40,9 +40,6 @@ LLM_CONFIG = {
     "CACHE_DIR": join(
         os.path.expanduser("~"), ".CACHE_LLM"
     ),  # path to save cached llm outputs
-    "LLAMA_DIR": join(
-        os.path.expanduser("~"), "llama"
-    ),  # path to extracted llama weights
 }
 
 
@@ -52,7 +49,6 @@ def get_llm(
     role: str = None,
     repeat_delay: Optional[float] = None,
     CACHE_DIR=LLM_CONFIG["CACHE_DIR"],
-    LLAMA_DIR=LLM_CONFIG["LLAMA_DIR"],
 ):
     if repeat_delay is not None:
         LLM_CONFIG["LLM_REPEAT_DELAY"] = repeat_delay
@@ -67,7 +63,7 @@ def get_llm(
         return LLM_HF_Pipeline(checkpoint, CACHE_DIR)
     else:
         # warning: this sets torch.manual_seed(seed)
-        return LLM_HF(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR, LLAMA_DIR=LLAMA_DIR)
+        return LLM_HF(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR)
 
 
 def repeatedly_call_with_delay(llm_call):
@@ -454,7 +450,7 @@ class LLM_Chat_Audio(LLM_Chat):
 
 
 class LLM_HF:
-    def __init__(self, checkpoint, seed, CACHE_DIR, LLAMA_DIR=None):
+    def __init__(self, checkpoint, seed, CACHE_DIR):
         self.tokenizer_ = load_tokenizer(checkpoint)
         self.model_ = load_hf_model(checkpoint)
         self.checkpoint = checkpoint
