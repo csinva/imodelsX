@@ -147,6 +147,7 @@ class LLM_Chat:
         frequency_penalty=0.25,
         use_cache=True,
         return_false_if_not_cached=False,
+        seed=1,
     ):
         """
         prompts_list: list of dicts, each dict has keys 'role' and 'content'
@@ -185,6 +186,8 @@ class LLM_Chat:
         prompts_list_dict["temperature"] = temperature
         prompts_list_dict["functions"] = functions
         prompts_list_dict["max_completion_tokens"] = max_completion_tokens
+        if not seed == 1:
+            prompts_list_dict["seed"] = seed
         
         dict_as_str = json.dumps(prompts_list_dict, sort_keys=True)
         hash_str = hashlib.sha256(dict_as_str.encode()).hexdigest()
