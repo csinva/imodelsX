@@ -39,8 +39,12 @@ def get_results_df(results_dir, use_cached=False, results_fname='results.pkl', s
             elif results_fname.endswith(".json"):
                 result = json.load(
                     open(join(results_dir, dir_name, results_fname), "r"))
-            ser = pd.Series(result)
-            results_list.append(ser)
+            if isinstance(result, list):
+                sers = [pd.Series(r) for r in result]
+                results_list.extend(sers)
+            else:
+                ser = pd.Series(result)
+                results_list.append(ser)
         except:
             print(
                 f'Error loading {join(results_dir, dir_name, results_fname)}')
