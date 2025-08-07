@@ -54,7 +54,7 @@ def get_llm(
         LLM_CONFIG["LLM_REPEAT_DELAY"] = repeat_delay
 
     """Get an LLM with a call function and caching capabilities"""
-    if any(checkpoint.startswith(prefix) for prefix in ["gpt-3", "gpt-4", "o3", "o4"]):
+    if any(checkpoint.startswith(prefix) for prefix in ["gpt-3", "gpt-4", "o3", "o4", "gpt-5"]):
         return LLM_Chat(checkpoint, seed, role, CACHE_DIR)
     elif 'meta-llama' in checkpoint and 'Instruct' in checkpoint:
         if os.environ['HF_TOKEN'] is None:
@@ -122,6 +122,12 @@ class LLM_Chat:
                     azure_ad_token_provider=credential,
                     timeout=10,
                     max_retries=3,
+                )
+            elif 'gpt-5' in checkpoint:
+                self.client = AzureOpenAI(
+                    api_version="2025-01-01-preview",
+                    azure_endpoint="https://dl-openai-3.openai.azure.com/",
+                    azure_ad_token_provider=credential
                 )
             else:
                 self.client = AzureOpenAI(
