@@ -153,6 +153,7 @@ class LLM_Chat:
         frequency_penalty=0.25,
         use_cache=True,
         return_false_if_not_cached=False,
+        reasoning_effort='high',
         seed=1,
     ):
         """
@@ -194,6 +195,8 @@ class LLM_Chat:
         prompts_list_dict["max_completion_tokens"] = max_completion_tokens
         if not seed == 1:
             prompts_list_dict["seed"] = seed
+        if not reasoning_effort == 'high':
+            prompts_list_dict['reasoning_effort'] = reasoning_effort
         
         dict_as_str = json.dumps(prompts_list_dict, sort_keys=True)
         hash_str = hashlib.sha256(dict_as_str.encode()).hexdigest()
@@ -224,16 +227,21 @@ class LLM_Chat:
             frequency_penalty=frequency_penalty,  # maximum is 2
             presence_penalty=0,
             stop=stop,
+            reasoning_effort=reasoning_effort,
             # logprobs=True,
             # stop=["101"]
         )
         # print('kwargs', kwargs)
         if functions is not None:
             kwargs["functions"] = functions
-        if self.checkpoint.startswith('o'):
+        if self.checkpoint.startswith('o') or self.checkpoint == 'gpt-5':
             del kwargs['temperature']  # o3 and o4 don't support temperature
             del kwargs['frequency_penalty']
             del kwargs['top_p']
+        
+        if not 'gpt-5' in self.checkpoint:
+            del kwargs['reasoning_effort']
+
 
         response = self.client.chat.completions.create(
             **kwargs,
@@ -666,9 +674,9 @@ class LLMEmbs:
 
 
 if __name__ == "__main__":
-    # llm = get_llm("text-davinci-003")
-    # text = llm("What do these have in common? Horse, ")
-    # print("text", text)
+    llm = get_llm("gpt-5")
+    text = llm("What is the capital of france?", use_cache=False)
+    print("text", text)
 
     # llm = get_llm("gpt2")
     # text = llm(
@@ -705,13 +713,13 @@ if __name__ == "__main__":
     #           use_cache=False, target_token_strs=target_token_strs)
 
     # FORCE WORDS ##########
-    llm = get_llm("gpt2")
-    prompts = ['roses are red, violets are',
-               'may the force be with', 'trees are usually']
-    # prompts = ['may the force be with', 'so may the light be with']
-    target_token_strs = [' green', ' you', 'orange']
-    llm._check_target_token_strs(target_token_strs)
-    ans = llm(prompts, use_cache=False,
-              return_next_token_prob_scores=True, target_token_strs=target_token_strs,
-              return_top_target_token_str=True)
-    print('ans', ans)
+    # llm = get_llm("gpt2")
+    # prompts = ['roses are red, violets are',
+    #            'may the force be with', 'trees are usually']
+    # # prompts = ['may the force be with', 'so may the light be with']
+    # target_token_strs = [' green', ' you', 'orange']
+    # llm._check_target_token_strs(target_token_strs)
+    # ans = llm(prompts, use_cache=False,
+    #           return_next_token_prob_scores=True, target_token_strs=target_token_strs,
+    #           return_top_target_token_str=True)
+    # print('ans', ans)
