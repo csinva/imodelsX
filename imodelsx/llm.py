@@ -675,7 +675,7 @@ class LLMEmbs:
 
 if __name__ == "__main__":
     llm = get_llm("gpt-5")
-    text = llm("What is the capital of france?", use_cache=False)
+    text = llm("What is the capital of spain?", use_cache=False)
     print("text", text)
 
     # llm = get_llm("gpt2")

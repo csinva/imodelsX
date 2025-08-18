@@ -73,6 +73,10 @@ def run_args_list(
     else:
         n_gpus = len(gpu_ids)
         _validate_run_arguments(n_cpus, gpu_ids)
+        
+        # custom processing for chandan's local jobs
+        if 'chansingh' in os.path.expanduser('~'):
+            cmd_python = cmd_python.replace('.venv/bin/python', 'python')
 
     # adjust order
     if shuffle:
