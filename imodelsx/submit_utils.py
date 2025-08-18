@@ -139,6 +139,8 @@ def run_args_list(
         if 'environment___image' in amlt_kwargs:
             amlt_yaml['environment']['image'] = amlt_kwargs['environment___image']
 
+        env = amlt_kwargs.get('env', {})
+
         uai = ''
         if '_AZUREML_SINGULARITY_JOB_UAI' in amlt_kwargs:
             uai = amlt_kwargs['_AZUREML_SINGULARITY_JOB_UAI']
@@ -146,7 +148,7 @@ def run_args_list(
             uai = os.environ['_AZUREML_SINGULARITY_JOB_UAI']
         else:
             uai = '/subscriptions/2cd190bb-b42a-477c-b1bb-2f20932d8dc5/resourceGroups/chansingh/providers/Microsoft.ManagedIdentity/userAssignedIdentities/chansinghid'
-
+        env['_AZUREML_SINGULARITY_JOB_UAI'] = uai
 
         jobs = []
         for i, param_str in enumerate(param_str_list):
@@ -156,7 +158,7 @@ def run_args_list(
                 'sku': sku,
                 'command': [f'echo "{param_str}"', param_str],
                 'identity': 'managed',
-                'submit_args': {'env': {'_AZUREML_SINGULARITY_JOB_UAI': uai}},
+                'submit_args': {'env': env},
             })
         amlt_yaml['jobs'] = jobs
         amlt_text = yaml.dump(amlt_yaml, default_flow_style=False)
