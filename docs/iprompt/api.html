@@ -2,18 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>imodelsx.iprompt.api API documentation</title>
-<meta name="description" content="" />
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
-<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
-<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
 </head>
 <body>
 <main>
@@ -22,958 +36,6 @@
 <h1 class="title">Module <code>imodelsx.iprompt.api</code></h1>
 </header>
 <section id="section-intro">
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">from typing import Callable, Dict, List, Tuple
-
-import datasets
-import functools
-import os
-import random
-import string
-import numpy as np
-import time
-import torch
-import transformers
-import argparse
-from transformers import AutoTokenizer, AutoModel, AutoModelForCausalLM
-from tqdm import tqdm
-from collections import defaultdict
-from imodelsx.iprompt import (
-    AutoPrompt, iPrompt,
-    PrefixLoss, PrefixModel,
-    PromptTunedModel, HotFlip, GumbelPrefixModel
-)
-from imodelsx.iprompt.llm import get_llm
-import pandas as pd
-import logging
-import pickle as pkl
-from torch.utils.data import DataLoader
-from datetime import datetime
-
-
-&#34;&#34;&#34;
-Explaining Patterns in Data with Language Models via Interpretable Autoprompting
-
-Chandan Singh*, John X. Morris*, Jyoti Aneja, Alexander M. Rush, Jianfeng Gao
-https://arxiv.org/abs/2210.01848
-&#34;&#34;&#34;
-
-device = torch.device(&#39;cuda&#39; if torch.cuda.is_available() else &#39;cpu&#39;)
-
-
-model_cls_dict = {
-    &#39;autoprompt&#39;: AutoPrompt,
-    &#39;iprompt&#39;: iPrompt,
-    &#39;gumbel&#39;: GumbelPrefixModel,
-    &#39;hotflip&#39;: HotFlip,
-    &#39;prompt_tune&#39;: PromptTunedModel,
-}
-
-def get_prompts_api(
-        data: List[str], 
-        llm: Callable,
-        prompt_template: str, 
-    ):
-    data_str = random.choice(data)
-    prompt = prompt_template(data=data_str).strip()
-    answer = llm(prompt, max_new_tokens=24)
-    return [answer]
-
-
-def run_iprompt_api(
-    r: Dict[str, List],
-    input_strs: List[str],
-    output_strs: List[str],
-    model: PrefixModel,
-    tokenizer: transformers.PreTrainedTokenizer,
-    llm_api: str,
-    save_dir: str = &#39;results&#39;,
-    lr: float = 1e-4,
-    batch_size: int = 64,
-    max_length: int = 128,
-    n_epochs: int = 100,
-    n_shots: int = 1,
-    single_shot_loss: bool = True,
-    accum_grad_over_epoch: bool = False,
-    max_n_datapoints: int = 10**4,
-    max_n_steps: int = 10**4,
-    epoch_save_interval: int = 1,
-    mask_possible_answers: bool = False,
-    verbose: int = 0,
-):
-    &#34;&#34;&#34;
-    Trains a model, either by optimizing continuous embeddings or finding an optimal discrete embedding.
-
-    Params
-    ------
-    r: dict
-        dictionary of things to save
-    &#34;&#34;&#34;
-
-
-    # remove periods and newlines from the output so we actually use the tokens
-    # for the reranking step in iPrompt
-    output_strs = [s.rstrip().rstrip(&#39;.&#39;) for s in output_strs]
-
-    r[&#39;train_start_time&#39;] = time.time()
-    model.train()
-
-    logging.info(&#34;beginning iPrompt with n_shots = %d&#34;, n_shots)
-
-    assert len(input_strs) == len(
-        output_strs), &#34;input and output must be same length to create input-output pairs&#34;
-    text_strs = list(map(lambda t: f&#39;{t[0]}{t[1]}.&#39;, zip(input_strs, output_strs)))
-    df = pd.DataFrame.from_dict({
-        &#39;input&#39;: input_strs,
-        &#39;output&#39;: output_strs,
-        &#39;text&#39;: text_strs,
-    })
-    if n_shots &gt; 1:
-        d2 = defaultdict(list)
-        for i in range(max_n_datapoints):
-            all_shots = df.sample(n=n_shots, replace=False)
-            d2[&#39;text&#39;].append(&#39;\n\n&#39;.join(all_shots[&#39;text&#39;].values))
-            #
-            last_input = all_shots.tail(n=1)[&#39;input&#39;].values[0]
-            d2[&#39;input&#39;].append(
-                &#39;&#39;.join(all_shots[&#39;text&#39;].values[:-1]) + last_input)
-            d2[&#39;last_input&#39;].append(last_input)
-            #
-            last_output = all_shots.tail(n=1)[&#39;output&#39;].values[0]
-            d2[&#39;output&#39;].append(last_output)
-            #
-        df = pd.DataFrame.from_dict(d2)
-    
-    # shuffle rows
-    if max_n_datapoints &lt; len(df):
-        df = df.sample(n=max_n_datapoints, replace=False)
-    dset = datasets.Dataset.from_pandas(df)
-    dset.shuffle()
-    print(f&#39;iPrompt got {len(dset)} datapoints, now loading model...&#39;)
-
-    model = model.to(device)
-    dataloader = DataLoader(
-        dset, batch_size=batch_size, shuffle=True, drop_last=False)
-
-    prompt_template = &#34;{prompt_start}\n\n{data}\n\n{prompt_end}&#34;
-    prompt_template = functools.partial(
-        prompt_template.format,
-        prompt_start=model.llm_candidate_regeneration_prompt_start,
-        prompt_end=model.llm_candidate_regeneration_prompt_end,
-    )
-    
-    prompts = []
-    # &#34;gpt-3.5-turbo&#34;, &#34;text-curie-001&#34;
-    llm = get_llm( 
-        checkpoint=llm_api, role=&#34;user&#34;)
-    stopping_early = False
-    total_n = 0
-    total_n_steps = 0
-    total_n_datapoints = 0
-    for epoch in range(n_epochs):       
-        print(f&#39;Beginning epoch {epoch}&#39;)
-        pbar = tqdm(enumerate(dataloader), total=len(dataloader))
-        for idx, batch in pbar:
-            total_n_steps += 1
-            if (n_shots &gt; 1) and (single_shot_loss):
-                batch[&#39;input&#39;] = batch[&#39;last_input&#39;]
-            x_text, y_text = model.prepare_batch(batch=batch)
-
-            tok = functools.partial(
-                model.tokenizer, return_tensors=&#39;pt&#39;, padding=&#39;longest&#39;,
-                truncation=True, max_length=max_length)
-            text_tokenized = tok(batch[&#39;text&#39;]).to(device)
-            text_detokenized = model.tokenizer.batch_decode(
-                text_tokenized[&#39;input_ids&#39;], 
-                skip_special_tokens=True,
-            )
-            
-            prompts.extend(
-                get_prompts_api(
-                    data=text_detokenized, 
-                    llm=llm, 
-                    prompt_template=prompt_template, 
-                )
-            )
-
-            total_n += len(x_text)
-            total_n_datapoints += len(x_text)
-            if (total_n_datapoints &gt; max_n_datapoints) or (total_n_steps &gt; max_n_steps):
-                stopping_early = True
-                break
-
-        if stopping_early:
-            print(f&#34;Ending epoch {epoch} early...&#34;)
-
-        # save stuff
-        for key, val in model.compute_metrics().items():
-            r[key].append(val)
-
-        # r[&#39;losses&#39;].append(avg_loss)
-        if epoch % epoch_save_interval == 0:
-            os.makedirs(save_dir, exist_ok=True)
-            pkl.dump(r, open(os.path.join(save_dir, &#39;results.pkl&#39;), &#39;wb&#39;))
-
-        # Early stopping, check after epoch
-        if stopping_early:
-            print(
-                f&#34;Stopping early after {total_n_steps} steps and {total_n_datapoints} datapoints&#34;)
-            break
-
-    
-    # 
-    #   Evaluate model on prefixes
-    # 
-
-    # Compute loss only over possible answers to make task easier
-    possible_answer_ids = []
-    for batch in dataloader:
-        y_text = [answer for answer in batch[&#39;output&#39;]]
-        y_tokenized = tokenizer(y_text, return_tensors=&#39;pt&#39;, padding=&#39;longest&#39;)
-        # only test on the single next token
-        true_next_token_ids = y_tokenized[&#39;input_ids&#39;][:, 0]
-        possible_answer_ids.extend(true_next_token_ids.tolist())
-    
-    possible_answer_ids = torch.tensor(possible_answer_ids)
-    vocab_size = len(tokenizer.vocab)
-    possible_answer_mask = (
-            torch.arange(start=0, end=vocab_size)[:, None]
-            ==
-            possible_answer_ids[None, :]
-        ).any(dim=1).to(device)
-    n_eval = 256
-    eval_dset = datasets.Dataset.from_dict(dset[:n_eval])
-    eval_dataloader = DataLoader(
-        eval_dset, batch_size=batch_size, shuffle=True, drop_last=False)   
-    all_prefixes = model.tokenizer(
-        [f&#34; {prompt.strip()}&#34; for prompt in prompts], 
-        truncation=False, 
-        padding=False,
-    )[&#34;input_ids&#34;]
-    all_losses, all_accuracies = model.test_prefixes(
-        prefixes=all_prefixes,
-        eval_dataloader=eval_dataloader,
-        possible_answer_mask=possible_answer_mask
-    )
-
-    # 
-    #   Store prefix info 
-    # 
-    df = pd.DataFrame(
-        zip(*[all_prefixes, all_losses, all_accuracies]),
-        columns=[&#39;prefix&#39;, &#39;loss&#39;, &#39;accuracy&#39;]
-    )
-    df = df.sort_values(by=[&#39;accuracy&#39;, &#39;loss&#39;], ascending=[
-                        False, True]).reset_index()
-    df = df.sort_values(by=&#39;accuracy&#39;, ascending=False).reset_index()
-
-    df[&#39;prefix_str&#39;] = df[&#39;prefix&#39;].map(
-        functools.partial(model.tokenizer.decode, skip_special_tokens=True)
-    )
-
-    print(&#39;Final prefixes&#39;)
-    print(df.head())
-    r.update({
-            &#34;prefix_ids&#34;: df[&#39;prefix&#39;].tolist(),
-            &#34;prefixes&#34;: df[&#39;prefix_str&#39;].tolist(),
-            &#34;prefix_train_acc&#34;: df[&#39;accuracy&#39;].tolist(),
-            &#34;prefix_train_loss&#34;: df[&#39;loss&#39;].tolist(),
-        })
-
-    r[&#39;train_end_time&#39;] = time.time()
-    r[&#39;train_time_elapsed&#39;] = r[&#39;train_end_time&#39;] - r[&#39;train_start_time&#39;]
-
-    pkl.dump(r, open(os.path.join(save_dir, &#39;results.pkl&#39;), &#39;wb&#39;))
-
-    return r
-
-
-def run_iprompt_local(
-    r: Dict[str, List],
-    input_strs: List[str],
-    output_strs: List[str],
-    model: PrefixModel,
-    tokenizer: transformers.PreTrainedTokenizer,
-    save_dir: str = &#39;results&#39;,
-    lr: float = 1e-4,
-    batch_size: int = 64,
-    max_length: int = 128,
-    n_epochs: int = 100,
-    n_shots: int = 1,
-    single_shot_loss: bool = True,
-    accum_grad_over_epoch: bool = False,
-    max_n_datapoints: int = 10**4,
-    max_n_steps: int = 10**4,
-    epoch_save_interval: int = 1,
-    mask_possible_answers: bool = False,
-    verbose: int = 0,
-):
-    &#34;&#34;&#34;
-    Trains a model, either by optimizing continuous embeddings or finding an optimal discrete embedding.
-
-    Params
-    ------
-    r: dict
-        dictionary of things to save
-    &#34;&#34;&#34;
-
-    # remove periods and newlines from the output so we actually use the tokens
-    # for the reranking step in iPrompt
-    output_strs = [s.rstrip().rstrip(&#39;.&#39;) for s in output_strs]
-
-    r[&#39;train_start_time&#39;] = time.time()
-    model.train()
-
-    assert len(input_strs) == len(
-        output_strs), &#34;input and output must be same length to create input-output pairs&#34;
-    text_strs = list(map(lambda t: f&#39;{t[0]}{t[1]}.&#39;, zip(input_strs, output_strs)))
-    df = pd.DataFrame.from_dict({
-        &#39;input&#39;: input_strs,
-        &#39;output&#39;: output_strs,
-        &#39;text&#39;: text_strs,
-    })
-    if n_shots &gt; 1:
-        d2 = defaultdict(list)
-        for i in range(max_n_datapoints):
-            all_shots = df.sample(n=n_shots, replace=False)
-            d2[&#39;text&#39;].append(&#39;\n\n&#39;.join(all_shots[&#39;text&#39;].values))
-            #
-            last_input = all_shots.tail(n=1)[&#39;input&#39;].values[0]
-            d2[&#39;input&#39;].append(
-                &#39;&#39;.join(all_shots[&#39;text&#39;].values[:-1]) + last_input)
-            d2[&#39;last_input&#39;].append(last_input)
-            #
-            last_output = all_shots.tail(n=1)[&#39;output&#39;].values[0]
-            d2[&#39;output&#39;].append(last_output)
-            #
-        df = pd.DataFrame.from_dict(d2)
-    # shuffle rows
-    if max_n_datapoints &lt; len(df):
-        df = df.sample(n=max_n_datapoints, replace=False)
-    dset = datasets.Dataset.from_pandas(df)
-    dset.shuffle()
-    print(f&#39;iPrompt got {len(dset)} datapoints, now loading model...&#39;)
-
-    model = model.to(device)
-    dataloader = DataLoader(
-        dset, batch_size=batch_size, shuffle=True, drop_last=False)
-
-    # optimizer
-    optim = torch.optim.AdamW(model.trainable_params, lr=lr)
-
-    assert model.training
-
-    # Compute loss only over possible answers to make task easier
-    possible_answer_ids = []
-    for batch in dataloader:
-        y_text = [answer for answer in batch[&#39;output&#39;]]
-        y_tokenized = tokenizer(y_text, return_tensors=&#39;pt&#39;, padding=&#39;longest&#39;)
-        # only test on the single next token
-        true_next_token_ids = y_tokenized[&#39;input_ids&#39;][:, 0]
-        possible_answer_ids.extend(true_next_token_ids.tolist())
-
-    possible_answer_ids = torch.tensor(possible_answer_ids)
-    num_unique_answers = len(set(possible_answer_ids.tolist()))
-    assert num_unique_answers &gt; 0, &#34;need multiple answers for multiple choice&#34;
-    random_acc = 1 / num_unique_answers * 100.0
-    majority_count = (
-        possible_answer_ids[:, None] == possible_answer_ids[None, :]).sum(dim=1).max()
-    majority_acc = majority_count * 100.0 / len(possible_answer_ids)
-    print(
-        f&#34;Training with {num_unique_answers} possible answers / random acc {random_acc:.1f}% / majority acc {majority_acc:.1f}%&#34;)
-
-    vocab_size = len(tokenizer.vocab)
-
-    if mask_possible_answers:
-        possible_answer_mask = (
-            torch.arange(start=0, end=vocab_size)[:, None]
-            ==
-            possible_answer_ids[None, :]
-        ).any(dim=1).to(device)
-    else:
-        possible_answer_mask = None
-
-    stopping_early = False
-    total_n_steps = 0
-    total_n_datapoints = 0
-    for epoch in range(n_epochs):
-        model.pre_epoch()
-
-        all_losses = []
-
-        total_n = 0
-        total_n_correct = 0
-        print(f&#39;Beginning epoch {epoch}&#39;)
-        pbar = tqdm(enumerate(dataloader), total=len(dataloader))
-        for idx, batch in pbar:
-            total_n_steps += 1
-            if (n_shots &gt; 1) and (single_shot_loss):
-                batch[&#39;input&#39;] = batch[&#39;last_input&#39;]
-            x_text, y_text = model.prepare_batch(batch=batch)
-
-            tok = functools.partial(
-                model.tokenizer, return_tensors=&#39;pt&#39;, padding=&#39;longest&#39;,
-                truncation=True, max_length=max_length)
-            x_tokenized = tok(x_text).to(device)
-            y_tokenized = tok(y_text).to(device)
-            full_text_tokenized = tok(batch[&#39;text&#39;]).to(device)
-
-            loss, n_correct = model.compute_loss_and_call_backward(
-                x_tokenized=x_tokenized,
-                y_tokenized=y_tokenized,
-                possible_answer_mask=possible_answer_mask,
-                full_text_tokenized=full_text_tokenized,
-            )
-
-            r[&#34;all_losses&#34;].append(loss)
-            r[&#34;all_n_correct&#34;].append(n_correct)
-
-            total_n += len(x_text)
-            total_n_datapoints += len(x_text)
-            total_n_correct += n_correct
-
-            all_losses.append(loss)
-            pbar.set_description(f&#34;Loss = {loss:.3f}&#34;)
-
-            if not accum_grad_over_epoch:
-                # if hotflip, autoprompt, etc., grad will be zero
-                optim.step()
-                optim.zero_grad()
-
-            # Early stopping, check after step
-            model_check_early_stop = model.check_early_stop()
-            if model_check_early_stop:
-                print(&#34;model_check_early_stop returned true&#34;)
-            if (total_n_datapoints &gt; max_n_datapoints) or (total_n_steps &gt; max_n_steps) or model_check_early_stop:
-                stopping_early = True
-                break
-
-        if stopping_early:
-            print(f&#34;Ending epoch {epoch} early...&#34;)
-        avg_loss = sum(all_losses) / len(all_losses)
-        print(f&#34;Epoch {epoch}. average loss = {avg_loss:.3f} / {total_n_correct} / {total_n} correct ({total_n_correct/total_n*100:.2f}%)&#34;)
-
-        # save stuff
-        for key, val in model.compute_metrics().items():
-            r[key].append(val)
-
-        # r[&#39;losses&#39;].append(avg_loss)
-        if epoch % epoch_save_interval == 0:
-            os.makedirs(save_dir, exist_ok=True)
-            pkl.dump(r, open(os.path.join(save_dir, &#39;results.pkl&#39;), &#39;wb&#39;))
-
-        model.post_epoch(dataloader=dataloader,
-                         possible_answer_mask=possible_answer_mask)
-
-        if accum_grad_over_epoch:
-            optim.step()
-            optim.zero_grad()
-
-        # Early stopping, check after epoch
-        if stopping_early:
-            print(
-                f&#34;Stopping early after {total_n_steps} steps and {total_n_datapoints} datapoints&#34;)
-            break
-
-    # Serialize model-specific stuff (prefixes &amp; losses for autoprompt, embeddings for prompt tuning, etc.)
-    n_eval = 256
-    eval_dset = datasets.Dataset.from_dict(dset[:n_eval])
-    eval_dataloader = DataLoader(
-        eval_dset, batch_size=batch_size, shuffle=True, drop_last=False)
-    r.update(model.serialize(eval_dataloader, possible_answer_mask))
-    # r.update(model.serialize())
-
-    # save whether prefixes fit the template
-    &#34;&#34;&#34;
-    if &#34;prefixes&#34; in r:
-        r[&#34;prefixes__check_answer_func&#34;] = list(
-            map(check_answer_func, r[&#34;prefixes&#34;]))
-    &#34;&#34;&#34;
-
-    r[&#39;train_end_time&#39;] = time.time()
-    r[&#39;train_time_elapsed&#39;] = r[&#39;train_end_time&#39;] - r[&#39;train_start_time&#39;]
-
-    pkl.dump(r, open(os.path.join(save_dir, &#39;results.pkl&#39;), &#39;wb&#39;))
-
-    return r
-
-
-def eval_model_with_set_prefix(
-    dataloader: DataLoader,
-    model: PrefixModel,
-) -&gt; Tuple[float, float]:
-    &#34;&#34;&#34;
-    Evaluates a model based on set prefix. May be called multiple times with different prefixes
-
-    Params
-    ------
-    r: dict
-        dictionary of things to save
-
-    Returns: Tuple[float, float]
-        average loss, accuracy per sample over eval dataset
-    &#34;&#34;&#34;
-    pbar = tqdm(enumerate(dataloader), total=len(dataloader),
-                desc=&#39;evaluating data&#39;, colour=&#39;red&#39;, leave=False)
-    total_loss = 0.0
-    total_n = 0
-    total_n_correct = 0
-    for idx, batch in pbar:
-        x_text, y_text = model.prepare_batch(batch=batch)
-
-        tok = functools.partial(
-            model.tokenizer, return_tensors=&#39;pt&#39;, padding=&#39;longest&#39;)
-        x_tokenized = tok(x_text).to(device)
-        y_tokenized = tok(y_text).to(device)
-        # full_text_tokenized = tok(batch[&#39;text&#39;]).to(device)
-
-        with torch.no_grad():
-            _input_ids, loss, n_correct = model._compute_loss_with_set_prefix(
-                original_input_ids=x_tokenized.input_ids,
-                next_token_ids=y_tokenized.input_ids,
-                possible_answer_mask=None,  # TODO: implement eval verbalizer
-                prefix_ids=None,
-            )
-
-        total_loss += loss.item()
-        total_n += len(x_text)
-        total_n_correct += n_correct
-
-        pbar.set_description(
-            f&#34;Acc = {total_n_correct}/{total_n} {(total_n_correct/total_n*100):.2f}%&#34;)
-
-    return (total_loss / total_n), (total_n_correct / total_n)
-
-
-def eval_model(
-    r: Dict[str, List],
-    dset: datasets.Dataset,
-    model: PrefixModel,
-    batch_size: int = 500,
-    save_dir: str = &#39;results&#39;,
-):
-    &#34;&#34;&#34;
-    Evaluates a model based on the learned prefix(es).
-
-    Params
-    ------
-    r: dict
-        dictionary of things to save
-    &#34;&#34;&#34;
-    r[&#34;test_start_time&#34;] = time.time()
-    model.eval()
-    dataloader = DataLoader(
-        dset, batch_size=batch_size, shuffle=False, drop_last=False)
-
-    if r[&#34;prefixes&#34;]:
-        # if we specified multiple prefixes (autoprompt or iprompt), let&#39;s evaluate them all!
-        for prefix_ids in tqdm(r[&#34;prefix_ids&#34;], desc=&#34;evaluating prefixes&#34;):
-            model._set_prefix_ids(new_ids=torch.tensor(prefix_ids).to(device))
-
-            loss, acc = eval_model_with_set_prefix(dataloader, model)
-
-            r[&#34;prefix_test_loss&#34;].append(loss)
-            r[&#34;prefix_test_acc&#34;].append(acc)
-        r[&#34;num_prefixes_used_for_test&#34;] = len(r[&#34;prefixes&#34;])
-
-    else:
-        # otherwise, there&#39;s just one prefix (like for prompt tuning) so just run single eval loop.
-        loss, acc = eval_model_with_set_prefix(dataloader, model)
-        r[&#34;prefix_test_acc&#34;] = loss
-        r[&#34;prefix_test_loss&#34;] = acc
-        r[&#34;num_prefixes_used_for_test&#34;] = 1
-
-    r[&#34;test_end_time&#34;] = time.time()
-    r[&#34;test_time_elapsed&#34;] = r[&#34;test_end_time&#34;] - r[&#34;test_start_time&#34;]
-    pkl.dump(r, open(os.path.join(save_dir, &#39;results.pkl&#39;), &#39;wb&#39;))
-    return r
-
-
-def explain_dataset_iprompt(
-    input_strings: List[str],
-    output_strings: List[str],
-    checkpoint: str=&#39;EleutherAI/gpt-j-6B&#39;,
-    generation_checkpoint: str = &#39;&#39;,
-    num_learned_tokens=1,
-    save_dir: str = &#39;./results&#39;,
-    lr: float = 0.01,
-    pop_size: int = 8,
-    pop_criterion: str = &#39;loss&#39;,
-    pop_topk_strategy: str = &#39;different_start_token&#39;,
-    num_mutations: int = 4,
-    prefix_before_input: bool = True,
-    do_final_reranking: bool = False,
-    num_random_generations: int = 4,
-    generation_repetition_penalty: float = 2.0,
-    generation_temp: float = 1.0,
-    generation_top_p: float = 1.0,
-    early_stopping_steps: int = -1,
-    llm_float16=False,
-    gamma: float = 0.0,
-    batch_size: int = 64,
-    max_length: int = 128,
-    n_epochs: int = 100,
-    n_shots: int = 1,
-    preprefix: str = &#39;&#39;,
-    single_shot_loss: bool = True,
-    accum_grad_over_epoch: bool = False,
-    max_n_datapoints: int = 10**4,
-    max_n_steps: int = 10**4,
-    epoch_save_interval: int = 1,
-    mask_possible_answers: bool = False,
-    model_cls: str = &#39;iprompt&#39;,
-    lm: transformers.PreTrainedModel = None,
-    llm_candidate_regeneration_prompt_start: str = &#39;Data:&#39;,
-    llm_candidate_regeneration_prompt_end: str = &#39;Prompt:&#39;,
-    verbose: int = 0,  # verbosity level (0 for minimal)
-    seed: int = 42,
-    llm_api: str = &#34;&#34;,
-) -&gt; Tuple[List[str], Dict]:
-    &#34;&#34;&#34;Explain the relationship between the input strings and the output strings
-
-    Parameters
-    ----------
-    input_strings: List[str]
-        list of input strings (e.g. &#34;2 + 2&#34;)
-    output_strings: List[str]
-        list of output strings (e.g. &#34;4&#34;)
-    checkpoint: str
-        name of model checkpoint to prompt (e.g. EleutherAI/gpt-j-6B)
-    generation_checkpoint: str
-        name of model to generate prompts, *only if if different from checkpoint
-        used for prompting*. defaults to &#39;&#39; (same model for both).
-    prefix_before_input: bool
-        whether to prompt the LLM with the prefix before or after the input data
-    do_final_reranking: bool
-        optionally rerank top prefixes using a single batch. helps prevent
-        noisy prefixes from being top at the end, especially when run over a
-        small number of iterations or with small batch size.
-    generation_temp: float
-        temperature for sampling from LLM (defaults to 1.0)
-    generation_top_p: float
-        p for sampling from LLM, if using top-p sampling (defaults to 1.0, no sampling)
-    num_learned_tokens: int
-        number of tokens to learn in prompt
-    save_dir: str
-        directory to save results
-    lr: float
-        learning rate for prompt tuning
-    pop_size: int
-        number of prompt candidates to evaluate for each iteration of iprompt
-    pop_criterion: str
-        criterion for getting top prefixes from prefix pool, in [&#39;loss&#39;, &#39;acc&#39;]
-    pop_topk_strategy: str
-        strategy for getting new prefixes from prefix pool, in [&#39;different_start_token&#39;, &#39;all&#39;]
-    num_mutations: int
-        number of mutations to apply to each prompt candidate
-    lm: transformers.PreTrainedModel
-        pre-loaded model (overrides checkpoint)
-    max_n_data_points: int
-        maximum number of data points to use for training
-        if n_shots &gt; 1, this many data_points are created by recombining n_shots number of examples
-
-
-    Returns
-    -------
-    best_prompts
-        List of the best found prompts
-    metadata_dict
-        Dictionary of metadata from fitting
-    &#34;&#34;&#34;
-    tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-    if not prefix_before_input:
-        tokenizer.truncation_side = &#39;left&#39;
-    tokenizer.eos_token = tokenizer.eos_token or 0
-    tokenizer.pad_token = tokenizer.eos_token
-
-    # load the model (unless already loaded)
-    def load_lm(checkpoint, tokenizer, llm_float16):
-        if llm_float16:
-            if checkpoint == &#34;EleutherAI/gpt-j-6B&#34;:
-                lm = AutoModelForCausalLM.from_pretrained(
-                    checkpoint, output_hidden_states=False, pad_token_id=tokenizer.eos_token_id,
-                    revision=&#34;float16&#34;, torch_dtype=torch.float16, low_cpu_mem_usage=True
-                )
-            else:
-                # (only certain models are pre-float16ed)
-                print(f&#34;trying to convert {checkpoint} to float16...&#34;)
-                lm = transformers.AutoModelForCausalLM.from_pretrained(
-                    checkpoint, torch_dtype=torch.float16
-                )
-                lm = lm.half()
-        else:
-            lm = AutoModelForCausalLM.from_pretrained(
-                checkpoint, output_hidden_states=False, pad_token_id=tokenizer.eos_token_id
-            )
-        return lm
-    if lm is None:
-        lm = load_lm(checkpoint, tokenizer, llm_float16)
-        
-    loss_func = PrefixLoss(gamma=gamma, tokenizer=tokenizer)
-
-    if model_cls == &#39;iprompt&#39;:
-        model = iPrompt(
-            loss_func=loss_func,
-            model=lm,
-            tokenizer=tokenizer,
-            preprefix_str=preprefix,
-            pop_size=pop_size,
-            pop_criterion=pop_criterion,
-            pop_topk_strategy=pop_topk_strategy,
-            num_mutations=num_mutations,
-            prefix_before_input=prefix_before_input,
-            do_final_reranking=do_final_reranking,
-            num_random_generations=num_random_generations,
-            generation_repetition_penalty=generation_repetition_penalty,
-            generation_temp=generation_temp,
-            generation_top_p=generation_top_p,
-            early_stopping_steps=early_stopping_steps,
-            num_learned_tokens=num_learned_tokens,
-            max_length=max_length,
-            n_shots=n_shots,
-            single_shot_loss=single_shot_loss,
-            verbose=verbose,
-            llm_float16=llm_float16,
-            generation_checkpoint=generation_checkpoint,
-            llm_candidate_regeneration_prompt_start=llm_candidate_regeneration_prompt_start,
-            llm_candidate_regeneration_prompt_end=llm_candidate_regeneration_prompt_end,
-        )
-    else:
-        pass
-        &#34;&#34;&#34;
-        model = model_cls_dict[model_cls](
-            args=args,
-            loss_func=loss_func, model=lm, tokenizer=tokenizer, preprefix=preprefix
-        )
-        &#34;&#34;&#34;
-    
-    iprompt_local = len(llm_api) == 0
-    
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    random.seed(seed)
-    r = defaultdict(list)
-    if iprompt_local:
-        r = run_iprompt_local(
-            r=r,
-            input_strs=input_strings,
-            output_strs=output_strings,
-            model=model,
-            tokenizer=tokenizer,
-            save_dir=save_dir,
-            lr=lr,
-            batch_size=batch_size,
-            max_length=max_length,
-            mask_possible_answers=mask_possible_answers,
-            n_epochs=n_epochs,
-            n_shots=n_shots,
-            single_shot_loss=single_shot_loss,
-            accum_grad_over_epoch=accum_grad_over_epoch,
-            max_n_datapoints=max_n_datapoints,
-            max_n_steps=max_n_steps,
-            epoch_save_interval=epoch_save_interval,
-            verbose=verbose,
-        )
-    else:
-        r = run_iprompt_api(
-            r=r,
-            input_strs=input_strings,
-            output_strs=output_strings,
-            model=model,
-            tokenizer=tokenizer,
-            save_dir=save_dir,
-            lr=lr,
-            batch_size=batch_size,
-            max_length=max_length,
-            mask_possible_answers=mask_possible_answers,
-            n_epochs=n_epochs,
-            n_shots=n_shots,
-            single_shot_loss=single_shot_loss,
-            accum_grad_over_epoch=accum_grad_over_epoch,
-            max_n_datapoints=max_n_datapoints,
-            max_n_steps=max_n_steps,
-            epoch_save_interval=epoch_save_interval,
-            verbose=verbose,
-            llm_api=llm_api,
-        )
-    model = model.cpu()
-    return r[&#39;prefixes&#39;], r
-
-    # r = eval_model(args=args, r=r, dset=Dataset.from_dict(dset_test[:128]), model=model, tokenizer=tokenizer)
-
-
-# python api.py --task_name_list add_two --model_cls iprompt --num_learned_tokens 3 --max_dset_size 100 --max_n_datapoints 100 --early_stopping_steps 5 --max_digit 10 --train_split_frac 0.75 --single_shot_loss 1 --save_dir /home/chansingh/tmp/iprompt --checkpoint EleutherAI/gpt-j-6B --batch_size 64 --n_epochs 20
-# python api.py --task_name_list add_two --model_cls iprompt --num_learned_tokens 3 --max_dset_size 5000 --max_n_datapoints 5000 --early_stopping_steps 25 --max_digit 10 --train_split_frac 0.75 --single_shot_loss 1 --save_dir /home/chansingh/tmp/iprompt --checkpoint EleutherAI/gpt-j-6B --batch_size 64 --float16 1
-# python api.py --n_epochs 1 --max_n_steps 3 --max_n_datapoints 10
-if __name__ == &#39;__main__&#39;:
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(&#39;--model_cls&#39;, type=str,
-                        choices=model_cls_dict.keys(),
-                        default=&#39;iprompt&#39;,
-                        help=&#39;model type to use for training&#39;)
-    parser.add_argument(&#39;--batch_size&#39;, type=int, default=500,
-                        help=&#39;batch size for training&#39;)
-    parser.add_argument(&#39;--seed&#39;, type=int, default=1,
-                        help=&#39;random seed&#39;)
-    parser.add_argument(&#39;--n_epochs&#39;, type=int, default=2,
-                        help=&#39;number of epochs for training&#39;)
-    parser.add_argument(&#39;--max_n_steps&#39;, type=int, default=10**10,
-                        help=&#39;max number of steps for training&#39;)
-    parser.add_argument(&#39;--max_n_datapoints&#39;, type=int, default=20,  # 10**10,
-                        help=&#39;max number of datapoints for training&#39;)
-    parser.add_argument(&#39;--train_split_frac&#39;, type=float,
-                        default=None, help=&#39;fraction for train-test split if desired&#39;)
-    parser.add_argument(&#39;--max_dset_size&#39;, type=int,
-                        default=10**4, help=&#39;maximum allowable dataset size&#39;)
-    parser.add_argument(&#39;--early_stopping_steps&#39;, type=int, default=-1,
-                        help=&#39;if &gt; 0, number of steps until stopping early after no improvement&#39;)
-    parser.add_argument(&#39;--max_digit&#39;, type=int, default=10,
-                        help=&#39;maximum value of each digit in summand&#39;)
-    parser.add_argument(&#39;--template_num_init_string&#39;, type=int, default=0,
-                        help=&#39;the number of the manually-specified prefix to be initialize with&#39;)
-    parser.add_argument(&#39;--template_num_task_phrasing&#39;, type=int, default=0,
-                        help=&#39;the number of the manual template for any given task (number of options varies with task&#39;)
-    parser.add_argument(&#39;--save_dir&#39;, type=str, default=&#39;results&#39;,
-                        help=&#39;directory for saving&#39;)
-    parser.add_argument(&#39;--epoch_save_interval&#39;, type=int, default=1,
-                        help=&#39;interval to save results&#39;)
-    parser.add_argument(&#39;--lr&#39;, type=float, default=1e-4,
-                        help=&#39;learning rate&#39;)
-    parser.add_argument(&#39;--gamma&#39;, type=float, default=0.0,
-                        help=&#39;hparam: weight for language modeling loss&#39;)
-    parser.add_argument(&#39;--task_name&#39;, type=str, default=&#39;add_two&#39;,
-                        choices=(data.TASKS.keys() - {&#39;SUFFIX&#39;}),
-                        help=&#39;name of task&#39;)
-    parser.add_argument(&#39;--task_name_list&#39;, nargs=&#34;*&#34;, default=None,
-                        help=&#39;names of tasks as list; alternative to passing task_name&#39;)
-    parser.add_argument(&#39;--n_shots&#39;, type=int, default=1,
-                        help=&#39;number of shots in the prompt&#39;)
-    parser.add_argument(&#39;--autoprompt_init_strategy&#39;, type=str, default=&#39;the&#39;,
-                        choices=(&#39;random&#39;, &#39;the&#39;), help=&#39;initialization strategy for discrete tokens&#39;)
-    parser.add_argument(&#39;--max_length&#39;, type=int, default=128,
-                        help=&#39;maximum length for inputs&#39;)
-    parser.add_argument(&#39;--single_shot_loss&#39;, type=int, default=0,
-                        help=&#39;if n_shots==0, load multiple shots but only use one compute loss&#39;)
-    parser.add_argument(&#39;--mask_possible_answers&#39;, type=int, default=0,
-                        help=&#39;only compute loss over possible answer tokens&#39;)
-    parser.add_argument(&#39;--hotflip_num_candidates&#39;, type=int, default=10,
-                        help=&#39;number of candidates to rerank, for hotflip&#39;)
-    parser.add_argument(&#39;--accum_grad_over_epoch&#39;, type=int, default=0, choices=(0, 1),
-                        help=&#39;should we clear gradients after a batch, or only at the end of the epoch?&#39;)
-    parser.add_argument(&#39;--num_learned_tokens&#39;, type=int, default=1,
-                        help=&#39;number of learned prefix tokens (for gumbel, hotflip, autoprompt, prompt-tuning)&#39;)
-    parser.add_argument(&#39;--use_preprefix&#39;, type=int, default=1, choices=(0, 1),
-                        help=&#39;whether to use a template pre-prefix&#39;)
-    parser.add_argument(&#39;--iprompt_preprefix_str&#39;, type=str, default=&#39;&#39;,
-                        help=&#39;Text like &#34;Output the number that&#34; or &#34;Answer F/M if&#34;...&#39;
-                        )
-    parser.add_argument(&#39;--iprompt_pop_size&#39;, type=int, default=8,)
-    parser.add_argument(&#39;--iprompt_num_mutations&#39;, type=int, default=4)
-    parser.add_argument(&#39;--iprompt_num_random_generations&#39;,
-                        type=int, default=4)
-    parser.add_argument(&#39;--iprompt_generation_repetition_penalty&#39;, type=float, default=2.0,
-                        help=&#39;repetition penalty for iprompt generations&#39;)
-    parser.add_argument(&#39;--llm_float16&#39;, &#39;--float16&#39;, &#39;--parsimonious&#39;, type=int, default=0, choices=(0, 1),
-                        help=&#39;if true, loads LLM in fp16 and at low-ram&#39;)
-    parser.add_argument(&#39;--checkpoint&#39;, type=str, default=&#34;gpt2&#34;,
-                        choices=(
-                            ############################
-                            &#34;EleutherAI/gpt-neo-125M&#34;,
-                            &#34;EleutherAI/gpt-neo-1.3B&#34;,
-                            &#34;EleutherAI/gpt-neo-2.7B&#34;,
-                            ############################
-                            &#34;EleutherAI/gpt-j-6B&#34;,
-                            ############################
-                            &#34;EleutherAI/gpt-neox-20b&#34;,
-                            ############################
-                            &#34;gpt2&#34;,        # 117M params
-                            &#34;gpt2-medium&#34;,  # 355M params
-                            &#34;gpt2-large&#34;,  # 774M params
-                            &#34;gpt2-xl&#34;,     # 1.5B params
-                            ############################
-                        ),
-                        help=&#39;model checkpoint to use&#39;
-                        )
-
-    args = parser.parse_args()
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    transformers.set_seed(args.seed)
-
-    args.use_generic_query = 0
-
-    if (args.mask_possible_answers) and (args.train_split_frac is not None):
-        print(&#34;Warning: mask possible answers not supported for eval&#34;)
-
-    # iterate over tasks
-    if args.task_name_list is not None:
-        logging.info(&#39;using task_name_list &#39; + str(args.task_name_list))
-    else:
-        args.task_name_list = [args.task_name]
-    for task_idx, task_name in enumerate(args.task_name_list):
-        print(f&#39;*** Executing task {task_idx+1}/{len(args.task_name_list)}&#39;)
-        # actually set the task
-        args.task_name = task_name
-
-        r = defaultdict(list)
-        r.update(vars(args))
-        logger = logging.getLogger()
-        logging.basicConfig(level=logging.INFO)
-
-        logger.info(&#39;loading data and model...&#39;)
-        # set up saving
-        save_dir_unique = datetime.now().strftime(&#34;%b_%d_%H_%M_&#34;) + \
-            &#39;&#39;.join(random.choices(string.ascii_lowercase, k=12))
-        save_dir = os.path.join(args.save_dir, save_dir_unique)
-        logging.info(&#39;saving to &#39; + save_dir)
-        args.save_dir_unique = save_dir
-
-        # get data
-        # import this here so it&#39;s not needed for the package....
-        import iprompt.data as data
-        dset, _, _ = data.get_data(
-            task_name=args.task_name, n_shots=args.n_shots, train_split_frac=args.train_split_frac, max_dset_size=args.max_dset_size,
-            template_num_task_phrasing=args.template_num_task_phrasing, max_digit=args.max_digit
-        )
-        # pd.DataFrame.from_dict({
-        #     &#39;input_strings&#39;: dset[&#39;input&#39;],
-        #     &#39;output_strings&#39;: [repr(x) for x in dset[&#39;output&#39;]],
-        # }).to_csv(&#39;add_two.csv&#39;, index=False)
-
-        prompts, meta = explain_dataset_iprompt(
-            input_strings=dset[&#39;input&#39;],
-            output_strings=dset[&#39;output&#39;],
-            checkpoint=args.checkpoint,
-            save_dir=args.save_dir,
-            lr=args.lr,
-            pop_size=args.iprompt_pop_size,
-            num_mutations=args.iprompt_num_mutations,
-            num_random_generations=args.iprompt_num_random_generations,
-            generation_repetition_penalty=args.iprompt_generation_repetition_penalty,
-            early_stopping_steps=args.early_stopping_steps,
-            num_learned_tokens=args.num_learned_tokens,
-            llm_float16=args.llm_float16,
-            gamma=args.gamma,
-            batch_size=args.batch_size,
-            max_length=args.max_length,
-            n_epochs=args.n_epochs,
-            n_shots=args.n_shots,
-            single_shot_loss=args.single_shot_loss,
-            accum_grad_over_epoch=args.accum_grad_over_epoch,
-            max_n_datapoints=args.max_n_datapoints,
-            max_n_steps=args.max_n_steps,
-            epoch_save_interval=args.epoch_save_interval,
-            mask_possible_answers=args.mask_possible_answers,
-            model_cls=args.model_cls,
-        )
-        print(&#39;prompts&#39;, prompts)
-        print(&#39;\nmeta&#39;, meta)</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -983,13 +45,9 @@ if __name__ == &#39;__main__&#39;:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="imodelsx.iprompt.api.eval_model"><code class="name flex">
-<span>def <span class="ident">eval_model</span></span>(<span>r: Dict[str, List], dset: datasets.arrow_dataset.Dataset, model: <a title="imodelsx.iprompt.utils.PrefixModel" href="utils.html#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a>, batch_size: int = 500, save_dir: str = 'results')</span>
+<span>def <span class="ident">eval_model</span></span>(<span>r: Dict[str, List],<br>dset: datasets.arrow_dataset.Dataset,<br>model: <a title="imodelsx.iprompt.utils.PrefixModel" href="utils.html#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a>,<br>batch_size: int = 500,<br>save_dir: str = 'results')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Evaluates a model based on the learned prefix(es).</p>
-<h2 id="params">Params</h2>
-<p>r: dict
-dictionary of things to save</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1037,17 +95,15 @@ dictionary of things to save</p></div>
     pkl.dump(r, open(os.path.join(save_dir, &#39;results.pkl&#39;), &#39;wb&#39;))
     return r</code></pre>
 </details>
-</dd>
-<dt id="imodelsx.iprompt.api.eval_model_with_set_prefix"><code class="name flex">
-<span>def <span class="ident">eval_model_with_set_prefix</span></span>(<span>dataloader: torch.utils.data.dataloader.DataLoader, model: <a title="imodelsx.iprompt.utils.PrefixModel" href="utils.html#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a>) ‑> Tuple[float, float]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Evaluates a model based on set prefix. May be called multiple times with different prefixes</p>
+<div class="desc"><p>Evaluates a model based on the learned prefix(es).</p>
 <h2 id="params">Params</h2>
 <p>r: dict
-dictionary of things to save</p>
-<p>Returns: Tuple[float, float]
-average loss, accuracy per sample over eval dataset</p></div>
+dictionary of things to save</p></div>
+</dd>
+<dt id="imodelsx.iprompt.api.eval_model_with_set_prefix"><code class="name flex">
+<span>def <span class="ident">eval_model_with_set_prefix</span></span>(<span>dataloader: torch.utils.data.dataloader.DataLoader,<br>model: <a title="imodelsx.iprompt.utils.PrefixModel" href="utils.html#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a>) ‑> Tuple[float, float]</span>
+</code></dt>
+<dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1098,60 +154,17 @@ average loss, accuracy per sample over eval dataset</p></div>
 
     return (total_loss / total_n), (total_n_correct / total_n)</code></pre>
 </details>
+<div class="desc"><p>Evaluates a model based on set prefix. May be called multiple times with different prefixes</p>
+<h2 id="params">Params</h2>
+<p>r: dict
+dictionary of things to save</p>
+<p>Returns: Tuple[float, float]
+average loss, accuracy per sample over eval dataset</p></div>
 </dd>
 <dt id="imodelsx.iprompt.api.explain_dataset_iprompt"><code class="name flex">
-<span>def <span class="ident">explain_dataset_iprompt</span></span>(<span>input_strings: List[str], output_strings: List[str], checkpoint: str = 'EleutherAI/gpt-j-6B', generation_checkpoint: str = '', num_learned_tokens=1, save_dir: str = './results', lr: float = 0.01, pop_size: int = 8, pop_criterion: str = 'loss', pop_topk_strategy: str = 'different_start_token', num_mutations: int = 4, prefix_before_input: bool = True, do_final_reranking: bool = False, num_random_generations: int = 4, generation_repetition_penalty: float = 2.0, generation_temp: float = 1.0, generation_top_p: float = 1.0, early_stopping_steps: int = -1, llm_float16=False, gamma: float = 0.0, batch_size: int = 64, max_length: int = 128, n_epochs: int = 100, n_shots: int = 1, preprefix: str = '', single_shot_loss: bool = True, accum_grad_over_epoch: bool = False, max_n_datapoints: int = 10000, max_n_steps: int = 10000, epoch_save_interval: int = 1, mask_possible_answers: bool = False, model_cls: str = 'iprompt', lm: transformers.modeling_utils.PreTrainedModel = None, llm_candidate_regeneration_prompt_start: str = 'Data:', llm_candidate_regeneration_prompt_end: str = 'Prompt:', verbose: int = 0, seed: int = 42, llm_api: str = '') ‑> Tuple[List[str], Dict]</span>
+<span>def <span class="ident">explain_dataset_iprompt</span></span>(<span>input_strings: List[str],<br>output_strings: List[str],<br>checkpoint: str = 'EleutherAI/gpt-j-6B',<br>generation_checkpoint: str = '',<br>num_learned_tokens=1,<br>save_dir: str = './results',<br>lr: float = 0.01,<br>pop_size: int = 8,<br>pop_criterion: str = 'loss',<br>pop_topk_strategy: str = 'different_start_token',<br>num_mutations: int = 4,<br>prefix_before_input: bool = True,<br>do_final_reranking: bool = False,<br>num_random_generations: int = 4,<br>generation_repetition_penalty: float = 2.0,<br>generation_temp: float = 1.0,<br>generation_top_p: float = 1.0,<br>early_stopping_steps: int = -1,<br>llm_float16=False,<br>gamma: float = 0.0,<br>batch_size: int = 64,<br>max_length: int = 128,<br>n_epochs: int = 100,<br>n_shots: int = 1,<br>preprefix: str = '',<br>single_shot_loss: bool = True,<br>accum_grad_over_epoch: bool = False,<br>max_n_datapoints: int = 10000,<br>max_n_steps: int = 10000,<br>epoch_save_interval: int = 1,<br>mask_possible_answers: bool = False,<br>model_cls: str = 'iprompt',<br>lm: transformers.modeling_utils.PreTrainedModel = None,<br>llm_candidate_regeneration_prompt_start: str = 'Data:',<br>llm_candidate_regeneration_prompt_end: str = 'Prompt:',<br>verbose: int = 0,<br>seed: int = 42,<br>llm_api: str = '') ‑> Tuple[List[str], Dict]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Explain the relationship between the input strings and the output strings</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>input_strings</code></strong> :&ensp;<code>List[str]</code></dt>
-<dd>list of input strings (e.g. "2 + 2")</dd>
-<dt><strong><code>output_strings</code></strong> :&ensp;<code>List[str]</code></dt>
-<dd>list of output strings (e.g. "4")</dd>
-<dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
-<dd>name of model checkpoint to prompt (e.g. EleutherAI/gpt-j-6B)</dd>
-<dt><strong><code>generation_checkpoint</code></strong> :&ensp;<code>str</code></dt>
-<dd>name of model to generate prompts, <em>only if if different from checkpoint
-used for prompting</em>. defaults to '' (same model for both).</dd>
-<dt><strong><code>prefix_before_input</code></strong> :&ensp;<code>bool</code></dt>
-<dd>whether to prompt the LLM with the prefix before or after the input data</dd>
-<dt><strong><code>do_final_reranking</code></strong> :&ensp;<code>bool</code></dt>
-<dd>optionally rerank top prefixes using a single batch. helps prevent
-noisy prefixes from being top at the end, especially when run over a
-small number of iterations or with small batch size.</dd>
-<dt><strong><code>generation_temp</code></strong> :&ensp;<code>float</code></dt>
-<dd>temperature for sampling from LLM (defaults to 1.0)</dd>
-<dt><strong><code>generation_top_p</code></strong> :&ensp;<code>float</code></dt>
-<dd>p for sampling from LLM, if using top-p sampling (defaults to 1.0, no sampling)</dd>
-<dt><strong><code>num_learned_tokens</code></strong> :&ensp;<code>int</code></dt>
-<dd>number of tokens to learn in prompt</dd>
-<dt><strong><code>save_dir</code></strong> :&ensp;<code>str</code></dt>
-<dd>directory to save results</dd>
-<dt><strong><code>lr</code></strong> :&ensp;<code>float</code></dt>
-<dd>learning rate for prompt tuning</dd>
-<dt><strong><code>pop_size</code></strong> :&ensp;<code>int</code></dt>
-<dd>number of prompt candidates to evaluate for each iteration of iprompt</dd>
-<dt><strong><code>pop_criterion</code></strong> :&ensp;<code>str</code></dt>
-<dd>criterion for getting top prefixes from prefix pool, in ['loss', 'acc']</dd>
-<dt><strong><code>pop_topk_strategy</code></strong> :&ensp;<code>str</code></dt>
-<dd>strategy for getting new prefixes from prefix pool, in ['different_start_token', 'all']</dd>
-<dt><strong><code>num_mutations</code></strong> :&ensp;<code>int</code></dt>
-<dd>number of mutations to apply to each prompt candidate</dd>
-<dt><strong><code>lm</code></strong> :&ensp;<code>transformers.PreTrainedModel</code></dt>
-<dd>pre-loaded model (overrides checkpoint)</dd>
-<dt><strong><code>max_n_data_points</code></strong> :&ensp;<code>int</code></dt>
-<dd>maximum number of data points to use for training
-if n_shots &gt; 1, this many data_points are created by recombining n_shots number of examples</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>best_prompts</code></dt>
-<dd>List of the best found prompts</dd>
-<dt><code>metadata_dict</code></dt>
-<dd>Dictionary of metadata from fitting</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1368,12 +381,60 @@ if n_shots &gt; 1, this many data_points are created by recombining n_shots numb
 
     # r = eval_model(args=args, r=r, dset=Dataset.from_dict(dset_test[:128]), model=model, tokenizer=tokenizer)</code></pre>
 </details>
+<div class="desc"><p>Explain the relationship between the input strings and the output strings</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>input_strings</code></strong> :&ensp;<code>List[str]</code></dt>
+<dd>list of input strings (e.g. "2 + 2")</dd>
+<dt><strong><code>output_strings</code></strong> :&ensp;<code>List[str]</code></dt>
+<dd>list of output strings (e.g. "4")</dd>
+<dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
+<dd>name of model checkpoint to prompt (e.g. EleutherAI/gpt-j-6B)</dd>
+<dt><strong><code>generation_checkpoint</code></strong> :&ensp;<code>str</code></dt>
+<dd>name of model to generate prompts, <em>only if if different from checkpoint
+used for prompting</em>. defaults to '' (same model for both).</dd>
+<dt><strong><code>prefix_before_input</code></strong> :&ensp;<code>bool</code></dt>
+<dd>whether to prompt the LLM with the prefix before or after the input data</dd>
+<dt><strong><code>do_final_reranking</code></strong> :&ensp;<code>bool</code></dt>
+<dd>optionally rerank top prefixes using a single batch. helps prevent
+noisy prefixes from being top at the end, especially when run over a
+small number of iterations or with small batch size.</dd>
+<dt><strong><code>generation_temp</code></strong> :&ensp;<code>float</code></dt>
+<dd>temperature for sampling from LLM (defaults to 1.0)</dd>
+<dt><strong><code>generation_top_p</code></strong> :&ensp;<code>float</code></dt>
+<dd>p for sampling from LLM, if using top-p sampling (defaults to 1.0, no sampling)</dd>
+<dt><strong><code>num_learned_tokens</code></strong> :&ensp;<code>int</code></dt>
+<dd>number of tokens to learn in prompt</dd>
+<dt><strong><code>save_dir</code></strong> :&ensp;<code>str</code></dt>
+<dd>directory to save results</dd>
+<dt><strong><code>lr</code></strong> :&ensp;<code>float</code></dt>
+<dd>learning rate for prompt tuning</dd>
+<dt><strong><code>pop_size</code></strong> :&ensp;<code>int</code></dt>
+<dd>number of prompt candidates to evaluate for each iteration of iprompt</dd>
+<dt><strong><code>pop_criterion</code></strong> :&ensp;<code>str</code></dt>
+<dd>criterion for getting top prefixes from prefix pool, in ['loss', 'acc']</dd>
+<dt><strong><code>pop_topk_strategy</code></strong> :&ensp;<code>str</code></dt>
+<dd>strategy for getting new prefixes from prefix pool, in ['different_start_token', 'all']</dd>
+<dt><strong><code>num_mutations</code></strong> :&ensp;<code>int</code></dt>
+<dd>number of mutations to apply to each prompt candidate</dd>
+<dt><strong><code>lm</code></strong> :&ensp;<code>transformers.PreTrainedModel</code></dt>
+<dd>pre-loaded model (overrides checkpoint)</dd>
+<dt><strong><code>max_n_data_points</code></strong> :&ensp;<code>int</code></dt>
+<dd>maximum number of data points to use for training
+if n_shots &gt; 1, this many data_points are created by recombining n_shots number of examples</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>best_prompts</code></dt>
+<dd>List of the best found prompts</dd>
+<dt><code>metadata_dict</code></dt>
+<dd>Dictionary of metadata from fitting</dd>
+</dl></div>
 </dd>
 <dt id="imodelsx.iprompt.api.get_prompts_api"><code class="name flex">
 <span>def <span class="ident">get_prompts_api</span></span>(<span>data: List[str], llm: Callable, prompt_template: str)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1388,15 +449,12 @@ if n_shots &gt; 1, this many data_points are created by recombining n_shots numb
     answer = llm(prompt, max_new_tokens=24)
     return [answer]</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.iprompt.api.run_iprompt_api"><code class="name flex">
-<span>def <span class="ident">run_iprompt_api</span></span>(<span>r: Dict[str, List], input_strs: List[str], output_strs: List[str], model: <a title="imodelsx.iprompt.utils.PrefixModel" href="utils.html#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a>, tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, llm_api: str, save_dir: str = 'results', lr: float = 0.0001, batch_size: int = 64, max_length: int = 128, n_epochs: int = 100, n_shots: int = 1, single_shot_loss: bool = True, accum_grad_over_epoch: bool = False, max_n_datapoints: int = 10000, max_n_steps: int = 10000, epoch_save_interval: int = 1, mask_possible_answers: bool = False, verbose: int = 0)</span>
+<span>def <span class="ident">run_iprompt_api</span></span>(<span>r: Dict[str, List],<br>input_strs: List[str],<br>output_strs: List[str],<br>model: <a title="imodelsx.iprompt.utils.PrefixModel" href="utils.html#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a>,<br>tokenizer: transformers.tokenization_utils.PreTrainedTokenizer,<br>llm_api: str,<br>save_dir: str = 'results',<br>lr: float = 0.0001,<br>batch_size: int = 64,<br>max_length: int = 128,<br>n_epochs: int = 100,<br>n_shots: int = 1,<br>single_shot_loss: bool = True,<br>accum_grad_over_epoch: bool = False,<br>max_n_datapoints: int = 10000,<br>max_n_steps: int = 10000,<br>epoch_save_interval: int = 1,<br>mask_possible_answers: bool = False,<br>verbose: int = 0)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Trains a model, either by optimizing continuous embeddings or finding an optimal discrete embedding.</p>
-<h2 id="params">Params</h2>
-<p>r: dict
-dictionary of things to save</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1608,15 +666,15 @@ dictionary of things to save</p></div>
 
     return r</code></pre>
 </details>
-</dd>
-<dt id="imodelsx.iprompt.api.run_iprompt_local"><code class="name flex">
-<span>def <span class="ident">run_iprompt_local</span></span>(<span>r: Dict[str, List], input_strs: List[str], output_strs: List[str], model: <a title="imodelsx.iprompt.utils.PrefixModel" href="utils.html#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a>, tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, save_dir: str = 'results', lr: float = 0.0001, batch_size: int = 64, max_length: int = 128, n_epochs: int = 100, n_shots: int = 1, single_shot_loss: bool = True, accum_grad_over_epoch: bool = False, max_n_datapoints: int = 10000, max_n_steps: int = 10000, epoch_save_interval: int = 1, mask_possible_answers: bool = False, verbose: int = 0)</span>
-</code></dt>
-<dd>
 <div class="desc"><p>Trains a model, either by optimizing continuous embeddings or finding an optimal discrete embedding.</p>
 <h2 id="params">Params</h2>
 <p>r: dict
 dictionary of things to save</p></div>
+</dd>
+<dt id="imodelsx.iprompt.api.run_iprompt_local"><code class="name flex">
+<span>def <span class="ident">run_iprompt_local</span></span>(<span>r: Dict[str, List],<br>input_strs: List[str],<br>output_strs: List[str],<br>model: <a title="imodelsx.iprompt.utils.PrefixModel" href="utils.html#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a>,<br>tokenizer: transformers.tokenization_utils.PreTrainedTokenizer,<br>save_dir: str = 'results',<br>lr: float = 0.0001,<br>batch_size: int = 64,<br>max_length: int = 128,<br>n_epochs: int = 100,<br>n_shots: int = 1,<br>single_shot_loss: bool = True,<br>accum_grad_over_epoch: bool = False,<br>max_n_datapoints: int = 10000,<br>max_n_steps: int = 10000,<br>epoch_save_interval: int = 1,<br>mask_possible_answers: bool = False,<br>verbose: int = 0)</span>
+</code></dt>
+<dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1830,6 +888,10 @@ dictionary of things to save</p></div>
 
     return r</code></pre>
 </details>
+<div class="desc"><p>Trains a model, either by optimizing continuous embeddings or finding an optimal discrete embedding.</p>
+<h2 id="params">Params</h2>
+<p>r: dict
+dictionary of things to save</p></div>
 </dd>
 </dl>
 </section>
@@ -1837,7 +899,6 @@ dictionary of things to save</p></div>
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
 <div class="toc">
 <ul></ul>
 </div>
@@ -1861,7 +922,7 @@ dictionary of things to save</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>

@@ -34,6 +34,3 @@ def test_ngram_list():
 
         assert np.all(np.sort(seqs) == np.sort(seqs_out)
                     ), 'generate_ngrams_list performs the same as countvectorizer'
-
-if __name__ == '__main__':
-    test_ngram_list()

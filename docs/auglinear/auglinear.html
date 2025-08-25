@@ -2,18 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>imodelsx.auglinear.auglinear API documentation</title>
-<meta name="description" content="Simple scikit-learn interface for Aug-Linear …" />
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
-<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<meta name="description" content="Simple scikit-learn interface for Aug-Linear …">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
-<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
 </head>
 <body>
 <main>
@@ -26,467 +40,6 @@
 <p>Augmenting Interpretable Models with LLMs during Training
 Chandan Singh, Armin Askari, Rich Caruana, Jianfeng Gao
 <a href="https://arxiv.org/abs/2209.11799">https://arxiv.org/abs/2209.11799</a></p>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">&#34;&#34;&#34;
-Simple scikit-learn interface for Aug-Linear.
-
-Augmenting Interpretable Models with LLMs during Training
-Chandan Singh, Armin Askari, Rich Caruana, Jianfeng Gao
-https://arxiv.org/abs/2209.11799
-&#34;&#34;&#34;
-from numpy.typing import ArrayLike
-import numpy as np
-import numpy.linalg
-from scipy.special import softmax
-from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
-from sklearn.linear_model import LogisticRegression, LogisticRegressionCV, RidgeCV, Ridge
-from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import check_is_fitted
-from sklearn.preprocessing import StandardScaler, QuantileTransformer
-import transformers
-import imodelsx.auglinear.embed
-from tqdm import tqdm
-import os
-from copy import deepcopy
-from typing import Dict
-import os.path
-from typing import List
-import warnings
-import pickle as pkl
-from os.path import join
-import torch
-from sklearn.exceptions import ConvergenceWarning
-from imodelsx.auglinear.embed import _clean_np_array
-
-device = &#34;cuda&#34; if torch.cuda.is_available() else &#34;cpu&#34;
-
-
-class AugLinear(BaseEstimator):
-    def __init__(
-        self,
-        checkpoint: str = &#34;bert-base-uncased&#34;,
-        layer: str = &#34;last_hidden_state&#34;,
-        ngrams: int = 2,
-        all_ngrams: bool = False,
-        min_frequency: int = 1,
-        tokenizer_ngrams=None,
-        random_state=None,
-        normalize_embs=False,
-        cache_embs_dir: str = None,
-        fit_with_ngram_decomposition=True,
-        embedding_prefix=&#34;Represent the short phrase for sentiment classification: &#34;,
-        embedding_suffix=&#34;&#34;,
-        embedding_ngram_strategy=&#39;mean&#39;,
-        zeroshot_class_dict: Dict[int, str] = None,
-        zeroshot_strategy: str = &#39;pos_class&#39;,
-        prune_stopwords: bool = False,
-    ):
-        &#34;&#34;&#34;AugLinear Class - use either AugLinearClassifier or AugLinearRegressor rather than initializing this class directly.
-
-        Parameters
-        ----------
-        checkpoint: str
-            Name of model checkpoint (i.e. to be fetch by huggingface)
-        layer: str
-            Name of layer to extract embeddings from
-        ngrams
-            Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.
-        all_ngrams
-            Whether to use all order ngrams &lt;= ngrams argument
-        min_frequency
-            minimum frequency of ngrams to be kept in the ngrams list.
-        tokenizer_ngrams
-            if None, defaults to spacy English tokenizer
-        random_state
-            random seed for fitting
-        normalize_embs
-            whether to normalize embeddings before fitting linear model
-        cache_embs_dir: str = None,
-            if not None, directory to save embeddings into
-        fit_with_ngram_decomposition
-            whether to fit to aug-linear style (using sum of embeddings of each ngram)
-            if False, fits a typical model and uses ngram decomposition only for prediction / testing
-            Usually, setting this to False will considerably impede performance
-        embedding_prefix
-            if checkpoint is an instructor/autoregressive model, prepend this prompt
-        embedding_suffix
-            if checkpoint is an autoregressive model, append this prompt
-        embedding_ngram_strategy
-            &#39;mean&#39;: compute mean over ngram tokens
-            &#39;next_token_distr&#39;: use next token distribution as an embedding (requires AutoModelForCausalLM checkpoint)
-        zeroshot_class_dict
-            Maps class numbers to names of the class to use to compute the embedding
-            Ex. {0: &#39;negative&#39;, 1: &#39;positive&#39;}
-        zeroshot_strategy
-            &#39;pos_class&#39; or &#39;difference&#39;
-        prune_stopwords
-            Whether to prune stopwords and ngrams with length &lt; 3
-        &#34;&#34;&#34;
-        self.checkpoint = checkpoint
-        self.ngrams = ngrams
-        if tokenizer_ngrams == None:
-            from spacy.lang.en import English
-            self.tokenizer_ngrams = English().tokenizer
-        else:
-            self.tokenizer_ngrams = tokenizer_ngrams
-        self.layer = layer
-        self.random_state = random_state
-        self.all_ngrams = all_ngrams
-        self.min_frequency = min_frequency
-        self.normalize_embs = normalize_embs
-        self.cache_embs_dir = cache_embs_dir
-        self.fit_with_ngram_decomposition = fit_with_ngram_decomposition
-        self.embedding_prefix = embedding_prefix
-        self.embedding_suffix = embedding_suffix
-        self.embedding_ngram_strategy = embedding_ngram_strategy
-        self.zeroshot_class_dict = zeroshot_class_dict
-        self.zeroshot_strategy = zeroshot_strategy
-        self.prune_stopwords = prune_stopwords
-
-    def fit(
-        self,
-        X: ArrayLike,
-        y: ArrayLike,
-        verbose=True,
-        cache_linear_coefs: bool = True,
-        batch_size: int = 8,
-    ):
-        &#34;&#34;&#34;Extract embeddings then fit linear model
-
-        Parameters
-        ----------
-        X: ArrayLike[str]
-        y: ArrayLike[str]
-        cache_linear_coefs
-            Whether to compute and cache linear coefs into self.coefs_dict_
-        batch_size, optional
-            if not None, batch size to pass while calculating embeddings
-        &#34;&#34;&#34;
-
-        # metadata
-        if isinstance(self, ClassifierMixin):
-            self.classes_ = unique_labels(y)
-        if self.random_state is not None:
-            np.random.seed(self.random_state)
-
-        # set up model
-        if verbose:
-            print(&#34;initializing model...&#34;)
-        model, tokenizer_embeddings = self._get_model_and_tokenizer()
-
-        # if zero-shot, then set linear and return
-        if self.zeroshot_class_dict is not None:
-            self._fit_zeroshot(model, tokenizer_embeddings, verbose=verbose)
-            return self
-
-        # get embs
-        if verbose:
-            print(&#34;calculating embeddings...&#34;)
-        if self.cache_embs_dir is not None and os.path.exists(
-            os.path.join(self.cache_embs_dir, &#34;embs_train.pkl&#34;)
-        ):
-            embs = pkl.load(
-                open(os.path.join(self.cache_embs_dir, &#34;embs_train.pkl&#34;), &#34;rb&#34;)
-            )
-        else:
-            embs = self._get_embs(
-                X, model, tokenizer_embeddings, batch_size, summed=True)
-            if self.cache_embs_dir is not None:
-                os.makedirs(self.cache_embs_dir, exist_ok=True)
-                pkl.dump(
-                    embs,
-                    open(os.path.join(self.cache_embs_dir, &#34;embs_train.pkl&#34;), &#34;wb&#34;),
-                )
-
-        # normalize embs
-        if self.normalize_embs:
-            self.normalizer = StandardScaler()
-            embs = self.normalizer.fit_transform(embs)
-
-        # train linear
-        warnings.filterwarnings(&#34;ignore&#34;, category=ConvergenceWarning)
-        if verbose:
-            print(&#34;set up linear model...&#34;)
-        if isinstance(self, ClassifierMixin):
-            self.linear = LogisticRegressionCV()
-        elif isinstance(self, RegressorMixin):
-            self.linear = RidgeCV()
-        self.linear.fit(embs, y)
-
-        # cache linear coefs
-        if cache_linear_coefs:
-            if verbose:
-                print(&#34;caching linear coefs...&#34;)
-            self.cache_linear_coefs(X, model, tokenizer_embeddings)
-
-        return self
-
-    def _get_model_and_tokenizer(self):
-        if self.checkpoint.startswith(&#34;hkunlp/instructor-xl&#34;):
-            from InstructorEmbedding import INSTRUCTOR
-            model = INSTRUCTOR(self.checkpoint)
-            tokenizer_embeddings = None
-        else:
-            tokenizer_embeddings = transformers.AutoTokenizer.from_pretrained(
-                self.checkpoint
-            )
-            if self.embedding_ngram_strategy == &#39;next_token_distr&#39;:
-                model = transformers.AutoModelForCausalLM.from_pretrained(
-                    self.checkpoint,
-                    device_map=&#34;auto&#34;,
-                    torch_dtype=torch.float16,
-                )
-            else:
-                model = transformers.AutoModel.from_pretrained(
-                    self.checkpoint).to(device)
-
-        return model.eval(), tokenizer_embeddings
-
-    def cache_linear_coefs(
-        self,
-        X: ArrayLike,
-        model=None,
-        tokenizer_embeddings=None,
-        renormalize_embs_strategy: str = None,
-        batch_size: int = 8,
-        verbose: bool = True,
-        batch_size_embs: int = 512,
-    ):
-        &#34;&#34;&#34;Cache linear coefs for ngrams into a dictionary self.coefs_dict_
-        If it already exists, only add linear coefs for new ngrams
-
-        Params
-        ------
-        renormalize_embs_strategy
-            whether to renormalize embeddings before fitting linear model
-            (useful if getting a test set that is different from the training)
-            values: &#39;StandardScaler&#39;, &#39;QuantileTransformer&#39;
-        batch_size
-            batch size to use for calculating embeddings (on gpu at same time)
-        batch_size_embs
-            batch size to use for number of embeddings stored (on cpu at same time)
-        &#34;&#34;&#34;
-        assert renormalize_embs_strategy in [
-            None, &#34;StandardScaler&#34;, &#34;QuantileTransformer&#34;, &#39;None&#39;]
-        model, tokenizer_embeddings = self._get_model_and_tokenizer()
-
-        ngrams_list = self._get_unique_ngrams_list(X)
-
-        # dont recompute ngrams we already know
-        if hasattr(self, &#34;coefs_dict_&#34;):
-            coefs_dict_old = self.coefs_dict_
-        else:
-            coefs_dict_old = {}
-        ngrams_list = [
-            ngram for ngram in ngrams_list if not ngram in coefs_dict_old]
-        if len(ngrams_list) == 0 and verbose:
-            print(&#34;\tNothing to update!&#34;)
-            return
-
-        def normalize_embs(embs, renormalize_embs_strategy):
-            if renormalize_embs_strategy in [&#34;StandardScaler&#34;, &#34;QuantileTransformer&#34;]:
-                if renormalize_embs_strategy == &#34;StandardScaler&#34;:
-                    embs = StandardScaler().fit_transform(embs)
-                elif renormalize_embs_strategy == &#34;QuantileTransformer&#34;:
-                    embs = QuantileTransformer().fit_transform(embs)
-            elif self.normalize_embs:
-                embs = self.normalizer.transform(embs)
-            return _clean_np_array(embs)
-
-        # calculate linear coefs for each ngram in ngrams_list
-        if batch_size_embs is not None:
-            coef_embs = self.linear.coef_.squeeze().transpose()
-            n_outputs = 1 if coef_embs.ndim == 1 else coef_embs.shape[1]
-            linear_coef = np.zeros(shape=(len(ngrams_list), n_outputs))
-            # calculate linear coefs in batches
-            for i in tqdm(range(0, len(ngrams_list), batch_size_embs)):
-                embs = self._get_embs(
-                    ngrams_list[i: i + batch_size_embs],
-                    model,
-                    tokenizer_embeddings,
-                    batch_size,
-                    summed=False
-                )
-                embs = normalize_embs(embs, renormalize_embs_strategy)
-                linear_coef[i: i + batch_size_embs] = (embs @ coef_embs).reshape(
-                    -1, n_outputs
-                )
-        else:
-            embs = self._get_embs(ngrams_list, model,
-                                  tokenizer_embeddings, batch_size, summed=False)
-            embs = normalize_embs(embs, renormalize_embs_strategy)
-            linear_coef = embs @ coef_embs
-
-        # save coefs
-        linear_coef = linear_coef.squeeze()
-        self.coefs_dict_ = {
-            **coefs_dict_old,
-            **{ngrams_list[i]: linear_coef[i] for i in range(len(ngrams_list))},
-        }
-        if verbose:
-            print(
-                f&#34;\tAfter caching, len(coefs_dict_)={len(self.coefs_dict_)}, up from {len(coefs_dict_old)}&#34;)
-
-    def _get_embs(self, X: List[str], model, tokenizer_embeddings, batch_size=8, summed=True):
-        &#39;&#39;&#39;
-        Returns
-        -------
-        embs: np.array
-            num_examples x embedding_size
-        &#39;&#39;&#39;
-        kwargs = dict(
-            model=model, tokenizer_embeddings=tokenizer_embeddings, tokenizer_ngrams=self.tokenizer_ngrams,
-            checkpoint=self.checkpoint, layer=self.layer, batch_size=batch_size,
-            embedding_prefix=self.embedding_prefix, embedding_suffix=self.embedding_suffix,
-            prune_stopwords=self.prune_stopwords,
-            embedding_strategy=self.embedding_ngram_strategy
-        )
-
-        if summed:
-            embs = []
-            for x in tqdm(X):
-                emb = imodelsx.auglinear.embed.embed_and_sum_function(
-                    x,
-                    ngrams=self.ngrams,
-                    all_ngrams=self.all_ngrams,
-                    fit_with_ngram_decomposition=self.fit_with_ngram_decomposition,
-                    **kwargs,
-                )
-                embs.append(emb[&#34;embs&#34;])
-            return _clean_np_array(np.array(embs).squeeze())
-        else:
-            # get embedding for a list of ngrams
-            embs = imodelsx.auglinear.embed.embed_and_sum_function(
-                X, ngrams=None, fit_with_ngram_decomposition=False, sum_embeddings=False, **kwargs,
-            )[&#34;embs&#34;]
-            embs = np.array(embs).squeeze()
-            assert embs.shape[0] == len(X)
-            return _clean_np_array(embs)
-
-    def _get_unique_ngrams_list(self, X):
-        all_ngrams = set()
-        for x in X:
-            seqs = imodelsx.util.generate_ngrams_list(
-                x,
-                ngrams=self.ngrams,
-                tokenizer_ngrams=self.tokenizer_ngrams,
-                all_ngrams=self.all_ngrams,
-                min_frequency=self.min_frequency,
-                prune_stopwords=self.prune_stopwords,
-            )
-            all_ngrams |= set(seqs)
-        return sorted(list(all_ngrams))
-
-    def predict(self, X, warn=True):
-        &#34;&#34;&#34;For regression returns continuous output.
-        For classification, returns discrete output.
-        &#34;&#34;&#34;
-
-        check_is_fitted(self)
-        preds = self._predict_cached(X, warn=warn)
-        if isinstance(self, RegressorMixin):
-            return preds
-        elif isinstance(self, ClassifierMixin):
-            # multiclass classification
-            if preds.ndim &gt; 1:
-                return np.argmax(preds, axis=1)
-            else:
-                return (preds + self.linear.intercept_ &gt; 0).astype(int)
-
-    def predict_proba(self, X, warn=True):
-        if not isinstance(self, ClassifierMixin):
-            raise Exception(&#34;predict_proba only available for Classifier&#34;)
-        check_is_fitted(self)
-        preds = self._predict_cached(X, warn=warn)
-        if preds.ndim == 1 or preds.shape[1] == 1:
-            logits = np.vstack(
-                (1 - preds.squeeze(), preds.squeeze())).transpose()
-        else:  # multiclass classification
-            logits = preds
-        return softmax(logits, axis=1)
-
-    def _predict_cached(self, X, warn=False):
-        &#34;&#34;&#34;Predict only the cached coefs in self.coefs_dict_&#34;&#34;&#34;
-        assert hasattr(self, &#34;coefs_dict_&#34;), &#34;coefs are not cached!&#34;
-        preds = []
-        n_unseen_ngrams = 0
-        n_classes = len(self.classes_)
-        for x in X:
-            if n_classes &gt; 2:
-                pred = np.zeros(n_classes)
-            else:
-                pred = 0
-            seqs = imodelsx.util.generate_ngrams_list(
-                x,
-                ngrams=self.ngrams,
-                tokenizer_ngrams=self.tokenizer_ngrams,
-                all_ngrams=self.all_ngrams,
-                prune_stopwords=self.prune_stopwords,
-            )
-            for seq in seqs:
-                if seq in self.coefs_dict_:
-                    pred += self.coefs_dict_[seq]
-                else:
-                    n_unseen_ngrams += 1
-            preds.append(pred)
-        if n_unseen_ngrams &gt; 0 and warn:
-            warnings.warn(
-                f&#34;Saw an unseen ungram {n_unseen_ngrams} times. \
-For better performance, call cache_linear_coefs on the test dataset \
-before calling predict.&#34;
-            )
-        return np.array(preds).squeeze()
-
-    def _fit_zeroshot(self, model, tokenizer_embeddings, verbose):
-        if verbose:
-            print(&#34;setting up zero-shot linear model...&#34;)
-        if len(self.zeroshot_class_dict) &gt; 2:
-            raise NotImplementedError(
-                &#39;Only binary classification supported for zero-shot&#39;)
-        embs_dict = {}
-        for i, class_num in enumerate(self.zeroshot_class_dict):
-            class_names = self.zeroshot_class_dict[class_num]
-            if not isinstance(class_names, list):
-                class_names = [class_names]
-            embs_class = (
-                self._get_embs(
-                    class_names,
-                    model, tokenizer_embeddings,
-                    summed=False,
-                )
-                .reshape((len(class_names), -1))
-                .mean(axis=0).squeeze()
-            )
-            embs_dict[i] = deepcopy(embs_class)
-
-        # take pos class or take difference?
-        if self.zeroshot_strategy == &#39;pos_class&#39;:
-            emb = embs_dict[1].squeeze()
-        elif self.zeroshot_strategy == &#39;difference&#39;:
-            emb = (embs_dict[1] - embs_dict[0]).squeeze()
-
-        # set up linear model
-        if isinstance(self, ClassifierMixin):
-            self.linear = LogisticRegression()
-        elif isinstance(self, RegressorMixin):
-            self.linear = Ridge()
-        self.linear.coef_ = emb / np.linalg.norm(emb)  # - embs[0]
-        # self.linear.coef_ -= np.mean(self.linear.coef_)
-        # self.linear.coef_ /= np.max(np.abs(self.linear.coef_))
-        self.linear.intercept_ = 0  # -np.mean(np.abs(self.linear.coef_))
-        return self
-
-
-class AugLinearRegressor(AugLinear, RegressorMixin):
-    ...
-
-
-class AugLinearClassifier(AugLinear, ClassifierMixin):
-    ...</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -499,85 +52,9 @@ class AugLinearClassifier(AugLinear, ClassifierMixin):
 <dl>
 <dt id="imodelsx.auglinear.auglinear.AugLinear"><code class="flex name class">
 <span>class <span class="ident">AugLinear</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, min_frequency: int = 1, tokenizer_ngrams=None, random_state=None, normalize_embs=False, cache_embs_dir: str = None, fit_with_ngram_decomposition=True, embedding_prefix='Represent the short phrase for sentiment classification: ', embedding_suffix='', embedding_ngram_strategy='mean', zeroshot_class_dict: Dict[int, str] = None, zeroshot_strategy: str = 'pos_class', prune_stopwords: bool = False)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased',<br>layer: str = 'last_hidden_state',<br>ngrams: int = 2,<br>all_ngrams: bool = False,<br>min_frequency: int = 1,<br>tokenizer_ngrams=None,<br>random_state=None,<br>normalize_embs=False,<br>cache_embs_dir: str = None,<br>fit_with_ngram_decomposition=True,<br>embedding_prefix='Represent the short phrase for sentiment classification: ',<br>embedding_suffix='',<br>embedding_ngram_strategy='mean',<br>zeroshot_class_dict: Dict[int, str] = None,<br>zeroshot_strategy: str = 'pos_class',<br>prune_stopwords: bool = False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Base class for all estimators in scikit-learn.</p>
-<p>Inheriting from this class provides default implementations of:</p>
-<ul>
-<li>setting and getting parameters used by <code>GridSearchCV</code> and friends;</li>
-<li>textual and HTML representation displayed in terminals and IDEs;</li>
-<li>estimator serialization;</li>
-<li>parameters validation;</li>
-<li>data validation;</li>
-<li>feature names validation.</li>
-</ul>
-<p>Read more in the :ref:<code>User Guide &lt;rolling_your_own_estimator&gt;</code>.</p>
-<h2 id="notes">Notes</h2>
-<p>All estimators should specify all the parameters that can be set
-at the class level in their <code>__init__</code> as explicit keyword
-arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
-<h2 id="examples">Examples</h2>
-<pre><code class="language-python-repl">&gt;&gt;&gt; import numpy as np
-&gt;&gt;&gt; from sklearn.base import BaseEstimator
-&gt;&gt;&gt; class MyEstimator(BaseEstimator):
-...     def __init__(self, *, param=1):
-...         self.param = param
-...     def fit(self, X, y=None):
-...         self.is_fitted_ = True
-...         return self
-...     def predict(self, X):
-...         return np.full(shape=X.shape[0], fill_value=self.param)
-&gt;&gt;&gt; estimator = MyEstimator(param=2)
-&gt;&gt;&gt; estimator.get_params()
-{'param': 2}
-&gt;&gt;&gt; X = np.array([[1, 2], [2, 3], [3, 4]])
-&gt;&gt;&gt; y = np.array([1, 0, 1])
-&gt;&gt;&gt; estimator.fit(X, y).predict(X)
-array([2, 2, 2])
-&gt;&gt;&gt; estimator.set_params(param=3).fit(X, y).predict(X)
-array([3, 3, 3])
-</code></pre>
-<p>AugLinear Class - use either AugLinearClassifier or AugLinearRegressor rather than initializing this class directly.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
-<dd>Name of model checkpoint (i.e. to be fetch by huggingface)</dd>
-<dt><strong><code>layer</code></strong> :&ensp;<code>str</code></dt>
-<dd>Name of layer to extract embeddings from</dd>
-<dt><strong><code>ngrams</code></strong></dt>
-<dd>Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.</dd>
-<dt><strong><code>all_ngrams</code></strong></dt>
-<dd>Whether to use all order ngrams &lt;= ngrams argument</dd>
-<dt><strong><code>min_frequency</code></strong></dt>
-<dd>minimum frequency of ngrams to be kept in the ngrams list.</dd>
-<dt><strong><code>tokenizer_ngrams</code></strong></dt>
-<dd>if None, defaults to spacy English tokenizer</dd>
-<dt><strong><code>random_state</code></strong></dt>
-<dd>random seed for fitting</dd>
-<dt><strong><code>normalize_embs</code></strong></dt>
-<dd>whether to normalize embeddings before fitting linear model</dd>
-<dt><strong><code>cache_embs_dir</code></strong> :&ensp;<code>str = None,</code></dt>
-<dd>if not None, directory to save embeddings into</dd>
-<dt><strong><code>fit_with_ngram_decomposition</code></strong></dt>
-<dd>whether to fit to aug-linear style (using sum of embeddings of each ngram)
-if False, fits a typical model and uses ngram decomposition only for prediction / testing
-Usually, setting this to False will considerably impede performance</dd>
-<dt><strong><code>embedding_prefix</code></strong></dt>
-<dd>if checkpoint is an instructor/autoregressive model, prepend this prompt</dd>
-<dt><strong><code>embedding_suffix</code></strong></dt>
-<dd>if checkpoint is an autoregressive model, append this prompt</dd>
-<dt><strong><code>embedding_ngram_strategy</code></strong></dt>
-<dd>'mean': compute mean over ngram tokens
-'next_token_distr': use next token distribution as an embedding (requires AutoModelForCausalLM checkpoint)</dd>
-<dt><strong><code>zeroshot_class_dict</code></strong></dt>
-<dd>Maps class numbers to names of the class to use to compute the embedding
-Ex. {0: 'negative', 1: 'positive'}</dd>
-<dt><strong><code>zeroshot_strategy</code></strong></dt>
-<dd>'pos_class' or 'difference'</dd>
-<dt><strong><code>prune_stopwords</code></strong></dt>
-<dd>Whether to prune stopwords and ngrams with length &lt; 3</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -997,10 +474,87 @@ before calling predict.&#34;
         self.linear.intercept_ = 0  # -np.mean(np.abs(self.linear.coef_))
         return self</code></pre>
 </details>
+<div class="desc"><p>Base class for all estimators in scikit-learn.</p>
+<p>Inheriting from this class provides default implementations of:</p>
+<ul>
+<li>setting and getting parameters used by <code>GridSearchCV</code> and friends;</li>
+<li>textual and HTML representation displayed in terminals and IDEs;</li>
+<li>estimator serialization;</li>
+<li>parameters validation;</li>
+<li>data validation;</li>
+<li>feature names validation.</li>
+</ul>
+<p>Read more in the :ref:<code>User Guide &lt;rolling_your_own_estimator&gt;</code>.</p>
+<h2 id="notes">Notes</h2>
+<p>All estimators should specify all the parameters that can be set
+at the class level in their <code>__init__</code> as explicit keyword
+arguments (no <code>*args</code> or <code>**kwargs</code>).</p>
+<h2 id="examples">Examples</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; import numpy as np
+&gt;&gt;&gt; from sklearn.base import BaseEstimator
+&gt;&gt;&gt; class MyEstimator(BaseEstimator):
+...     def __init__(self, *, param=1):
+...         self.param = param
+...     def fit(self, X, y=None):
+...         self.is_fitted_ = True
+...         return self
+...     def predict(self, X):
+...         return np.full(shape=X.shape[0], fill_value=self.param)
+&gt;&gt;&gt; estimator = MyEstimator(param=2)
+&gt;&gt;&gt; estimator.get_params()
+{'param': 2}
+&gt;&gt;&gt; X = np.array([[1, 2], [2, 3], [3, 4]])
+&gt;&gt;&gt; y = np.array([1, 0, 1])
+&gt;&gt;&gt; estimator.fit(X, y).predict(X)
+array([2, 2, 2])
+&gt;&gt;&gt; estimator.set_params(param=3).fit(X, y).predict(X)
+array([3, 3, 3])
+</code></pre>
+<p>AugLinear Class - use either AugLinearClassifier or AugLinearRegressor rather than initializing this class directly.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>checkpoint</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of model checkpoint (i.e. to be fetch by huggingface)</dd>
+<dt><strong><code>layer</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of layer to extract embeddings from</dd>
+<dt><strong><code>ngrams</code></strong></dt>
+<dd>Order of ngrams to extract. 1 for unigrams, 2 for bigrams, etc.</dd>
+<dt><strong><code>all_ngrams</code></strong></dt>
+<dd>Whether to use all order ngrams &lt;= ngrams argument</dd>
+<dt><strong><code>min_frequency</code></strong></dt>
+<dd>minimum frequency of ngrams to be kept in the ngrams list.</dd>
+<dt><strong><code>tokenizer_ngrams</code></strong></dt>
+<dd>if None, defaults to spacy English tokenizer</dd>
+<dt><strong><code>random_state</code></strong></dt>
+<dd>random seed for fitting</dd>
+<dt><strong><code>normalize_embs</code></strong></dt>
+<dd>whether to normalize embeddings before fitting linear model</dd>
+<dt><strong><code>cache_embs_dir</code></strong> :&ensp;<code>str = None,</code></dt>
+<dd>if not None, directory to save embeddings into</dd>
+<dt><strong><code>fit_with_ngram_decomposition</code></strong></dt>
+<dd>whether to fit to aug-linear style (using sum of embeddings of each ngram)
+if False, fits a typical model and uses ngram decomposition only for prediction / testing
+Usually, setting this to False will considerably impede performance</dd>
+<dt><strong><code>embedding_prefix</code></strong></dt>
+<dd>if checkpoint is an instructor/autoregressive model, prepend this prompt</dd>
+<dt><strong><code>embedding_suffix</code></strong></dt>
+<dd>if checkpoint is an autoregressive model, append this prompt</dd>
+<dt><strong><code>embedding_ngram_strategy</code></strong></dt>
+<dd>'mean': compute mean over ngram tokens
+'next_token_distr': use next token distribution as an embedding (requires AutoModelForCausalLM checkpoint)</dd>
+<dt><strong><code>zeroshot_class_dict</code></strong></dt>
+<dd>Maps class numbers to names of the class to use to compute the embedding
+Ex. {0: 'negative', 1: 'positive'}</dd>
+<dt><strong><code>zeroshot_strategy</code></strong></dt>
+<dd>'pos_class' or 'difference'</dd>
+<dt><strong><code>prune_stopwords</code></strong></dt>
+<dd>Whether to prune stopwords and ngrams with length &lt; 3</dd>
+</dl></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>sklearn.base.BaseEstimator</li>
-<li>sklearn.utils._estimator_html_repr._HTMLDocumentationLinkMixin</li>
+<li>sklearn.utils._repr_html.base.ReprHTMLMixin</li>
+<li>sklearn.utils._repr_html.base._HTMLDocumentationLinkMixin</li>
 <li>sklearn.utils._metadata_requests._MetadataRequester</li>
 </ul>
 <h3>Subclasses</h3>
@@ -1011,20 +565,9 @@ before calling predict.&#34;
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.auglinear.auglinear.AugLinear.cache_linear_coefs"><code class="name flex">
-<span>def <span class="ident">cache_linear_coefs</span></span>(<span>self, X: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], model=None, tokenizer_embeddings=None, renormalize_embs_strategy: str = None, batch_size: int = 8, verbose: bool = True, batch_size_embs: int = 512)</span>
+<span>def <span class="ident">cache_linear_coefs</span></span>(<span>self,<br>X: numpy._typing._array_like._Buffer | numpy._typing._array_like._SupportsArray[numpy.dtype[typing.Any]] | numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[typing.Any]]] | bool | int | float | complex | str | bytes | numpy._typing._nested_sequence._NestedSequence[bool | int | float | complex | str | bytes],<br>model=None,<br>tokenizer_embeddings=None,<br>renormalize_embs_strategy: str = None,<br>batch_size: int = 8,<br>verbose: bool = True,<br>batch_size_embs: int = 512)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Cache linear coefs for ngrams into a dictionary self.coefs_dict_
-If it already exists, only add linear coefs for new ngrams</p>
-<h2 id="params">Params</h2>
-<p>renormalize_embs_strategy
-whether to renormalize embeddings before fitting linear model
-(useful if getting a test set that is different from the training)
-values: 'StandardScaler', 'QuantileTransformer'
-batch_size
-batch size to use for calculating embeddings (on gpu at same time)
-batch_size_embs
-batch size to use for number of embeddings stored (on cpu at same time)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1114,23 +657,22 @@ batch size to use for number of embeddings stored (on cpu at same time)</p></div
         print(
             f&#34;\tAfter caching, len(coefs_dict_)={len(self.coefs_dict_)}, up from {len(coefs_dict_old)}&#34;)</code></pre>
 </details>
+<div class="desc"><p>Cache linear coefs for ngrams into a dictionary self.coefs_dict_
+If it already exists, only add linear coefs for new ngrams</p>
+<h2 id="params">Params</h2>
+<p>renormalize_embs_strategy
+whether to renormalize embeddings before fitting linear model
+(useful if getting a test set that is different from the training)
+values: 'StandardScaler', 'QuantileTransformer'
+batch_size
+batch size to use for calculating embeddings (on gpu at same time)
+batch_size_embs
+batch size to use for number of embeddings stored (on cpu at same time)</p></div>
 </dd>
 <dt id="imodelsx.auglinear.auglinear.AugLinear.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, X: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], y: Union[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]], numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[Any]]], bool, int, float, complex, str, bytes, numpy._typing._nested_sequence._NestedSequence[Union[bool, int, float, complex, str, bytes]]], verbose=True, cache_linear_coefs: bool = True, batch_size: int = 8)</span>
+<span>def <span class="ident">fit</span></span>(<span>self,<br>X: numpy._typing._array_like._Buffer | numpy._typing._array_like._SupportsArray[numpy.dtype[typing.Any]] | numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[typing.Any]]] | bool | int | float | complex | str | bytes | numpy._typing._nested_sequence._NestedSequence[bool | int | float | complex | str | bytes],<br>y: numpy._typing._array_like._Buffer | numpy._typing._array_like._SupportsArray[numpy.dtype[typing.Any]] | numpy._typing._nested_sequence._NestedSequence[numpy._typing._array_like._SupportsArray[numpy.dtype[typing.Any]]] | bool | int | float | complex | str | bytes | numpy._typing._nested_sequence._NestedSequence[bool | int | float | complex | str | bytes],<br>verbose=True,<br>cache_linear_coefs: bool = True,<br>batch_size: int = 8)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Extract embeddings then fit linear model</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>X</code></strong> :&ensp;<code>ArrayLike[str]</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>ArrayLike[str]</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>cache_linear_coefs</code></strong></dt>
-<dd>Whether to compute and cache linear coefs into self.coefs_dict_</dd>
-<dt><strong><code>batch_size</code></strong>, <strong><code>optional</code></strong></dt>
-<dd>if not None, batch size to pass while calculating embeddings</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1213,13 +755,23 @@ batch size to use for number of embeddings stored (on cpu at same time)</p></div
 
     return self</code></pre>
 </details>
+<div class="desc"><p>Extract embeddings then fit linear model</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>X</code></strong> :&ensp;<code>ArrayLike[str]</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>ArrayLike[str]</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>cache_linear_coefs</code></strong></dt>
+<dd>Whether to compute and cache linear coefs into self.coefs_dict_</dd>
+<dt><strong><code>batch_size</code></strong>, <strong><code>optional</code></strong></dt>
+<dd>if not None, batch size to pass while calculating embeddings</dd>
+</dl></div>
 </dd>
 <dt id="imodelsx.auglinear.auglinear.AugLinear.predict"><code class="name flex">
 <span>def <span class="ident">predict</span></span>(<span>self, X, warn=True)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>For regression returns continuous output.
-For classification, returns discrete output.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1240,12 +792,13 @@ For classification, returns discrete output.</p></div>
         else:
             return (preds + self.linear.intercept_ &gt; 0).astype(int)</code></pre>
 </details>
+<div class="desc"><p>For regression returns continuous output.
+For classification, returns discrete output.</p></div>
 </dd>
 <dt id="imodelsx.auglinear.auglinear.AugLinear.predict_proba"><code class="name flex">
 <span>def <span class="ident">predict_proba</span></span>(<span>self, X, warn=True)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1262,69 +815,22 @@ For classification, returns discrete output.</p></div>
         logits = preds
     return softmax(logits, axis=1)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.auglinear.auglinear.AugLinear.set_fit_request"><code class="name flex">
-<span>def <span class="ident">set_fit_request</span></span>(<span>self: <a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a>, *, batch_size: Union[bool, ForwardRef(None), str] = '$UNCHANGED$', cache_linear_coefs: Union[bool, ForwardRef(None), str] = '$UNCHANGED$', verbose: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a></span>
+<span>def <span class="ident">set_fit_request</span></span>(<span>self: <a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a>,<br>*,<br>batch_size: bool | str | None = '$UNCHANGED$',<br>cache_linear_coefs: bool | str | None = '$UNCHANGED$',<br>verbose: bool | str | None = '$UNCHANGED$') ‑> <a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Request metadata passed to the <code>fit</code> method.</p>
-<p>Note that this method is only relevant if
-<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
-Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
-mechanism works.</p>
-<p>The options for each parameter are:</p>
-<ul>
-<li>
-<p><code>True</code>: metadata is requested, and passed to <code>fit</code> if provided. The request is ignored if metadata is not provided.</p>
-</li>
-<li>
-<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>fit</code>.</p>
-</li>
-<li>
-<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
-</li>
-<li>
-<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
-</li>
-</ul>
-<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
-existing request. This allows you to change the request for some
-parameters and not others.</p>
-<div class="admonition versionadded">
-<p class="admonition-title">Added in version:&ensp;1.3</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This method is only relevant if this estimator is used as a
-sub-estimator of a meta-estimator, e.g. used inside a
-:class:<code>~sklearn.pipeline.Pipeline</code>. Otherwise it has no effect.</p>
-</div>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>batch_size</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
-default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
-<dd>Metadata routing for <code>batch_size</code> parameter in <code>fit</code>.</dd>
-<dt><strong><code>cache_linear_coefs</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
-default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
-<dd>Metadata routing for <code>cache_linear_coefs</code> parameter in <code>fit</code>.</dd>
-<dt><strong><code>verbose</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
-default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
-<dd>Metadata routing for <code>verbose</code> parameter in <code>fit</code>.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
-<dd>The updated object.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def func(**kw):
-    &#34;&#34;&#34;Updates the request for provided parameters
+<pre><code class="python">def func(*args, **kw):
+    &#34;&#34;&#34;Updates the `_metadata_request` attribute of the consumer (`instance`)
+    for the parameters provided as `**kw`.
 
     This docstring is overwritten below.
-    See REQUESTER_DOC for expected functionality
+    See REQUESTER_DOC for expected functionality.
     &#34;&#34;&#34;
     if not _routing_enabled():
         raise RuntimeError(
@@ -1335,77 +841,93 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 
     if self.validate_keys and (set(kw) - set(self.keys)):
         raise TypeError(
-            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
-            f&#34; are: {set(self.keys)}&#34;
+            f&#34;Unexpected args: {set(kw) - set(self.keys)} in {self.name}. &#34;
+            f&#34;Accepted arguments are: {set(self.keys)}&#34;
         )
 
-    requests = instance._get_metadata_request()
+    # This makes it possible to use the decorated method as an unbound method,
+    # for instance when monkeypatching.
+    # https://github.com/scikit-learn/scikit-learn/issues/28632
+    if instance is None:
+        _instance = args[0]
+        args = args[1:]
+    else:
+        _instance = instance
+
+    # Replicating python&#39;s behavior when positional args are given other than
+    # `self`, and `self` is only allowed if this method is unbound.
+    if args:
+        raise TypeError(
+            f&#34;set_{self.name}_request() takes 0 positional argument but&#34;
+            f&#34; {len(args)} were given&#34;
+        )
+
+    requests = _instance._get_metadata_request()
     method_metadata_request = getattr(requests, self.name)
 
     for prop, alias in kw.items():
         if alias is not UNCHANGED:
             method_metadata_request.add_request(param=prop, alias=alias)
-    instance._metadata_request = requests
+    _instance._metadata_request = requests
 
-    return instance</code></pre>
+    return _instance</code></pre>
 </details>
+<div class="desc"><p>Configure whether metadata should be requested to be passed to the <code>fit</code> method.</p>
+<pre><code>    Note that this method is only relevant when this estimator is used as a
+    sub-estimator within a :term:`meta-estimator` and metadata routing is enabled
+    with ``enable_metadata_routing=True`` (see :func:&lt;code&gt;sklearn.set\_config&lt;/code&gt;).
+    Please check the :ref:`User Guide &lt;metadata_routing&gt;` on how the routing
+    mechanism works.
+
+    The options for each parameter are:
+
+    - &lt;code&gt;True&lt;/code&gt;: metadata is requested, and passed to &lt;code&gt;fit&lt;/code&gt; if provided. The request is ignored if metadata is not provided.
+
+    - &lt;code&gt;False&lt;/code&gt;: metadata is not requested and the meta-estimator will not pass it to &lt;code&gt;fit&lt;/code&gt;.
+
+    - &lt;code&gt;None&lt;/code&gt;: metadata is not requested, and the meta-estimator will raise an error if the user provides it.
+
+    - &lt;code&gt;str&lt;/code&gt;: metadata should be passed to the meta-estimator with this given alias instead of the original name.
+
+    The default (&lt;code&gt;sklearn.utils.metadata\_routing.UNCHANGED&lt;/code&gt;) retains the
+    existing request. This allows you to change the request for some
+    parameters and not others.
+
+    !!! versionadded "Added in version:&amp;ensp;1.3"
+
+
+
+    Parameters
+    ----------
+    batch_size : str, True, False, or None,                     default=sklearn.utils.metadata_routing.UNCHANGED
+        Metadata routing for &lt;code&gt;batch\_size&lt;/code&gt; parameter in &lt;code&gt;fit&lt;/code&gt;.
+
+    cache_linear_coefs : str, True, False, or None,                     default=sklearn.utils.metadata_routing.UNCHANGED
+        Metadata routing for &lt;code&gt;cache\_linear\_coefs&lt;/code&gt; parameter in &lt;code&gt;fit&lt;/code&gt;.
+
+    verbose : str, True, False, or None,                     default=sklearn.utils.metadata_routing.UNCHANGED
+        Metadata routing for &lt;code&gt;verbose&lt;/code&gt; parameter in &lt;code&gt;fit&lt;/code&gt;.
+
+    Returns
+    -------
+    self : object
+        The updated object.
+</code></pre></div>
 </dd>
 <dt id="imodelsx.auglinear.auglinear.AugLinear.set_predict_proba_request"><code class="name flex">
-<span>def <span class="ident">set_predict_proba_request</span></span>(<span>self: <a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a>, *, warn: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a></span>
+<span>def <span class="ident">set_predict_proba_request</span></span>(<span>self: <a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a>,<br>*,<br>warn: bool | str | None = '$UNCHANGED$') ‑> <a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Request metadata passed to the <code>predict_proba</code> method.</p>
-<p>Note that this method is only relevant if
-<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
-Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
-mechanism works.</p>
-<p>The options for each parameter are:</p>
-<ul>
-<li>
-<p><code>True</code>: metadata is requested, and passed to <code>predict_proba</code> if provided. The request is ignored if metadata is not provided.</p>
-</li>
-<li>
-<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>predict_proba</code>.</p>
-</li>
-<li>
-<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
-</li>
-<li>
-<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
-</li>
-</ul>
-<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
-existing request. This allows you to change the request for some
-parameters and not others.</p>
-<div class="admonition versionadded">
-<p class="admonition-title">Added in version:&ensp;1.3</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This method is only relevant if this estimator is used as a
-sub-estimator of a meta-estimator, e.g. used inside a
-:class:<code>~sklearn.pipeline.Pipeline</code>. Otherwise it has no effect.</p>
-</div>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>warn</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
-default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
-<dd>Metadata routing for <code>warn</code> parameter in <code>predict_proba</code>.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
-<dd>The updated object.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def func(**kw):
-    &#34;&#34;&#34;Updates the request for provided parameters
+<pre><code class="python">def func(*args, **kw):
+    &#34;&#34;&#34;Updates the `_metadata_request` attribute of the consumer (`instance`)
+    for the parameters provided as `**kw`.
 
     This docstring is overwritten below.
-    See REQUESTER_DOC for expected functionality
+    See REQUESTER_DOC for expected functionality.
     &#34;&#34;&#34;
     if not _routing_enabled():
         raise RuntimeError(
@@ -1416,77 +938,87 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 
     if self.validate_keys and (set(kw) - set(self.keys)):
         raise TypeError(
-            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
-            f&#34; are: {set(self.keys)}&#34;
+            f&#34;Unexpected args: {set(kw) - set(self.keys)} in {self.name}. &#34;
+            f&#34;Accepted arguments are: {set(self.keys)}&#34;
         )
 
-    requests = instance._get_metadata_request()
+    # This makes it possible to use the decorated method as an unbound method,
+    # for instance when monkeypatching.
+    # https://github.com/scikit-learn/scikit-learn/issues/28632
+    if instance is None:
+        _instance = args[0]
+        args = args[1:]
+    else:
+        _instance = instance
+
+    # Replicating python&#39;s behavior when positional args are given other than
+    # `self`, and `self` is only allowed if this method is unbound.
+    if args:
+        raise TypeError(
+            f&#34;set_{self.name}_request() takes 0 positional argument but&#34;
+            f&#34; {len(args)} were given&#34;
+        )
+
+    requests = _instance._get_metadata_request()
     method_metadata_request = getattr(requests, self.name)
 
     for prop, alias in kw.items():
         if alias is not UNCHANGED:
             method_metadata_request.add_request(param=prop, alias=alias)
-    instance._metadata_request = requests
+    _instance._metadata_request = requests
 
-    return instance</code></pre>
+    return _instance</code></pre>
 </details>
+<div class="desc"><p>Configure whether metadata should be requested to be passed to the <code>predict_proba</code> method.</p>
+<pre><code>    Note that this method is only relevant when this estimator is used as a
+    sub-estimator within a :term:`meta-estimator` and metadata routing is enabled
+    with ``enable_metadata_routing=True`` (see :func:&lt;code&gt;sklearn.set\_config&lt;/code&gt;).
+    Please check the :ref:`User Guide &lt;metadata_routing&gt;` on how the routing
+    mechanism works.
+
+    The options for each parameter are:
+
+    - &lt;code&gt;True&lt;/code&gt;: metadata is requested, and passed to &lt;code&gt;predict\_proba&lt;/code&gt; if provided. The request is ignored if metadata is not provided.
+
+    - &lt;code&gt;False&lt;/code&gt;: metadata is not requested and the meta-estimator will not pass it to &lt;code&gt;predict\_proba&lt;/code&gt;.
+
+    - &lt;code&gt;None&lt;/code&gt;: metadata is not requested, and the meta-estimator will raise an error if the user provides it.
+
+    - &lt;code&gt;str&lt;/code&gt;: metadata should be passed to the meta-estimator with this given alias instead of the original name.
+
+    The default (&lt;code&gt;sklearn.utils.metadata\_routing.UNCHANGED&lt;/code&gt;) retains the
+    existing request. This allows you to change the request for some
+    parameters and not others.
+
+    !!! versionadded "Added in version:&amp;ensp;1.3"
+
+
+
+    Parameters
+    ----------
+    warn : str, True, False, or None,                     default=sklearn.utils.metadata_routing.UNCHANGED
+        Metadata routing for &lt;code&gt;warn&lt;/code&gt; parameter in &lt;code&gt;predict\_proba&lt;/code&gt;.
+
+    Returns
+    -------
+    self : object
+        The updated object.
+</code></pre></div>
 </dd>
 <dt id="imodelsx.auglinear.auglinear.AugLinear.set_predict_request"><code class="name flex">
-<span>def <span class="ident">set_predict_request</span></span>(<span>self: <a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a>, *, warn: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a></span>
+<span>def <span class="ident">set_predict_request</span></span>(<span>self: <a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a>,<br>*,<br>warn: bool | str | None = '$UNCHANGED$') ‑> <a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Request metadata passed to the <code>predict</code> method.</p>
-<p>Note that this method is only relevant if
-<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
-Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
-mechanism works.</p>
-<p>The options for each parameter are:</p>
-<ul>
-<li>
-<p><code>True</code>: metadata is requested, and passed to <code>predict</code> if provided. The request is ignored if metadata is not provided.</p>
-</li>
-<li>
-<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>predict</code>.</p>
-</li>
-<li>
-<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
-</li>
-<li>
-<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
-</li>
-</ul>
-<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
-existing request. This allows you to change the request for some
-parameters and not others.</p>
-<div class="admonition versionadded">
-<p class="admonition-title">Added in version:&ensp;1.3</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This method is only relevant if this estimator is used as a
-sub-estimator of a meta-estimator, e.g. used inside a
-:class:<code>~sklearn.pipeline.Pipeline</code>. Otherwise it has no effect.</p>
-</div>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>warn</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
-default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
-<dd>Metadata routing for <code>warn</code> parameter in <code>predict</code>.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
-<dd>The updated object.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def func(**kw):
-    &#34;&#34;&#34;Updates the request for provided parameters
+<pre><code class="python">def func(*args, **kw):
+    &#34;&#34;&#34;Updates the `_metadata_request` attribute of the consumer (`instance`)
+    for the parameters provided as `**kw`.
 
     This docstring is overwritten below.
-    See REQUESTER_DOC for expected functionality
+    See REQUESTER_DOC for expected functionality.
     &#34;&#34;&#34;
     if not _routing_enabled():
         raise RuntimeError(
@@ -1497,28 +1029,87 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 
     if self.validate_keys and (set(kw) - set(self.keys)):
         raise TypeError(
-            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
-            f&#34; are: {set(self.keys)}&#34;
+            f&#34;Unexpected args: {set(kw) - set(self.keys)} in {self.name}. &#34;
+            f&#34;Accepted arguments are: {set(self.keys)}&#34;
         )
 
-    requests = instance._get_metadata_request()
+    # This makes it possible to use the decorated method as an unbound method,
+    # for instance when monkeypatching.
+    # https://github.com/scikit-learn/scikit-learn/issues/28632
+    if instance is None:
+        _instance = args[0]
+        args = args[1:]
+    else:
+        _instance = instance
+
+    # Replicating python&#39;s behavior when positional args are given other than
+    # `self`, and `self` is only allowed if this method is unbound.
+    if args:
+        raise TypeError(
+            f&#34;set_{self.name}_request() takes 0 positional argument but&#34;
+            f&#34; {len(args)} were given&#34;
+        )
+
+    requests = _instance._get_metadata_request()
     method_metadata_request = getattr(requests, self.name)
 
     for prop, alias in kw.items():
         if alias is not UNCHANGED:
             method_metadata_request.add_request(param=prop, alias=alias)
-    instance._metadata_request = requests
+    _instance._metadata_request = requests
 
-    return instance</code></pre>
+    return _instance</code></pre>
 </details>
+<div class="desc"><p>Configure whether metadata should be requested to be passed to the <code>predict</code> method.</p>
+<pre><code>    Note that this method is only relevant when this estimator is used as a
+    sub-estimator within a :term:`meta-estimator` and metadata routing is enabled
+    with ``enable_metadata_routing=True`` (see :func:&lt;code&gt;sklearn.set\_config&lt;/code&gt;).
+    Please check the :ref:`User Guide &lt;metadata_routing&gt;` on how the routing
+    mechanism works.
+
+    The options for each parameter are:
+
+    - &lt;code&gt;True&lt;/code&gt;: metadata is requested, and passed to &lt;code&gt;predict&lt;/code&gt; if provided. The request is ignored if metadata is not provided.
+
+    - &lt;code&gt;False&lt;/code&gt;: metadata is not requested and the meta-estimator will not pass it to &lt;code&gt;predict&lt;/code&gt;.
+
+    - &lt;code&gt;None&lt;/code&gt;: metadata is not requested, and the meta-estimator will raise an error if the user provides it.
+
+    - &lt;code&gt;str&lt;/code&gt;: metadata should be passed to the meta-estimator with this given alias instead of the original name.
+
+    The default (&lt;code&gt;sklearn.utils.metadata\_routing.UNCHANGED&lt;/code&gt;) retains the
+    existing request. This allows you to change the request for some
+    parameters and not others.
+
+    !!! versionadded "Added in version:&amp;ensp;1.3"
+
+
+
+    Parameters
+    ----------
+    warn : str, True, False, or None,                     default=sklearn.utils.metadata_routing.UNCHANGED
+        Metadata routing for &lt;code&gt;warn&lt;/code&gt; parameter in &lt;code&gt;predict&lt;/code&gt;.
+
+    Returns
+    -------
+    self : object
+        The updated object.
+</code></pre></div>
 </dd>
 </dl>
 </dd>
 <dt id="imodelsx.auglinear.auglinear.AugLinearClassifier"><code class="flex name class">
 <span>class <span class="ident">AugLinearClassifier</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, min_frequency: int = 1, tokenizer_ngrams=None, random_state=None, normalize_embs=False, cache_embs_dir: str = None, fit_with_ngram_decomposition=True, embedding_prefix='Represent the short phrase for sentiment classification: ', embedding_suffix='', embedding_ngram_strategy='mean', zeroshot_class_dict: Dict[int, str] = None, zeroshot_strategy: str = 'pos_class', prune_stopwords: bool = False)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased',<br>layer: str = 'last_hidden_state',<br>ngrams: int = 2,<br>all_ngrams: bool = False,<br>min_frequency: int = 1,<br>tokenizer_ngrams=None,<br>random_state=None,<br>normalize_embs=False,<br>cache_embs_dir: str = None,<br>fit_with_ngram_decomposition=True,<br>embedding_prefix='Represent the short phrase for sentiment classification: ',<br>embedding_suffix='',<br>embedding_ngram_strategy='mean',<br>zeroshot_class_dict: Dict[int, str] = None,<br>zeroshot_strategy: str = 'pos_class',<br>prune_stopwords: bool = False)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AugLinearClassifier(AugLinear, ClassifierMixin):
+    ...</code></pre>
+</details>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
 <p>Inheriting from this class provides default implementations of:</p>
 <ul>
@@ -1595,79 +1186,31 @@ Ex. {0: 'negative', 1: 'positive'}</dd>
 <dt><strong><code>prune_stopwords</code></strong></dt>
 <dd>Whether to prune stopwords and ngrams with length &lt; 3</dd>
 </dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class AugLinearClassifier(AugLinear, ClassifierMixin):
-    ...</code></pre>
-</details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a></li>
 <li>sklearn.base.BaseEstimator</li>
-<li>sklearn.utils._estimator_html_repr._HTMLDocumentationLinkMixin</li>
+<li>sklearn.utils._repr_html.base.ReprHTMLMixin</li>
+<li>sklearn.utils._repr_html.base._HTMLDocumentationLinkMixin</li>
 <li>sklearn.utils._metadata_requests._MetadataRequester</li>
 <li>sklearn.base.ClassifierMixin</li>
 </ul>
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.auglinear.auglinear.AugLinearClassifier.set_score_request"><code class="name flex">
-<span>def <span class="ident">set_score_request</span></span>(<span>self: <a title="imodelsx.auglinear.auglinear.AugLinearClassifier" href="#imodelsx.auglinear.auglinear.AugLinearClassifier">AugLinearClassifier</a>, *, sample_weight: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.auglinear.auglinear.AugLinearClassifier" href="#imodelsx.auglinear.auglinear.AugLinearClassifier">AugLinearClassifier</a></span>
+<span>def <span class="ident">set_score_request</span></span>(<span>self: <a title="imodelsx.auglinear.auglinear.AugLinearClassifier" href="#imodelsx.auglinear.auglinear.AugLinearClassifier">AugLinearClassifier</a>,<br>*,<br>sample_weight: bool | str | None = '$UNCHANGED$') ‑> <a title="imodelsx.auglinear.auglinear.AugLinearClassifier" href="#imodelsx.auglinear.auglinear.AugLinearClassifier">AugLinearClassifier</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Request metadata passed to the <code>score</code> method.</p>
-<p>Note that this method is only relevant if
-<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
-Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
-mechanism works.</p>
-<p>The options for each parameter are:</p>
-<ul>
-<li>
-<p><code>True</code>: metadata is requested, and passed to <code>score</code> if provided. The request is ignored if metadata is not provided.</p>
-</li>
-<li>
-<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>score</code>.</p>
-</li>
-<li>
-<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
-</li>
-<li>
-<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
-</li>
-</ul>
-<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
-existing request. This allows you to change the request for some
-parameters and not others.</p>
-<div class="admonition versionadded">
-<p class="admonition-title">Added in version:&ensp;1.3</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This method is only relevant if this estimator is used as a
-sub-estimator of a meta-estimator, e.g. used inside a
-:class:<code>~sklearn.pipeline.Pipeline</code>. Otherwise it has no effect.</p>
-</div>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>sample_weight</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
-default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
-<dd>Metadata routing for <code>sample_weight</code> parameter in <code>score</code>.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
-<dd>The updated object.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def func(**kw):
-    &#34;&#34;&#34;Updates the request for provided parameters
+<pre><code class="python">def func(*args, **kw):
+    &#34;&#34;&#34;Updates the `_metadata_request` attribute of the consumer (`instance`)
+    for the parameters provided as `**kw`.
 
     This docstring is overwritten below.
-    See REQUESTER_DOC for expected functionality
+    See REQUESTER_DOC for expected functionality.
     &#34;&#34;&#34;
     if not _routing_enabled():
         raise RuntimeError(
@@ -1678,20 +1221,72 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 
     if self.validate_keys and (set(kw) - set(self.keys)):
         raise TypeError(
-            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
-            f&#34; are: {set(self.keys)}&#34;
+            f&#34;Unexpected args: {set(kw) - set(self.keys)} in {self.name}. &#34;
+            f&#34;Accepted arguments are: {set(self.keys)}&#34;
         )
 
-    requests = instance._get_metadata_request()
+    # This makes it possible to use the decorated method as an unbound method,
+    # for instance when monkeypatching.
+    # https://github.com/scikit-learn/scikit-learn/issues/28632
+    if instance is None:
+        _instance = args[0]
+        args = args[1:]
+    else:
+        _instance = instance
+
+    # Replicating python&#39;s behavior when positional args are given other than
+    # `self`, and `self` is only allowed if this method is unbound.
+    if args:
+        raise TypeError(
+            f&#34;set_{self.name}_request() takes 0 positional argument but&#34;
+            f&#34; {len(args)} were given&#34;
+        )
+
+    requests = _instance._get_metadata_request()
     method_metadata_request = getattr(requests, self.name)
 
     for prop, alias in kw.items():
         if alias is not UNCHANGED:
             method_metadata_request.add_request(param=prop, alias=alias)
-    instance._metadata_request = requests
+    _instance._metadata_request = requests
 
-    return instance</code></pre>
+    return _instance</code></pre>
 </details>
+<div class="desc"><p>Configure whether metadata should be requested to be passed to the <code>score</code> method.</p>
+<pre><code>    Note that this method is only relevant when this estimator is used as a
+    sub-estimator within a :term:`meta-estimator` and metadata routing is enabled
+    with ``enable_metadata_routing=True`` (see :func:&lt;code&gt;sklearn.set\_config&lt;/code&gt;).
+    Please check the :ref:`User Guide &lt;metadata_routing&gt;` on how the routing
+    mechanism works.
+
+    The options for each parameter are:
+
+    - &lt;code&gt;True&lt;/code&gt;: metadata is requested, and passed to &lt;code&gt;score&lt;/code&gt; if provided. The request is ignored if metadata is not provided.
+
+    - &lt;code&gt;False&lt;/code&gt;: metadata is not requested and the meta-estimator will not pass it to &lt;code&gt;score&lt;/code&gt;.
+
+    - &lt;code&gt;None&lt;/code&gt;: metadata is not requested, and the meta-estimator will raise an error if the user provides it.
+
+    - &lt;code&gt;str&lt;/code&gt;: metadata should be passed to the meta-estimator with this given alias instead of the original name.
+
+    The default (&lt;code&gt;sklearn.utils.metadata\_routing.UNCHANGED&lt;/code&gt;) retains the
+    existing request. This allows you to change the request for some
+    parameters and not others.
+
+    !!! versionadded "Added in version:&amp;ensp;1.3"
+
+
+
+    Parameters
+    ----------
+    sample_weight : str, True, False, or None,                     default=sklearn.utils.metadata_routing.UNCHANGED
+        Metadata routing for &lt;code&gt;sample\_weight&lt;/code&gt; parameter in &lt;code&gt;score&lt;/code&gt;.
+
+    Returns
+    -------
+    self : object
+        The updated object.
+</code></pre></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -1710,9 +1305,16 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 </dd>
 <dt id="imodelsx.auglinear.auglinear.AugLinearRegressor"><code class="flex name class">
 <span>class <span class="ident">AugLinearRegressor</span></span>
-<span>(</span><span>checkpoint: str = 'bert-base-uncased', layer: str = 'last_hidden_state', ngrams: int = 2, all_ngrams: bool = False, min_frequency: int = 1, tokenizer_ngrams=None, random_state=None, normalize_embs=False, cache_embs_dir: str = None, fit_with_ngram_decomposition=True, embedding_prefix='Represent the short phrase for sentiment classification: ', embedding_suffix='', embedding_ngram_strategy='mean', zeroshot_class_dict: Dict[int, str] = None, zeroshot_strategy: str = 'pos_class', prune_stopwords: bool = False)</span>
+<span>(</span><span>checkpoint: str = 'bert-base-uncased',<br>layer: str = 'last_hidden_state',<br>ngrams: int = 2,<br>all_ngrams: bool = False,<br>min_frequency: int = 1,<br>tokenizer_ngrams=None,<br>random_state=None,<br>normalize_embs=False,<br>cache_embs_dir: str = None,<br>fit_with_ngram_decomposition=True,<br>embedding_prefix='Represent the short phrase for sentiment classification: ',<br>embedding_suffix='',<br>embedding_ngram_strategy='mean',<br>zeroshot_class_dict: Dict[int, str] = None,<br>zeroshot_strategy: str = 'pos_class',<br>prune_stopwords: bool = False)</span>
 </code></dt>
 <dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AugLinearRegressor(AugLinear, RegressorMixin):
+    ...</code></pre>
+</details>
 <div class="desc"><p>Base class for all estimators in scikit-learn.</p>
 <p>Inheriting from this class provides default implementations of:</p>
 <ul>
@@ -1789,79 +1391,31 @@ Ex. {0: 'negative', 1: 'positive'}</dd>
 <dt><strong><code>prune_stopwords</code></strong></dt>
 <dd>Whether to prune stopwords and ngrams with length &lt; 3</dd>
 </dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class AugLinearRegressor(AugLinear, RegressorMixin):
-    ...</code></pre>
-</details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="imodelsx.auglinear.auglinear.AugLinear" href="#imodelsx.auglinear.auglinear.AugLinear">AugLinear</a></li>
 <li>sklearn.base.BaseEstimator</li>
-<li>sklearn.utils._estimator_html_repr._HTMLDocumentationLinkMixin</li>
+<li>sklearn.utils._repr_html.base.ReprHTMLMixin</li>
+<li>sklearn.utils._repr_html.base._HTMLDocumentationLinkMixin</li>
 <li>sklearn.utils._metadata_requests._MetadataRequester</li>
 <li>sklearn.base.RegressorMixin</li>
 </ul>
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.auglinear.auglinear.AugLinearRegressor.set_score_request"><code class="name flex">
-<span>def <span class="ident">set_score_request</span></span>(<span>self: <a title="imodelsx.auglinear.auglinear.AugLinearRegressor" href="#imodelsx.auglinear.auglinear.AugLinearRegressor">AugLinearRegressor</a>, *, sample_weight: Union[bool, ForwardRef(None), str] = '$UNCHANGED$') ‑> <a title="imodelsx.auglinear.auglinear.AugLinearRegressor" href="#imodelsx.auglinear.auglinear.AugLinearRegressor">AugLinearRegressor</a></span>
+<span>def <span class="ident">set_score_request</span></span>(<span>self: <a title="imodelsx.auglinear.auglinear.AugLinearRegressor" href="#imodelsx.auglinear.auglinear.AugLinearRegressor">AugLinearRegressor</a>,<br>*,<br>sample_weight: bool | str | None = '$UNCHANGED$') ‑> <a title="imodelsx.auglinear.auglinear.AugLinearRegressor" href="#imodelsx.auglinear.auglinear.AugLinearRegressor">AugLinearRegressor</a></span>
 </code></dt>
 <dd>
-<div class="desc"><p>Request metadata passed to the <code>score</code> method.</p>
-<p>Note that this method is only relevant if
-<code>enable_metadata_routing=True</code> (see :func:<code>sklearn.set_config</code>).
-Please see :ref:<code>User Guide &lt;metadata_routing&gt;</code> on how the routing
-mechanism works.</p>
-<p>The options for each parameter are:</p>
-<ul>
-<li>
-<p><code>True</code>: metadata is requested, and passed to <code>score</code> if provided. The request is ignored if metadata is not provided.</p>
-</li>
-<li>
-<p><code>False</code>: metadata is not requested and the meta-estimator will not pass it to <code>score</code>.</p>
-</li>
-<li>
-<p><code>None</code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p>
-</li>
-<li>
-<p><code>str</code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p>
-</li>
-</ul>
-<p>The default (<code>sklearn.utils.metadata_routing.UNCHANGED</code>) retains the
-existing request. This allows you to change the request for some
-parameters and not others.</p>
-<div class="admonition versionadded">
-<p class="admonition-title">Added in version:&ensp;1.3</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This method is only relevant if this estimator is used as a
-sub-estimator of a meta-estimator, e.g. used inside a
-:class:<code>~sklearn.pipeline.Pipeline</code>. Otherwise it has no effect.</p>
-</div>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>sample_weight</code></strong> :&ensp;<code>str, True, False,</code> or <code>None</code>,
-default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
-<dd>Metadata routing for <code>sample_weight</code> parameter in <code>score</code>.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
-<dd>The updated object.</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def func(**kw):
-    &#34;&#34;&#34;Updates the request for provided parameters
+<pre><code class="python">def func(*args, **kw):
+    &#34;&#34;&#34;Updates the `_metadata_request` attribute of the consumer (`instance`)
+    for the parameters provided as `**kw`.
 
     This docstring is overwritten below.
-    See REQUESTER_DOC for expected functionality
+    See REQUESTER_DOC for expected functionality.
     &#34;&#34;&#34;
     if not _routing_enabled():
         raise RuntimeError(
@@ -1872,20 +1426,72 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 
     if self.validate_keys and (set(kw) - set(self.keys)):
         raise TypeError(
-            f&#34;Unexpected args: {set(kw) - set(self.keys)}. Accepted arguments&#34;
-            f&#34; are: {set(self.keys)}&#34;
+            f&#34;Unexpected args: {set(kw) - set(self.keys)} in {self.name}. &#34;
+            f&#34;Accepted arguments are: {set(self.keys)}&#34;
         )
 
-    requests = instance._get_metadata_request()
+    # This makes it possible to use the decorated method as an unbound method,
+    # for instance when monkeypatching.
+    # https://github.com/scikit-learn/scikit-learn/issues/28632
+    if instance is None:
+        _instance = args[0]
+        args = args[1:]
+    else:
+        _instance = instance
+
+    # Replicating python&#39;s behavior when positional args are given other than
+    # `self`, and `self` is only allowed if this method is unbound.
+    if args:
+        raise TypeError(
+            f&#34;set_{self.name}_request() takes 0 positional argument but&#34;
+            f&#34; {len(args)} were given&#34;
+        )
+
+    requests = _instance._get_metadata_request()
     method_metadata_request = getattr(requests, self.name)
 
     for prop, alias in kw.items():
         if alias is not UNCHANGED:
             method_metadata_request.add_request(param=prop, alias=alias)
-    instance._metadata_request = requests
+    _instance._metadata_request = requests
 
-    return instance</code></pre>
+    return _instance</code></pre>
 </details>
+<div class="desc"><p>Configure whether metadata should be requested to be passed to the <code>score</code> method.</p>
+<pre><code>    Note that this method is only relevant when this estimator is used as a
+    sub-estimator within a :term:`meta-estimator` and metadata routing is enabled
+    with ``enable_metadata_routing=True`` (see :func:&lt;code&gt;sklearn.set\_config&lt;/code&gt;).
+    Please check the :ref:`User Guide &lt;metadata_routing&gt;` on how the routing
+    mechanism works.
+
+    The options for each parameter are:
+
+    - &lt;code&gt;True&lt;/code&gt;: metadata is requested, and passed to &lt;code&gt;score&lt;/code&gt; if provided. The request is ignored if metadata is not provided.
+
+    - &lt;code&gt;False&lt;/code&gt;: metadata is not requested and the meta-estimator will not pass it to &lt;code&gt;score&lt;/code&gt;.
+
+    - &lt;code&gt;None&lt;/code&gt;: metadata is not requested, and the meta-estimator will raise an error if the user provides it.
+
+    - &lt;code&gt;str&lt;/code&gt;: metadata should be passed to the meta-estimator with this given alias instead of the original name.
+
+    The default (&lt;code&gt;sklearn.utils.metadata\_routing.UNCHANGED&lt;/code&gt;) retains the
+    existing request. This allows you to change the request for some
+    parameters and not others.
+
+    !!! versionadded "Added in version:&amp;ensp;1.3"
+
+
+
+    Parameters
+    ----------
+    sample_weight : str, True, False, or None,                     default=sklearn.utils.metadata_routing.UNCHANGED
+        Metadata routing for &lt;code&gt;sample\_weight&lt;/code&gt; parameter in &lt;code&gt;score&lt;/code&gt;.
+
+    Returns
+    -------
+    self : object
+        The updated object.
+</code></pre></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -1906,7 +1512,6 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
 <div class="toc">
 <ul></ul>
 </div>
@@ -1948,7 +1553,7 @@ default=<code>sklearn.utils.metadata_routing.UNCHANGED</code></dt>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>

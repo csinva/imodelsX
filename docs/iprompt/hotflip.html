@@ -2,18 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>imodelsx.iprompt.hotflip API documentation</title>
-<meta name="description" content="" />
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
-<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
-<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
 </head>
 <body>
 <main>
@@ -22,330 +36,6 @@
 <h1 class="title">Module <code>imodelsx.iprompt.hotflip</code></h1>
 </header>
 <section id="section-intro">
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">from typing import Iterable, Optional, Tuple
-
-import argparse
-import collections
-import os
-import random
-import pickle
-
-import torch
-import torch.nn as nn
-import tqdm
-import transformers
-
-from .utils import device, PrefixLoss, PrefixModel
-
-
-VERBOSE = False # whether to print grads, etc.
-TOP_K = 20 # for printing grads, etc.
-
-
-class HotFlip(PrefixModel):
-    args: argparse.Namespace
-    loss_func: PrefixLoss
-    model: transformers.PreTrainedModel
-    tokenizer: transformers.PreTrainedTokenizer
-    prefix_ids: torch.Tensor
-    prefix_embedding: nn.Parameter
-    preprefix: str
-    def __init__(
-            self,
-            args: argparse.Namespace,
-            loss_func: PrefixLoss,
-            model: transformers.PreTrainedModel,
-            tokenizer: transformers.PreTrainedTokenizer,
-            preprefix: str = &#39;&#39;
-        ):
-        super().__init__(
-            args=args, loss_func=loss_func, model=model, tokenizer=tokenizer, preprefix=preprefix
-        )
-        # HotFlip-specific parameters.
-        self._min_loss = float(&#39;inf&#39;)
-        self._num_tokens = args.num_learned_tokens # TODO argparse for n_tokens
-        self._num_candidates_per_prefix_token = args.hotflip_num_candidates # TODO argparse for this too
-        self._swap_token_idx = 0
-
-        self._tested_prefix_ids = collections.defaultdict(lambda: 0)
-        # Sort both a version with a preprefix (&#34;The function to compute is&#34;) and a version
-        # where the full prefix is discovered by HotFlip without any assistance.
-        preprefix_ids = [self.tokenizer.bos_token_id] if self.tokenizer.bos_token_id else []
-        if preprefix:
-            preprefix_ids.extend(self.tokenizer.encode(preprefix))
-        self.preprefix_ids = torch.tensor(preprefix_ids, dtype=int).to(device)
-        self.prefix_ids = None
-        self._set_prefix_ids(
-            self.init_discrete_prefix(num_tokens=self._num_tokens)
-        )
-        print(f&#34;preprefix: &#39;{preprefix}&#39;&#34;)
-
-        # disable grads to model
-        for p in self.model.parameters(): p.requires_grad = False
-
-        # track data specific to HotFlip
-        self._epoch = 0
-        self._data = []
-        self._loss_for_prefix = {}
-        # 
-        self.prefix_before_input = args.prefix_before_input
-
-    def check_early_stop(self) -&gt; bool:
-        &#34;&#34;&#34;Allow prefix models to stop early.&#34;&#34;&#34;
-        if self.args.early_stopping_steps == -1:
-            return False
-        return self._steps_since_new_prefix &gt;= self.args.early_stopping_steps
-    
-    def _set_prefix_ids(self, new_ids: torch.Tensor) -&gt; None:
-        assert new_ids.ndim == 1, &#34;cannot set prefix with more than 1 dim (need list of IDs)&#34;
-
-        # Track steps since new prefix to enable early stopping
-        if (self.prefix_ids is not None) and (self.prefix_ids == new_ids).all():
-            self._steps_since_new_prefix += 1
-        else:
-            self._steps_since_new_prefix = 0
-        
-
-        self.prefix_ids = new_ids.to(device)
-        self.prefix_embedding = nn.Parameter(
-            self.token_embedding.to(device).forward(self.prefix_ids), requires_grad=True
-        )
-        # track prefixes we&#39;ve tried
-        self._tested_prefix_ids[(tuple(new_ids.flatten().tolist()), self._swap_token_idx)] += 1
-
-    def pre_epoch(self) -&gt; None:
-        # Print closest tokens at the beginning of each epoch.
-        if VERBOSE:
-            print(&#34;*&#34; *  30)
-            print(f&#34;Epoch {epoch}. Closest tokens to &#39;{prefix_str}&#39;:&#34;)
-            word_distances =  ((self.token_embedding.weight - self.prefix_embedding.reshape(1, emb_dim))**2).sum(1)
-            assert word_distances.shape == (50_257,)
-            topk_closest_words = word_distances.topk(k=TOP_K, largest=False)
-            for _id, _dist in zip(topk_closest_words.indices.cpu().tolist(), topk_closest_words.values.cpu().tolist()):
-                print(f&#39;\t{self.id_to_word[_id]} ({_id}): {_dist:.3f}&#39;)
-            print(&#34;*&#34; * 30)
-    
-    @property
-    def _prefix_token_grad(self) -&gt; torch.Tensor:
-        &#34;&#34;&#34;Gradient of the prefix tokens wrt the token embedding matrix.&#34;&#34;&#34;
-        return torch.einsum(&#39;nd,vd-&gt;nv&#39;, self.prefix_embedding.grad, self.token_embedding.weight)
-    
-    def compute_loss_and_call_backward(
-            self,
-            x_tokenized: transformers.BatchEncoding,
-            y_tokenized: transformers.BatchEncoding,
-            possible_answer_mask: torch.Tensor,
-            full_text_tokenized: Optional[transformers.BatchEncoding] = None
-        ) -&gt; Tuple[torch.Tensor, int]:
-        &#34;&#34;&#34;Computes loss using `self.loss_func`.
-        
-        Returns:
-            loss (float torch.Tensor) -- the loss
-            num_correct (int): number of examples where prediction was correct
-        &#34;&#34;&#34;
-        original_input_ids = x_tokenized.input_ids
-        next_token_ids = y_tokenized.input_ids # only compute loss over next token
-
-        _input_ids, loss, n_correct = self._compute_loss_with_set_prefix(
-            original_input_ids=original_input_ids,
-            next_token_ids=next_token_ids, # only compute loss over next token
-            possible_answer_mask=possible_answer_mask
-        )
-
-        loss.backward()
-
-        # self._set_prefix_ids(best_prefix)
-        return loss, n_correct
-        
-    def post_epoch(self, dataloader: torch.utils.data.DataLoader, possible_answer_mask: torch.Tensor) -&gt; None:
-        # 
-        # Get candidate IDs for every position.
-        # 
-        token_idx = self._swap_token_idx
-        token_grads = self._prefix_token_grad
-        top_tokens_per_position = (
-            token_grads.topk(k=self._num_candidates_per_prefix_token, dim=1, largest=False).indices
-        )
-        assert top_tokens_per_position.shape == (self._num_tokens, self._num_candidates_per_prefix_token)
-
-        top_swap_tokens = top_tokens_per_position[token_idx, :]
-        #
-        # Get most likely tokens.
-        #
-        prefix_until_swap_ids = torch.cat(
-            (self.preprefix_ids.to(device), self.prefix_ids[:token_idx].to(device)), dim=0
-        )[None].to(device)
-        with torch.no_grad():
-            all_preprefix_logits = self.model(prefix_until_swap_ids)
-            swap_token_logits = all_preprefix_logits.logits[:, -1, :]
-
-        rvocab = {v: k for k,v in self.tokenizer.vocab.items()}
-        # dist_sum = (swap_token_logits.log_softmax(dim=1) * .7 + (-1 * token_grads).log_softmax(dim=1))
-        # for v in (swap_token_logits.log_softmax(dim=1) * .7 + (-1 * token_grads).log_softmax(dim=1)).topk(10).indices.flatten(): print(rvocab[v.item()])
-
-        alpha = 0.0 # TODO argparse for this alpha
-        print(f&#34;HotFlip alpha = {alpha}&#34;)
-        token_losses = (
-            (swap_token_logits.log_softmax(dim=1) * alpha + (-1 * token_grads).log_softmax(dim=1))
-        )
-        top_swap_tokens = token_losses.argsort(descending=True).flatten()
-
-        # if we&#39;ve already tried this (prefix, swap_token_idx) combo, then let&#39;s try the next n candidates.
-        _n = self._tested_prefix_ids[tuple(self.prefix_ids.flatten().tolist()), token_idx] - 1
-        assert _n &gt;= 0, &#34;something went wrong&#34;
-        top_swap_tokens = top_swap_tokens[(_n * self._num_candidates_per_prefix_token) : (_n+1) * self._num_candidates_per_prefix_token]
-        # 
-        # Evaluate candidates.
-        # 
-        all_candidate_losses = torch.zeros(self._num_candidates_per_prefix_token, dtype=float).to(device)
-        all_n_correct = torch.zeros(self._num_candidates_per_prefix_token, dtype=int).to(device)
-        best_loss = self._min_loss
-
-        mask = torch.nn.functional.one_hot(
-            torch.tensor(token_idx), num_classes=self._num_tokens
-        ).bool().to(device)
-
-        # Evaluate each prefix.
-        for batch in tqdm.tqdm(dataloader, desc=&#39;evaluating HotFlip candidates&#39;, colour=&#39;red&#39;, leave=False):
-            # Loop in this order so we only tokenize each thing once.
-            x_text, y_text = self.prepare_batch(batch=batch)
-            input_ids = self.tokenizer(x_text, return_tensors=&#39;pt&#39;, padding=&#39;longest&#39;)[&#39;input_ids&#39;].to(device)
-            next_token_ids = self.tokenizer(y_text, return_tensors=&#39;pt&#39;, padding=&#39;longest&#39;)[&#39;input_ids&#39;].to(device)
-            # only evaluate on single next-token
-            next_token_ids = next_token_ids[:, 0]
-            for candidate_idx in range(self._num_candidates_per_prefix_token):
-                new_token_id = top_swap_tokens[candidate_idx]
-                prefix_ids = torch.where(
-                    mask, new_token_id, self.prefix_ids.to(device)
-                ).to(device)
-                with torch.no_grad():
-                    _input_ids, loss, n_correct = (
-                        self._compute_loss_with_set_prefix(
-                            original_input_ids=input_ids,
-                            next_token_ids=next_token_ids,
-                            possible_answer_mask=possible_answer_mask,
-                            prefix_ids=prefix_ids
-                        )
-                    )
-                all_candidate_losses[candidate_idx] += loss
-                all_n_correct[candidate_idx] += n_correct
-
-        ##################################################################################################################
-        hotflip_out_path = os.path.join(self.args.save_dir_unique, &#39;hotflip_grads_data.p&#39;)
-        for _i in range(self._num_candidates_per_prefix_token):
-            token_id = top_swap_tokens[_i].item()
-            # rank, prefix, token_id, token_grad, loss_with_this_token, n_correct_with_this_token
-            self._data.append(
-                (_i, self.prefix_ids.tolist(), token_id, token_grads.flatten()[token_id].item(), all_candidate_losses[_i].item(), all_n_correct[_i].item())
-            )
-        pickle.dump(self._data, open(hotflip_out_path, &#39;wb&#39;))
-        ##################################################################################################################
-
-        #
-        # Collect losses for all prefixes. Then set prefix to best one we haven&#39;t seen before.
-        #
-        for candidate_idx in range(self._num_candidates_per_prefix_token):
-            new_token_id = top_swap_tokens[candidate_idx]
-            prefix_ids = tuple(
-                torch.where(
-                    mask, new_token_id, self.prefix_ids.to(device)
-                ).tolist()
-            )
-            self._loss_for_prefix[prefix_ids] = (
-                all_candidate_losses[candidate_idx].item(),
-                all_n_correct[candidate_idx].item()
-            )
-        
-        # next prefix is the one we know about with the min loss that we haven&#39;t tried
-        # so far.
-        best_prefix_ids = min(self._loss_for_prefix, key=lambda p: self._loss_for_prefix.get(p)[0])
-        best_loss, best_n_correct =  self._loss_for_prefix[best_prefix_ids]
-
-        # if loss &lt; self._min_loss:
-        #     self._min_loss = loss
-        #     best_prefix_ids = prefix_ids
-
-        # 
-        # Pick top candidate and reset self._min_loss. (TODO: Support beam width &gt; 1.)
-        # 
-        old_prefix_str = self.tokenizer.decode(self.preprefix_ids.tolist() + self.prefix_ids.tolist())
-        new_prefix_str = self.tokenizer.decode(self.preprefix_ids.tolist() + list(best_prefix_ids))
-        print(f&#39;[Loss = {best_loss/len(dataloader):.2f}] // Old prefix: {old_prefix_str} // New prefix: {new_prefix_str} // New n_correct = {best_n_correct}&#39;)
-
-        self._swap_token_idx = (self._swap_token_idx + 1) % self._num_tokens
-        # self._swap_token_idx = random.randint(0, (self._num_tokens-1))
-
-        self._set_prefix_ids(torch.tensor(best_prefix_ids))
-
-        return
-
-    @property
-    def prefix_embedding_token_ids(self) -&gt; torch.Tensor:
-        return self.prefix_embedding.argmax(dim=-1)
-
-    @property
-    def trainable_params(self) -&gt; Iterable[nn.Parameter]:
-        return [self.prefix_embedding]
-
-    def embed_input_ids(
-        self, input_ids: torch.Tensor, next_token_ids: torch.Tensor, prefix_ids: Optional[torch.Tensor]) -&gt; Tuple[torch.Tensor, torch.Tensor]:
-        &#34;&#34;&#34;Gets token embeddings for tokens given by `input_ids` prefixed by `prefix_ids`.
-
-        If not provided, `prefix_ids` is replaced with `self.prefix_ids`
-        at every position.
-
-        Args:
-            input_ids (int torch.Tensor) -- IDs for batch of sentences
-            prefix_ids (Optional int torch.Tensor) -- IDs for a single prefix
-                to be prepended before each input ID. If not provided,
-                will be overridden with prefix from `self.prefix_ids`.
-
-        Returns:
-            input_ids (int torch.Tensor) -- IDs of all tokens, including prefix
-            outputs (float torch.Tensor): embedded tokens
-        &#34;&#34;&#34;
-        batch_size = len(input_ids)
-        if prefix_ids is None:
-            prefix_ids = self.prefix_ids
-            prefix_embedding = self.prefix_embedding
-            
-        else:
-            prefix_embedding = self.token_embedding.forward(prefix_ids)
-
-        # concatenate preprefix (fixed) + prefix (learned) + example
-        prefix_ids = prefix_ids[None].to(device).repeat((batch_size, 1)).to(device)
-        preprefix_ids = self.preprefix_ids[None].to(device).repeat((batch_size, 1)).to(device)
-
-        if self.prefix_before_input:
-            full_input_ids = torch.cat(
-                (preprefix_ids, prefix_ids, input_ids, next_token_ids), dim=1
-            )
-            outputs = torch.cat(
-                (
-                    self.token_embedding.forward(preprefix_ids),
-                    prefix_embedding[None].repeat((batch_size, 1, 1)),
-                    self.token_embedding.forward(input_ids),
-                    self.token_embedding.forward(next_token_ids),
-                ), dim=1
-            )
-        else:
-            full_input_ids = torch.cat(
-                (input_ids, preprefix_ids, prefix_ids, next_token_ids), dim=1
-            )
-            outputs = torch.cat(
-                (
-                    self.token_embedding.forward(input_ids),
-                    self.token_embedding.forward(preprefix_ids),
-                    prefix_embedding[None].repeat((batch_size, 1, 1)),
-                    self.token_embedding.forward(next_token_ids),
-                ), dim=1
-            )
-        return full_input_ids, outputs</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -358,37 +48,9 @@ class HotFlip(PrefixModel):
 <dl>
 <dt id="imodelsx.iprompt.hotflip.HotFlip"><code class="flex name class">
 <span>class <span class="ident">HotFlip</span></span>
-<span>(</span><span>args: argparse.Namespace, loss_func: <a title="imodelsx.iprompt.utils.PrefixLoss" href="utils.html#imodelsx.iprompt.utils.PrefixLoss">PrefixLoss</a>, model: transformers.modeling_utils.PreTrainedModel, tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, preprefix: str = '')</span>
+<span>(</span><span>args: argparse.Namespace,<br>loss_func: <a title="imodelsx.iprompt.utils.PrefixLoss" href="utils.html#imodelsx.iprompt.utils.PrefixLoss">PrefixLoss</a>,<br>model: transformers.modeling_utils.PreTrainedModel,<br>tokenizer: transformers.tokenization_utils.PreTrainedTokenizer,<br>preprefix: str = '')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Base class for all neural network modules.</p>
-<p>Your models should also subclass this class.</p>
-<p>Modules can also contain other Modules, allowing to nest them in
-a tree structure. You can assign the submodules as regular attributes::</p>
-<pre><code>import torch.nn as nn
-import torch.nn.functional as F
-
-class Model(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = nn.Conv2d(1, 20, 5)
-        self.conv2 = nn.Conv2d(20, 20, 5)
-
-    def forward(self, x):
-        x = F.relu(self.conv1(x))
-        return F.relu(self.conv2(x))
-</code></pre>
-<p>Submodules assigned in this way will be registered, and will have their
-parameters converted too when you call :meth:<code>to</code>, etc.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>As per the example above, an <code>__init__()</code> call to the parent class
-must be made before assignment on the child.</p>
-</div>
-<p>:ivar training: Boolean represents whether this module is in training or
-evaluation mode.
-:vartype training: bool</p>
-<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -693,6 +355,35 @@ evaluation mode.
             )
         return full_input_ids, outputs</code></pre>
 </details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing them to be nested in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+
+class Model(nn.Module):
+    def __init__(self) -&gt; None:
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will also have their
+parameters converted when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="imodelsx.iprompt.utils.PrefixModel" href="utils.html#imodelsx.iprompt.utils.PrefixModel">PrefixModel</a></li>
@@ -736,9 +427,8 @@ evaluation mode.
 </dl>
 <h3>Instance variables</h3>
 <dl>
-<dt id="imodelsx.iprompt.hotflip.HotFlip.prefix_embedding_token_ids"><code class="name">var <span class="ident">prefix_embedding_token_ids</span> : torch.Tensor</code></dt>
+<dt id="imodelsx.iprompt.hotflip.HotFlip.prefix_embedding_token_ids"><code class="name">prop <span class="ident">prefix_embedding_token_ids</span> : torch.Tensor</code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -747,10 +437,10 @@ evaluation mode.
 def prefix_embedding_token_ids(self) -&gt; torch.Tensor:
     return self.prefix_embedding.argmax(dim=-1)</code></pre>
 </details>
-</dd>
-<dt id="imodelsx.iprompt.hotflip.HotFlip.trainable_params"><code class="name">var <span class="ident">trainable_params</span> : Iterable[torch.nn.parameter.Parameter]</code></dt>
-<dd>
 <div class="desc"></div>
+</dd>
+<dt id="imodelsx.iprompt.hotflip.HotFlip.trainable_params"><code class="name">prop <span class="ident">trainable_params</span> : Iterable[torch.nn.parameter.Parameter]</code></dt>
+<dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -759,25 +449,15 @@ def prefix_embedding_token_ids(self) -&gt; torch.Tensor:
 def trainable_params(self) -&gt; Iterable[nn.Parameter]:
     return [self.prefix_embedding]</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.iprompt.hotflip.HotFlip.embed_input_ids"><code class="name flex">
-<span>def <span class="ident">embed_input_ids</span></span>(<span>self, input_ids: torch.Tensor, next_token_ids: torch.Tensor, prefix_ids: Optional[torch.Tensor]) ‑> Tuple[torch.Tensor, torch.Tensor]</span>
+<span>def <span class="ident">embed_input_ids</span></span>(<span>self,<br>input_ids: torch.Tensor,<br>next_token_ids: torch.Tensor,<br>prefix_ids: torch.Tensor | None) ‑> Tuple[torch.Tensor, torch.Tensor]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Gets token embeddings for tokens given by <code>input_ids</code> prefixed by <code>prefix_ids</code>.</p>
-<p>If not provided, <code>prefix_ids</code> is replaced with <code>self.prefix_ids</code>
-at every position.</p>
-<h2 id="args">Args</h2>
-<p>input_ids (int torch.Tensor) &ndash; IDs for batch of sentences
-prefix_ids (Optional int torch.Tensor) &ndash; IDs for a single prefix
-to be prepended before each input ID. If not provided,
-will be overridden with prefix from <code>self.prefix_ids</code>.</p>
-<h2 id="returns">Returns</h2>
-<p>input_ids (int torch.Tensor) &ndash; IDs of all tokens, including prefix
-outputs (float torch.Tensor): embedded tokens</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -837,12 +517,22 @@ outputs (float torch.Tensor): embedded tokens</p></div>
         )
     return full_input_ids, outputs</code></pre>
 </details>
+<div class="desc"><p>Gets token embeddings for tokens given by <code>input_ids</code> prefixed by <code>prefix_ids</code>.</p>
+<p>If not provided, <code>prefix_ids</code> is replaced with <code>self.prefix_ids</code>
+at every position.</p>
+<h2 id="args">Args</h2>
+<p>input_ids (int torch.Tensor) &ndash; IDs for batch of sentences
+prefix_ids (Optional int torch.Tensor) &ndash; IDs for a single prefix
+to be prepended before each input ID. If not provided,
+will be overridden with prefix from <code>self.prefix_ids</code>.</p>
+<h2 id="returns">Returns</h2>
+<p>input_ids (int torch.Tensor) &ndash; IDs of all tokens, including prefix
+outputs (float torch.Tensor): embedded tokens</p></div>
 </dd>
 <dt id="imodelsx.iprompt.hotflip.HotFlip.post_epoch"><code class="name flex">
-<span>def <span class="ident">post_epoch</span></span>(<span>self, dataloader: torch.utils.data.dataloader.DataLoader, possible_answer_mask: torch.Tensor) ‑> None</span>
+<span>def <span class="ident">post_epoch</span></span>(<span>self,<br>dataloader: torch.utils.data.dataloader.DataLoader,<br>possible_answer_mask: torch.Tensor) ‑> None</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -969,12 +659,12 @@ outputs (float torch.Tensor): embedded tokens</p></div>
 
     return</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.iprompt.hotflip.HotFlip.pre_epoch"><code class="name flex">
 <span>def <span class="ident">pre_epoch</span></span>(<span>self) ‑> None</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -991,6 +681,7 @@ outputs (float torch.Tensor): embedded tokens</p></div>
             print(f&#39;\t{self.id_to_word[_id]} ({_id}): {_dist:.3f}&#39;)
         print(&#34;*&#34; * 30)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -1010,7 +701,6 @@ outputs (float torch.Tensor): embedded tokens</p></div>
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
 <div class="toc">
 <ul></ul>
 </div>
@@ -1045,7 +735,7 @@ outputs (float torch.Tensor): embedded tokens</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>

@@ -1,6 +1,6 @@
 PKG=imodelsx
 cd ../$PKG
-pdoc --html . --output-dir ../docs --template-dir ../docs
+uv run pdoc --html . --output-dir ../docs --template-dir ../docs
 cp -rf ../docs/$PKG/* ../docs/
 rm -rf ../docs/$PKG
 cd ../docs
@@ -14,4 +14,4 @@ rm -rf tests
 # mv embgam.html index.html
 
 # style the new file
-python style_docs.py
+uv run python style_docs.py

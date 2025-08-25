@@ -2,18 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>imodelsx.treeprompt.stump API documentation</title>
-<meta name="description" content="" />
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
-<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
-<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
 </head>
 <body>
 <main>
@@ -22,371 +36,6 @@
 <h1 class="title">Module <code>imodelsx.treeprompt.stump</code></h1>
 </header>
 <section id="section-intro">
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">from typing import Dict, List
-
-from abc import ABC, abstractmethod
-import logging
-import math
-import random
-import imodels
-import numpy as np
-from scipy.special import softmax
-from sklearn.metrics import accuracy_score
-from sklearn.linear_model import LogisticRegression
-import torch.cuda
-import tqdm
-import imodelsx.llm
-from transformers import AutoTokenizer, AutoModelForCausalLM
-
-
-class PromptStump:
-    def __init__(
-        self,
-        args=None,
-        prompt: str = None,
-        tokenizer=None,
-        prompt_template: str = &#34;{example}{prompt}&#34;,
-        cache_key_values: bool = False,
-        verbose: bool = True,
-        model: AutoModelForCausalLM = None,
-        checkpoint: str = &#34;EleutherAI/gpt-j-6B&#34;,
-        verbalizer: Dict[int, str] = {0: &#34; Negative.&#34;, 1: &#34; Positive.&#34;},
-        batch_size: int = 1,
-    ):
-        &#34;&#34;&#34;Given a prompt, extract its outputs
-
-        Params
-        ------
-        args: contains some parameters passed through namespace (can ignore these)
-        prompt: str
-            the prompt to use (optional)
-        prompt_template: str
-            template for the prompt, for different prompt styles (e.g. few-shot), may want to place {prompt} before {example}
-            or you may want to add some text before the verbalizer, e.g. {example}{prompt} Output:
-        cache_key_values: bool
-            Whether to cache key values (only possible when prompt does not start with {example})
-        checkpoint: str
-            the underlying model used for prediction
-        model: AutoModelForCausalLM
-            if this is passed, will override checkpoint
-        &#34;&#34;&#34;
-        if args is None:
-
-            class placeholder:
-                prompt_source = None
-                template_data_demonstrations = None
-                dataset_name = &#34;&#34;
-
-            self.args = placeholder()
-        else:
-            self.args = args
-        self.prompt = prompt
-        self.prompt_template = prompt_template
-        self.cache_key_values = cache_key_values
-        self.verbose = verbose
-        self.checkpoint = checkpoint
-        self.model = model
-        if tokenizer is None:
-            self.tokenizer = imodelsx.llm.load_tokenizer(checkpoint)
-        else:
-            self.tokenizer = tokenizer
-        self.batch_size = batch_size
-        self.verbalizer = verbalizer
-
-        if self.verbose:
-            logging.info(f&#34;Loading model {self.checkpoint}&#34;)
-
-    def predict(self, X_text: List[str]) -&gt; np.ndarray[int]:
-        preds_proba = self.predict_proba(X_text)
-        return np.argmax(preds_proba, axis=1)
-
-    def predict_with_cache(self, X_text: List[str], past_key_values) -&gt; np.ndarray[int]:
-        preds_proba = self.predict_proba_with_cache(X_text, past_key_values)
-        return np.argmax(preds_proba, axis=1)
-
-    def predict_proba(self, X_text: List[str]) -&gt; np.ndarray[float]:
-        target_strs = list(self.verbalizer.values())
-
-        # only predict based on first token of output string
-        target_token_ids = list(map(self._get_first_token_id, target_strs))
-        assert len(set(target_token_ids)) == len(
-            set(target_strs)
-        ), f&#34;error: target_token_ids {set(target_token_ids)} not unique to target strings {set(target_strs)}&#34;
-        text_inputs = [self.prompt_template.format(
-            example=x, prompt=self.prompt) for x in X_text]
-
-        preds = self._get_logit_for_target_tokens_batched(
-            text_inputs,
-            target_token_ids,
-            batch_size=self.batch_size,
-        )
-        assert preds.shape == (len(X_text), len(target_token_ids)), (
-            &#34;preds shape was&#34;
-            + str(preds.shape)
-            + &#34; but should have been &#34;
-            + str((len(X_text), len(target_token_ids)))
-        )
-
-        # return the class with the highest logit
-        return softmax(preds, axis=1)
-
-    def predict_proba_with_cache(
-        self, X_text: List[str], past_key_values
-    ) -&gt; np.ndarray[float]:
-        target_strs = list(self.verbalizer.values())
-
-        # only predict based on first token of output string
-        target_token_ids = list(map(self._get_first_token_id, target_strs))
-        assert len(set(target_token_ids)) == len(
-            set(target_strs)
-        ), f&#34;error: target_token_ids {set(target_token_ids)} not unique to target strings {set(target_strs)}&#34;
-
-        text_inputs = [self.prompt_template.format(
-            example=x, prompt=self.prompt) for x in X_text]
-
-        preds = self._get_logit_for_target_tokens_batched_with_cache(
-            past_key_values,
-            text_inputs,
-            target_token_ids,
-            batch_size=self.batch_size,
-        )
-
-        assert preds.shape == (len(X_text), len(target_token_ids)), (
-            &#34;preds shape was&#34;
-            + str(preds.shape)
-            + &#34; but should have been &#34;
-            + str((len(X_text), len(target_token_ids)))
-        )
-
-        # return the class with the highest logit
-        return softmax(preds, axis=1)
-
-    def calc_key_values(self, X_text: List[str]):
-        # only predict based on first token of output string
-        self.tokenizer.truncation_side = &#34;left&#34;
-        self.tokenizer.padding = True
-
-        self.tokenizer.pad_token = self.tokenizer.eos_token
-
-        p = self.prompt
-        template = self.args.template_data_demonstrations
-        if self.args.dataset_name.startswith(&#34;knnp__&#34;):
-            max_len_verb = max(
-                len(self.tokenizer.encode(v)) for v in self.verbalizer.values()
-            )
-            max_len_input = (
-                max_len_verb
-                + max(len(self.tokenizer.encode(s)) for s in X_text)
-                + 1
-            )
-        else:
-            max_len_input = -1
-            for v in self.verbalizer.values():
-                max_len_input = max(
-                    max_len_input,
-                    max(
-                        [
-                            len(self.tokenizer.encode(template % (s, v)))
-                            for s in X_text[:1000]
-                        ]
-                    ),
-                )
-        try:
-            max_total_len = self.model.config.n_positions
-        except:
-            max_total_len = self.model.config.max_position_embeddings
-        max_len_prompt = max_total_len - max_len_input
-        if (
-            True
-        ):  # &#39;dbpedia&#39; in self.args.dataset_name or max_len_prompt &lt; 0: # dbpedia
-            print(&#34;max len prompt less than 0, truncating to the left&#34;)
-            max_len_input = -1
-            for v in self.verbalizer.values():
-                a = [
-                    len(self.tokenizer.encode(template % (s, v)))
-                    for s in X_text[:1000]
-                ]
-                max_len_input = max(max_len_input, np.percentile(a, 95))
-        max_len_input = int(math.ceil(max_len_input))
-        max_len_prompt = max_total_len - max_len_input
-        self.max_len_input = max_len_input
-        print(
-            f&#34;max_len_prompt: {max_len_prompt}, max_len_input: {max_len_input}&#34;)
-        assert max_len_prompt &gt; 0
-        inputs = self.tokenizer(
-            [
-                p,
-            ],
-            return_tensors=&#34;pt&#34;,
-            padding=False,
-            truncation=True,
-            max_length=max_len_prompt,
-            return_attention_mask=True,
-        ).to(self.model.device)
-
-        # shape is (batch_size, seq_len, vocab_size)
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-        return outputs[&#34;past_key_values&#34;]
-
-    def _get_logit_for_target_tokens_batched(
-        self, prompts: List[str], target_token_ids: List[int], batch_size: int = 64
-    ) -&gt; np.ndarray[float]:
-        &#34;&#34;&#34;Get logits for each target token
-        This can fail when token_output_ids represents multiple tokens
-        So things get mapped to the same id representing &#34;unknown&#34;
-        &#34;&#34;&#34;
-        logit_targets_list = []
-        batch_num = 0
-
-        try:
-            max_total_len = self.model.config.n_positions
-        except:
-            max_total_len = self.model.config.max_position_embeddings
-
-        pbar = tqdm.tqdm(
-            total=len(prompts),
-            leave=False,
-            desc=&#34;getting dataset predictions for top prompt&#34;,
-            colour=&#34;red&#34;,
-        )
-        while True:
-            batch_start = batch_num * batch_size
-            batch_end = (batch_num + 1) * batch_size
-            batch_num += 1
-            pbar.update(batch_size)
-            if batch_start &gt;= len(prompts):
-                return np.array(logit_targets_list)
-
-            prompts_batch = prompts[batch_start:batch_end]
-            self.tokenizer.padding = True
-            self.tokenizer.truncation_side = &#34;left&#34;
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-            inputs = self.tokenizer(
-                prompts_batch,
-                return_tensors=&#34;pt&#34;,
-                padding=True,
-                truncation=True,
-                return_attention_mask=True,
-                max_length=max_total_len,
-            ).to(self.model.device)
-
-            # shape is (batch_size, seq_len, vocab_size)
-            with torch.no_grad():
-                logits = self.model(**inputs)[&#34;logits&#34;]
-
-            token_output_positions = inputs[&#34;attention_mask&#34;].sum(axis=1)
-            for i in range(len(prompts_batch)):
-                token_output_position = token_output_positions[i].item() - 1
-                logit_targets_list.append(
-                    [
-                        logits[i, token_output_position,
-                               token_output_id].item()
-                        for token_output_id in target_token_ids
-                    ]
-                )
-
-    def _get_logit_for_target_tokens_batched_with_cache(
-        self,
-        past_key_values,
-        prompts: List[str],
-        target_token_ids: List[int],
-        batch_size: int = 64,
-    ) -&gt; np.ndarray[float]:
-        &#34;&#34;&#34;Get logits for each target token
-        This can fail when token_output_ids represents multiple tokens
-        So things get mapped to the same id representing &#34;unknown&#34;
-        &#34;&#34;&#34;
-        logit_targets_list = []
-        batch_num = 0
-
-        pbar = tqdm.tqdm(
-            total=len(prompts), leave=False, desc=&#34;getting predictions&#34;, colour=&#34;red&#34;
-        )
-
-        past_key_values_new = []
-        for i in range(len(past_key_values)):
-            past_key_values_new.append(
-                [
-                    past_key_values[i][0].expand(batch_size, -1, -1, -1),
-                    past_key_values[i][1].expand(batch_size, -1, -1, -1),
-                ]
-            )
-        while True:
-            batch_start = batch_num * batch_size
-            batch_end = (batch_num + 1) * batch_size
-            batch_num += 1
-            pbar.update(batch_size)
-            if batch_start &gt;= len(prompts):
-                return np.array(logit_targets_list)
-
-            prompts_batch = prompts[batch_start:batch_end]
-            if len(prompts_batch) != past_key_values_new[0][0].shape[0]:
-                for i in range(len(past_key_values)):
-                    past_key_values_new[i] = [
-                        past_key_values[i][0].expand(
-                            len(prompts_batch), -1, -1, -1),
-                        past_key_values[i][1].expand(
-                            len(prompts_batch), -1, -1, -1),
-                    ]
-            self.tokenizer.padding = True
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-            inputs = self.tokenizer(
-                prompts_batch,
-                return_tensors=&#34;pt&#34;,
-                padding=True,
-                truncation=True,
-                max_length=self.max_len_input,
-                return_attention_mask=True,
-            ).to(self.model.device)
-
-            attention_mask = inputs[&#34;attention_mask&#34;]
-            attention_mask = torch.cat(
-                (
-                    attention_mask.new_zeros(
-                        len(prompts_batch), past_key_values[0][0].shape[-2]
-                    ).fill_(1),
-                    attention_mask,
-                ),
-                dim=-1,
-            )
-            inputs[&#34;attention_mask&#34;] = attention_mask
-
-            # shape is (batch_size, seq_len, vocab_size)
-            with torch.no_grad():
-                outputs = self.model(
-                    **inputs, past_key_values=past_key_values_new)
-            logits = outputs[&#34;logits&#34;]
-            token_output_positions = (
-                inputs[&#34;attention_mask&#34;].sum(
-                    axis=1) - past_key_values[0][0].shape[-2]
-            )
-            for i in range(len(prompts_batch)):
-                token_output_position = token_output_positions[i].item() - 1
-                logit_targets_list.append(
-                    [
-                        logits[i, token_output_position,
-                               token_output_id].item()
-                        for token_output_id in target_token_ids
-                    ]
-                )
-
-    def _get_first_token_id(self, prompt: str) -&gt; str:
-        &#34;&#34;&#34;Get first token id in prompt (after special tokens).
-
-        Need to strip special tokens for LLAMA so we don&#39;t get a special space token at the beginning.
-        &#34;&#34;&#34;
-        if &#34;llama&#34; in self.checkpoint.lower():
-            prompt = prompt.lstrip()
-
-        tokens = self.tokenizer(prompt)[&#34;input_ids&#34;]
-        tokens = [t for t in tokens if t not in self.tokenizer.all_special_ids]
-        return tokens[0]</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -399,23 +48,9 @@ class PromptStump:
 <dl>
 <dt id="imodelsx.treeprompt.stump.PromptStump"><code class="flex name class">
 <span>class <span class="ident">PromptStump</span></span>
-<span>(</span><span>args=None, prompt: str = None, tokenizer=None, prompt_template: str = '{example}{prompt}', cache_key_values: bool = False, verbose: bool = True, model: transformers.models.auto.modeling_auto.AutoModelForCausalLM = None, checkpoint: str = 'EleutherAI/gpt-j-6B', verbalizer: Dict[int, str] = {0: ' Negative.', 1: ' Positive.'}, batch_size: int = 1)</span>
+<span>(</span><span>args=None,<br>prompt: str = None,<br>tokenizer=None,<br>prompt_template: str = '{example}{prompt}',<br>cache_key_values: bool = False,<br>verbose: bool = True,<br>model: transformers.models.auto.modeling_auto.AutoModelForCausalLM = None,<br>checkpoint: str = 'EleutherAI/gpt-j-6B',<br>verbalizer: Dict[int, str] = {0: ' Negative.', 1: ' Positive.'},<br>batch_size: int = 1)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Given a prompt, extract its outputs</p>
-<h2 id="params">Params</h2>
-<p>args: contains some parameters passed through namespace (can ignore these)
-prompt: str
-the prompt to use (optional)
-prompt_template: str
-template for the prompt, for different prompt styles (e.g. few-shot), may want to place {prompt} before {example}
-or you may want to add some text before the verbalizer, e.g. {example}{prompt} Output:
-cache_key_values: bool
-Whether to cache key values (only possible when prompt does not start with {example})
-checkpoint: str
-the underlying model used for prediction
-model: AutoModelForCausalLM
-if this is passed, will override checkpoint</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -764,13 +399,26 @@ if this is passed, will override checkpoint</p></div>
         tokens = [t for t in tokens if t not in self.tokenizer.all_special_ids]
         return tokens[0]</code></pre>
 </details>
+<div class="desc"><p>Given a prompt, extract its outputs</p>
+<h2 id="params">Params</h2>
+<p>args: contains some parameters passed through namespace (can ignore these)
+prompt: str
+the prompt to use (optional)
+prompt_template: str
+template for the prompt, for different prompt styles (e.g. few-shot), may want to place {prompt} before {example}
+or you may want to add some text before the verbalizer, e.g. {example}{prompt} Output:
+cache_key_values: bool
+Whether to cache key values (only possible when prompt does not start with {example})
+checkpoint: str
+the underlying model used for prediction
+model: AutoModelForCausalLM
+if this is passed, will override checkpoint</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.treeprompt.stump.PromptStump.calc_key_values"><code class="name flex">
 <span>def <span class="ident">calc_key_values</span></span>(<span>self, X_text: List[str])</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -843,12 +491,12 @@ if this is passed, will override checkpoint</p></div>
         outputs = self.model(**inputs)
     return outputs[&#34;past_key_values&#34;]</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.treeprompt.stump.PromptStump.predict"><code class="name flex">
 <span>def <span class="ident">predict</span></span>(<span>self, X_text: List[str]) ‑> numpy.ndarray[int]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -857,12 +505,12 @@ if this is passed, will override checkpoint</p></div>
     preds_proba = self.predict_proba(X_text)
     return np.argmax(preds_proba, axis=1)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.treeprompt.stump.PromptStump.predict_proba"><code class="name flex">
 <span>def <span class="ident">predict_proba</span></span>(<span>self, X_text: List[str]) ‑> numpy.ndarray[float]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -893,12 +541,12 @@ if this is passed, will override checkpoint</p></div>
     # return the class with the highest logit
     return softmax(preds, axis=1)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.treeprompt.stump.PromptStump.predict_proba_with_cache"><code class="name flex">
 <span>def <span class="ident">predict_proba_with_cache</span></span>(<span>self, X_text: List[str], past_key_values) ‑> numpy.ndarray[float]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -934,12 +582,12 @@ if this is passed, will override checkpoint</p></div>
     # return the class with the highest logit
     return softmax(preds, axis=1)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.treeprompt.stump.PromptStump.predict_with_cache"><code class="name flex">
 <span>def <span class="ident">predict_with_cache</span></span>(<span>self, X_text: List[str], past_key_values) ‑> numpy.ndarray[int]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -948,6 +596,7 @@ if this is passed, will override checkpoint</p></div>
     preds_proba = self.predict_proba_with_cache(X_text, past_key_values)
     return np.argmax(preds_proba, axis=1)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -955,7 +604,6 @@ if this is passed, will override checkpoint</p></div>
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
 <div class="toc">
 <ul></ul>
 </div>
@@ -983,7 +631,7 @@ if this is passed, will override checkpoint</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>

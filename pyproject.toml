@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "imodelsx"
+version = "1.0.11"
+description = "Library to explain a dataset in natural language."
+readme = "readme.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Chandan Singh", email = "csinva23@gmail.com" },
+    { name = "John X. Morris" },
+    { name = "Armin Askari" },
+    { name = "Divyanshu Aggarwal" },
+    { name = "Aliyah Hsu" },
+    { name = "Yuntian Deng" },
+    { name = "Jianfeng Gao" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "datasets",
+    "dict_hash",
+    "imodels",
+    "langchain",
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "scipy",
+    "spacy",
+    "torch",
+    "tqdm",
+    "transformers[torch]",
+    "pyyaml",
+]
+[project.urls]
+Homepage = "https://github.com/csinva/imodelsX"
+Repository = "https://github.com/csinva/imodelsX"
+
+
+[tool.setuptools.packages.find]
+include = ["imodels*"]
+exclude = ["notebooks*", "tests*", "docs*", "demo_notebooks*"]
+
+[dependency-groups]
+dev = [
+    "jupyter",
+    "jupytext",
+    "matplotlib",
+    "pdoc3",
+    "pytest",
+    "pytest-cov",
+    "slurmpy",
+    "tqdm",
+    "pmlb",
+    "dvu",
+    "gdown",
+]
+
+# Optional algorithm deps mentioned in setup.py comments
+[project.optional-dependencies]
+optional = [
+]

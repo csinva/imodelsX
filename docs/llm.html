@@ -2,18 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>imodelsx.llm API documentation</title>
-<meta name="description" content="" />
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
-<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
-<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
 </head>
 <body>
 <main>
@@ -22,609 +36,6 @@
 <h1 class="title">Module <code>imodelsx.llm</code></h1>
 </header>
 <section id="section-intro">
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">from copy import deepcopy
-import json
-from transformers import (
-    T5ForConditionalGeneration,
-)
-from datasets import Dataset
-import transformers
-from transformers import AutoConfig, AutoModel, AutoTokenizer, AutoModelForCausalLM
-import re
-from transformers import LlamaForCausalLM, LlamaTokenizer
-from typing import Any, Dict, List, Mapping, Optional, Union
-import numpy as np
-import os.path
-from os.path import join, dirname
-import os
-import pickle as pkl
-from scipy.special import softmax
-import hashlib
-import torch
-from os.path import expanduser
-import time
-from tqdm import tqdm
-
-HF_TOKEN = None
-if &#39;HF_TOKEN&#39; in os.environ:
-    HF_TOKEN = os.environ.get(&#34;HF_TOKEN&#34;)
-elif os.path.exists(expanduser(&#39;~/.HF_TOKEN&#39;)):
-    HF_TOKEN = open(expanduser(&#39;~/.HF_TOKEN&#39;), &#39;r&#39;).read().strip()
-if os.path.exists(expanduser(&#39;~/.OPENAI_API_KEY&#39;)):
-    OPENAI_API_KEY = open(expanduser(&#39;~/.OPENAI_API_KEY&#39;), &#39;r&#39;).read().strip()
-if os.path.exists(expanduser(&#39;~/.OPENAI_API_KEY_SHARED&#39;)):
-    OPENAI_API_KEY_SHARED = open(expanduser(
-        &#39;~/.OPENAI_API_KEY_SHARED&#39;), &#39;r&#39;).read().strip()
-&#39;&#39;&#39;
-Example usage:
-# gpt-4, gpt-35-turbo, meta-llama/Llama-2-70b-hf, mistralai/Mistral-7B-v0.1
-checkpoint = &#39;meta-llama/Llama-2-7b-hf&#39;
-llm = imodelsx.llm.get_llm(checkpoint)
-llm(&#39;may the force be&#39;) # returns &#39; with you&#39;
-&#39;&#39;&#39;
-
-# change these settings before using these classes!
-LLM_CONFIG = {
-    # how long to wait before recalling a failed llm call (can set to None)
-    &#34;LLM_REPEAT_DELAY&#34;: None,
-    &#34;CACHE_DIR&#34;: join(
-        os.path.expanduser(&#34;~&#34;), &#34;clin/CACHE_OPENAI&#34;
-    ),  # path to save cached llm outputs
-    &#34;LLAMA_DIR&#34;: join(
-        os.path.expanduser(&#34;~&#34;), &#34;llama&#34;
-    ),  # path to extracted llama weights
-}
-
-
-def get_llm(
-    checkpoint,
-    seed=1,
-    role: str = None,
-    repeat_delay: Optional[float] = None,
-    CACHE_DIR=LLM_CONFIG[&#34;CACHE_DIR&#34;],
-    LLAMA_DIR=LLM_CONFIG[&#34;LLAMA_DIR&#34;],
-):
-    if repeat_delay is not None:
-        LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;] = repeat_delay
-
-    &#34;&#34;&#34;Get an LLM with a call function and caching capabilities&#34;&#34;&#34;
-    if checkpoint.startswith(&#34;gpt-3&#34;) or checkpoint.startswith(&#34;gpt-4&#34;):
-        return LLM_Chat(checkpoint, seed, role, CACHE_DIR)
-    elif &#39;Meta-Llama-3&#39; in checkpoint and &#39;Instruct&#39; in checkpoint:
-        return LLM_HF_Pipeline(checkpoint, CACHE_DIR)
-    else:
-        # warning: this sets torch.manual_seed(seed)
-        return LLM_HF(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR, LLAMA_DIR=LLAMA_DIR)
-
-
-def repeatedly_call_with_delay(llm_call):
-    def wrapper(*args, **kwargs):
-        # Number of seconds to wait between calls (None will not repeat)
-        delay = LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;]
-        response = None
-        while response is None:
-            try:
-                response = llm_call(*args, **kwargs)
-
-                # fix for when this function was returning response rather than string
-                # if response is not None and not isinstance(response, str):
-                # response = response[&#34;choices&#34;][0][&#34;message&#34;][&#34;content&#34;]
-            except Exception as e:
-                e = str(e)
-                print(e)
-                if &#34;does not exist&#34; in e:
-                    return None
-                elif &#34;maximum context length&#34; in e:
-                    return None
-                elif &#39;content management policy&#39; in e:
-                    return None
-                if delay is None:
-                    raise e
-                else:
-                    time.sleep(delay)
-        return response
-
-    return wrapper
-
-
-class LLM_Chat:
-    &#34;&#34;&#34;Chat models take a different format: https://platform.openai.com/docs/guides/chat/introduction&#34;&#34;&#34;
-
-    def __init__(self, checkpoint, seed, role, CACHE_DIR):
-        self.cache_dir = join(
-            CACHE_DIR, &#34;cache_openai&#34;, f&#39;{checkpoint.replace(&#34;/&#34;, &#34;_&#34;)}___{seed}&#39;
-        )
-        self.checkpoint = checkpoint
-        self.role = role
-        from openai import AzureOpenAI
-        if &#39;spot&#39; in checkpoint:
-            self.client = AzureOpenAI(
-                azure_endpoint=&#34;https://gcraoai9wus3spot.openai.azure.com/&#34;,
-                api_version=&#34;2024-02-01&#34;,
-                api_key=OPENAI_API_KEY_SHARED,
-            )
-        else:
-            self.client = AzureOpenAI(
-                azure_endpoint=&#34;https://healthcare-ai.openai.azure.com/&#34;,
-                api_version=&#34;2024-02-01&#34;,
-                api_key=OPENAI_API_KEY,
-            )
-
-    # @repeatedly_call_with_delay
-    def __call__(
-        self,
-        prompts_list: List[Dict[str, str]],
-        max_new_tokens=250,
-        stop=None,
-        functions: List[Dict] = None,
-        return_str=True,
-        verbose=True,
-        temperature=0.1,
-        frequency_penalty=0.25,
-        use_cache=True,
-        return_false_if_not_cached=False,
-    ):
-        &#34;&#34;&#34;
-        prompts_list: list of dicts, each dict has keys &#39;role&#39; and &#39;content&#39;
-            Example: [
-                {&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: &#34;You are a helpful assistant.&#34;},
-                {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: &#34;Who won the world series in 2020?&#34;},
-                {&#34;role&#34;: &#34;assistant&#34;,
-                    &#34;content&#34;: &#34;The Los Angeles Dodgers won the World Series in 2020.&#34;},
-                {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: &#34;Where was it played?&#34;}
-            ]
-        prompts_list: str
-            Alternatively, string which gets formatted into basic prompts_list:
-            messages = [
-                {&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: &#34;You are a helpful assistant.&#34;},
-                {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: &lt;&lt;&lt;&lt;&lt;prompts_list&gt;&gt;&gt;&gt;},
-            ]
-        &#34;&#34;&#34;
-        if isinstance(prompts_list, str):
-            role = self.role
-            if role is None:
-                role = &#34;You are a helpful assistant.&#34;
-            prompts_list = [
-                {&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: role},
-                {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: prompts_list},
-            ]
-
-        assert isinstance(prompts_list, list), prompts_list
-
-        # cache
-        os.makedirs(self.cache_dir, exist_ok=True)
-        prompts_list_dict = {
-            str(i): sorted(v.items()) for i, v in enumerate(prompts_list)
-        }
-        if not self.checkpoint == &#34;gpt-3.5-turbo&#34;:
-            prompts_list_dict[&#34;checkpoint&#34;] = self.checkpoint
-        if functions is not None:
-            prompts_list_dict[&#34;functions&#34;] = functions
-        if temperature &gt; 0.1:
-            prompts_list_dict[&#34;temperature&#34;] = temperature
-        dict_as_str = json.dumps(prompts_list_dict, sort_keys=True)
-        hash_str = hashlib.sha256(dict_as_str.encode()).hexdigest()
-        cache_file = join(
-            self.cache_dir,
-            f&#34;chat__{hash_str}__num_tok={max_new_tokens}.pkl&#34;,
-        )
-        if os.path.exists(cache_file) and use_cache:
-            if verbose:
-                print(&#34;cached!&#34;)
-                # print(cache_file)
-            # print(cache_file)
-            response = pkl.load(open(cache_file, &#34;rb&#34;))
-            if response is not None:
-                return response
-        if verbose:
-            print(&#34;not cached&#34;)
-
-        if return_false_if_not_cached:
-            return False
-
-        kwargs = dict(
-            model=self.checkpoint,
-            messages=prompts_list,
-            max_tokens=max_new_tokens,
-            temperature=temperature,
-            top_p=1,
-            frequency_penalty=frequency_penalty,  # maximum is 2
-            presence_penalty=0,
-            stop=stop,
-            # logprobs=True,
-            # stop=[&#34;101&#34;]
-        )
-        if functions is not None:
-            kwargs[&#34;functions&#34;] = functions
-
-        response = self.client.chat.completions.create(
-            **kwargs,
-        )
-
-        if return_str:
-            response = response.choices[0].message.content
-
-        if response is not None:
-            pkl.dump(response, open(cache_file, &#34;wb&#34;))
-
-        return response
-
-
-def load_tokenizer(checkpoint: str) -&gt; transformers.PreTrainedTokenizer:
-    if &#34;facebook/opt&#34; in checkpoint:
-        # opt can&#39;t use fast tokenizer
-        tokenizer = AutoTokenizer.from_pretrained(
-            checkpoint, use_fast=False, padding_side=&#39;left&#39;, token=HF_TOKEN)
-    elif &#34;PMC_LLAMA&#34; in checkpoint:
-        tokenizer = transformers.LlamaTokenizer.from_pretrained(
-            &#34;chaoyi-wu/PMC_LLAMA_7B&#34;, padding_side=&#39;left&#39;, token=HF_TOKEN)
-    else:
-        # , use_fast=True)
-        tokenizer = AutoTokenizer.from_pretrained(
-            checkpoint, padding_side=&#39;left&#39;, use_fast=True, token=HF_TOKEN)
-
-    if tokenizer.pad_token_id is None:
-        tokenizer.pad_token_id = tokenizer.eos_token_id
-    return tokenizer
-
-
-def load_hf_model(checkpoint: str) -&gt; transformers.PreTrainedModel:
-    # set checkpoint
-    kwargs = {
-        &#34;pretrained_model_name_or_path&#34;: checkpoint,
-        &#34;output_hidden_states&#34;: False,
-        # &#34;pad_token_id&#34;: tokenizer.eos_token_id,
-        &#34;low_cpu_mem_usage&#34;: True,
-    }
-    if &#34;google/flan&#34; in checkpoint:
-        return T5ForConditionalGeneration.from_pretrained(
-            checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16
-        )
-    elif checkpoint == &#34;EleutherAI/gpt-j-6B&#34;:
-        return AutoModelForCausalLM.from_pretrained(
-            checkpoint,
-            revision=&#34;float16&#34;,
-            torch_dtype=torch.float16,
-            **kwargs,
-        )
-    elif &#34;llama-2&#34; in checkpoint.lower():
-        return AutoModelForCausalLM.from_pretrained(
-            checkpoint,
-            torch_dtype=torch.float16,
-            device_map=&#34;auto&#34;,
-            token=HF_TOKEN,
-            offload_folder=&#34;offload&#34;,
-        )
-    elif &#34;llama_&#34; in checkpoint:
-        return transformers.LlamaForCausalLM.from_pretrained(
-            join(LLAMA_DIR, checkpoint),
-            device_map=&#34;auto&#34;,
-            torch_dtype=torch.float16,
-        )
-    elif &#39;microsoft/phi&#39; in checkpoint:
-        return AutoModelForCausalLM.from_pretrained(
-            checkpoint
-        )
-    elif checkpoint == &#34;gpt-xl&#34;:
-        return AutoModelForCausalLM.from_pretrained(checkpoint)
-    else:
-        return AutoModelForCausalLM.from_pretrained(
-            checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16,
-            token=HF_TOKEN,
-        )
-
-
-class LLM_HF_Pipeline:
-    def __init__(self, checkpoint, CACHE_DIR):
-
-        self.pipeline_ = transformers.pipeline(
-            &#34;text-generation&#34;,
-            model=checkpoint,
-            # model_kwargs={&#34;torch_dtype&#34;: torch.bfloat16},
-            # , &#39;device_map&#39;: &#34;auto&#34;},
-            model_kwargs={&#39;torch_dtype&#39;: torch.float16},
-            device_map=&#34;auto&#34;
-        )
-        self.pipeline_.tokenizer.pad_token_id = self.pipeline_.tokenizer.eos_token_id
-        self.pipeline_.tokenizer.padding_side = &#39;left&#39;
-        self.cache_dir = join(CACHE_DIR)
-
-    def __call__(
-        self,
-        prompt: Union[str, List[str]],
-        max_new_tokens=20,
-        use_cache=True,
-        verbose=False,
-        batch_size=64,
-    ):
-
-        if use_cache:
-            os.makedirs(self.cache_dir, exist_ok=True)
-            hash_str = hashlib.sha256(str(prompt).encode()).hexdigest()
-            cache_file = join(
-                self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;
-            )
-
-            if os.path.exists(cache_file):
-                if verbose:
-                    print(&#34;cached!&#34;)
-                try:
-                    return pkl.load(open(cache_file, &#34;rb&#34;))
-                except:
-                    print(&#39;failed to load cache so rerunning...&#39;)
-            if verbose:
-                print(&#34;not cached...&#34;)
-        outputs = self.pipeline_(
-            prompt,
-            max_new_tokens=max_new_tokens,
-            batch_size=batch_size,
-            do_sample=False,
-        )
-        if isinstance(prompt, str):
-            texts = outputs[0][&#34;generated_text&#34;][len(prompt):]
-        else:
-            texts = [outputs[i][0][&#39;generated_text&#39;]
-                     [len(prompt[i]):] for i in range(len(outputs))]
-
-        if use_cache:
-            pkl.dump(texts, open(cache_file, &#34;wb&#34;))
-        return texts
-
-
-class LLM_HF:
-    def __init__(self, checkpoint, seed, CACHE_DIR, LLAMA_DIR=None):
-        self.tokenizer_ = load_tokenizer(checkpoint)
-        self.model_ = load_hf_model(checkpoint)
-        self.checkpoint = checkpoint
-        self.cache_dir = join(
-            CACHE_DIR, &#34;cache_hf&#34;, f&#39;{checkpoint.replace(&#34;/&#34;, &#34;_&#34;)}___{seed}&#39;
-        )
-        self.seed = seed
-
-    def __call__(
-        self,
-        prompt: Union[str, List[str]],
-        stop: str = None,
-        max_new_tokens=20,
-        do_sample=False,
-        use_cache=True,
-        verbose=False,
-        return_next_token_prob_scores=False,
-        target_token_strs: List[str] = None,
-        return_top_target_token_str: bool = False,
-        batch_size=1,
-    ) -&gt; Union[str, List[str]]:
-        &#34;&#34;&#34;Warning: stop is used posthoc but not during generation.
-        Be careful, caching can take up a lot of memory....
-
-        Example mistral-instruct prompt: &#34;&lt;s&gt;[INST]&#39;Input text: {example}\nQuestion: {question} Answer yes or no.[/INST]&#34;
-
-
-        Params
-        ------
-        return_next_token_prob_scores: bool
-            If this is true, then the function will return the probability of the next token being each of the target_token_strs
-            target_token_strs: List[str]
-                If this is not None and return_next_token_prob_scores is True, then the function will return the probability of the next token being each of the target_token_strs
-                The output will be a list of dictionaries in this case List[Dict[str, float]]
-                return_top_target_token_str: bool
-                    If true and above are true, then just return top token of the above
-                    This is a way to constrain the output (but only for 1 token)
-                    This setting caches but the other two (which do not return strings) do not cache
-
-        &#34;&#34;&#34;
-        input_is_str = isinstance(prompt, str)
-        with torch.no_grad():
-            # cache
-            if use_cache:
-                os.makedirs(self.cache_dir, exist_ok=True)
-                hash_str = hashlib.sha256(str(prompt).encode()).hexdigest()
-                cache_file = join(
-                    self.cache_dir, f&#34;{hash_str}__num_tok={max_new_tokens}.pkl&#34;
-                )
-
-                if os.path.exists(cache_file):
-                    if verbose:
-                        print(&#34;cached!&#34;)
-                    try:
-                        return pkl.load(open(cache_file, &#34;rb&#34;))
-                    except:
-                        print(&#39;failed to load cache so rerunning...&#39;)
-                if verbose:
-                    print(&#34;not cached...&#34;)
-
-            # if stop is not None:
-            # raise ValueError(&#34;stop kwargs are not permitted.&#34;)
-            inputs = self.tokenizer_(
-                prompt, return_tensors=&#34;pt&#34;,
-                return_attention_mask=True,
-                padding=True,
-                truncation=False,
-            ).to(self.model_.device)
-
-            if return_next_token_prob_scores or target_token_strs or return_top_target_token_str:
-                outputs = self.model_.generate(
-                    **inputs,
-                    max_new_tokens=1,
-                    pad_token_id=self.tokenizer_.pad_token_id,
-                    output_logits=True,
-                    return_dict_in_generate=True,
-                )
-                next_token_logits = outputs[&#39;logits&#39;][0]
-                next_token_probs = next_token_logits.softmax(
-                    axis=-1).detach().cpu().numpy()
-
-                if target_token_strs is None:
-                    return next_token_probs
-
-                target_token_ids = self._check_target_token_strs(
-                    target_token_strs)
-                if return_top_target_token_str:
-                    selected_tokens = next_token_probs[:, np.array(
-                        target_token_ids)].squeeze().argmax(axis=-1)
-                    out_strs = [
-                        target_token_strs[selected_tokens[i]]
-                        for i in range(len(selected_tokens))
-                    ]
-                    if len(out_strs) == 1:
-                        out_strs = out_strs[0]
-                    if use_cache:
-                        pkl.dump(out_strs, open(cache_file, &#34;wb&#34;))
-                    return out_strs
-                else:
-                    out_dict_list = [
-                        {target_token_strs[i]: next_token_probs[prompt_num, target_token_ids[i]]
-                            for i in range(len(target_token_strs))
-                         }
-                        for prompt_num in range(len(prompt))
-                    ]
-                    return out_dict_list
-            else:
-                outputs = self.model_.generate(
-                    **inputs,
-                    max_new_tokens=max_new_tokens,
-                    do_sample=do_sample,
-                    pad_token_id=self.tokenizer_.pad_token_id,
-                )
-                # top_p=0.92,
-                # temperature=0,
-                # top_k=0
-            if input_is_str:
-                out_str = self.tokenizer_.decode(
-                    outputs[0], skip_special_tokens=True)
-                # print(&#39;out_str&#39;, out_str)
-                if &#39;mistral&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
-                    out_str = out_str[len(prompt) - 2:]
-                elif &#39;Meta-Llama-3&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
-                    out_str = out_str[len(prompt) - 145:]
-                else:
-                    out_str = out_str[len(prompt):]
-
-                if use_cache:
-                    pkl.dump(out_str, open(cache_file, &#34;wb&#34;))
-                return out_str
-            else:
-                out_strs = []
-                for i in range(outputs.shape[0]):
-                    out_tokens = outputs[i]
-                    out_str = self.tokenizer_.decode(
-                        out_tokens, skip_special_tokens=True)
-                    if &#39;mistral&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
-                        out_str = out_str[len(prompt[i]) - 2:]
-                    elif &#39;Meta-Llama-3&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
-                        # print(&#39;here&#39;)
-                        out_str = out_str[len(prompt) + 187:]
-                    else:
-                        out_str = out_str[len(prompt[i]):]
-                    out_strs.append(out_str)
-                if use_cache:
-                    pkl.dump(out_strs, open(cache_file, &#34;wb&#34;))
-                return out_strs
-
-    def _check_target_token_strs(self, target_token_strs, override_token_with_first_token_id=False):
-        if isinstance(target_token_strs, str):
-            target_token_strs = [target_token_strs]
-
-        target_token_ids = [self.tokenizer_(target_token_str, add_special_tokens=False)[&#34;input_ids&#34;]
-                            for target_token_str in target_token_strs]
-
-        # Check that the target token is in the vocab
-        if override_token_with_first_token_id:
-            # Get first token id in target_token_str
-            target_token_ids = [target_token_id[0]
-                                for target_token_id in target_token_ids]
-        else:
-            for i in range(len(target_token_strs)):
-                if len(target_token_ids[i]) &gt; 1:
-                    raise ValueError(
-                        f&#34;target_token_str {target_token_strs[i]} has multiple tokens: &#34; +
-                        str([self.tokenizer_.decode(target_token_id)
-                            for target_token_id in target_token_ids[i]]))
-        return target_token_ids
-
-
-class LLMEmbs:
-    def __init__(self, checkpoint):
-        self.tokenizer_ = load_tokenizer(checkpoint)
-        self.model_ = AutoModel.from_pretrained(
-            checkpoint, output_hidden_states=True,
-            device_map=&#34;auto&#34;,
-            torch_dtype=torch.float16,)
-
-    def __call__(self, texts: List[str], layer_idx: int = 18, batch_size=16):
-        &#39;&#39;&#39;Returns embeddings
-        &#39;&#39;&#39;
-        embs = []
-        for i in tqdm(range(0, len(texts), batch_size)):
-            inputs = self.tokenizer_(
-                texts[i:i + batch_size], return_tensors=&#39;pt&#39;, padding=True).to(self.model_.device)
-            hidden_states = self.model_(**inputs).hidden_states
-
-            # layers x batch x tokens x features
-            emb = hidden_states[layer_idx].detach().cpu().numpy()
-
-            # get emb from last token
-            emb = emb[:, -1, :]
-            embs.append(deepcopy(emb))
-        embs = np.concatenate(embs)
-        return embs
-
-
-if __name__ == &#34;__main__&#34;:
-    # llm = get_llm(&#34;text-davinci-003&#34;)
-    # text = llm(&#34;What do these have in common? Horse, &#34;)
-    # print(&#34;text&#34;, text)
-
-    # llm = get_llm(&#34;gpt2&#34;)
-    # text = llm(
-    # &#34;&#34;&#34;Continue this list
-    # - apple
-    # - banana
-    # -&#34;&#34;&#34;
-    # )
-    # print(&#34;text&#34;, text)
-    # tokenizer = transformers.LlamaTokenizer.from_pretrained(&#34;chaoyi-wu/PMC_LLAMA_7B&#34;)
-    # model = transformers.LlamaForCausalLM.from_pretrained(&#34;chaoyi-wu/PMC_LLAMA_7B&#34;)
-
-    # llm = get_llm(&#34;chaoyi-wu/PMC_LLAMA_7B&#34;)
-    #     llm = get_llm(&#34;llama_65b&#34;)
-    #     text = llm(
-    #         &#34;&#34;&#34;Continue this list
-    # - red
-    # - orange
-    # - yellow
-    # - green
-    # -&#34;&#34;&#34;,
-    #         use_cache=False,
-    #     )
-    #     print(text)
-    #     print(&#34;\n\n&#34;)
-    #     print(repr(text))
-
-    # GET LOGITS ###################################
-    # llm = get_llm(&#34;gpt2&#34;)
-    # prompts = [&#39;roses are red, violets are&#39;, &#39;may the force be with&#39;]
-    # # prompts = [&#39;may the force be with&#39;, &#39;so may the light be with&#39;]
-    # target_token_strs = [&#39; blue&#39;, &#39; you&#39;]
-    # ans = llm(prompts, return_next_token_prob_scores=True,
-    #           use_cache=False, target_token_strs=target_token_strs)
-
-    # FORCE WORDS ##########
-    llm = get_llm(&#34;gpt2&#34;)
-    prompts = [&#39;roses are red, violets are&#39;,
-               &#39;may the force be with&#39;, &#39;trees are usually&#39;]
-    # prompts = [&#39;may the force be with&#39;, &#39;so may the light be with&#39;]
-    target_token_strs = [&#39; green&#39;, &#39; you&#39;, &#39;orange&#39;]
-    llm._check_target_token_strs(target_token_strs)
-    ans = llm(prompts, use_cache=False,
-              return_next_token_prob_scores=True, target_token_strs=target_token_strs,
-              return_top_target_token_str=True)
-    print(&#39;ans&#39;, ans)</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -634,10 +45,9 @@ if __name__ == &#34;__main__&#34;:
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="imodelsx.llm.get_llm"><code class="name flex">
-<span>def <span class="ident">get_llm</span></span>(<span>checkpoint, seed=1, role: str = None, repeat_delay: Optional[float] = None, CACHE_DIR='/home/chansingh/clin/CACHE_OPENAI', LLAMA_DIR='/home/chansingh/llama')</span>
+<span>def <span class="ident">get_llm</span></span>(<span>checkpoint,<br>seed=1,<br>role: str = None,<br>repeat_delay: float | None = None,<br>CACHE_DIR='/home/chansingh/.CACHE_LLM')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -648,26 +58,28 @@ if __name__ == &#34;__main__&#34;:
     role: str = None,
     repeat_delay: Optional[float] = None,
     CACHE_DIR=LLM_CONFIG[&#34;CACHE_DIR&#34;],
-    LLAMA_DIR=LLM_CONFIG[&#34;LLAMA_DIR&#34;],
 ):
     if repeat_delay is not None:
         LLM_CONFIG[&#34;LLM_REPEAT_DELAY&#34;] = repeat_delay
 
     &#34;&#34;&#34;Get an LLM with a call function and caching capabilities&#34;&#34;&#34;
-    if checkpoint.startswith(&#34;gpt-3&#34;) or checkpoint.startswith(&#34;gpt-4&#34;):
+    if any(checkpoint.startswith(prefix) for prefix in [&#34;gpt-3&#34;, &#34;gpt-4&#34;, &#34;o3&#34;, &#34;o4&#34;, &#34;gpt-5&#34;]):
         return LLM_Chat(checkpoint, seed, role, CACHE_DIR)
-    elif &#39;Meta-Llama-3&#39; in checkpoint and &#39;Instruct&#39; in checkpoint:
+    elif &#39;meta-llama&#39; in checkpoint and &#39;Instruct&#39; in checkpoint:
+        if os.environ[&#39;HF_TOKEN&#39;] is None:
+            raise ValueError(
+                &#34;You must set the HF_TOKEN environment variable to use this model.&#34;)
         return LLM_HF_Pipeline(checkpoint, CACHE_DIR)
     else:
         # warning: this sets torch.manual_seed(seed)
-        return LLM_HF(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR, LLAMA_DIR=LLAMA_DIR)</code></pre>
+        return LLM_HF(checkpoint, seed=seed, CACHE_DIR=CACHE_DIR)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.llm.load_hf_model"><code class="name flex">
 <span>def <span class="ident">load_hf_model</span></span>(<span>checkpoint: str) ‑> transformers.modeling_utils.PreTrainedModel</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -696,14 +108,8 @@ if __name__ == &#34;__main__&#34;:
             checkpoint,
             torch_dtype=torch.float16,
             device_map=&#34;auto&#34;,
-            token=HF_TOKEN,
+            token=os.environ[&#39;HF_TOKEN&#39;],
             offload_folder=&#34;offload&#34;,
-        )
-    elif &#34;llama_&#34; in checkpoint:
-        return transformers.LlamaForCausalLM.from_pretrained(
-            join(LLAMA_DIR, checkpoint),
-            device_map=&#34;auto&#34;,
-            torch_dtype=torch.float16,
         )
     elif &#39;microsoft/phi&#39; in checkpoint:
         return AutoModelForCausalLM.from_pretrained(
@@ -713,16 +119,18 @@ if __name__ == &#34;__main__&#34;:
         return AutoModelForCausalLM.from_pretrained(checkpoint)
     else:
         return AutoModelForCausalLM.from_pretrained(
-            checkpoint, device_map=&#34;auto&#34;, torch_dtype=torch.float16,
-            token=HF_TOKEN,
+            checkpoint,
+            device_map=&#34;auto&#34;,
+            torch_dtype=torch.float16,
+            token=os.environ[&#39;HF_TOKEN&#39;],
         )</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.llm.load_tokenizer"><code class="name flex">
 <span>def <span class="ident">load_tokenizer</span></span>(<span>checkpoint: str) ‑> transformers.tokenization_utils.PreTrainedTokenizer</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -731,25 +139,25 @@ if __name__ == &#34;__main__&#34;:
     if &#34;facebook/opt&#34; in checkpoint:
         # opt can&#39;t use fast tokenizer
         tokenizer = AutoTokenizer.from_pretrained(
-            checkpoint, use_fast=False, padding_side=&#39;left&#39;, token=HF_TOKEN)
+            checkpoint, use_fast=False, padding_side=&#39;left&#39;, token=os.environ[&#39;HF_TOKEN&#39;])
     elif &#34;PMC_LLAMA&#34; in checkpoint:
         tokenizer = transformers.LlamaTokenizer.from_pretrained(
-            &#34;chaoyi-wu/PMC_LLAMA_7B&#34;, padding_side=&#39;left&#39;, token=HF_TOKEN)
+            &#34;chaoyi-wu/PMC_LLAMA_7B&#34;, padding_side=&#39;left&#39;, token=os.environ[&#39;HF_TOKEN&#39;])
     else:
         # , use_fast=True)
         tokenizer = AutoTokenizer.from_pretrained(
-            checkpoint, padding_side=&#39;left&#39;, use_fast=True, token=HF_TOKEN)
+            checkpoint, padding_side=&#39;left&#39;, use_fast=True, token=os.environ[&#39;HF_TOKEN&#39;])
 
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
     return tokenizer</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.llm.repeatedly_call_with_delay"><code class="name flex">
 <span>def <span class="ident">repeatedly_call_with_delay</span></span>(<span>llm_call)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -783,6 +191,7 @@ if __name__ == &#34;__main__&#34;:
 
     return wrapper</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 </section>
@@ -794,7 +203,6 @@ if __name__ == &#34;__main__&#34;:
 <span>(</span><span>checkpoint)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -825,13 +233,13 @@ if __name__ == &#34;__main__&#34;:
         embs = np.concatenate(embs)
         return embs</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.llm.LLM_Chat"><code class="flex name class">
 <span>class <span class="ident">LLM_Chat</span></span>
-<span>(</span><span>checkpoint, seed, role, CACHE_DIR)</span>
+<span>(</span><span>checkpoint, seed=1, role=None, CACHE_DIR='/home/chansingh/.CACHE_LLM')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Chat models take a different format: <a href="https://platform.openai.com/docs/guides/chat/introduction">https://platform.openai.com/docs/guides/chat/introduction</a></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -839,39 +247,62 @@ if __name__ == &#34;__main__&#34;:
 <pre><code class="python">class LLM_Chat:
     &#34;&#34;&#34;Chat models take a different format: https://platform.openai.com/docs/guides/chat/introduction&#34;&#34;&#34;
 
-    def __init__(self, checkpoint, seed, role, CACHE_DIR):
+    def __init__(self, checkpoint, seed=1, role=None, CACHE_DIR=LLM_CONFIG[&#34;CACHE_DIR&#34;]):
         self.cache_dir = join(
             CACHE_DIR, &#34;cache_openai&#34;, f&#39;{checkpoint.replace(&#34;/&#34;, &#34;_&#34;)}___{seed}&#39;
         )
         self.checkpoint = checkpoint
         self.role = role
         from openai import AzureOpenAI
-        if &#39;spot&#39; in checkpoint:
-            self.client = AzureOpenAI(
-                azure_endpoint=&#34;https://gcraoai9wus3spot.openai.azure.com/&#34;,
-                api_version=&#34;2024-02-01&#34;,
-                api_key=OPENAI_API_KEY_SHARED,
-            )
-        else:
-            self.client = AzureOpenAI(
-                azure_endpoint=&#34;https://healthcare-ai.openai.azure.com/&#34;,
-                api_version=&#34;2024-02-01&#34;,
-                api_key=OPENAI_API_KEY,
-            )
+        from azure.identity import ChainedTokenCredential, AzureCliCredential, ManagedIdentityCredential, get_bearer_token_provider
 
-    # @repeatedly_call_with_delay
+        try:
+            client_id = os.environ.get(&#34;AZURE_CLIENT_ID&#34;)
+            scope = &#34;https://cognitiveservices.azure.com/.default&#34;
+            credential = get_bearer_token_provider(ChainedTokenCredential(
+                AzureCliCredential(), # first check local
+                ManagedIdentityCredential(client_id=client_id)
+            ), scope)
+            if &#39;audio&#39; in checkpoint:
+                self.client = AzureOpenAI(
+                    api_version=&#34;2025-01-01-preview&#34;,
+                    azure_endpoint=&#34;https://neuroaiservice.cognitiveservices.azure.com/openai/deployments/gpt-4o-audio-preview/chat/completions?api-version=2025-01-01-preview&#34;,
+                    azure_ad_token_provider=credential,
+                    timeout=10,
+                    max_retries=3,
+                )
+            elif &#39;gpt-5&#39; in checkpoint:
+                self.client = AzureOpenAI(
+                    api_version=&#34;2025-01-01-preview&#34;,
+                    azure_endpoint=&#34;https://dl-openai-3.openai.azure.com/&#34;,
+                    azure_ad_token_provider=credential
+                )
+            else:
+                self.client = AzureOpenAI(
+                    api_version=&#34;2025-01-01-preview&#34;,
+                    azure_endpoint=&#34;https://dl-openai-1.openai.azure.com/&#34;,
+                    azure_ad_token_provider=credential
+                )
+        except Exception as e:
+            print(&#39;failed to create client&#39;, e)
+            print(&#39;You may need to edit this call in order to supply your own OpenAI / AzureOpenAI key and authentication.&#39;)
+            traceback.print_exc()
+
+    @repeatedly_call_with_delay
     def __call__(
         self,
         prompts_list: List[Dict[str, str]],
-        max_new_tokens=250,
+        max_completion_tokens=250,
         stop=None,
         functions: List[Dict] = None,
         return_str=True,
         verbose=True,
-        temperature=0.1,
+        temperature=0,
         frequency_penalty=0.25,
         use_cache=True,
         return_false_if_not_cached=False,
+        reasoning_effort=&#39;high&#39;,
+        seed=1,
     ):
         &#34;&#34;&#34;
         prompts_list: list of dicts, each dict has keys &#39;role&#39; and &#39;content&#39;
@@ -899,23 +330,27 @@ if __name__ == &#34;__main__&#34;:
             ]
 
         assert isinstance(prompts_list, list), prompts_list
+        # breakpoint()
 
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
         prompts_list_dict = {
             str(i): sorted(v.items()) for i, v in enumerate(prompts_list)
         }
-        if not self.checkpoint == &#34;gpt-3.5-turbo&#34;:
-            prompts_list_dict[&#34;checkpoint&#34;] = self.checkpoint
-        if functions is not None:
-            prompts_list_dict[&#34;functions&#34;] = functions
-        if temperature &gt; 0.1:
-            prompts_list_dict[&#34;temperature&#34;] = temperature
+        prompts_list_dict[&#34;checkpoint&#34;] = self.checkpoint
+        prompts_list_dict[&#34;temperature&#34;] = temperature
+        prompts_list_dict[&#34;functions&#34;] = functions
+        prompts_list_dict[&#34;max_completion_tokens&#34;] = max_completion_tokens
+        if not seed == 1:
+            prompts_list_dict[&#34;seed&#34;] = seed
+        if not reasoning_effort == &#39;high&#39;:
+            prompts_list_dict[&#39;reasoning_effort&#39;] = reasoning_effort
+        
         dict_as_str = json.dumps(prompts_list_dict, sort_keys=True)
         hash_str = hashlib.sha256(dict_as_str.encode()).hexdigest()
         cache_file = join(
             self.cache_dir,
-            f&#34;chat__{hash_str}__num_tok={max_new_tokens}.pkl&#34;,
+            f&#34;chat__{hash_str}.pkl&#34;,
         )
         if os.path.exists(cache_file) and use_cache:
             if verbose:
@@ -934,17 +369,27 @@ if __name__ == &#34;__main__&#34;:
         kwargs = dict(
             model=self.checkpoint,
             messages=prompts_list,
-            max_tokens=max_new_tokens,
+            max_completion_tokens=max_completion_tokens,
             temperature=temperature,
             top_p=1,
             frequency_penalty=frequency_penalty,  # maximum is 2
             presence_penalty=0,
             stop=stop,
+            reasoning_effort=reasoning_effort,
             # logprobs=True,
             # stop=[&#34;101&#34;]
         )
+        # print(&#39;kwargs&#39;, kwargs)
         if functions is not None:
             kwargs[&#34;functions&#34;] = functions
+        if self.checkpoint.startswith(&#39;o&#39;) or self.checkpoint == &#39;gpt-5&#39;:
+            del kwargs[&#39;temperature&#39;]  # o3 and o4 don&#39;t support temperature
+            del kwargs[&#39;frequency_penalty&#39;]
+            del kwargs[&#39;top_p&#39;]
+        
+        if not &#39;gpt-5&#39; in self.checkpoint:
+            del kwargs[&#39;reasoning_effort&#39;]
+
 
         response = self.client.chat.completions.create(
             **kwargs,
@@ -954,29 +399,138 @@ if __name__ == &#34;__main__&#34;:
             response = response.choices[0].message.content
 
         if response is not None:
-            pkl.dump(response, open(cache_file, &#34;wb&#34;))
+            # print(&#39;resp&#39;, response, &#39;cache_file&#39;, cache_file)
+            try:
+                # print(cache_file, &#39;cached!&#39;)
+                pkl.dump(response, open(cache_file, &#34;wb&#34;))
+            except:
+                print(&#39;failed to save cache!&#39;, cache_file)
+                traceback.print_exc()
 
         return response</code></pre>
 </details>
+<div class="desc"><p>Chat models take a different format: <a href="https://platform.openai.com/docs/guides/chat/introduction">https://platform.openai.com/docs/guides/chat/introduction</a></p></div>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="imodelsx.llm.LLM_Chat_Audio" href="#imodelsx.llm.LLM_Chat_Audio">LLM_Chat_Audio</a></li>
+</ul>
+</dd>
+<dt id="imodelsx.llm.LLM_Chat_Audio"><code class="flex name class">
+<span>class <span class="ident">LLM_Chat_Audio</span></span>
+<span>(</span><span>checkpoint, seed=1, role=None, CACHE_DIR='/home/chansingh/.CACHE_LLM')</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LLM_Chat_Audio(LLM_Chat):
+
+    def __call__(
+        self,
+        prompt_str: str,
+        audio_str: str,
+        return_str=True,
+        verbose=True,
+        use_cache=True,
+        return_false_if_not_cached=False,
+    ):
+
+        # breakpoint()
+        prompts_list = [{
+            &#34;role&#34;: &#34;user&#34;,
+            &#34;content&#34;: [
+                {
+                    &#34;type&#34;: &#34;text&#34;,
+                    &#34;text&#34;: prompt_str,
+                    # &#34;text&#34;: &#39;What food is mentioned in the recording?&#39;,
+                },
+                {
+                    &#34;type&#34;: &#34;input_audio&#34;,
+                    &#34;input_audio&#34;: {
+                        &#34;data&#34;: audio_str,
+                        &#34;format&#34;: &#34;wav&#34;
+                    }
+                }
+            ]
+        }]
+
+        # cache
+        os.makedirs(self.cache_dir, exist_ok=True)
+        prompts_list_dict = {
+            str(i): sorted(v.items()) for i, v in enumerate(prompts_list)
+        }
+        dict_as_str = json.dumps(prompts_list_dict, sort_keys=True)
+        hash_str = hashlib.sha256(dict_as_str.encode()).hexdigest()
+        cache_file = join(
+            self.cache_dir,
+            f&#34;audio__{hash_str}.pkl&#34;,
+        )
+        if os.path.exists(cache_file) and use_cache:
+            if verbose:
+                print(&#34;cached!&#34;)
+                # print(cache_file)
+            # print(cache_file)
+            response = pkl.load(open(cache_file, &#34;rb&#34;))
+            if response is not None:
+                return response
+        if verbose:
+            print(&#34;not cached&#34;)
+
+        if return_false_if_not_cached:
+            return False
+
+        kwargs = dict(
+            model=self.checkpoint,
+            messages=prompts_list,
+            # temperature=0,
+        )
+        response = self.client.chat.completions.create(
+            modalities=[&#34;text&#34;, &#34;audio&#34;],
+            audio={&#34;voice&#34;: &#34;alloy&#34;, &#34;format&#34;: &#34;wav&#34;},
+            **kwargs,
+        )
+
+        if return_str:
+            response = response.choices[0].message.audio.transcript
+
+        if response is not None:
+            # print(&#39;resp&#39;, response, &#39;cache_file&#39;, cache_file)
+            try:
+                # print(cache_file, &#39;cached!&#39;)
+                pkl.dump(response, open(cache_file, &#34;wb&#34;))
+            except:
+                print(&#39;failed to save cache!&#39;, cache_file)
+                traceback.print_exc()
+
+        return response</code></pre>
+</details>
+<div class="desc"><p>Chat models take a different format: <a href="https://platform.openai.com/docs/guides/chat/introduction">https://platform.openai.com/docs/guides/chat/introduction</a></p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="imodelsx.llm.LLM_Chat" href="#imodelsx.llm.LLM_Chat">LLM_Chat</a></li>
+</ul>
 </dd>
 <dt id="imodelsx.llm.LLM_HF"><code class="flex name class">
 <span>class <span class="ident">LLM_HF</span></span>
-<span>(</span><span>checkpoint, seed, CACHE_DIR, LLAMA_DIR=None)</span>
+<span>(</span><span>checkpoint, seed, CACHE_DIR)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class LLM_HF:
-    def __init__(self, checkpoint, seed, CACHE_DIR, LLAMA_DIR=None):
+    def __init__(self, checkpoint, seed, CACHE_DIR):
         self.tokenizer_ = load_tokenizer(checkpoint)
         self.model_ = load_hf_model(checkpoint)
         self.checkpoint = checkpoint
-        self.cache_dir = join(
-            CACHE_DIR, &#34;cache_hf&#34;, f&#39;{checkpoint.replace(&#34;/&#34;, &#34;_&#34;)}___{seed}&#39;
-        )
+        if CACHE_DIR is not None:
+            self.cache_dir = join(
+                CACHE_DIR, &#34;cache_hf&#34;, f&#39;{checkpoint.replace(&#34;/&#34;, &#34;_&#34;)}___{seed}&#39;
+            )
+        else:
+            self.cache_dir = None
         self.seed = seed
 
     def __call__(
@@ -1013,6 +567,7 @@ if __name__ == &#34;__main__&#34;:
         &#34;&#34;&#34;
         input_is_str = isinstance(prompt, str)
         with torch.no_grad():
+            use_cache = use_cache and self.cache_dir is not None
             # cache
             if use_cache:
                 os.makedirs(self.cache_dir, exist_ok=True)
@@ -1107,7 +662,11 @@ if __name__ == &#34;__main__&#34;:
                     out_tokens = outputs[i]
                     out_str = self.tokenizer_.decode(
                         out_tokens, skip_special_tokens=True)
-                    if &#39;mistral&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
+                    if &#39;Ministral&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
+                        out_str = out_str[len(prompt[i]) - 16:]
+                    elif &#39;Qwen&#39; in self.checkpoint:
+                        out_str = out_str[len(prompt[i]) - 34:]
+                    elif &#39;mistral&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
                         out_str = out_str[len(prompt[i]) - 2:]
                     elif &#39;Meta-Llama-3&#39; in self.checkpoint and &#39;Instruct&#39; in self.checkpoint:
                         # print(&#39;here&#39;)
@@ -1140,13 +699,13 @@ if __name__ == &#34;__main__&#34;:
                             for target_token_id in target_token_ids[i]]))
         return target_token_ids</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.llm.LLM_HF_Pipeline"><code class="flex name class">
 <span>class <span class="ident">LLM_HF_Pipeline</span></span>
 <span>(</span><span>checkpoint, CACHE_DIR)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1157,14 +716,15 @@ if __name__ == &#34;__main__&#34;:
         self.pipeline_ = transformers.pipeline(
             &#34;text-generation&#34;,
             model=checkpoint,
-            # model_kwargs={&#34;torch_dtype&#34;: torch.bfloat16},
-            # , &#39;device_map&#39;: &#34;auto&#34;},
-            model_kwargs={&#39;torch_dtype&#39;: torch.float16},
-            device_map=&#34;auto&#34;
+            model_kwargs={&#34;torch_dtype&#34;: torch.bfloat16},
+            # &#39;device_map&#39;: &#34;auto&#34;},
+            # model_kwargs={&#39;torch_dtype&#39;: torch.float16},
+            device_map=&#34;auto&#34;,
         )
         self.pipeline_.tokenizer.pad_token_id = self.pipeline_.tokenizer.eos_token_id
         self.pipeline_.tokenizer.padding_side = &#39;left&#39;
-        self.cache_dir = join(CACHE_DIR)
+        # self.pipeline_.model.generation_config.pad_token_id = self.pipeline_.tokenizer.pad_token_id
+        self.cache_dir = CACHE_DIR
 
     def __call__(
         self,
@@ -1174,7 +734,7 @@ if __name__ == &#34;__main__&#34;:
         verbose=False,
         batch_size=64,
     ):
-
+        use_cache = use_cache and self.cache_dir is not None
         if use_cache:
             os.makedirs(self.cache_dir, exist_ok=True)
             hash_str = hashlib.sha256(str(prompt).encode()).hexdigest()
@@ -1196,7 +756,11 @@ if __name__ == &#34;__main__&#34;:
             max_new_tokens=max_new_tokens,
             batch_size=batch_size,
             do_sample=False,
+            pad_token_id=self.pipeline_.tokenizer.pad_token_id,
+            top_p=None,
+            temperature=None,
         )
+        # print(outputs)
         if isinstance(prompt, str):
             texts = outputs[0][&#34;generated_text&#34;][len(prompt):]
         else:
@@ -1207,12 +771,35 @@ if __name__ == &#34;__main__&#34;:
             pkl.dump(texts, open(cache_file, &#34;wb&#34;))
         return texts</code></pre>
 </details>
+<div class="desc"></div>
+</dd>
+<dt id="imodelsx.llm._LazyModule.__getattr__.<locals>.Placeholder"><code class="flex name class">
+<span>class <span class="ident">LlamaTokenizer</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<h3>Methods</h3>
+<dl>
+<dt id="imodelsx.llm._LazyModule.__getattr__.<locals>.Placeholder.call"><code class="name flex">
+<span>def <span class="ident">call</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def call(self, *args, **kwargs):
+    pass</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
 </dd>
 </dl>
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
 <div class="toc">
 <ul></ul>
 </div>
@@ -1239,10 +826,19 @@ if __name__ == &#34;__main__&#34;:
 <h4><code><a title="imodelsx.llm.LLM_Chat" href="#imodelsx.llm.LLM_Chat">LLM_Chat</a></code></h4>
 </li>
 <li>
+<h4><code><a title="imodelsx.llm.LLM_Chat_Audio" href="#imodelsx.llm.LLM_Chat_Audio">LLM_Chat_Audio</a></code></h4>
+</li>
+<li>
 <h4><code><a title="imodelsx.llm.LLM_HF" href="#imodelsx.llm.LLM_HF">LLM_HF</a></code></h4>
 </li>
 <li>
 <h4><code><a title="imodelsx.llm.LLM_HF_Pipeline" href="#imodelsx.llm.LLM_HF_Pipeline">LLM_HF_Pipeline</a></code></h4>
+</li>
+<li>
+<h4><code><a title="imodelsx.llm._LazyModule.__getattr__.<locals>.Placeholder" href="#imodelsx.llm._LazyModule.__getattr__.<locals>.Placeholder">_LazyModule.__getattr__.<locals>.Placeholder</a></code></h4>
+<ul class="">
+<li><code><a title="imodelsx.llm._LazyModule.__getattr__.<locals>.Placeholder.call" href="#imodelsx.llm._LazyModule.__getattr__.<locals>.Placeholder.call">call</a></code></li>
+</ul>
 </li>
 </ul>
 </li>
@@ -1250,7 +846,7 @@ if __name__ == &#34;__main__&#34;:
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>

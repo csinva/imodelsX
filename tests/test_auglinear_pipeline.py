@@ -1,8 +1,12 @@
 from imodelsx import AugLinearClassifier
 import datasets
 import numpy as np
+from imodelsx import explain_dataset_iprompt, get_add_two_numbers_dataset, AugLinearClassifier
 
-if __name__ == '__main__':
+def test_auglinear_init():
+    m = AugLinearClassifier()
+
+def _test_full_pipeline():
     # set up data
     dset = datasets.load_dataset('rotten_tomatoes')['train']
     dset = dset.select(np.random.choice(len(dset), size=10, replace=False))
@@ -42,3 +46,7 @@ if __name__ == '__main__':
         print('\t', k, round(v, 2))
 
     print('successfully ran!')
+
+
+if __name__ == '__main__':
+    _test_full_pipeline()

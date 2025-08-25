@@ -30,7 +30,7 @@ def _test_stump_always_improves_acc():
         stump_class = imodelsx.augtree.stump.StumpClassifier if classification_or_regression == 'classification' else imodelsx.augtree.stump.StumpRegressor
         for seed in range(2):
             X_train_text, X_test_text, y_train, X_train, y_test, feature_names = \
-                seed_and_get_tiny_data(seed=seed, classification_or_regression=classification_or_regression)
+                _seed_and_get_tiny_data(seed=seed, classification_or_regression=classification_or_regression)
             m = stump_class().fit(
                 X_train, y_train, feature_names, X_train_text)
 
@@ -58,7 +58,7 @@ def _test_stump_always_improves_acc():
 def _test_tree_monotonic_in_depth(refinement_strategy='None', max_features=1, embs_manager=None):
     for classification_or_regression in ['regression', 'classification']:
         X_train_text, X_test_text, y_train, X_train, y_test, feature_names = \
-            seed_and_get_tiny_data(classification_or_regression=classification_or_regression)
+            _seed_and_get_tiny_data(classification_or_regression=classification_or_regression)
         if classification_or_regression == 'classification':
             tree_class = imodelsx.augtree.augtree.AugTreeClassifier
         else:
@@ -87,7 +87,7 @@ def _test_tree_monotonic_in_depth(refinement_strategy='None', max_features=1, em
 def _test_tree_ensemble(
     n_estimators=2,
     max_depth=2, max_features=1, refinement_strategy='None'):
-    X_train_text, X_test_text, y_train, X_train, y_test, feature_names = seed_and_get_tiny_data()
+    X_train_text, X_test_text, y_train, X_train, y_test, feature_names = _seed_and_get_tiny_data()
     tree = imodelsx.augtree.augtree.AugTreeClassifier(
         max_depth=max_depth,
         split_strategy='cart',

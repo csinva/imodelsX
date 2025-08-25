@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.6">
-<title>imodelsx.embeddings API documentation</title>
+<title>imodelsx.qaemb.vllm_example API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
@@ -33,7 +33,7 @@ el.replaceWith(d);
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>imodelsx.embeddings</code></h1>
+<h1 class="title">Module <code>imodelsx.qaemb.vllm_example</code></h1>
 </header>
 <section id="section-intro">
 </section>
@@ -44,96 +44,86 @@ el.replaceWith(d);
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="imodelsx.embeddings.get_embs"><code class="name flex">
-<span>def <span class="ident">get_embs</span></span>(<span>texts: List[str],<br>checkpoint: str = 'bert-base-uncased',<br>batch_size: int = 32,<br>aggregate: str = 'mean') ‑> numpy.ndarray</span>
+<dt id="imodelsx.qaemb.vllm_example.time_batch_inference_hf"><code class="name flex">
+<span>def <span class="ident">time_batch_inference_hf</span></span>(<span>prompts)</span>
 </code></dt>
 <dd>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_embs(
-    texts: List[str], checkpoint: str = &#34;bert-base-uncased&#34;, batch_size: int = 32,
-    aggregate: str = &#34;mean&#34;
-) -&gt; np.ndarray:
-    &#39;&#39;&#39;
-    Get embeddings for a list of texts.
-
-    Params
-    ------
-    texts: List[str]: List of texts to get embeddings for.
-    checkpoint: str: Name of the checkpoint to use. Use tf-idf for linear embeddings.
-    batch_size: int: Batch size to use for inference.
-    aggregate: str: Aggregation method to use for the embeddings. Can be &#34;mean&#34; or &#34;first&#34; (to use CLS token for BERT).
-    &#39;&#39;&#39;
-    if checkpoint == &#34;tf-idf&#34;:
-        return get_embs_linear(texts)
-
-    # load model
-    # get embeddings for each text from the corpus
-    tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-    model = AutoModel.from_pretrained(checkpoint).to(&#34;cuda&#34;)
-
-    # calculate embeddings
-    embs = []
-    for i in tqdm(range(0, len(texts), batch_size)):
-        t = texts[i: i + batch_size]
-        with torch.no_grad():
-            # tokenize
-            inputs = tokenizer(
-                t, return_tensors=&#34;pt&#34;, padding=True, truncation=True
-            ).to(&#34;cuda&#34;)
-            # Shape: [batch_size, seq_len, hidden_size]
-            outputs = model(**inputs).last_hidden_state.detach().cpu().numpy()
-            # average over sequence length
-            if aggregate == &#34;mean&#34;:
-                emb = np.mean(outputs, axis=1).squeeze()
-            elif aggregate == &#34;first&#34;:
-                emb = outputs[:, 0, :].squeeze()  # use CLS token
-            embs.append(deepcopy(emb))
-    embs = np.concatenate(embs)
-    return embs</code></pre>
-</details>
-<div class="desc"><p>Get embeddings for a list of texts.</p>
-<h2 id="params">Params</h2>
-<p>texts: List[str]: List of texts to get embeddings for.
-checkpoint: str: Name of the checkpoint to use. Use tf-idf for linear embeddings.
-batch_size: int: Batch size to use for inference.
-aggregate: str: Aggregation method to use for the embeddings. Can be "mean" or "first" (to use CLS token for BERT).</p></div>
-</dd>
-<dt id="imodelsx.embeddings.get_embs_linear"><code class="name flex">
-<span>def <span class="ident">get_embs_linear</span></span>(<span>texts: List[str]) ‑> numpy.ndarray</span>
-</code></dt>
-<dd>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_embs_linear(texts: List[str]) -&gt; np.ndarray:
-    &#34;&#34;&#34;Get TF-IDF vectors for a list of texts.
-
-    Parameters
-    ----------
-    texts (List[str]): List of texts to get TF-IDF vectors for.
-
-    Returns
-    -------
-    embs: np.ndarray: TF-IDF vectors for the input texts.
-    &#34;&#34;&#34;
-    vectorizer = TfidfVectorizer(
-        # tokenizer=AutoTokenizer.from_pretrained(checkpoint).tokenize,
-        # preprocessor=lambda x: x,
-        # token_pattern=None,
-        lowercase=False,
-        max_features=10000,
+<pre><code class="python">def time_batch_inference_hf(prompts):
+    # set enable_prefix_caching=True to enable APC
+    t0 = time.time()
+    llm = imodelsx.llm.get_llm(
+        checkpoint=&#39;meta-llama/Meta-Llama-3-8B-Instruct&#39;,
     )
-    return vectorizer.fit_transform(texts).toarray()</code></pre>
+    t1 = time.time()
+    print(f&#39;LLM created in {t1 - t0:.2f} seconds&#39;)
+    outputs = llm(prompts, use_cache=False)
+    t2 = time.time()
+    print(f&#39;Inference completed in {t2 - t1:.2f} seconds&#39;)</code></pre>
 </details>
-<div class="desc"><p>Get TF-IDF vectors for a list of texts.</p>
-<h2 id="parameters">Parameters</h2>
-<p>texts (List[str]): List of texts to get TF-IDF vectors for.</p>
-<h2 id="returns">Returns</h2>
-<p>embs: np.ndarray: TF-IDF vectors for the input texts.</p></div>
+<div class="desc"></div>
+</dd>
+<dt id="imodelsx.qaemb.vllm_example.time_batch_inference_vllm"><code class="name flex">
+<span>def <span class="ident">time_batch_inference_vllm</span></span>(<span>prompts)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def time_batch_inference_vllm(prompts):
+    import ray
+    from ray.data.llm import build_llm_processor, vLLMEngineProcessorConfig
+    ray.init(log_to_driver=False)
+    ray.data.DataContext.get_current().enable_progress_bars = False
+    ds = ray.data.from_items(
+        [{&#34;text&#34;: prompt} for prompt in prompts],
+        # parallelism=1,
+        # ray_remote_args={&#34;num_cpus&#34;: 1, &#34;num_gpus&#34;: 0},
+    )
+
+    t0 = time.time()
+    config = vLLMEngineProcessorConfig(
+        model_source=&#39;meta-llama/Meta-Llama-3-8B-Instruct&#39;,
+        engine_kwargs={
+            &#34;enable_chunked_prefill&#34;: True,
+            &#34;max_num_batched_tokens&#34;: 4096,
+            &#34;max_model_len&#34;: 8192,
+        },
+        concurrency=1,
+        batch_size=64,
+        tensor_parallel_size=4,
+    )
+    vllm_processor = build_llm_processor(
+        config,
+        preprocess=lambda row: dict(
+            messages=[
+                {&#34;role&#34;: &#34;system&#34;, &#34;content&#34;: &#34;You are a helpful assistant.&#34;},
+                {&#34;role&#34;: &#34;user&#34;, &#34;content&#34;: row[&#34;text&#34;]},
+            ],
+            sampling_params=dict(
+                temperature=0,
+                max_tokens=1,
+            ),
+        ),
+        postprocess=lambda row: dict(
+            answer=row[&#34;generated_text&#34;],
+            **row,  # This will return all the original columns in the dataset.
+        ),
+    )
+    t1 = time.time()
+    print(f&#39;vLLM processor created in {t1 - t0:.2f} seconds&#39;)
+    
+    ds = vllm_processor(ds)
+    outputs = ds.take(limit=10)
+    t2 = time.time()
+    print(f&#39;Inference completed in {t2 - t1:.2f} seconds&#39;)
+    ray.shutdown()</code></pre>
+</details>
+<div class="desc"></div>
 </dd>
 </dl>
 </section>
@@ -147,13 +137,13 @@ aggregate: str: Aggregation method to use for the embeddings. Can be "mean" or "
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="imodelsx" href="index.html">imodelsx</a></code></li>
+<li><code><a title="imodelsx.qaemb" href="index.html">imodelsx.qaemb</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="imodelsx.embeddings.get_embs" href="#imodelsx.embeddings.get_embs">get_embs</a></code></li>
-<li><code><a title="imodelsx.embeddings.get_embs_linear" href="#imodelsx.embeddings.get_embs_linear">get_embs_linear</a></code></li>
+<li><code><a title="imodelsx.qaemb.vllm_example.time_batch_inference_hf" href="#imodelsx.qaemb.vllm_example.time_batch_inference_hf">time_batch_inference_hf</a></code></li>
+<li><code><a title="imodelsx.qaemb.vllm_example.time_batch_inference_vllm" href="#imodelsx.qaemb.vllm_example.time_batch_inference_vllm">time_batch_inference_vllm</a></code></li>
 </ul>
 </li>
 </ul>

@@ -2,19 +2,33 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>imodelsx.kan.kan_modules API documentation</title>
 <meta name="description" content="Code for KanLinearModule and KANModule taken from https://github.com/Blealtan/efficient-kan/tree/master
-Original implementation at …" />
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
-<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+Original implementation at …">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
-<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
 </head>
 <body>
 <main>
@@ -26,341 +40,6 @@ Original implementation at …" />
 <p>Code for KanLinearModule and KANModule taken from <a href="https://github.com/Blealtan/efficient-kan/tree/master">https://github.com/Blealtan/efficient-kan/tree/master</a>
 Original implementation at <a href="https://github.com/KindXiaoming/pykan">https://github.com/KindXiaoming/pykan</a>
 Original paper: "KAN: Kolmogorov-Arnold Networks" <a href="https://arxiv.org/abs/2404.19756">https://arxiv.org/abs/2404.19756</a></p>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">&#39;&#39;&#39;Code for KanLinearModule and KANModule taken from https://github.com/Blealtan/efficient-kan/tree/master
-Original implementation at https://github.com/KindXiaoming/pykan
-Original paper: &#34;KAN: Kolmogorov-Arnold Networks&#34; https://arxiv.org/abs/2404.19756
-&#39;&#39;&#39;
-
-import torch
-import torch.nn.functional as F
-import math
-from typing import List
-
-
-class KANLinearModule(torch.nn.Module):
-    def __init__(
-        self,
-        in_features,
-        out_features,
-        grid_size=5,
-        spline_order=3,
-        scale_noise=0.1,
-        scale_base=1.0,
-        scale_spline=1.0,
-        enable_standalone_scale_spline=True,
-        base_activation=torch.nn.SiLU,
-        grid_eps=0.02,
-        grid_range=[-1, 1],
-    ):
-        super(KANLinearModule, self).__init__()
-        self.in_features = in_features
-        self.out_features = out_features
-        self.grid_size = grid_size
-        self.spline_order = spline_order
-
-        h = (grid_range[1] - grid_range[0]) / grid_size
-        grid = (
-            (
-                torch.arange(-spline_order, grid_size + spline_order + 1) * h
-                + grid_range[0]
-            )
-            .expand(in_features, -1)
-            .contiguous()
-        )
-        self.register_buffer(&#34;grid&#34;, grid)
-
-        self.base_weight = torch.nn.Parameter(
-            torch.Tensor(out_features, in_features))
-        self.spline_weight = torch.nn.Parameter(
-            torch.Tensor(out_features, in_features, grid_size + spline_order)
-        )
-        if enable_standalone_scale_spline:
-            self.spline_scaler = torch.nn.Parameter(
-                torch.Tensor(out_features, in_features)
-            )
-
-        self.scale_noise = scale_noise
-        self.scale_base = scale_base
-        self.scale_spline = scale_spline
-        self.enable_standalone_scale_spline = enable_standalone_scale_spline
-        self.base_activation = base_activation()
-        self.grid_eps = grid_eps
-
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        torch.nn.init.kaiming_uniform_(
-            self.base_weight, a=math.sqrt(5) * self.scale_base)
-        with torch.no_grad():
-            noise = (
-                (
-                    torch.rand(self.grid_size + 1,
-                               self.in_features, self.out_features)
-                    - 1 / 2
-                )
-                * self.scale_noise
-                / self.grid_size
-            )
-            self.spline_weight.data.copy_(
-                (self.scale_spline if not self.enable_standalone_scale_spline else 1.0)
-                * self.curve2coeff(
-                    self.grid.T[self.spline_order: -self.spline_order],
-                    noise,
-                )
-            )
-            if self.enable_standalone_scale_spline:
-                # torch.nn.init.constant_(self.spline_scaler, self.scale_spline)
-                torch.nn.init.kaiming_uniform_(
-                    self.spline_scaler, a=math.sqrt(5) * self.scale_spline)
-
-    def b_splines(self, x: torch.Tensor):
-        &#34;&#34;&#34;
-        Compute the B-spline bases for the given input tensor.
-
-        Args:
-            x (torch.Tensor): Input tensor of shape (batch_size, in_features).
-
-        Returns:
-            torch.Tensor: B-spline bases tensor of shape (batch_size, in_features, grid_size + spline_order).
-        &#34;&#34;&#34;
-        assert x.dim() == 2 and x.size(1) == self.in_features
-
-        grid: torch.Tensor = (
-            self.grid
-        )  # (in_features, grid_size + 2 * spline_order + 1)
-        x = x.unsqueeze(-1)
-        bases = ((x &gt;= grid[:, :-1]) &amp; (x &lt; grid[:, 1:])).to(x.dtype)
-        for k in range(1, self.spline_order + 1):
-            bases = (
-                (x - grid[:, : -(k + 1)])
-                / (grid[:, k:-1] - grid[:, : -(k + 1)])
-                * bases[:, :, :-1]
-            ) + (
-                (grid[:, k + 1:] - x)
-                / (grid[:, k + 1:] - grid[:, 1:(-k)])
-                * bases[:, :, 1:]
-            )
-
-        assert bases.size() == (
-            x.size(0),
-            self.in_features,
-            self.grid_size + self.spline_order,
-        )
-        return bases.contiguous()
-
-    def curve2coeff(self, x: torch.Tensor, y: torch.Tensor):
-        &#34;&#34;&#34;
-        Compute the coefficients of the curve that interpolates the given points.
-
-        Args:
-            x (torch.Tensor): Input tensor of shape (batch_size, in_features).
-            y (torch.Tensor): Output tensor of shape (batch_size, in_features, out_features).
-
-        Returns:
-            torch.Tensor: Coefficients tensor of shape (out_features, in_features, grid_size + spline_order).
-        &#34;&#34;&#34;
-        assert x.dim() == 2 and x.size(1) == self.in_features
-        assert y.size() == (x.size(0), self.in_features, self.out_features)
-
-        A = self.b_splines(x).transpose(
-            0, 1
-        )  # (in_features, batch_size, grid_size + spline_order)
-        B = y.transpose(0, 1)  # (in_features, batch_size, out_features)
-        solution = torch.linalg.lstsq(
-            A, B
-        ).solution  # (in_features, grid_size + spline_order, out_features)
-        result = solution.permute(
-            2, 0, 1
-        )  # (out_features, in_features, grid_size + spline_order)
-
-        assert result.size() == (
-            self.out_features,
-            self.in_features,
-            self.grid_size + self.spline_order,
-        )
-        return result.contiguous()
-
-    @property
-    def scaled_spline_weight(self):
-        return self.spline_weight * (
-            self.spline_scaler.unsqueeze(-1)
-            if self.enable_standalone_scale_spline
-            else 1.0
-        )
-
-    def forward(self, x: torch.Tensor):
-        assert x.dim() == 2 and x.size(1) == self.in_features
-
-        base_output = F.linear(self.base_activation(x), self.base_weight)
-        spline_output = F.linear(
-            self.b_splines(x).view(x.size(0), -1),
-            self.scaled_spline_weight.view(self.out_features, -1),
-        )
-        return base_output + spline_output
-
-    @torch.no_grad()
-    def update_grid(self, x: torch.Tensor, margin=0.01):
-        assert x.dim() == 2 and x.size(1) == self.in_features
-        batch = x.size(0)
-
-        splines = self.b_splines(x)  # (batch, in, coeff)
-        splines = splines.permute(1, 0, 2)  # (in, batch, coeff)
-        orig_coeff = self.scaled_spline_weight  # (out, in, coeff)
-        orig_coeff = orig_coeff.permute(1, 2, 0)  # (in, coeff, out)
-        unreduced_spline_output = torch.bmm(
-            splines, orig_coeff)  # (in, batch, out)
-        unreduced_spline_output = unreduced_spline_output.permute(
-            1, 0, 2
-        )  # (batch, in, out)
-
-        # sort each channel individually to collect data distribution
-        x_sorted = torch.sort(x, dim=0)[0]
-        grid_adaptive = x_sorted[
-            torch.linspace(
-                0, batch - 1, self.grid_size + 1, dtype=torch.int64, device=x.device
-            )
-        ]
-
-        uniform_step = (x_sorted[-1] - x_sorted[0] +
-                        2 * margin) / self.grid_size
-        grid_uniform = (
-            torch.arange(
-                self.grid_size + 1, dtype=torch.float32, device=x.device
-            ).unsqueeze(1)
-            * uniform_step
-            + x_sorted[0]
-            - margin
-        )
-
-        grid = self.grid_eps * grid_uniform + \
-            (1 - self.grid_eps) * grid_adaptive
-        grid = torch.concatenate(
-            [
-                grid[:1]
-                - uniform_step
-                * torch.arange(self.spline_order, 0, -1,
-                               device=x.device).unsqueeze(1),
-                grid,
-                grid[-1:]
-                + uniform_step
-                * torch.arange(1, self.spline_order + 1,
-                               device=x.device).unsqueeze(1),
-            ],
-            dim=0,
-        )
-
-        self.grid.copy_(grid.T)
-        self.spline_weight.data.copy_(
-            self.curve2coeff(x, unreduced_spline_output))
-
-    def regularization_loss(self, regularize_activation=1.0, regularize_entropy=1.0):
-        &#34;&#34;&#34;
-        Compute the regularization loss.
-
-        This is a dumb simulation of the original L1 regularization as stated in the
-        paper, since the original one requires computing absolutes and entropy from the
-        expanded (batch, in_features, out_features) intermediate tensor, which is hidden
-        behind the F.linear function if we want an memory efficient implementation.
-
-        The L1 regularization is now computed as mean absolute value of the spline
-        weights. The authors implementation also includes this term in addition to the
-        sample-based regularization.
-        &#34;&#34;&#34;
-        l1_fake = self.spline_weight.abs().mean(-1)
-        regularization_loss_activation = l1_fake.sum()
-        p = l1_fake / regularization_loss_activation
-        regularization_loss_entropy = -torch.sum(p * p.log())
-        return (
-            regularize_activation * regularization_loss_activation
-            + regularize_entropy * regularization_loss_entropy
-        )
-
-
-class KANModule(torch.nn.Module):
-    def __init__(
-        self,
-        layers_hidden,
-        grid_size=5,
-        spline_order=3,
-        scale_noise=0.1,
-        scale_base=1.0,
-        scale_spline=1.0,
-        base_activation=torch.nn.SiLU,
-        grid_eps=0.02,
-        grid_range=[-1, 1],
-    ):
-        super(KANModule, self).__init__()
-        self.grid_size = grid_size
-        self.spline_order = spline_order
-
-        self.layers = torch.nn.ModuleList()
-        for in_features, out_features in zip(layers_hidden, layers_hidden[1:]):
-            self.layers.append(
-                KANLinearModule(
-                    in_features,
-                    out_features,
-                    grid_size=grid_size,
-                    spline_order=spline_order,
-                    scale_noise=scale_noise,
-                    scale_base=scale_base,
-                    scale_spline=scale_spline,
-                    base_activation=base_activation,
-                    grid_eps=grid_eps,
-                    grid_range=grid_range,
-                )
-            )
-
-    def forward(self, x: torch.Tensor, update_grid=False):
-        for layer in self.layers:
-            if update_grid:
-                layer.update_grid(x)
-            x = layer(x)
-        return x
-
-    def regularization_loss(self, regularize_activation=1.0, regularize_entropy=1.0):
-        return sum(
-            layer.regularization_loss(
-                regularize_activation, regularize_entropy)
-            for layer in self.layers
-        )
-
-
-class KANGAMModule(torch.nn.Module):
-    &#39;&#39;&#39;Learn a KAN model on each individual input feature
-    &#39;&#39;&#39;
-
-    def __init__(self, num_features, layers_hidden: List[int], n_classes, **kwargs):
-        super(KANGAMModule, self).__init__()
-        self.models = torch.nn.ModuleList([
-            KANModule(
-                layers_hidden=[1] + layers_hidden + [1],
-                **kwargs)
-            for _ in range(num_features)
-        ])
-        self.linear = torch.nn.Linear(num_features, n_classes)
-
-    def forward(self, x: torch.Tensor, update_grid=False):
-
-        features = torch.stack(
-            [model(x[:, i:i + 1], update_grid)
-             for i, model in enumerate(self.models)],
-            dim=1)
-
-        features = features.view(x.size(0), -1)
-        return self.linear(features)
-
-    def regularization_loss(self, regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=1.0):
-        return sum(
-            layer.regularization_loss(
-                regularize_activation, regularize_entropy)
-            for model in self.models
-            for layer in model.layers
-        ) + regularize_ridge * self.linear.weight.norm(p=2)</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -376,8 +55,6 @@ class KANGAMModule(torch.nn.Module):
 <span>(</span><span>num_features, layers_hidden: List[int], n_classes, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Learn a KAN model on each individual input feature</p>
-<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -414,6 +91,8 @@ class KANGAMModule(torch.nn.Module):
             for layer in model.layers
         ) + regularize_ridge * self.linear.weight.norm(p=2)</code></pre>
 </details>
+<div class="desc"><p>Learn a KAN model on each individual input feature</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>torch.nn.modules.module.Module</li>
@@ -424,15 +103,6 @@ class KANGAMModule(torch.nn.Module):
 <span>def <span class="ident">forward</span></span>(<span>self, x: torch.Tensor, update_grid=False) ‑> Callable[..., Any]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Define the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the :class:<code>Module</code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -447,12 +117,20 @@ registered hooks while the latter silently ignores them.</p>
     features = features.view(x.size(0), -1)
     return self.linear(features)</code></pre>
 </details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
 </dd>
 <dt id="imodelsx.kan.kan_modules.KANGAMModule.regularization_loss"><code class="name flex">
 <span>def <span class="ident">regularization_loss</span></span>(<span>self, regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=1.0)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -465,42 +143,15 @@ registered hooks while the latter silently ignores them.</p>
         for layer in model.layers
     ) + regularize_ridge * self.linear.weight.norm(p=2)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
 <dt id="imodelsx.kan.kan_modules.KANLinearModule"><code class="flex name class">
 <span>class <span class="ident">KANLinearModule</span></span>
-<span>(</span><span>in_features, out_features, grid_size=5, spline_order=3, scale_noise=0.1, scale_base=1.0, scale_spline=1.0, enable_standalone_scale_spline=True, base_activation=torch.nn.modules.activation.SiLU, grid_eps=0.02, grid_range=[-1, 1])</span>
+<span>(</span><span>in_features,<br>out_features,<br>grid_size=5,<br>spline_order=3,<br>scale_noise=0.1,<br>scale_base=1.0,<br>scale_spline=1.0,<br>enable_standalone_scale_spline=True,<br>base_activation=torch.nn.modules.activation.SiLU,<br>grid_eps=0.02,<br>grid_range=[-1, 1])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Base class for all neural network modules.</p>
-<p>Your models should also subclass this class.</p>
-<p>Modules can also contain other Modules, allowing to nest them in
-a tree structure. You can assign the submodules as regular attributes::</p>
-<pre><code>import torch.nn as nn
-import torch.nn.functional as F
-
-class Model(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = nn.Conv2d(1, 20, 5)
-        self.conv2 = nn.Conv2d(20, 20, 5)
-
-    def forward(self, x):
-        x = F.relu(self.conv1(x))
-        return F.relu(self.conv2(x))
-</code></pre>
-<p>Submodules assigned in this way will be registered, and will have their
-parameters converted too when you call :meth:<code>to</code>, etc.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>As per the example above, an <code>__init__()</code> call to the parent class
-must be made before assignment on the child.</p>
-</div>
-<p>:ivar training: Boolean represents whether this module is in training or
-evaluation mode.
-:vartype training: bool</p>
-<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -743,15 +394,43 @@ evaluation mode.
             + regularize_entropy * regularization_loss_entropy
         )</code></pre>
 </details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing them to be nested in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+
+class Model(nn.Module):
+    def __init__(self) -&gt; None:
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will also have their
+parameters converted when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>torch.nn.modules.module.Module</li>
 </ul>
 <h3>Instance variables</h3>
 <dl>
-<dt id="imodelsx.kan.kan_modules.KANLinearModule.scaled_spline_weight"><code class="name">var <span class="ident">scaled_spline_weight</span></code></dt>
+<dt id="imodelsx.kan.kan_modules.KANLinearModule.scaled_spline_weight"><code class="name">prop <span class="ident">scaled_spline_weight</span></code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -764,6 +443,7 @@ def scaled_spline_weight(self):
         else 1.0
     )</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 <h3>Methods</h3>
@@ -772,17 +452,6 @@ def scaled_spline_weight(self):
 <span>def <span class="ident">b_splines</span></span>(<span>self, x: torch.Tensor)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Compute the B-spline bases for the given input tensor.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>torch.Tensor</code></dt>
-<dd>Input tensor of shape (batch_size, in_features).</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>torch.Tensor</code></dt>
-<dd>B-spline bases tensor of shape (batch_size, in_features, grid_size + spline_order).</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -822,24 +491,22 @@ def scaled_spline_weight(self):
     )
     return bases.contiguous()</code></pre>
 </details>
+<div class="desc"><p>Compute the B-spline bases for the given input tensor.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>torch.Tensor</code></dt>
+<dd>Input tensor of shape (batch_size, in_features).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>torch.Tensor</code></dt>
+<dd>B-spline bases tensor of shape (batch_size, in_features, grid_size + spline_order).</dd>
+</dl></div>
 </dd>
 <dt id="imodelsx.kan.kan_modules.KANLinearModule.curve2coeff"><code class="name flex">
 <span>def <span class="ident">curve2coeff</span></span>(<span>self, x: torch.Tensor, y: torch.Tensor)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Compute the coefficients of the curve that interpolates the given points.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>x</code></strong> :&ensp;<code>torch.Tensor</code></dt>
-<dd>Input tensor of shape (batch_size, in_features).</dd>
-<dt><strong><code>y</code></strong> :&ensp;<code>torch.Tensor</code></dt>
-<dd>Output tensor of shape (batch_size, in_features, out_features).</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>torch.Tensor</code></dt>
-<dd>Coefficients tensor of shape (out_features, in_features, grid_size + spline_order).</dd>
-</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -876,20 +543,24 @@ def scaled_spline_weight(self):
     )
     return result.contiguous()</code></pre>
 </details>
+<div class="desc"><p>Compute the coefficients of the curve that interpolates the given points.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>torch.Tensor</code></dt>
+<dd>Input tensor of shape (batch_size, in_features).</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>torch.Tensor</code></dt>
+<dd>Output tensor of shape (batch_size, in_features, out_features).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>torch.Tensor</code></dt>
+<dd>Coefficients tensor of shape (out_features, in_features, grid_size + spline_order).</dd>
+</dl></div>
 </dd>
 <dt id="imodelsx.kan.kan_modules.KANLinearModule.forward"><code class="name flex">
 <span>def <span class="ident">forward</span></span>(<span>self, x: torch.Tensor) ‑> Callable[..., Any]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Define the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the :class:<code>Module</code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -904,19 +575,20 @@ registered hooks while the latter silently ignores them.</p>
     )
     return base_output + spline_output</code></pre>
 </details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
 </dd>
 <dt id="imodelsx.kan.kan_modules.KANLinearModule.regularization_loss"><code class="name flex">
 <span>def <span class="ident">regularization_loss</span></span>(<span>self, regularize_activation=1.0, regularize_entropy=1.0)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Compute the regularization loss.</p>
-<p>This is a dumb simulation of the original L1 regularization as stated in the
-paper, since the original one requires computing absolutes and entropy from the
-expanded (batch, in_features, out_features) intermediate tensor, which is hidden
-behind the F.linear function if we want an memory efficient implementation.</p>
-<p>The L1 regularization is now computed as mean absolute value of the spline
-weights. The authors implementation also includes this term in addition to the
-sample-based regularization.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -943,12 +615,19 @@ sample-based regularization.</p></div>
         + regularize_entropy * regularization_loss_entropy
     )</code></pre>
 </details>
+<div class="desc"><p>Compute the regularization loss.</p>
+<p>This is a dumb simulation of the original L1 regularization as stated in the
+paper, since the original one requires computing absolutes and entropy from the
+expanded (batch, in_features, out_features) intermediate tensor, which is hidden
+behind the F.linear function if we want an memory efficient implementation.</p>
+<p>The L1 regularization is now computed as mean absolute value of the spline
+weights. The authors implementation also includes this term in addition to the
+sample-based regularization.</p></div>
 </dd>
 <dt id="imodelsx.kan.kan_modules.KANLinearModule.reset_parameters"><code class="name flex">
 <span>def <span class="ident">reset_parameters</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -978,12 +657,12 @@ sample-based regularization.</p></div>
             torch.nn.init.kaiming_uniform_(
                 self.spline_scaler, a=math.sqrt(5) * self.scale_spline)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.kan.kan_modules.KANLinearModule.update_grid"><code class="name flex">
 <span>def <span class="ident">update_grid</span></span>(<span>self, x: torch.Tensor, margin=0.01)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1043,42 +722,15 @@ def update_grid(self, x: torch.Tensor, margin=0.01):
     self.spline_weight.data.copy_(
         self.curve2coeff(x, unreduced_spline_output))</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
 <dt id="imodelsx.kan.kan_modules.KANModule"><code class="flex name class">
 <span>class <span class="ident">KANModule</span></span>
-<span>(</span><span>layers_hidden, grid_size=5, spline_order=3, scale_noise=0.1, scale_base=1.0, scale_spline=1.0, base_activation=torch.nn.modules.activation.SiLU, grid_eps=0.02, grid_range=[-1, 1])</span>
+<span>(</span><span>layers_hidden,<br>grid_size=5,<br>spline_order=3,<br>scale_noise=0.1,<br>scale_base=1.0,<br>scale_spline=1.0,<br>base_activation=torch.nn.modules.activation.SiLU,<br>grid_eps=0.02,<br>grid_range=[-1, 1])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Base class for all neural network modules.</p>
-<p>Your models should also subclass this class.</p>
-<p>Modules can also contain other Modules, allowing to nest them in
-a tree structure. You can assign the submodules as regular attributes::</p>
-<pre><code>import torch.nn as nn
-import torch.nn.functional as F
-
-class Model(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = nn.Conv2d(1, 20, 5)
-        self.conv2 = nn.Conv2d(20, 20, 5)
-
-    def forward(self, x):
-        x = F.relu(self.conv1(x))
-        return F.relu(self.conv2(x))
-</code></pre>
-<p>Submodules assigned in this way will be registered, and will have their
-parameters converted too when you call :meth:<code>to</code>, etc.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>As per the example above, an <code>__init__()</code> call to the parent class
-must be made before assignment on the child.</p>
-</div>
-<p>:ivar training: Boolean represents whether this module is in training or
-evaluation mode.
-:vartype training: bool</p>
-<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1131,6 +783,35 @@ evaluation mode.
             for layer in self.layers
         )</code></pre>
 </details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing them to be nested in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+
+class Model(nn.Module):
+    def __init__(self) -&gt; None:
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will also have their
+parameters converted when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>torch.nn.modules.module.Module</li>
@@ -1141,15 +822,6 @@ evaluation mode.
 <span>def <span class="ident">forward</span></span>(<span>self, x: torch.Tensor, update_grid=False) ‑> Callable[..., Any]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Define the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the :class:<code>Module</code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1161,12 +833,20 @@ registered hooks while the latter silently ignores them.</p>
         x = layer(x)
     return x</code></pre>
 </details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
 </dd>
 <dt id="imodelsx.kan.kan_modules.KANModule.regularization_loss"><code class="name flex">
 <span>def <span class="ident">regularization_loss</span></span>(<span>self, regularize_activation=1.0, regularize_entropy=1.0)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1178,6 +858,7 @@ registered hooks while the latter silently ignores them.</p>
         for layer in self.layers
     )</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -1185,7 +866,6 @@ registered hooks while the latter silently ignores them.</p>
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
 <div class="toc">
 <ul></ul>
 </div>
@@ -1229,7 +909,7 @@ registered hooks while the latter silently ignores them.</p>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>

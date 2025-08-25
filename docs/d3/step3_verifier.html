@@ -2,18 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>imodelsx.d3.step3_verifier API documentation</title>
-<meta name="description" content="" />
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
-<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
-<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
 </head>
 <body>
 <main>
@@ -22,265 +36,6 @@
 <h1 class="title">Module <code>imodelsx.d3.step3_verifier</code></h1>
 </header>
 <section id="section-intro">
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">import pickle as pkl
-import random
-import os
-import numpy as np
-import re
-import torch
-import tqdm
-from collections import defaultdict
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, T5ForConditionalGeneration
-
-
-device = &#39;cuda&#39; if torch.cuda.is_available() else &#39;cpu&#39;
-device_count = torch.cuda.device_count()
-BSIZE = 4
-if device_count == 4:
-    BSIZE = 8
-
-
-def normalize(t):
-    return re.sub(&#34;&#39;(.+)&#39;&#34;, r&#39;\1&#39;, t.lower())
-
-
-def qc2input(d):
-    return normalize(d[&#39;q&#39;] + &#39;\\n&#39; + d[&#39;c&#39;])
-
-
-class T5ZeroShotClfQA(torch.nn.Module):
-
-    def __init__(self, qa_model_name, max_seq_length = 128, half_precision=False):
-        super(T5ZeroShotClfQA, self).__init__()
-        self.tokenizer = AutoTokenizer.from_pretrained(&#39;t5-small&#39;)
-        self.model = T5ForConditionalGeneration.from_pretrained(qa_model_name)
-        if half_precision:
-            print(&#39;Using half precision&#39;)
-            self.half_precision = half_precision
-            self.model = self.model.half()
-        if device == &#39;cuda&#39;:
-            self.model.to(device)
-        self.vocab = self.tokenizer.get_vocab()
-        self.yes_id, self.no_id = self.vocab[&#39;▁yes&#39;], self.vocab[&#39;▁no&#39;]
-        self.max_seq_length = max_seq_length
-        self.lsm = torch.nn.LogSoftmax(dim=-1)
-
-    def create_batch(self, q_dicts):
-        input_strings = [qc2input(d) for d in q_dicts]
-        input_strings = [normalize(i) for i in input_strings]
-        input_dict = self.tokenizer(input_strings, padding=True, return_tensors=&#34;pt&#34;,
-                                    truncation=True, max_length=self.max_seq_length).to(device)
-        return input_dict
-
-    def forward(self, input_dict):
-        starts = torch.tensor([[self.model.config.decoder_start_token_id]] * len(input_dict[&#39;input_ids&#39;])).to(device)
-        output = self.model(**input_dict, decoder_input_ids=starts)
-        logits = self.lsm(output.logits[:, 0, [self.no_id, self.yes_id]])
-        return logits
-
-    def get_logits_from_input_dict_(self, input_strings):
-        input_dict = self.create_batch(input_strings)
-        return self.forward(input_dict)
-
-    def get_logits_from_input_dict(self, q_dicts, bsize=32, progress_bar=True):
-        self.model.eval()
-        result_logits = []
-        iter_count = (len(q_dicts) - 1) // bsize + 1
-        ranger = range(iter_count) if not progress_bar else tqdm.trange(iter_count)
-        for i in ranger:
-            l = self.get_logits_from_input_dict_(q_dicts[i*bsize:(i+1) * bsize]).detach().cpu().numpy().tolist()
-            result_logits.extend(l)
-        return np.array(result_logits)
-
-    def save(self, path):
-        torch.save(self.model.state_dict(), path)
-
-    def load(self, path):
-        self.model.load_state_dict(torch.load(path))
-
-
-def resize(sent_A, sent_B, max_length, t5tok):
-    combined_cap = max_length - 30
-    toks_A = t5tok(sent_A)[&#39;input_ids&#39;]
-    toks_B = t5tok(sent_B)[&#39;input_ids&#39;]
-    
-    toks_A_new, toks_B_new = [], []
-    total_token_count = 0
-    for i in range(max(len(toks_A), len(toks_B)) - 1):
-        if total_token_count &gt;= combined_cap:
-            break
-        if i &lt; len(toks_A) - 1:
-            toks_A_new.append(toks_A[i])
-            total_token_count += 1
-        
-        if total_token_count &gt;= combined_cap:
-            break
-        if i &lt; len(toks_B) - 1:
-            toks_B_new.append(toks_B[i])
-            total_token_count += 1
-    new_A, new_B = t5tok.decode(toks_A_new), t5tok.decode(toks_B_new)
-    return new_A, new_B
-
-
-def query_paired_fitness_controlled_(h, pos, neg, num_examples, m, max_length=128):
-    t5tok = m.tokenizer
-    q = &#39;Is it true that compared to sentence B, sentence A &#39; + h + &#39;?&#39;
-    
-    pairs = []
-    for i in range(num_examples):
-        sent_A = random.choice(pos)
-        sent_B = random.choice(neg)
-        pairs.append((sent_A, sent_B))
-
-    qc_dicts = []
-    for sent_A, sent_B in pairs:
-        sent_A, sent_B = resize(sent_A, sent_B, max_length, t5tok)
-        c = &#39;sentence A: &#39; + sent_A + &#39;\n\nsentence B: &#39; + sent_B
-        qc_dicts.append({&#39;q&#39;: q, &#39;c&#39;: c})
-    positive_logits = m.get_logits_from_input_dict(qc_dicts, bsize=BSIZE)
-    pos_score = np.mean((np.e ** positive_logits[:,1]) &gt; 0.5)
-
-    qc_dicts = []
-
-    for sent_A, sent_B in pairs:
-        sent_A, sent_B = resize(sent_A, sent_B, max_length, t5tok)
-        c = &#39;sentence A: &#39; + sent_B + &#39;\n\nsentence B: &#39; + sent_A
-        qc_dicts.append({&#39;q&#39;: q, &#39;c&#39;: c})
-    reverse_logits = m.get_logits_from_input_dict(qc_dicts, bsize=BSIZE)
-    reverse_score = np.mean((np.e ** reverse_logits[:,1]) &gt; 0.5)
-    return {
-        &#39;h_score&#39;: pos_score - reverse_score,
-        &#39;h&#39;: h,
-        &#39;dicts&#39;: pairs,
-        &#39;logits&#39;: {
-            &#39;positive_logits&#39;: positive_logits,
-            &#39;reverse_logits&#39;: reverse_logits
-        }
-    }
-    
-    
-def query_single_fitness_controlled_(h, pos, neg, num_examples, m):
-    q = &#39;Is it true that this sentence &#39; + h + &#39;?&#39;
-    pos, neg = list(pos), list(neg)
-    random.shuffle(pos)
-    random.shuffle(neg)
-    
-    pos_examples = pos[:num_examples]
-    qc_dicts = [{&#39;q&#39;: q, &#39;c&#39;: s} for s in pos_examples]
-    pos_logits = m.get_logits_from_input_dict(qc_dicts, bsize=BSIZE)[:,1]
-    
-    neg_examples =  neg[:num_examples]
-    qc_dicts = [{&#39;q&#39;: q, &#39;c&#39;: s} for s in neg_examples]
-    neg_logits = m.get_logits_from_input_dict(qc_dicts, bsize=BSIZE)[:,1]
-    
-    pos_score = np.mean((np.e ** pos_logits) &gt; 0.5)
-    neg_score = np.mean((np.e ** neg_logits) &gt; 0.5)
-    
-    return {
-        &#39;h_score&#39;: pos_score - neg_score,
-        &#39;h&#39;: h,
-        &#39;dicts&#39;: (pos_examples, neg_examples),
-        &#39;logits&#39;: {
-            &#39;pos_logits&#39;: pos_logits,
-            &#39;neg_logits&#39;: neg_logits
-        }
-    }
-
-
-class DummyVerifier:
-
-    def __init__(self):
-        self.seq_length = 128
-        print(&#39;loading verifier&#39;)
-        self.model = T5ZeroShotClfQA(&#39;allenai/unifiedqa-t5-large&#39;, 
-                                     max_seq_length=self.seq_length, half_precision=True)
-        print(&#39;verifier loaded&#39;)
-        self.description = &#39;Unifiedqa t5-large for debugging&#39;
-    
-    def return_verification(self, h, pos, neg, num_examples):
-        result = query_paired_fitness_controlled_(h, pos, neg, num_examples, self.model, max_length=self.seq_length)
-        return result
-
-    
-class Verifier0514:
-
-    def __init__(self):
-        self.seq_length = 256
-        print(&#39;loading verifier&#39;)
-        self.model = T5ZeroShotClfQA(&#39;ruiqi-zhong/t5verifier_0514&#39;, 
-                                     max_seq_length=self.seq_length, half_precision=True)
-        print(&#39;verifier loaded&#39;)
-        self.description = &#39;Similar to Verifier 1207, though the fine-tuned on clean verification data&#39;
-    
-    def return_verification(self, h, pos, neg, num_examples):
-        result = query_paired_fitness_controlled_(h, pos, neg, num_examples, self.model, max_length=self.seq_length)
-        return result
-
-
-class UnifiedQASingle:
-    
-    def __init__(self):
-        self.seq_length = 256
-        print(&#39;loading verifier&#39;)
-        self.model = T5ZeroShotClfQA(&#39;allenai/unifiedqa-t5-11b&#39;, 
-                                     max_seq_length=self.seq_length, half_precision=True)
-        self.model.eval()
-        print(&#39;verifier loaded&#39;)
-        self.description = &#39;UnifiedQA evaluated on single hypotheses&#39;
-    
-    def return_verification(self, h, pos, neg, num_examples):
-        result = query_single_fitness_controlled_(h, pos, neg, num_examples, self.model)
-        return result
-    
-
-class UnifiedQA_v2Single:
-    
-    def __init__(self):
-        self.seq_length = 256
-        print(&#39;loading verifier&#39;)
-        self.model = T5ZeroShotClfQA(&#39;allenai/unifiedqa-v2-t5-11b-1251000&#39;,
-                                     max_seq_length=self.seq_length, half_precision=True)
-        self.model.eval()
-        print(&#39;verifier loaded&#39;)
-        self.description = &#39;UnifiedQA-v2 evaluated on single hypotheses&#39;
-    
-    def return_verification(self, h, pos, neg, num_examples):
-        result = query_single_fitness_controlled_(h, pos, neg, num_examples, self.model)
-        return result
-    
-
-class UnifiedQA_v2:
-
-    def __init__(self):
-        self.seq_length = 256
-        print(&#39;loading verifier&#39;)
-        self.model = T5ZeroShotClfQA(&#39;allenai/unifiedqa-v2-t5-11b-1251000&#39;,
-                                     max_seq_length=self.seq_length, half_precision=True)
-        self.model.eval()
-        print(&#39;verifier loaded&#39;)
-        self.description = &#39;UnifiedQA-v2 evaluated on comparison hypotheses&#39;
-    
-    def return_verification(self, h, pos, neg, num_examples):
-        result = query_paired_fitness_controlled_(h, pos, neg, num_examples, self.model, max_length=self.seq_length)
-        return result
-    
-
-def init_verifier(verifier_name):
-    return name2verifier_cls[verifier_name]()
-
-    
-name2verifier_cls = {
-    &#39;ruiqi-zhong/t5verifier_0514&#39;: Verifier0514,
-    &#39;dummy&#39;: DummyVerifier,
-    &#39;unifiedqasingle&#39;: UnifiedQASingle,
-    &#39;unifiedqa_v2single&#39;: UnifiedQA_v2Single,
-    &#39;unifiedqa_v2&#39;: UnifiedQA_v2
-}</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -293,7 +48,6 @@ name2verifier_cls = {
 <span>def <span class="ident">init_verifier</span></span>(<span>verifier_name)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -301,12 +55,12 @@ name2verifier_cls = {
 <pre><code class="python">def init_verifier(verifier_name):
     return name2verifier_cls[verifier_name]()</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.d3.step3_verifier.normalize"><code class="name flex">
 <span>def <span class="ident">normalize</span></span>(<span>t)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -314,12 +68,12 @@ name2verifier_cls = {
 <pre><code class="python">def normalize(t):
     return re.sub(&#34;&#39;(.+)&#39;&#34;, r&#39;\1&#39;, t.lower())</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.d3.step3_verifier.qc2input"><code class="name flex">
 <span>def <span class="ident">qc2input</span></span>(<span>d)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -327,12 +81,12 @@ name2verifier_cls = {
 <pre><code class="python">def qc2input(d):
     return normalize(d[&#39;q&#39;] + &#39;\\n&#39; + d[&#39;c&#39;])</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.d3.step3_verifier.query_paired_fitness_controlled_"><code class="name flex">
 <span>def <span class="ident">query_paired_fitness_controlled_</span></span>(<span>h, pos, neg, num_examples, m, max_length=128)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -373,12 +127,12 @@ name2verifier_cls = {
         }
     }</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.d3.step3_verifier.query_single_fitness_controlled_"><code class="name flex">
 <span>def <span class="ident">query_single_fitness_controlled_</span></span>(<span>h, pos, neg, num_examples, m)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -410,12 +164,12 @@ name2verifier_cls = {
         }
     }</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.d3.step3_verifier.resize"><code class="name flex">
 <span>def <span class="ident">resize</span></span>(<span>sent_A, sent_B, max_length, t5tok)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -442,6 +196,7 @@ name2verifier_cls = {
     new_A, new_B = t5tok.decode(toks_A_new), t5tok.decode(toks_B_new)
     return new_A, new_B</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 </section>
@@ -452,7 +207,6 @@ name2verifier_cls = {
 <span>class <span class="ident">DummyVerifier</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -471,13 +225,13 @@ name2verifier_cls = {
         result = query_paired_fitness_controlled_(h, pos, neg, num_examples, self.model, max_length=self.seq_length)
         return result</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.d3.step3_verifier.DummyVerifier.return_verification"><code class="name flex">
 <span>def <span class="ident">return_verification</span></span>(<span>self, h, pos, neg, num_examples)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -486,6 +240,7 @@ name2verifier_cls = {
     result = query_paired_fitness_controlled_(h, pos, neg, num_examples, self.model, max_length=self.seq_length)
     return result</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -494,34 +249,6 @@ name2verifier_cls = {
 <span>(</span><span>qa_model_name, max_seq_length=128, half_precision=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Base class for all neural network modules.</p>
-<p>Your models should also subclass this class.</p>
-<p>Modules can also contain other Modules, allowing to nest them in
-a tree structure. You can assign the submodules as regular attributes::</p>
-<pre><code>import torch.nn as nn
-import torch.nn.functional as F
-
-class Model(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = nn.Conv2d(1, 20, 5)
-        self.conv2 = nn.Conv2d(20, 20, 5)
-
-    def forward(self, x):
-        x = F.relu(self.conv1(x))
-        return F.relu(self.conv2(x))
-</code></pre>
-<p>Submodules assigned in this way will be registered, and will have their
-parameters converted too when you call :meth:<code>to</code>, etc.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>As per the example above, an <code>__init__()</code> call to the parent class
-must be made before assignment on the child.</p>
-</div>
-<p>:ivar training: Boolean represents whether this module is in training or
-evaluation mode.
-:vartype training: bool</p>
-<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -576,6 +303,35 @@ evaluation mode.
     def load(self, path):
         self.model.load_state_dict(torch.load(path))</code></pre>
 </details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing them to be nested in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+
+class Model(nn.Module):
+    def __init__(self) -&gt; None:
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will also have their
+parameters converted when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>torch.nn.modules.module.Module</li>
@@ -586,7 +342,6 @@ evaluation mode.
 <span>def <span class="ident">create_batch</span></span>(<span>self, q_dicts)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -598,20 +353,12 @@ evaluation mode.
                                 truncation=True, max_length=self.max_seq_length).to(device)
     return input_dict</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.d3.step3_verifier.T5ZeroShotClfQA.forward"><code class="name flex">
 <span>def <span class="ident">forward</span></span>(<span>self, input_dict) ‑> Callable[..., Any]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Define the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the :class:<code>Module</code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -622,12 +369,20 @@ registered hooks while the latter silently ignores them.</p>
     logits = self.lsm(output.logits[:, 0, [self.no_id, self.yes_id]])
     return logits</code></pre>
 </details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
 </dd>
 <dt id="imodelsx.d3.step3_verifier.T5ZeroShotClfQA.get_logits_from_input_dict"><code class="name flex">
 <span>def <span class="ident">get_logits_from_input_dict</span></span>(<span>self, q_dicts, bsize=32, progress_bar=True)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -642,12 +397,12 @@ registered hooks while the latter silently ignores them.</p>
         result_logits.extend(l)
     return np.array(result_logits)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.d3.step3_verifier.T5ZeroShotClfQA.get_logits_from_input_dict_"><code class="name flex">
 <span>def <span class="ident">get_logits_from_input_dict_</span></span>(<span>self, input_strings)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -656,12 +411,12 @@ registered hooks while the latter silently ignores them.</p>
     input_dict = self.create_batch(input_strings)
     return self.forward(input_dict)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.d3.step3_verifier.T5ZeroShotClfQA.load"><code class="name flex">
 <span>def <span class="ident">load</span></span>(<span>self, path)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -669,12 +424,12 @@ registered hooks while the latter silently ignores them.</p>
 <pre><code class="python">def load(self, path):
     self.model.load_state_dict(torch.load(path))</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 <dt id="imodelsx.d3.step3_verifier.T5ZeroShotClfQA.save"><code class="name flex">
 <span>def <span class="ident">save</span></span>(<span>self, path)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -682,6 +437,7 @@ registered hooks while the latter silently ignores them.</p>
 <pre><code class="python">def save(self, path):
     torch.save(self.model.state_dict(), path)</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -689,7 +445,6 @@ registered hooks while the latter silently ignores them.</p>
 <span>class <span class="ident">UnifiedQASingle</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -709,13 +464,13 @@ registered hooks while the latter silently ignores them.</p>
         result = query_single_fitness_controlled_(h, pos, neg, num_examples, self.model)
         return result</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.d3.step3_verifier.UnifiedQASingle.return_verification"><code class="name flex">
 <span>def <span class="ident">return_verification</span></span>(<span>self, h, pos, neg, num_examples)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -724,6 +479,7 @@ registered hooks while the latter silently ignores them.</p>
     result = query_single_fitness_controlled_(h, pos, neg, num_examples, self.model)
     return result</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -731,7 +487,6 @@ registered hooks while the latter silently ignores them.</p>
 <span>class <span class="ident">UnifiedQA_v2</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -751,13 +506,13 @@ registered hooks while the latter silently ignores them.</p>
         result = query_paired_fitness_controlled_(h, pos, neg, num_examples, self.model, max_length=self.seq_length)
         return result</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.d3.step3_verifier.UnifiedQA_v2.return_verification"><code class="name flex">
 <span>def <span class="ident">return_verification</span></span>(<span>self, h, pos, neg, num_examples)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -766,6 +521,7 @@ registered hooks while the latter silently ignores them.</p>
     result = query_paired_fitness_controlled_(h, pos, neg, num_examples, self.model, max_length=self.seq_length)
     return result</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -773,7 +529,6 @@ registered hooks while the latter silently ignores them.</p>
 <span>class <span class="ident">UnifiedQA_v2Single</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -793,13 +548,13 @@ registered hooks while the latter silently ignores them.</p>
         result = query_single_fitness_controlled_(h, pos, neg, num_examples, self.model)
         return result</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.d3.step3_verifier.UnifiedQA_v2Single.return_verification"><code class="name flex">
 <span>def <span class="ident">return_verification</span></span>(<span>self, h, pos, neg, num_examples)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -808,6 +563,7 @@ registered hooks while the latter silently ignores them.</p>
     result = query_single_fitness_controlled_(h, pos, neg, num_examples, self.model)
     return result</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -815,7 +571,6 @@ registered hooks while the latter silently ignores them.</p>
 <span>class <span class="ident">Verifier0514</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -834,13 +589,13 @@ registered hooks while the latter silently ignores them.</p>
         result = query_paired_fitness_controlled_(h, pos, neg, num_examples, self.model, max_length=self.seq_length)
         return result</code></pre>
 </details>
+<div class="desc"></div>
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.d3.step3_verifier.Verifier0514.return_verification"><code class="name flex">
 <span>def <span class="ident">return_verification</span></span>(<span>self, h, pos, neg, num_examples)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -849,6 +604,7 @@ registered hooks while the latter silently ignores them.</p>
     result = query_paired_fitness_controlled_(h, pos, neg, num_examples, self.model, max_length=self.seq_length)
     return result</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 </dd>
@@ -856,7 +612,6 @@ registered hooks while the latter silently ignores them.</p>
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
 <div class="toc">
 <ul></ul>
 </div>
@@ -925,7 +680,7 @@ registered hooks while the latter silently ignores them.</p>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>

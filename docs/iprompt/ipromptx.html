@@ -2,18 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.10.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
 <title>imodelsx.iprompt.ipromptx API documentation</title>
-<meta name="description" content="" />
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
-<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
-<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
-<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
 </head>
 <body>
 <main>
@@ -22,446 +36,6 @@
 <h1 class="title">Module <code>imodelsx.iprompt.ipromptx</code></h1>
 </header>
 <section id="section-intro">
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">from typing import Any, Dict, Iterable, List, Optional, Tuple
-
-import argparse
-import collections
-import os
-import random
-
-import torch
-import transformers
-
-from imodelsx.iprompt.autoprompt import AutoPrompt
-from imodelsx.iprompt.hotflip import HotFlip
-from imodelsx.iprompt.utils import device, PrefixLoss, PrefixModel, PrefixPool
-
-
-&#34;&#34;&#34;
-Explaining Patterns in Data with Language Models via Interpretable Autoprompting
-
-Chandan Singh*, John X. Morris*, Jyoti Aneja, Alexander M. Rush, Jianfeng Gao
-https://arxiv.org/abs/2210.01848
-&#34;&#34;&#34;
-
-
-class iPrompt(AutoPrompt):
-    def __init__(
-        self,
-        loss_func: PrefixLoss,
-        model: transformers.PreTrainedModel,
-        tokenizer: transformers.PreTrainedTokenizer,
-        preprefix_str: str = &#39;&#39;,
-        prefix_before_input: bool = True,
-        pop_criterion: str = &#39;loss&#39;,
-        pop_topk_strategy: str = &#39;different_start_token&#39;,
-        pop_size: int = 8,
-        num_mutations: int = 4,
-        num_random_generations: int = 4,
-        generation_repetition_penalty: float = 2.0,
-        generation_temp: float = 1.0,
-        generation_top_p: float = 1.0,
-        do_final_reranking: bool = False,
-        early_stopping_steps: int = -1,
-        num_learned_tokens: int = 1,
-        max_length: int = 128,
-        verbose: int = 0,
-        llm_float16: bool = True,
-        generation_checkpoint: str = &#39;&#39;,
-        n_shots: int = 1,
-        single_shot_loss: bool = True,
-        llm_candidate_regeneration_prompt_start: str = &#39;Data:&#39;,
-        llm_candidate_regeneration_prompt_end: str = &#39;Prompt:&#39;,
-    ):
-        args = argparse.Namespace()
-        args.prefix_before_input = prefix_before_input
-        args.num_learned_tokens = num_learned_tokens
-        args.hotflip_num_candidates = None
-        args.autoprompt_init_strategy = None
-        args.save_dir_unique = &#39;.&#39;
-        args.n_shots = n_shots
-        args.single_shot_loss = single_shot_loss
-        args.max_length = max_length
-        args.iprompt_do_final_reranking = do_final_reranking
-        super().__init__(
-            args=args, loss_func=loss_func, model=model, tokenizer=tokenizer, preprefix=&#39;&#39;
-        )
-        self.tokenizer = tokenizer
-        self.tokenizer.add_special_tokens = False
-        ####################################################################
-        # iPrompt-specific parameters
-        self._pop_size = pop_size
-        self._topk_pop_sample = (self._pop_size + 4) # sample next population from this num of top things. set higher for more randomness.
-        self._num_mutations_per_ex = num_mutations # num mutations for each population item
-        self._num_random_generations = num_random_generations # extra random examples to throw in there (won&#39;t get mutated)
-        self._generation_temp = generation_temp
-        self._generation_top_p = generation_top_p
-        self._generation_repetition_penalty = generation_repetition_penalty # 1 means no penalty
-        self._pop_initialized = False
-        self._generation_bad_words_ids = [
-            self.tokenizer.encode(&#39;\n&#39;),
-            self.tokenizer.encode(&#39;\n\n&#39;),
-            self.tokenizer.encode(&#39;\n\n\n&#39;)
-        ]
-        ####################################################################
-        self.conditioning_strategy = &#39;&#39; # This arg is only used for ablations.
-        self.other_generation_model = None
-        if generation_checkpoint:
-            self.other_generation_model = load_lm_from_checkpoint(
-                generation_checkpoint, float16=llm_float16
-            )
-        ####################################################################
-        self._prefix_pool = PrefixPool(
-            tokenizer=self.tokenizer,
-            criterion=pop_criterion, # &#39;loss&#39;  # in [&#39;loss&#39;, &#39;acc&#39;, &#39;combined&#39;]
-            topk_strategy=pop_topk_strategy,
-            verbose=verbose,
-        )
-        # Suff to track for early stopping
-        self._early_stopping_steps = early_stopping_steps
-        self._last_population = None
-        self._steps_since_new_population = 0
-        ####################################################################
-        self.prefix_ids = None
-        if len(preprefix_str):
-            self.preprefix_ids = torch.tensor(
-                self.tokenizer.encode(preprefix_str, add_special_tokens=False), dtype=int
-            ).to(device)
-        else:
-            self.preprefix_ids = torch.tensor([], dtype=int).to(device)
-        
-        prompt_str = preprefix_str.lstrip()
-        prompt_str = (&#39; &#39; + prompt_str) if len(prompt_str) else &#39;&#39;
-        self._pre_data_token_ids = self._pre_data_token_ids = self.tokenizer(
-           f&#34;{llm_candidate_regeneration_prompt_start}\n\n&#34;, return_tensors=&#39;pt&#39;).input_ids.to(device)
-        self._post_data_token_ids = self.tokenizer(
-           f&#34;\n\n{llm_candidate_regeneration_prompt_end}&#34; + prompt_str, return_tensors=&#39;pt&#39;).input_ids.to(device)
-        
-        self.llm_candidate_regeneration_prompt_start = llm_candidate_regeneration_prompt_start
-        self.llm_candidate_regeneration_prompt_end = llm_candidate_regeneration_prompt_end
-        ####################################################################
-        self._iprompt_verbose = verbose
-        self._step = 0
-        
-    
-    def serialize(self, eval_dataloader: torch.utils.data.DataLoader, possible_answer_mask: torch.Tensor) -&gt; Dict[str, Any]:
-        r = super().serialize(eval_dataloader=eval_dataloader, possible_answer_mask=possible_answer_mask)
-        r[&#34;topk_pop_sample&#34;] = self._topk_pop_sample
-        r[&#34;pop_size&#34;] = self._pop_size
-        r[&#34;num_mutations_per_ex&#34;] = self._num_mutations_per_ex
-        r[&#34;num_random_generations&#34;] = self._num_random_generations
-        r[&#34;generation_temp&#34;] = self._generation_temp
-        r[&#34;generation_top_p&#34;] = self._generation_top_p
-        r[&#34;generation_repetition_penalty&#34;] = self._generation_repetition_penalty
-        r[&#34;generation_bad_words_ids&#34;] = self._generation_bad_words_ids
-        r[&#34;pre_data_prompt_str&#34;] = self.tokenizer.decode(self._pre_data_token_ids.flatten())
-        r[&#34;post_data_prompt_str&#34;] = self.tokenizer.decode(self._post_data_token_ids.flatten())
-        return r
-    
-    def _initialize_pop_once(self, full_text_ids: torch.Tensor):
-        if self._pop_initialized: return
-
-        while len(self._prefix_pool) &lt; self._pop_size:
-            conditional_input_ids = random.choice(full_text_ids)[None]
-            num_conditional_tokens = conditional_input_ids.numel()
-            input_ids = self._generate(
-                input_ids=conditional_input_ids,
-                num_conditional_tokens=num_conditional_tokens
-            ).squeeze()
-            assert input_ids.numel() == self._num_tokens
-            self._prefix_pool.initialize_prefix(input_ids)
-
-        self._pop_initialized = True
-    
-    @property
-    def _generation_model(self) -&gt; transformers.AutoModelForCausalLM:
-        &#34;&#34;&#34;Returns the model to use for generation.
-
-        We optionally support using different models for generation and discrimination.
-        However, by default, we use the same model for both.
-        &#34;&#34;&#34;
-        if self.other_generation_model:
-            return self.other_generation_model
-        else:
-            return self.model
-    
-    def _generate(self, input_ids: torch.Tensor, num_conditional_tokens: int) -&gt; torch.Tensor:
-        &#34;&#34;&#34;Generates some text using the model and preset hparams.
-
-        If `num_conditional_tokens` &gt; 0, generates extra text because there was an additional
-        prefix set.
-        &#34;&#34;&#34;
-        attention_mask = ~(input_ids == self.tokenizer.pad_token_id)
-        assert attention_mask.shape == input_ids.shape
-
-        if self._is_t5:
-            output_length = self._num_tokens + 1 # will add pad token
-        else:
-            output_length = self._num_tokens + num_conditional_tokens
-        
-        # print(&#34;iPrompt._generate&#34;, input_ids.shape, &#34;//&#34;, self.tokenizer.decode(input_ids[0]))
-        
-        g = self._generation_model.generate(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            min_length=output_length,
-            max_length=output_length,
-            temperature=self._generation_temp,
-            top_p=self._generation_top_p,
-            repetition_penalty=self._generation_repetition_penalty,
-            bad_words_ids=self._generation_bad_words_ids,
-            do_sample=True
-        )
-        
-        if self._is_t5:
-            assert (g[:, 0] == 0).all()
-            g = g[:, 1:]
-        else:
-            # Split off the conditional part, we only want the prefix part, which
-            # starts after the conditional part.
-            g = g[:, num_conditional_tokens:]
-
-        if self._iprompt_verbose:
-            # Print a random one (but remove padded tokens and newlines)
-            idx = random.choice(range(len(input_ids)))
-            # idx_attention_mask = torch.cat(
-            #     (attention_mask[idx], torch.ones(self._num_tokens).to(device)), dim=0
-            # ).bool()
-            random_sentence_ids = g[idx]
-            # print(&#34;&gt;&gt;&#34;, self.tokenizer.decode(random_sentence_ids).replace(&#39;\n&#39;, &#39;\\n&#39;))
-        
-        return g
-    
-    def _select_pop_topk(self, k: int, min_occurrences: int = None) -&gt; List[Tuple[int]]:
-        return self._prefix_pool.topk(k=k, min_occurrences=min_occurrences)
-
-    def _track_early_stopping(self):
-        &#34;&#34;&#34;Track changes in population to tell when to stop early.&#34;&#34;&#34;
-        __n_early_stop = 5
-        population = set(self._select_pop_topk(k=__n_early_stop, min_occurrences=3))
-        if (len(population) == __n_early_stop) and (self._last_population == population):
-            self._steps_since_new_population += 1
-            if self._iprompt_verbose:
-                print(&#34;self._steps_since_new_population:&#34;, self._steps_since_new_population)
-        else:
-            self._last_population = population
-            self._steps_since_new_population = 0
-            if self._iprompt_verbose:
-                print(&#34;new population:&#34;, [self.tokenizer.decode(p) for p in sorted(population)])
-
-    def check_early_stop(self) -&gt; bool:
-        &#34;&#34;&#34;Allow prefix models to stop early.&#34;&#34;&#34;
-        if self._early_stopping_steps == -1:
-            return False
-        return self._steps_since_new_population &gt;= self._early_stopping_steps
-    
-    def _get_population_and_random_generations(self, full_text_ids: torch.Tensor) -&gt; torch.Tensor:
-        population_pool = self._select_pop_topk(k=self._topk_pop_sample)
-        # if self._iprompt_verbose:
-            # print(&#34;population_pool:&#34;, [self.tokenizer.decode(p) for p in population_pool])
-        population = random.sample(population_pool, self._pop_size)
-        population = torch.tensor(population).to(device)
-
-        if self._num_random_generations &gt; 0:
-            random_idxs = torch.randint(
-                low=0, high=len(full_text_ids), size=(self._num_random_generations,)
-            )
-            random_full_text_ids = full_text_ids[random_idxs]
-            num_conditional_tokens = full_text_ids.shape[1]
-            random_population = self._generate(
-                input_ids=random_full_text_ids,
-                num_conditional_tokens=num_conditional_tokens
-            )
-
-            full_population = torch.cat((population, random_population), dim=0)
-        else:
-            # Support case where _num_random_generations is set to 0.
-            full_population = population
-
-        assert full_population.shape == (
-            self._pop_size + self._num_random_generations,
-            self._num_tokens
-        )
-        return full_population
-    
-    def _mutate(self, population_input_ids: torch.Tensor, full_text_ids: torch.Tensor) -&gt; List[torch.Tensor]:
-        &#34;&#34;&#34;Mutates a population of prefixes.
-
-        Truncates to a random place and then generates new options
-        to try.
-
-        Args:
-            population_input_ids (int torch.Tensor): input IDs for each prefix in population
-            full_text_ids (int torch.Tensor): input IDs for each data item in the batch. Intended
-                be used to do prefix generation conditioned on data
-        &#34;&#34;&#34;
-        assert population_input_ids.shape[1] == self._num_tokens
-        input_ids = population_input_ids.repeat((self._num_mutations_per_ex, 1))
-
-        self._roll_before_truncation = False
-        if self._roll_before_truncation:
-            roll_amount = random.randint(0, self._num_tokens-1)
-            input_ids = torch.roll(input_ids, roll_amount, dims=[1])
-
-        truncate_position = random.randint(0, self._num_tokens-1)
-        truncated_input_ids = input_ids[:, :truncate_position]
-
-        random_idxs = torch.randint(low=0, high=len(full_text_ids), size=(len(input_ids), ))
-        random_full_text_ids = full_text_ids[random_idxs]
-        conditional_input_ids = torch.cat((random_full_text_ids, truncated_input_ids), dim=1)
-
-        num_conditional_tokens = full_text_ids.shape[1]
-        new_input_ids = self._generate(
-            input_ids=conditional_input_ids,
-            num_conditional_tokens=num_conditional_tokens
-        )
-        return new_input_ids
-    
-    def _score_population(
-            self, 
-            x_tokenized: transformers.BatchEncoding,
-            y_tokenized: transformers.BatchEncoding,
-            population_input_ids: torch.Tensor,
-            possible_answer_mask: torch.Tensor
-        ) -&gt; Tuple[torch.Tensor, torch.Tensor]:
-        &#34;&#34;&#34;Scores a population of prefixes and updates `self._genetic_pool`.&#34;&#34;&#34;
-        pop_size = len(population_input_ids)
-        all_candidate_losses = torch.zeros(pop_size, dtype=float).to(device)
-        all_accuracy = torch.zeros(pop_size, dtype=float).to(device)
-        all_candidate_n_correct = torch.zeros(pop_size, dtype=int).to(device)
-        for i in range(pop_size):
-            with torch.no_grad():
-                _cand_input_ids, cand_loss, cand_n_correct = (
-                    self._compute_loss_with_set_prefix(
-                        original_input_ids=x_tokenized.input_ids,
-                        next_token_ids=y_tokenized.input_ids,
-                        possible_answer_mask=possible_answer_mask,
-                        prefix_ids=population_input_ids[i],
-                    )
-                )
-                cand_accuracy = cand_n_correct / len(x_tokenized.input_ids)
-            all_candidate_n_correct[i] += cand_n_correct
-            all_candidate_losses[i] += cand_loss
-            all_accuracy[i] += cand_accuracy
-        
-        for i in range(pop_size):
-            new_pop_input_ids = tuple(population_input_ids[i].cpu().tolist())
-            assert len(new_pop_input_ids) == (self._num_tokens)
-            self._prefix_pool.update(
-                population_input_ids[i], all_candidate_losses[i], all_accuracy[i]
-            )
-        return all_candidate_losses, all_candidate_n_correct
-    
-    def _create_full_text_ids(
-        self, full_text_input_ids: torch.Tensor) -&gt; torch.Tensor:
-        &#34;&#34;&#34;Creates input for generating explanation.
-
-        Takes tokenized inputs (like: &#34;Input: 7 8 Output: 15&#34;)
-        and makes a full string that looks like &#34;Data:\n\n Input: .... 15 \n\nExplanation:\n\n&#34;,
-        using whatever template is defined by pre-data and post-data.
-        &#34;&#34;&#34;
-        B = len(full_text_input_ids)
-        pre_data = self._pre_data_token_ids.repeat((B, 1)).to(device)  # Like &#34;Data:\n\n&#34;
-        post_data = self._post_data_token_ids.repeat((B, 1)).to(device) # Like &#34;\n\nPrompt:&#34;
-        output = torch.cat((pre_data, full_text_input_ids, post_data), dim=1)
-        return output
-
-    def compute_loss_and_call_backward(
-            self,
-            x_tokenized: transformers.BatchEncoding,
-            y_tokenized: transformers.BatchEncoding,
-            possible_answer_mask: torch.Tensor,
-            full_text_tokenized: Optional[transformers.BatchEncoding] = None
-        ) -&gt; Tuple[torch.Tensor, int]:
-        &#34;&#34;&#34;Returns the loss from the best example in the population
-
-        Note: does not call loss.backward()
-        
-        Returns:
-            loss (float torch.Tensor) -- the loss
-            num_correct (int): number of examples where prediction was correct
-        &#34;&#34;&#34;
-        self.model.eval()
-
-        # allow for conditioning only on x or y. This is mainly just used for ablations.
-        if self.conditioning_strategy == &#34;x_only&#34;:
-            full_text_tokenized = y_tokenized
-        elif self.conditioning_strategy == &#34;y_only&#34;:
-            full_text_tokenized = y_tokenized
-        elif self.conditioning_strategy == &#34;unconditional&#34;:
-            full_text_tokenized[&#39;input_ids&#39;] = torch.full(
-                size=(len(y_tokenized), 1),
-                fill_value=self.tokenizer.bos_token_id,
-                device=device,
-            )
-            full_text_tokenized[&#39;attention_mask&#39;] = torch.ones_like(
-                full_text_tokenized[&#39;input_ids&#39;]
-            )
-
-        # logic here is that we want to see a sample multiple times before
-        # we actually have a good estimate of its loss.
-        num_min_occurrences = 2
-
-        full_text_ids = self._create_full_text_ids(
-            full_text_input_ids=full_text_tokenized.input_ids,
-        )
-        self._initialize_pop_once(full_text_ids=full_text_ids)
-
-        prefix_save_folder = os.path.join(self.args.save_dir_unique, &#39;prefix&#39;)
-        df_to_print = self._prefix_pool.print(topk=10, min_occurrences=num_min_occurrences)
-        os.makedirs(prefix_save_folder, exist_ok=True)
-
-        log_prefixes = False
-        if log_prefixes:
-            prefix_out_file = os.path.join(prefix_save_folder, f&#39;prefix_{self._step}.p&#39;)
-            df_to_print.to_pickle(prefix_out_file)
-            print(f&#39;wrote {len(df_to_print)} prefixes to {prefix_out_file}&#39;)
-
-        # Grab new population
-        population_input_ids = self._get_population_and_random_generations(
-            full_text_ids=full_text_ids,
-        )
-
-        if self._num_mutations_per_ex &gt; 0:
-            mutated_population_input_ids = self._mutate(
-                population_input_ids=population_input_ids, full_text_ids=full_text_ids
-            )
-            full_population_input_ids = torch.cat(
-                (population_input_ids, mutated_population_input_ids), dim=0
-            )
-        else:
-            # Support skipping mutation step by stetting _num_mutations_per_ex to 0
-            full_population_input_ids = population_input_ids
-
-        # Re-score new guys
-        all_candidate_losses, all_candidate_n_correct = self._score_population(
-            x_tokenized=x_tokenized,
-            y_tokenized=y_tokenized,
-            population_input_ids=full_population_input_ids,
-            possible_answer_mask=possible_answer_mask
-        )
-
-        # Track changes in population to enable early stopping.
-        self._track_early_stopping()
-
-        # Reset prefix IDs so that the model can be readily used for eval.
-        best_prefix_ids = min(self._prefix_pool._avg_loss, key=self._prefix_pool._avg_loss.get)
-        self._set_prefix_ids(torch.tensor(best_prefix_ids).to(device))
-        self.prefix_embedding.requires_grad = False
-
-        self._step += 1
-        return all_candidate_losses.min(), all_candidate_n_correct.max()
-        
-    def post_epoch(self, dataloader: torch.utils.data.DataLoader, possible_answer_mask: torch.Tensor) -&gt; None:
-        # 
-        # Get candidate IDs for every position.
-        # 
-        pass</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -474,37 +48,9 @@ class iPrompt(AutoPrompt):
 <dl>
 <dt id="imodelsx.iprompt.ipromptx.iPrompt"><code class="flex name class">
 <span>class <span class="ident">iPrompt</span></span>
-<span>(</span><span>loss_func: <a title="imodelsx.iprompt.utils.PrefixLoss" href="utils.html#imodelsx.iprompt.utils.PrefixLoss">PrefixLoss</a>, model: transformers.modeling_utils.PreTrainedModel, tokenizer: transformers.tokenization_utils.PreTrainedTokenizer, preprefix_str: str = '', prefix_before_input: bool = True, pop_criterion: str = 'loss', pop_topk_strategy: str = 'different_start_token', pop_size: int = 8, num_mutations: int = 4, num_random_generations: int = 4, generation_repetition_penalty: float = 2.0, generation_temp: float = 1.0, generation_top_p: float = 1.0, do_final_reranking: bool = False, early_stopping_steps: int = -1, num_learned_tokens: int = 1, max_length: int = 128, verbose: int = 0, llm_float16: bool = True, generation_checkpoint: str = '', n_shots: int = 1, single_shot_loss: bool = True, llm_candidate_regeneration_prompt_start: str = 'Data:', llm_candidate_regeneration_prompt_end: str = 'Prompt:')</span>
+<span>(</span><span>loss_func: <a title="imodelsx.iprompt.utils.PrefixLoss" href="utils.html#imodelsx.iprompt.utils.PrefixLoss">PrefixLoss</a>,<br>model: transformers.modeling_utils.PreTrainedModel,<br>tokenizer: transformers.tokenization_utils.PreTrainedTokenizer,<br>preprefix_str: str = '',<br>prefix_before_input: bool = True,<br>pop_criterion: str = 'loss',<br>pop_topk_strategy: str = 'different_start_token',<br>pop_size: int = 8,<br>num_mutations: int = 4,<br>num_random_generations: int = 4,<br>generation_repetition_penalty: float = 2.0,<br>generation_temp: float = 1.0,<br>generation_top_p: float = 1.0,<br>do_final_reranking: bool = False,<br>early_stopping_steps: int = -1,<br>num_learned_tokens: int = 1,<br>max_length: int = 128,<br>verbose: int = 0,<br>llm_float16: bool = True,<br>generation_checkpoint: str = '',<br>n_shots: int = 1,<br>single_shot_loss: bool = True,<br>llm_candidate_regeneration_prompt_start: str = 'Data:',<br>llm_candidate_regeneration_prompt_end: str = 'Prompt:')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Base class for all neural network modules.</p>
-<p>Your models should also subclass this class.</p>
-<p>Modules can also contain other Modules, allowing to nest them in
-a tree structure. You can assign the submodules as regular attributes::</p>
-<pre><code>import torch.nn as nn
-import torch.nn.functional as F
-
-class Model(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = nn.Conv2d(1, 20, 5)
-        self.conv2 = nn.Conv2d(20, 20, 5)
-
-    def forward(self, x):
-        x = F.relu(self.conv1(x))
-        return F.relu(self.conv2(x))
-</code></pre>
-<p>Submodules assigned in this way will be registered, and will have their
-parameters converted too when you call :meth:<code>to</code>, etc.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>As per the example above, an <code>__init__()</code> call to the parent class
-must be made before assignment on the child.</p>
-</div>
-<p>:ivar training: Boolean represents whether this module is in training or
-evaluation mode.
-:vartype training: bool</p>
-<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -922,6 +468,35 @@ evaluation mode.
         # 
         pass</code></pre>
 </details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing them to be nested in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+
+class Model(nn.Module):
+    def __init__(self) -&gt; None:
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will also have their
+parameters converted when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="imodelsx.iprompt.autoprompt.AutoPrompt" href="autoprompt.html#imodelsx.iprompt.autoprompt.AutoPrompt">AutoPrompt</a></li>
@@ -933,14 +508,9 @@ evaluation mode.
 <h3>Methods</h3>
 <dl>
 <dt id="imodelsx.iprompt.ipromptx.iPrompt.compute_loss_and_call_backward"><code class="name flex">
-<span>def <span class="ident">compute_loss_and_call_backward</span></span>(<span>self, x_tokenized: transformers.tokenization_utils_base.BatchEncoding, y_tokenized: transformers.tokenization_utils_base.BatchEncoding, possible_answer_mask: torch.Tensor, full_text_tokenized: Optional[transformers.tokenization_utils_base.BatchEncoding] = None) ‑> Tuple[torch.Tensor, int]</span>
+<span>def <span class="ident">compute_loss_and_call_backward</span></span>(<span>self,<br>x_tokenized: transformers.tokenization_utils_base.BatchEncoding,<br>y_tokenized: transformers.tokenization_utils_base.BatchEncoding,<br>possible_answer_mask: torch.Tensor,<br>full_text_tokenized: transformers.tokenization_utils_base.BatchEncoding | None = None) ‑> Tuple[torch.Tensor, int]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns the loss from the best example in the population</p>
-<p>Note: does not call loss.backward()</p>
-<h2 id="returns">Returns</h2>
-<p>loss (float torch.Tensor) &ndash; the loss
-num_correct (int): number of examples where prediction was correct</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1031,12 +601,16 @@ num_correct (int): number of examples where prediction was correct</p></div>
     self._step += 1
     return all_candidate_losses.min(), all_candidate_n_correct.max()</code></pre>
 </details>
+<div class="desc"><p>Returns the loss from the best example in the population</p>
+<p>Note: does not call loss.backward()</p>
+<h2 id="returns">Returns</h2>
+<p>loss (float torch.Tensor) &ndash; the loss
+num_correct (int): number of examples where prediction was correct</p></div>
 </dd>
 <dt id="imodelsx.iprompt.ipromptx.iPrompt.post_epoch"><code class="name flex">
-<span>def <span class="ident">post_epoch</span></span>(<span>self, dataloader: torch.utils.data.dataloader.DataLoader, possible_answer_mask: torch.Tensor) ‑> None</span>
+<span>def <span class="ident">post_epoch</span></span>(<span>self,<br>dataloader: torch.utils.data.dataloader.DataLoader,<br>possible_answer_mask: torch.Tensor) ‑> None</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1047,6 +621,7 @@ num_correct (int): number of examples where prediction was correct</p></div>
     # 
     pass</code></pre>
 </details>
+<div class="desc"></div>
 </dd>
 </dl>
 <h3>Inherited members</h3>
@@ -1067,7 +642,6 @@ num_correct (int): number of examples where prediction was correct</p></div>
 </section>
 </article>
 <nav id="sidebar">
-<h1>Index</h1>
 <div class="toc">
 <ul></ul>
 </div>
@@ -1092,7 +666,7 @@ num_correct (int): number of examples where prediction was correct</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
 </footer>
 </body>
 </html>
