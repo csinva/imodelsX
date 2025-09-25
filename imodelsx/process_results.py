@@ -181,7 +181,9 @@ def get_experiment_keys(df, experiment_filename, exclude_seed=False):
     experiment_keys = [
         k
         for k in get_main_args_list(experiment_filename=experiment_filename)
-        if k in df.columns and len(df[k].unique()) > 1
+        # check if df[k] contains a list
+        if k in df.columns and not df[k].apply(lambda x: isinstance(x, list)).any() and len(df[k].unique()) > 1
+        # if k in df.columns and len(df[k].unique()) > 1
     ]
     if exclude_seed:
         experiment_keys = [k for k in experiment_keys if k != "seed"]
