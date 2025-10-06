@@ -36,6 +36,14 @@ def generate_ngrams_list(
     pad_ending_ngrams: bool
     min_frequency: int
         minimum frequency to be considered for the ngrams_list
+
+    Example
+    -------
+    imodelsx.util.generate_ngrams_list('the quick brown fox jumped over the lazy dog', ngrams=3)
+    ['the quick brown', 'quick brown fox', 'brown fox jumped', 'fox jumped over', 'jumped over the', 'over the lazy', 'the lazy dog']
+
+    imodelsx.util.generate_ngrams_list('the quick brown fox jumped over the lazy dog', ngrams=3, pad_ending_ngrams=True)
+    ['the quick brown', 'quick brown fox', 'brown fox jumped', 'fox jumped over', 'jumped over the', 'over the lazy', 'the lazy dog', 'lazy dog', 'dog']
     """
 
     seqs = []
