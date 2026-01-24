@@ -234,7 +234,7 @@ class LLM_Chat:
         # print('kwargs', kwargs)
         if functions is not None:
             kwargs["functions"] = functions
-        if self.checkpoint.startswith('o') or self.checkpoint == 'gpt-5':
+        if self.checkpoint.startswith('o') or self.checkpoint.startswith('gpt-5'):
             del kwargs['temperature']  # o3 and o4 don't support temperature
             del kwargs['frequency_penalty']
             del kwargs['top_p']
@@ -674,7 +674,7 @@ class LLMEmbs:
 
 
 if __name__ == "__main__":
-    llm = get_llm("gpt-5")
+    llm = get_llm("gpt-5.2")
     text = llm("What is the capital of spain?", use_cache=False)
     print("text", text)
 
