@@ -345,6 +345,7 @@ def get_args_list(
         [[{k: v} for v in params_shared_dict[k]]
          for k in params_shared_dict.keys()]
     )
+    # print('shared!', shared_combos_dict_list)
 
     # Coupled params as List[List[Dict]]]
     coupled_combos_dict_list = [[
@@ -352,14 +353,17 @@ def get_args_list(
         for i in range(len(v))]
         for k_tup, v in params_coupled_dict.items()
     ]
+
+    # combine each of the coupled combos into List[Dict]
     if coupled_combos_dict_list == []:
         return shared_combos_dict_list
 
     # Combine each coupled List[Dict] with the shared List[Dict]
     combined_combos_dict_list = [
-        combos_collapse(
-            [coupled_combos_dict_list[i], shared_combos_dict_list])
-        for i in range(len(coupled_combos_dict_list))
+        # combos_collapse(
+            # [coupled_combos_dict_list[i], shared_combos_dict_list])
+        # for i in range(len(coupled_combos_dict_list))
+        combos_collapse(coupled_combos_dict_list + [shared_combos_dict_list])
     ]
     args_list = sum(combined_combos_dict_list, [])
     return args_list
