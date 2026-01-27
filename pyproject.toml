@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "imodelsx"
-version = "1.0.11"
+version = "1.0.13"
 description = "Library to explain a dataset in natural language."
 readme = "readme.md"
 requires-python = ">=3.9"

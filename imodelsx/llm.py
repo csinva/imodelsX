@@ -107,7 +107,7 @@ class LLM_Chat:
         self.role = role
         from openai import AzureOpenAI
         from azure.identity import ChainedTokenCredential, AzureCliCredential, ManagedIdentityCredential, get_bearer_token_provider
-
+        self.reasoning_effort_fixed = False
         try:
             client_id = os.environ.get("AZURE_CLIENT_ID")
             scope = "https://cognitiveservices.azure.com/.default"
@@ -129,6 +129,13 @@ class LLM_Chat:
                     azure_endpoint="https://dl-openai-3.openai.azure.com/",
                     azure_ad_token_provider=credential
                 )
+                suffixes = ['-low', '-medium', '-high', '-none']
+                for suffix in suffixes:
+                    if self.checkpoint.endswith(suffix):
+                        self.checkpoint = self.checkpoint.replace(
+                            suffix, '')
+                        self.reasoning_effort = suffix.replace('-', '')
+                        self.reasoning_effort_fixed = True
             else:
                 self.client = AzureOpenAI(
                     api_version="2025-01-01-preview",
@@ -183,6 +190,11 @@ class LLM_Chat:
 
         assert isinstance(prompts_list, list), prompts_list
         # breakpoint()
+        if self.reasoning_effort_fixed:
+            if reasoning_effort != self.reasoning_effort and reasoning_effort != 'high':
+                raise ValueError(
+                    f"reasoning_effort is fixed to {self.reasoning_effort} for this model!")
+            reasoning_effort = self.reasoning_effort
 
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
@@ -674,7 +686,7 @@ class LLMEmbs:
 
 
 if __name__ == "__main__":
-    llm = get_llm("gpt-5.2")
+    llm = get_llm("gpt-5.2-low")
     text = llm("What is the capital of spain?", use_cache=False)
     print("text", text)
 
