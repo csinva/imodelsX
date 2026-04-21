@@ -12,6 +12,22 @@ with open('index.html', 'r') as f:
 # data = data.replace('.html">imodels.', '.html">')
 # data = data.replace('<h1 class="title">Module <code>imodels</code></h1>', '') # remove header
 data = data.replace('<h1 class="title">Package <code>imodelsx</code></h1>', '') # remove header
+
+# shrink all header sizes
+data = data.replace(
+    '</head>',
+    '<style>'
+    'h1{font-size:1.4em !important;line-height:1.2em !important}'
+    'h2{font-size:1.15em !important;margin:1.2em 0 .35em 0 !important}'
+    'h3{font-size:1em !important;margin:1em 0 .5em 0 !important}'
+    'h4{font-size:.9em !important}'
+    'h5{font-size:.85em !important}'
+    'h6{font-size:.8em !important}'
+    'table{border-collapse:collapse !important;margin:1em 0}'
+    'th,td{border:1px solid #ddd !important;padding:.4em .75em !important}'
+    'thead th{border-bottom:2px solid #bbb !important;background:#f7f7f7}'
+    '</style></head>',
+)
 # data = data.replace('<th>Reference</th>', '<th white-space: nowrap>Reference</th>')
 
 # add github corner

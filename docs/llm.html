@@ -255,7 +255,7 @@ el.replaceWith(d);
         self.role = role
         from openai import AzureOpenAI
         from azure.identity import ChainedTokenCredential, AzureCliCredential, ManagedIdentityCredential, get_bearer_token_provider
-
+        self.reasoning_effort_fixed = False
         try:
             client_id = os.environ.get(&#34;AZURE_CLIENT_ID&#34;)
             scope = &#34;https://cognitiveservices.azure.com/.default&#34;
@@ -277,6 +277,13 @@ el.replaceWith(d);
                     azure_endpoint=&#34;https://dl-openai-3.openai.azure.com/&#34;,
                     azure_ad_token_provider=credential
                 )
+                suffixes = [&#39;-low&#39;, &#39;-medium&#39;, &#39;-high&#39;, &#39;-none&#39;]
+                for suffix in suffixes:
+                    if self.checkpoint.endswith(suffix):
+                        self.checkpoint = self.checkpoint.replace(
+                            suffix, &#39;&#39;)
+                        self.reasoning_effort = suffix.replace(&#39;-&#39;, &#39;&#39;)
+                        self.reasoning_effort_fixed = True
             else:
                 self.client = AzureOpenAI(
                     api_version=&#34;2025-01-01-preview&#34;,
@@ -331,6 +338,11 @@ el.replaceWith(d);
 
         assert isinstance(prompts_list, list), prompts_list
         # breakpoint()
+        if self.reasoning_effort_fixed:
+            if reasoning_effort != self.reasoning_effort and reasoning_effort != &#39;high&#39;:
+                raise ValueError(
+                    f&#34;reasoning_effort is fixed to {self.reasoning_effort} for this model!&#34;)
+            reasoning_effort = self.reasoning_effort
 
         # cache
         os.makedirs(self.cache_dir, exist_ok=True)
@@ -382,7 +394,7 @@ el.replaceWith(d);
         # print(&#39;kwargs&#39;, kwargs)
         if functions is not None:
             kwargs[&#34;functions&#34;] = functions
-        if self.checkpoint.startswith(&#39;o&#39;) or self.checkpoint == &#39;gpt-5&#39;:
+        if self.checkpoint.startswith(&#39;o&#39;) or self.checkpoint.startswith(&#39;gpt-5&#39;):
             del kwargs[&#39;temperature&#39;]  # o3 and o4 don&#39;t support temperature
             del kwargs[&#39;frequency_penalty&#39;]
             del kwargs[&#39;top_p&#39;]

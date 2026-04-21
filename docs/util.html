@@ -79,6 +79,14 @@ el.replaceWith(d);
     pad_ending_ngrams: bool
     min_frequency: int
         minimum frequency to be considered for the ngrams_list
+
+    Example
+    -------
+    imodelsx.util.generate_ngrams_list(&#39;the quick brown fox jumped over the lazy dog&#39;, ngrams=3)
+    [&#39;the quick brown&#39;, &#39;quick brown fox&#39;, &#39;brown fox jumped&#39;, &#39;fox jumped over&#39;, &#39;jumped over the&#39;, &#39;over the lazy&#39;, &#39;the lazy dog&#39;]
+
+    imodelsx.util.generate_ngrams_list(&#39;the quick brown fox jumped over the lazy dog&#39;, ngrams=3, pad_ending_ngrams=True)
+    [&#39;the quick brown&#39;, &#39;quick brown fox&#39;, &#39;brown fox jumped&#39;, &#39;fox jumped over&#39;, &#39;jumped over the&#39;, &#39;over the lazy&#39;, &#39;the lazy dog&#39;, &#39;lazy dog&#39;, &#39;dog&#39;]
     &#34;&#34;&#34;
 
     seqs = []
@@ -149,7 +157,12 @@ so that length of ngrams_list is the same as the initial sequence
 e.g. for ngrams=3 ["the", "the quick", "the quick brown", "quick brown fox", "brown fox jumps", &hellip;]
 pad_ending_ngrams: bool
 min_frequency: int
-minimum frequency to be considered for the ngrams_list</p></div>
+minimum frequency to be considered for the ngrams_list</p>
+<h2 id="example">Example</h2>
+<p>imodelsx.util.generate_ngrams_list('the quick brown fox jumped over the lazy dog', ngrams=3)
+['the quick brown', 'quick brown fox', 'brown fox jumped', 'fox jumped over', 'jumped over the', 'over the lazy', 'the lazy dog']</p>
+<p>imodelsx.util.generate_ngrams_list('the quick brown fox jumped over the lazy dog', ngrams=3, pad_ending_ngrams=True)
+['the quick brown', 'quick brown fox', 'brown fox jumped', 'fox jumped over', 'jumped over the', 'over the lazy', 'the lazy dog', 'lazy dog', 'dog']</p></div>
 </dd>
 <dt id="imodelsx.util.get_embs_llm"><code class="name flex">
 <span>def <span class="ident">get_embs_llm</span></span>(<span>X: List[str], checkpoint: str)</span>
