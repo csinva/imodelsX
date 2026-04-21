@@ -26,12 +26,14 @@ Alternatively, given a dataset and a pre-trained LLM, [iPrompt](https://arxiv.or
 Either of these approaches can also be applied recursively ([TreePrompt](https://arxiv.org/abs/2310.14034)), resulting in a hierarchical natural-language description of the data.
 Alternatively, many LLM answers to different questions can be concatenated into an embedding ([QA-Emb](https://arxiv.org/abs/2405.16714)), potentially incorporating bayesian iteration ([BC-LLM](https://arxiv.org/abs/2410.15555)), which can then be used to train a fully interpretable model, e.g. a linear model.
 
-<img src="interpretable_models.svg" class="full_image">
+<img src="assets/interpretable_models.svg" class="full_image">
 <p align="center" style="margin-top:-20px"><b>Figure 2. </b>Different types of interpretable models, with text-specific approaches in bold. See scikit-learn friendly implementations below.</p>
 
 In parallel to these methods, [Aug-imodels](https://arxiv.org/abs/2209.11799) use LLMs to improve fully interpretable models directly.
-For example, Aug-Linear uses an LLM to augment a linear model, resulting in a more accurate model that is still completely interpretable.
-Aug-Tree uses an LLM to augment the keyphrases used in a decision tree split, resulting in a more accurate but still fully interpretable decision tree.
+For example, Aug-Linear uses an LLM to augment a linear model, resulting in a more accurate model that is still completely interpretable. This is done by using an LLM *only during training time* to generate a dictionary of coefficients that is then extremely efficient and interpretable at inference time, while still maintaining reasonably high prediction accuracy (see Fig 3).
+
+<img src="assets/auglinear.png" class="full_image">
+<p align="center" style="margin-top:-20px"><b>Figure 3. </b>Aug-Linear uses an LLM to augment a linear model, resulting in a more accurate model that is still completely interpretable. The LLM is only used during training to generate a dictionary of coefficients, which is then used for efficient and interpretable inference.</p>
 
 This line of research is still in its infancy -- there's a lot to be done in combining LLMs and interpretable models!
 

@@ -73,12 +73,14 @@ In contrast, LLMs have displayed impressive proficiency at handling text data, b
 Alternatively, given a dataset and a pre-trained LLM, <a href="https://arxiv.org/abs/2210.01848">iPrompt</a> searches for a natural-language prompt that works well to predict on the dataset, which serves as a description of the data. This is more general than D3, as it is not restricted to binary groups, but is also more computationally intensive, as finding a good prompt often requires iterative LLM calls.
 Either of these approaches can also be applied recursively (<a href="https://arxiv.org/abs/2310.14034">TreePrompt</a>), resulting in a hierarchical natural-language description of the data.
 Alternatively, many LLM answers to different questions can be concatenated into an embedding (<a href="https://arxiv.org/abs/2405.16714">QA-Emb</a>), potentially incorporating bayesian iteration (<a href="https://arxiv.org/abs/2410.15555">BC-LLM</a>), which can then be used to train a fully interpretable model, e.g. a linear model.</p>
-<p><img src="interpretable_models.svg" class="full_image"></p>
+<p><img src="assets/interpretable_models.svg" class="full_image"></p>
 <p align="center" style="margin-top:-20px"><b>Figure 2. </b>Different types of interpretable models, with text-specific approaches in bold. See scikit-learn friendly implementations below.</p>
 
 <p>In parallel to these methods, <a href="https://arxiv.org/abs/2209.11799">Aug-imodels</a> use LLMs to improve fully interpretable models directly.
-For example, Aug-Linear uses an LLM to augment a linear model, resulting in a more accurate model that is still completely interpretable.
-Aug-Tree uses an LLM to augment the keyphrases used in a decision tree split, resulting in a more accurate but still fully interpretable decision tree.</p>
+For example, Aug-Linear uses an LLM to augment a linear model, resulting in a more accurate model that is still completely interpretable. This is done by using an LLM <em>only during training time</em> to generate a dictionary of coefficients that is then extremely efficient and interpretable at inference time, while still maintaining reasonably high prediction accuracy (see Fig 3).</p>
+<p><img src="assets/auglinear.png" class="full_image"></p>
+<p align="center" style="margin-top:-20px"><b>Figure 3. </b>Aug-Linear uses an LLM to augment a linear model, resulting in a more accurate model that is still completely interpretable. The LLM is only used during training to generate a dictionary of coefficients, which is then used for efficient and interpretable inference.</p>
+
 <p>This line of research is still in its infancy -- there's a lot to be done in combining LLMs and interpretable models!</p>
 <h1>Code reference below</h1>
 </section>
