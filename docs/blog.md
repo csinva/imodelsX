@@ -35,6 +35,6 @@ For example, Aug-Linear uses an LLM to augment a linear model, resulting in a mo
 <img src="assets/auglinear.png" class="full_image">
 <p align="center" style="margin-top:-20px"><b>Figure 3. </b>Aug-Linear uses an LLM to augment a linear model, resulting in a more accurate model that is still completely interpretable. The LLM is only used during training to generate a dictionary of coefficients, which is then used for efficient and interpretable inference.</p>
 
-This line of research is still in its infancy -- there's a lot to be done in combining LLMs and interpretable models!
+The key to many of these explanation methods is finding ways to evaluate hypotheses without groundtruth, e.g. testing on [follow-up experiments](https://arxiv.org/abs/2410.00812), [synthetic data](https://arxiv.org/abs/2305.09863), [prior findings](https://www.biorxiv.org/content/10.1101/2025.08.12.669958v1), [held-out data](https://aclanthology.org/2023.blackboxnlp-1.3/), [counterfactuals](https://aclanthology.org/2025.coling-main.505.pdf), or [new LLMs](https://arxiv.org/abs/2601.11517).   This line of research is still in its infancy -- there's a lot to be done in combining LLMs and interpretable models!
 
 # Code reference below
