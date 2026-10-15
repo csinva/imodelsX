@@ -47,10 +47,11 @@ class KAN(BaseEstimator):
             grid_eps=0.02,
             grid_range=[-1, 1],
         '''
-        if hidden_layer_sizes is not None:
-            self.hidden_layer_sizes = hidden_layer_sizes
-        else:
-            self.hidden_layer_sizes = [hidden_layer_size]
+        self.hidden_layer_size = hidden_layer_size
+        self.hidden_layer_sizes = hidden_layer_sizes
+        self.test_size = test_size
+        self.random_state = random_state
+        self.shuffle = shuffle
         self.device = device
         self.regularize_activation = regularize_activation
         self.regularize_entropy = regularize_entropy
@@ -69,21 +70,26 @@ class KAN(BaseEstimator):
         X = torch.tensor(X, dtype=torch.float32)
         num_features = X.shape[1]
 
+        hidden_layer_sizes = self.hidden_layer_sizes
+        if hidden_layer_sizes is None:
+            hidden_layer_sizes = [self.hidden_layer_size]
+
         if isinstance(self, (KANGAMClassifier, KANGAMRegressor)):
             self.model = KANGAMModule(
                 num_features=num_features,
-                layers_hidden=self.hidden_layer_sizes,
+                layers_hidden=hidden_layer_sizes,
                 n_classes=num_outputs,
                 **self.kwargs
             ).to(self.device)
         else:
             self.model = KANModule(
                 layers_hidden=[num_features] +
-                self.hidden_layer_sizes + [num_outputs],
+                hidden_layer_sizes + [num_outputs],
             ).to(self.device)
 
         X_train, X_tune, y_train, y_tune = train_test_split(
-            X, y, test_size=test_size, random_state=random_state, shuffle=shuffle)
+            X, y, test_size=self.test_size, random_state=self.random_state,
+            shuffle=self.shuffle)
 
         dset_train = torch.utils.data.TensorDataset(X_train, y_train)
         dset_tune = torch.utils.data.TensorDataset(X_tune, y_tune)
