@@ -46,10 +46,8 @@
 # Quickstart
 **Installation**: `pip install imodelsx` (or, for more control, clone and install from source)
 
-**Demos**: see the [demo notebooks](https://github.com/csinva/imodelsX/tree/master/demo_notebooks)
-
 <details>
-<summary><b>LLM providers</b>: use local huggingface models or API models from OpenAI, Anthropic, Claude Code, or Codex</summary>
+<summary><b>Set up your LLM</b>: use local huggingface models or API models from OpenAI, Anthropic, Claude Code, or Codex</summary>
 
 Every method that takes a `checkpoint` / `llm_checkpoint` calls LLMs through `imodelsx.llm.get_llm`.
 Pick a provider by prefixing the checkpoint with `provider:` (or let it be inferred from the name):
@@ -77,6 +75,9 @@ llm = imodelsx.llm.get_llm('gpt-4o-mini', api_key='sk-...')  # pass a key direct
 
 Methods that need next-token probabilities or embeddings (e.g. Tree-Prompt, Aug-Linear, linear finetuning) require a local `hf` model; methods that only generate text (e.g. SASC, QA-Emb, Aug-Tree keyword expansion) work with any provider.
 </details>
+
+
+**Demos**: see the [demo notebooks](https://github.com/csinva/imodelsX/tree/master/demo_notebooks)
 
 
 # Natural-language explanations
