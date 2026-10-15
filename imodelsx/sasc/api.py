@@ -17,7 +17,7 @@ def explain_module_sasc(
     use_cache: bool = True,
     cache_filename: str = None,
     # generate explanation candidates
-    llm_checkpoint: str = "text-davinci-003",
+    llm_checkpoint: str = "gpt-4o-mini",
     llm_cache_dir: str = ".llm_cache",
     num_summaries: int = 3,
     num_top_ngrams_to_use: int = 30,
@@ -102,7 +102,7 @@ def explain_module_sasc(
     explanation_dict["ngrams_scores"] = ngrams_scores
 
     # compute explanation candidates
-    llm = imodelsx.llm.get_llm(llm_checkpoint, llm_cache_dir)
+    llm = imodelsx.llm.get_llm(llm_checkpoint, CACHE_DIR=llm_cache_dir)
     (
         explanation_strs,
         _,

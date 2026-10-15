@@ -96,7 +96,7 @@ Generate {num_synthetic_strs} phrases that are {blank_or_do_not}similar to the c
 
 if __name__ == "__main__":
     # llm = get_llm(checkpoint='EleutherAI/gpt-neox-20b')
-    llm = get_llm("text-davinci-003")
+    llm = get_llm("gpt-4o-mini")
     strs_added, strs_removed = generate_synthetic_strs(
         llm,
         explanation_str="anger",

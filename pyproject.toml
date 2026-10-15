@@ -62,7 +62,8 @@ dev = [
     "gdown",
 ]
 
-# Optional algorithm deps mentioned in setup.py comments
+# Optional LLM provider deps (see imodelsx.llm), e.g. pip install "imodelsx[anthropic]"
 [project.optional-dependencies]
-optional = [
-]
+openai = ["openai", "azure-identity"]
+anthropic = ["anthropic"]
+all = ["openai", "azure-identity", "anthropic"]

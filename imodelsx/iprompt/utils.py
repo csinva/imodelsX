@@ -216,8 +216,11 @@ class PrefixModel(nn.Module, abc.ABC):
             return self.model.encoder.embed_tokens
         elif self._is_opt:
             return self.transformer.embed_tokens
-        else:
+        elif 'transformer' in self.model._modules:
             return self.transformer.wte
+        else:
+            # other architectures (e.g. llama, qwen, mistral)
+            return self.model.get_input_embeddings()
     
     @property
     def vocab_size(self) -> int:

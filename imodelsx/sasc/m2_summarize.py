@@ -80,13 +80,16 @@ def summarize_ngrams(
 
 
 def clean_summary(summary: str):
-    summary = summary.strip().lower()
+    summary = summary.strip().lower().replace("*", "")
 
     # keep removing unnecessary prefixes
     modified_str = True
     while modified_str:
         modified_str = False
         for k in [
+            # chat models often restate the end of the prompt
+            "the common theme among these phrases is",
+            "common theme among these phrases is",
             "that",
             "they",
             "are",
@@ -114,8 +117,8 @@ def clean_summary(summary: str):
     if summary.endswith("."):
         summary = summary[:-1]
 
-    # remove quotation marks
-    summary = summary.replace('"', "")
+    # remove quotation marks and markdown emphasis
+    summary = summary.replace('"', "").replace("*", "")
 
     # sometimes summary comes with a rationale, e.g.
     # Summary: [involve people and places.]
@@ -136,7 +139,7 @@ if __name__ == "__main__":
     )
     # print('Clean:', repr(summary_clean))
     # print('Rationale:', repr(summary_rationale))
-    llm = get_llm(checkpoint="text-davinci-003")
+    llm = get_llm(checkpoint="gpt-4o-mini")
 
     summaries, summary_rationales = summarize_ngrams(
         llm, ["cat", "dog", "bird", "elephant", "cheetah"]

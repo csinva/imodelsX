@@ -4,6 +4,11 @@ import numpy as np
 import os.path
 from os.path import join
 import pickle as pkl
+import imodelsx.llm
+
+# default llm used for keyword expansion (any checkpoint supported by imodelsx.llm.get_llm)
+CHECKPOINT = 'gpt-4o-mini'
+_LLMS = {}  # loaded llms, keyed by (checkpoint, seed)
     
 
 def expand_keyword(
@@ -12,10 +17,13 @@ def expand_keyword(
     cache_dir: str=None,
     seed: int=0,
     verbose: bool=False,
+    checkpoint: str=None,
 ):
-    """Refine a keyphrase by making a call to gpt-3
+    """Refine a keyphrase by making an llm call (checkpoint defaults to CHECKPOINT)
     """
     
+    checkpoint = checkpoint or CHECKPOINT
+
     # check cache
     if cache_dir is not None:
         if llm_prompt_context == '':
@@ -35,18 +43,9 @@ def expand_keyword(
     prompt += f'Keyphrase: "{keyphrase_str}"\n'
     prompt += '1.'
 
-    import openai    
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
-        max_tokens=1000,
-        temperature=0.1,
-        top_p=1,
-        frequency_penalty=0.25,  # maximum is 2
-        presence_penalty=0,
-        stop=["101"]
-)
-    response_text = response['choices'][0]['text']
+    if (checkpoint, seed) not in _LLMS:
+        _LLMS[(checkpoint, seed)] = imodelsx.llm.get_llm(checkpoint, seed=seed, CACHE_DIR=None)
+    response_text = _LLMS[(checkpoint, seed)](prompt, max_new_tokens=1000, stop=["101"])
     ks = convert_response_to_keywords(response_text)
     if cache_dir is not None:
         pkl.dump(response_text, open(cache_raw_file, 'wb'))

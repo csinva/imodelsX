@@ -32,7 +32,8 @@ def get_embs(
     # load model
     # get embeddings for each text from the corpus
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-    model = AutoModel.from_pretrained(checkpoint).to("cuda")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = AutoModel.from_pretrained(checkpoint).to(device)
 
     # calculate embeddings
     embs = []
@@ -42,7 +43,7 @@ def get_embs(
             # tokenize
             inputs = tokenizer(
                 t, return_tensors="pt", padding=True, truncation=True
-            ).to("cuda")
+            ).to(device)
             # Shape: [batch_size, seq_len, hidden_size]
             outputs = model(**inputs).last_hidden_state.detach().cpu().numpy()
             # average over sequence length

@@ -144,13 +144,11 @@ class LinearFinetune(BaseEstimator):
 
     def _get_embs(self, X_text: ArrayLike):
         embs = []
-        if isinstance(X_text, list):
-            n = len(X_text)
-        else:
-            n = X_text.shape[0]
+        n = len(X_text)
         for i in tqdm(range(n)):
+            # one text at a time, so no padding is needed
             inputs = self.tokenizer(
-                [X_text[i]], padding="max_length", truncation=True, return_tensors="pt"
+                [X_text[i]], truncation=True, return_tensors="pt"
             )
             inputs = inputs.to(self.model.device)
             output = self.model(**inputs)

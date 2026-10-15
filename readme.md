@@ -48,6 +48,36 @@
 
 **Demos**: see the [demo notebooks](https://github.com/csinva/imodelsX/tree/master/demo_notebooks)
 
+<details>
+<summary><b>LLM providers</b>: use local huggingface models or API models from OpenAI, Anthropic, Claude Code, or Codex</summary>
+
+Every method that takes a `checkpoint` / `llm_checkpoint` calls LLMs through `imodelsx.llm.get_llm`.
+Pick a provider by prefixing the checkpoint with `provider:` (or let it be inferred from the name):
+
+| Provider | Example checkpoint | Credentials | Install |
+|---|---|---|---|
+| `hf` (default) | `gpt2`, `Qwen/Qwen2.5-0.5B-Instruct`, a local path | `HF_TOKEN` (only for gated models) | included |
+| `hf-api` | `hf-api:meta-llama/Llama-3.1-8B-Instruct` | `HF_TOKEN` | included |
+| `openai` | `gpt-4o-mini`, `openai:gpt-5` | `OPENAI_API_KEY` (`OPENAI_BASE_URL` for compatible servers) | `pip install "imodelsx[openai]"` |
+| `azure` | `azure:gpt-4o` | `AZURE_OPENAI_ENDPOINT` + `AZURE_OPENAI_API_KEY`, or Azure CLI login | `pip install "imodelsx[openai]"` |
+| `anthropic` | `claude-haiku-5-5`, `anthropic:claude-opus-5-5` | `ANTHROPIC_API_KEY` | `pip install "imodelsx[anthropic]"` |
+| `claude-code` | `claude-code:haiku`, `claude-code:sonnet` | your Claude Code login (no key needed) | [Claude Code](https://code.claude.com) CLI |
+| `codex` | `codex:gpt-5-codex`, `codex:default` | your Codex login (`codex login`) or `OPENAI_API_KEY` | `npm i -g @openai/codex` |
+
+Keys are read from the `api_key` argument, then the environment variable, then a file at `~/.<ENV_VAR>` (e.g. `~/.OPENAI_API_KEY`).
+Without a prefix, `gpt-*`/`o*` names use `openai` and `claude-*` names use `anthropic` (falling back to `azure` / `claude-code` when no key is found); anything else loads a local huggingface model.
+
+```python
+import imodelsx.llm
+llm = imodelsx.llm.get_llm('claude-code:haiku')  # or 'gpt-4o-mini', 'Qwen/Qwen2.5-0.5B-Instruct', ...
+llm('What is the capital of Spain?')  # outputs are cached in ~/.CACHE_LLM
+llm(['prompt 1', 'prompt 2'])  # API models run lists of prompts in parallel threads
+llm = imodelsx.llm.get_llm('gpt-4o-mini', api_key='sk-...')  # pass a key directly
+```
+
+Methods that need next-token probabilities or embeddings (e.g. Tree-Prompt, Aug-Linear, linear finetuning) require a local `hf` model; methods that only generate text (e.g. SASC, QA-Emb, Aug-Tree keyword expansion) work with any provider.
+</details>
+
 
 # Natural-language explanations
 
@@ -246,9 +276,9 @@ Easy API for calling different language models with caching (much more lightweig
 
 ```python
 import imodelsx.llm
-# supports any huggingface checkpoint or openai checkpoint (including chat models)
+# supports huggingface, openai, anthropic, claude code, and codex checkpoints (see LLM providers in the quickstart)
 llm = imodelsx.llm.get_llm(
-    checkpoint="gpt2-xl",  # text-davinci-003, gpt-3.5-turbo, ...
+    checkpoint="gpt2-xl",  # gpt-4o-mini, claude-haiku-5-5, claude-code:haiku, codex:gpt-5-codex, ...
     CACHE_DIR=".cache",
 )
 out = llm("May the Force be")
