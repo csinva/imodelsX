@@ -354,24 +354,23 @@ class AugLinear(BaseEstimator):
         """
 
         check_is_fitted(self)
-        preds = self._predict_cached(X, warn=warn)
+        preds = self._predict_cached(X, warn=warn) + self.linear.intercept_
         if isinstance(self, RegressorMixin):
             return preds
         elif isinstance(self, ClassifierMixin):
             # multiclass classification
             if preds.ndim > 1:
-                return np.argmax(preds, axis=1)
+                return self.classes_[np.argmax(preds, axis=1)]
             else:
-                return (preds + self.linear.intercept_ > 0).astype(int)
+                return self.classes_[(preds > 0).astype(int)]
 
     def predict_proba(self, X, warn=True):
         if not isinstance(self, ClassifierMixin):
             raise Exception("predict_proba only available for Classifier")
         check_is_fitted(self)
-        preds = self._predict_cached(X, warn=warn)
-        if preds.ndim == 1 or preds.shape[1] == 1:
-            logits = np.vstack(
-                (1 - preds.squeeze(), preds.squeeze())).transpose()
+        preds = self._predict_cached(X, warn=warn) + self.linear.intercept_
+        if preds.ndim == 1:
+            logits = np.column_stack((np.zeros(len(preds)), preds))
         else:  # multiclass classification
             logits = preds
         return softmax(logits, axis=1)
@@ -381,7 +380,7 @@ class AugLinear(BaseEstimator):
         assert hasattr(self, "coefs_dict_"), "coefs are not cached!"
         preds = []
         n_unseen_ngrams = 0
-        n_classes = len(self.classes_)
+        n_classes = len(self.classes_) if isinstance(self, ClassifierMixin) else 1
         for x in X:
             if n_classes > 2:
                 pred = np.zeros(n_classes)
@@ -406,7 +405,7 @@ class AugLinear(BaseEstimator):
 For better performance, call cache_linear_coefs on the test dataset \
 before calling predict."
             )
-        return np.array(preds).squeeze()
+        return np.array(preds)
 
     def _fit_zeroshot(self, model, tokenizer_embeddings, verbose):
         if verbose:

@@ -158,20 +158,20 @@ class LinearFinetune(BaseEstimator):
             if len(emb.shape) == 3:  # includes seq_len
                 emb = emb.mean(axis=1)
             embs.append(emb)
-        return np.array(embs).squeeze()  # num_examples x embedding_size
+        return np.concatenate(embs, axis=0)  # num_examples x embedding_size
 
     def predict(self, X_text):
         """For regression returns continuous output.
         For classification, returns discrete output.
         """
-        check_is_fitted(self)
+        check_is_fitted(self, "linear")
         embs = self._get_embs(X_text)
         if self.normalize_embs:
             embs = self.normalizer.transform(embs)
         return self.linear.predict(embs)
 
     def predict_proba(self, X_text):
-        check_is_fitted(self)
+        check_is_fitted(self, "linear")
         embs = self._get_embs(X_text)
         if self.normalize_embs:
             embs = self.normalizer.transform(embs)
