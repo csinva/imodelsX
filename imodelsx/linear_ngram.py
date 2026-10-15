@@ -138,12 +138,12 @@ class LinearNgram(BaseEstimator):
         """For regression returns continuous output.
         For classification, returns discrete output.
         """
-        check_is_fitted(self)
+        check_is_fitted(self, "linear")
         embs = self.vectorizer.transform(X_text)
         return self.linear.predict(embs)
 
     def predict_proba(self, X_text):
-        check_is_fitted(self)
+        check_is_fitted(self, "linear")
         embs = self.vectorizer.transform(X_text)
         return self.linear.predict_proba(embs)
 
