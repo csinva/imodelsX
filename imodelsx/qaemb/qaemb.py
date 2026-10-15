@@ -107,7 +107,7 @@ class QAEmb:
             answers = [
                 self.llm(
                     programs[i],
-                    max_new_tokens=1,
+                    max_completion_tokens=1,
                     verbose=verbose,
                     use_cache=self.use_cache,
                 )
