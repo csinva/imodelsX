@@ -82,9 +82,16 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
             random_state=self.random_state,
         )
         self.clf_.fit(prompt_features, y)
-        self.prompts_idxs_kept = np.unique(self.clf_.tree_.feature)[
+        feature_idxs_kept = np.unique(self.clf_.tree_.feature)[
             1:
         ]  # remove first element which is -2
+        if len(self.classes_) > 3:
+            feature_to_prompt = np.repeat(
+                np.arange(len(self.prompts)), [len(c) for c in self.enc_.categories_]
+            )
+            self.prompts_idxs_kept = np.unique(feature_to_prompt[feature_idxs_kept])
+        else:
+            self.prompts_idxs_kept = feature_idxs_kept
 
         return self
 
@@ -168,7 +175,7 @@ class TreePromptClassifier(BaseEstimator, ClassifierMixin):
 
         # apply one-hot encoding to features
         if hasattr(self, "enc_"):
-            X = self.enc_.transform(prompt_features)
+            prompt_features = self.enc_.transform(prompt_features)
 
         # predict
         return self.clf_.predict_proba(prompt_features)
